@@ -1,0 +1,3 @@
+[submodule "bancho"]
+	path = bancho
+	url = https://github.com/Lekuruu/anchor.git
