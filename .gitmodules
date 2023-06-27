@@ -1,6 +1,8 @@
 [submodule "bancho"]
 	path = bancho
 	url = https://github.com/Lekuruu/anchor.git
+	branch = main
 [submodule "web/deck"]
 	path = web/deck
 	url = https://github.com/Lekuruu/deck.git
+	branch = main
