@@ -116,8 +116,7 @@ CREATE TABLE screenshots
     id bigserial NOT NULL PRIMARY KEY,
     user_id int NOT NULL REFERENCES users (id),
     created_at time without time zone NOT NULL DEFAULT now(),
-    hidden boolean NOT NULL DEFAULT false,
-    content bytea NOT NULL
+    hidden boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE scores
@@ -144,8 +143,7 @@ CREATE TABLE scores
     grade character varying(2) NOT NULL DEFAULT 'N',
     status smallint NOT NULL,
     submitted_at timestamp with time zone NOT NULL DEFAULT now(),
-    replay bytea,
-    screenshot bytea,
+	replay_md5 CHARACTER(32),
     processes character varying,
     failtime int
 );
@@ -208,6 +206,7 @@ CREATE TABLE comments
     comment character varying(80) NOT NULL,
     format character varying(10),
     mode smallint NOT NULL DEFAULT 0,
+	color character varying(8),
     CONSTRAINT comments_pkey PRIMARY KEY (id)
 );
 
