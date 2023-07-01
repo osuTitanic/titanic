@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="500" alt="logo" src="https://raw.githubusercontent.com/lekuru-static/download/main/logo_medium.png">
+  <img width="500" alt="logo" src="https://raw.githubusercontent.com/Lekuruu/titanic/main/.github/logo/logo_medium.png">
 </p>
 
 # Titanic
