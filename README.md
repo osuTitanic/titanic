@@ -79,11 +79,11 @@ Currently, there is support for clients from b20130716 to b1807.
 
 You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
 
-![unpatched](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/unpatched.png)
+![unpatched](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/unpatched.png)
 
 and edit the ip address to match your setup:
 
-![patched](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/patched.png)
+![patched](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/patched.png)
 
 You also may want to use a server switcher, like [ultimate-osu-server-switcher](https://github.com/minisbett/ultimate-osu-server-switcher),
 to use features such as score submission, leaderboards, etc...
@@ -100,7 +100,7 @@ Feel free to contact me, if you have any questions:
 
 # Screenshots
 
-![sanic](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/screenshot001.jpg)
-![cool](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/screenshot002.jpg)
-![nice](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/screenshot003.jpg)
-![multiplayer](https://raw.githubusercontent.com/lekuruu/anchor/main/.github/images/screenshot004.jpg)
+![sanic](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot001.jpg)
+![cool](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot002.jpg)
+![nice](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot003.jpg)
+![multiplayer](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot004.jpg)
