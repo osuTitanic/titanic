@@ -13,6 +13,15 @@ You can view the progress in each repository:
 - https://github.com/Lekuruu/deck
 - https://github.com/Lekuruu/anchor
 
+# Testing it out
+
+You can test it out on my servers, using a pre-patched executable: [osu.zip](https://github.com/Lekuruu/titanic/raw/main/.github/osu.zip)
+
+Log in with the username `Anonymous` and the password `test`.
+If you want a account for yourself, please message me on discord: `lekuru`.
+
+Please keep in mind that only one player can be online with this account!
+
 # Quick Start
 
 To set up and use this project I would recommend to use [docker](https://www.docker.com/).
