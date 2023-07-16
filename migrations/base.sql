@@ -221,6 +221,14 @@ CREATE TABLE profile_badges
 	badge_url character varying
 );
 
+CREATE TABLE profile_activity (
+	id serial NOT NULL PRIMARY KEY,
+	user_id serial NOT NULL REFERENCES users (id),
+	"time" timestamp without time zone NOT NULL DEFAULT now(),
+	activity_text character varying(256) NOT NULL,
+	activity_links character varying(256)
+);
+
 CREATE TABLE name_history
 (
 	id serial NOT NULL PRIMARY KEY,
