@@ -224,6 +224,7 @@ CREATE TABLE profile_badges
 CREATE TABLE profile_activity (
 	id serial NOT NULL PRIMARY KEY,
 	user_id int NOT NULL REFERENCES users (id),
+    mode smallint NOT NULL,
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
 	activity_text character varying(256) NOT NULL,
 	activity_links character varying(256)
@@ -232,6 +233,7 @@ CREATE TABLE profile_activity (
 CREATE TABLE profile_rank_history (
    	user_id int NOT NULL REFERENCES users (id),
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
+    mode smallint NOT NULL,
     rscore bigint NOT NULL,
     pp int NOT NULL,
     global_rank int NOT NULL,
@@ -242,6 +244,7 @@ CREATE TABLE profile_rank_history (
 
 CREATE TABLE profile_play_history (
     user_id int NOT NULL REFERENCES users (id),
+    mode smallint NOT NULL,
     year int NOT NULL,
     month int NOT NULL,
     plays int NOT NULL DEFAULT 0,
@@ -250,6 +253,7 @@ CREATE TABLE profile_play_history (
 
 CREATE TABLE profile_replay_history (
     user_id int NOT NULL REFERENCES users (id),
+    mode smallint NOT NULL,
     year int NOT NULL,
     month int NOT NULL,
     replay_views int NOT NULL DEFAULT 0,
