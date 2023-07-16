@@ -84,6 +84,8 @@ CREATE TABLE users
     preferred_mode int NOT NULL DEFAULT 0,
     playstyle int NOT NULL DEFAULT 0,
     userpage_content character varying(2048),
+    userpage_banner character varying(256),
+    userpage_title character varying(64),
     UNIQUE(name, safe_name, email)
 );
 
