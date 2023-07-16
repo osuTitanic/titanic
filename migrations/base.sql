@@ -74,7 +74,7 @@ CREATE TABLE users
     email character varying(255) NOT NULL,
     pw character(60) NOT NULL, -- bcrypt
     permissions int NOT NULL DEFAULT 1,
-    country character varying NOT NULL DEFAULT 'Unknown',
+    country character varying NOT NULL DEFAULT 'XX',
     silence_end timestamp without time zone,
     supporter_end timestamp without time zone,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
