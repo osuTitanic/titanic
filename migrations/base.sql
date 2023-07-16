@@ -237,7 +237,7 @@ CREATE TABLE profile_rank_history (
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
     mode smallint NOT NULL,
     rscore bigint NOT NULL,
-    pp int NOT NULL,
+    pp real NOT NULL,
     global_rank int NOT NULL,
     country_rank int NOT NULL,
     score_rank int NOT NULL,
