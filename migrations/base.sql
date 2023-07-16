@@ -211,6 +211,16 @@ CREATE TABLE comments
     CONSTRAINT comments_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE profile_badges
+(
+    id serial NOT NULL PRIMARY KEY,
+	user_id serial NOT NULL REFERENCES users (id),
+	created timestamp without time zone NOT NULL DEFAULT now(),
+	badge_icon character varying NOT NULL,
+	badge_description character varying,
+	badge_url character varying
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'Oceania', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'Australia', true);
