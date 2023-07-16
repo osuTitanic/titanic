@@ -223,16 +223,27 @@ CREATE TABLE profile_badges
 
 CREATE TABLE profile_activity (
 	id serial NOT NULL PRIMARY KEY,
-	user_id serial NOT NULL REFERENCES users (id),
+	user_id int NOT NULL REFERENCES users (id),
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
 	activity_text character varying(256) NOT NULL,
 	activity_links character varying(256)
 );
 
+CREATE TABLE profile_rank_history (
+   	user_id int NOT NULL REFERENCES users (id),
+	"time" timestamp without time zone NOT NULL DEFAULT now(),
+    rscore bigint NOT NULL,
+    pp int NOT NULL,
+    global_rank int NOT NULL,
+    country_rank int NOT NULL,
+    score_rank int NOT NULL,
+	PRIMARY KEY (user_id, "time")
+);
+
 CREATE TABLE name_history
 (
 	id serial NOT NULL PRIMARY KEY,
-	user_id serial NOT NULL REFERENCES users (id),
+	user_id int NOT NULL REFERENCES users (id),
 	changed_at timestamp without time zone NOT NULL DEFAULT now(),
 	name character varying NOT NULL
 );
