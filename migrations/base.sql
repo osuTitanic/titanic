@@ -248,6 +248,14 @@ CREATE TABLE profile_play_history (
     PRIMARY KEY (user_id, year, month)
 );
 
+CREATE TABLE profile_replay_history (
+    user_id int NOT NULL REFERENCES users (id),
+    year int NOT NULL,
+    month int NOT NULL,
+    replay_views int NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, year, month)
+);
+
 CREATE TABLE name_history
 (
 	id serial NOT NULL PRIMARY KEY,
