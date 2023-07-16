@@ -83,6 +83,7 @@ CREATE TABLE users
     activated boolean NOT NULL DEFAULT false,
     preferred_mode int NOT NULL DEFAULT 0,
     playstyle int NOT NULL DEFAULT 0,
+    userpage_content character varying(2048),
     UNIQUE(name, safe_name, email)
 );
 
