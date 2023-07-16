@@ -248,7 +248,7 @@ CREATE TABLE profile_play_history (
     year int NOT NULL,
     month int NOT NULL,
     plays int NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, year, month)
+    PRIMARY KEY (user_id, year, month, mode)
 );
 
 CREATE TABLE profile_replay_history (
@@ -257,7 +257,7 @@ CREATE TABLE profile_replay_history (
     year int NOT NULL,
     month int NOT NULL,
     replay_views int NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, year, month)
+    PRIMARY KEY (user_id, year, month, mode)
 );
 
 CREATE TABLE name_history
