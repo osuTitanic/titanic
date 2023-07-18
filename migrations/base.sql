@@ -153,7 +153,7 @@ CREATE TABLE scores
 
 -- Status:
 -- 0: Friend
--- 1: Blocked
+-- 1: Blocked (not implemented)
 CREATE TABLE relationships
 (
     user_id int NOT NULL REFERENCES users (id),
