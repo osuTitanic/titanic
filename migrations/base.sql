@@ -63,7 +63,7 @@ CREATE TABLE messages
     sender character varying(32) NOT NULL,
     target character varying(32) NOT NULL,
     message character varying(128) NOT NULL,
-    "time" time without time zone NOT NULL
+    "time" time without time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE users
