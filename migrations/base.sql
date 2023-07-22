@@ -2,19 +2,23 @@
 CREATE TABLE beatmapsets
 (
     id serial NOT NULL PRIMARY KEY,
-    title   character varying(128),
-    artist  character varying(128),
+    title character varying(128),
+    artist character varying(128),
     creator character varying(128),
-    source  character varying(128),
-    tags    character varying(1024) DEFAULT '',
+    source character varying(128),
+    tags character varying(1024) DEFAULT '',
     submission_status int NOT NULL DEFAULT 3,
     has_video boolean NOT NULL DEFAULT false,
+    has_storyboard boolean NOT NULL DEFAULT false,
     server smallint NOT NULL DEFAULT 0, -- 1: osu! 2: private
     available boolean NOT NULL DEFAULT true,
     submission_date timestamp without time zone NOT NULL DEFAULT now(),
     approved_date timestamp without time zone,
     last_updated timestamp without time zone NOT NULL DEFAULT now(),
-    added_at timestamp without time zone DEFAULT now() -- only if server is "osu!"
+    added_at timestamp without time zone DEFAULT now(), -- only if server is "osu!"
+    osz_filesize int NOT NULL DEFAULT 0,
+    osz_filesize_novideo int NOT NULL DEFAULT 0,
+    query_string character varying(2048) DEFAULT ''
 );
 
 CREATE TABLE beatmaps
