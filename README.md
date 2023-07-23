@@ -68,10 +68,10 @@ The password should be a bcrypt hash of a md5 hash in hex form.
 
 To add beatmaps, you will *again* need to create them manually, inside the database.
 
-**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database:
+**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with pgAdmin:
 
-- [beatmapsets.csv](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmapsets.csv)
-- [beatmaps.csv](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmaps.csv)
+- [beatmapsets.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmapsets.pgdmp)
+- [beatmaps.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmaps.pgdmp)
 
 They contain a total of 127226 beatmaps from 2007-2013.
 
