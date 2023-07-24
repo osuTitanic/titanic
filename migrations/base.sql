@@ -152,7 +152,9 @@ CREATE TABLE scores
     submitted_at timestamp with time zone NOT NULL DEFAULT now(),
 	replay_md5 CHARACTER(32),
     processes character varying,
-    failtime int
+    failtime int,
+    bad_flags int NOT NULL DEFAULT 0,
+    ac_flags int NOT NULL DEFAULT 0
 );
 
 -- Status:
