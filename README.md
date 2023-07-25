@@ -12,7 +12,7 @@ You can view the progress [here](https://github.com/users/Lekuruu/projects/2).
 
 # Testing it out
 
-You can test it out on my servers, using a pre-patched executable: [osu.zip](https://github.com/Lekuruu/titanic/raw/main/.github/osu.zip)
+You can test it out on my servers, using a pre-patched client: [osu.zip](https://github.com/Lekuruu/titanic/raw/main/.github/osu.zip)
 
 I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip).
 
