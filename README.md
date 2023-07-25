@@ -14,6 +14,8 @@ You can view the progress [here](https://github.com/users/Lekuruu/projects/2).
 
 You can test it out on my servers, using a pre-patched executable: [osu.zip](https://github.com/Lekuruu/titanic/raw/main/.github/osu.zip)
 
+I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip).
+
 Log in with the username `Anonymous` and the password `test`.
 If you want a account for yourself, please message me on discord: `lekuru`.
 
