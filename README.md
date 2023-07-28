@@ -16,7 +16,7 @@ You can test it out on my servers, using a pre-patched client: [osu.zip](https:/
 
 I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip).
 
-For any legal issues with both these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekutu.xyz)!
+For any legal issues with both of these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekutu.xyz)!
 
 Log in with the username `Anonymous` and the password `test`.
 If you want a account for yourself, please message me on discord: `lekuru`.
