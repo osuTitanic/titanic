@@ -66,7 +66,7 @@ CREATE TABLE messages
     id bigserial NOT NULL PRIMARY KEY,
     sender character varying(32) NOT NULL,
     target character varying(32) NOT NULL,
-    message character varying(128) NOT NULL,
+    message character varying(512) NOT NULL,
     "time" time without time zone NOT NULL DEFAULT now()
 );
 
