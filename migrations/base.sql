@@ -19,6 +19,10 @@ CREATE TABLE beatmapsets
     osz_filesize int NOT NULL DEFAULT 0,
     osz_filesize_novideo int NOT NULL DEFAULT 0,
     query_string character varying(2048) DEFAULT ''
+    -- TODO
+    -- language_id
+    -- genre_id
+    -- display_title
 );
 
 CREATE TABLE beatmaps
@@ -235,6 +239,7 @@ CREATE TABLE profile_activity (
     mode smallint NOT NULL,
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
 	activity_text character varying(256) NOT NULL,
+	activity_args character varying(256),
 	activity_links character varying(256)
 );
 
@@ -291,3 +296,10 @@ VALUES ('#osu', 'General discussion.', 1, 1),
        ('#announce', 'Public announcements.', 1, 8),
        ('#lobby', 'Multiplayer lobby discussion room.', 1, 1),
        ('#admin', 'General discussion for administrators.', 16, 16);
+
+-- TODO
+-- blocked_ips
+-- logins
+-- bancho_stats
+-- api_stats
+-- beatmap_packs
