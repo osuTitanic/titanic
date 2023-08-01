@@ -74,8 +74,8 @@ To add beatmaps, you will *again* need to create them manually, inside the datab
 
 **However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with pgAdmin:
 
-- [beatmapsets.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmapsets.pgdmp)
-- [beatmaps.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmaps.pgdmp)
+- [beatmapsets.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmapsets.sql)
+- [beatmaps.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmaps.sql)
 
 They contain a total of 127226 beatmaps from 2007-2013.
 
