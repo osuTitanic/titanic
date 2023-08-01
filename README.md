@@ -12,11 +12,11 @@ You can view the progress [here](https://github.com/users/Lekuruu/projects/2).
 
 # Testing it out
 
-You can test it out on my servers, using a pre-patched client: [osu.zip](https://github.com/Lekuruu/titanic/raw/main/.github/osu.zip)
+You can test it out on my servers, using a pre-patched client: [osu.zip](https://github.com/osuTitanic/titanic/raw/main/.github/osu.zip)
 
 I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip).
 
-For any legal issues with both of these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekutu.xyz)!
+For any legal issues with both of these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekuru.xyz)!
 
 Log in with the username `Anonymous` and the password `test`.
 If you want a account for yourself, please message me on discord: `lekuru`.
@@ -74,8 +74,8 @@ To add beatmaps, you will *again* need to create them manually, inside the datab
 
 **However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with pgAdmin:
 
-- [beatmapsets.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmapsets.sql)
-- [beatmaps.pgdmp](https://github.com/Lekuruu/titanic/raw/main/migrations/beatmaps.sql)
+- [beatmapsets.pgdmp](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql)
+- [beatmaps.pgdmp](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql)
 
 They contain a total of 127226 beatmaps from 2007-2013.
 
@@ -89,11 +89,11 @@ Currently, there is support for clients from b20130716 to b1807.
 
 You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
 
-![unpatched](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/unpatched.png)
+![unpatched](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/unpatched.png)
 
 and edit the ip address to match your setup:
 
-![patched](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/patched.png)
+![patched](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/patched.png)
 
 You also may want to use a server switcher, like [ultimate-osu-server-switcher](https://github.com/minisbett/ultimate-osu-server-switcher),
 to use features such as score submission, leaderboards, etc...
@@ -110,7 +110,7 @@ Feel free to contact me, if you have any questions:
 
 # Screenshots
 
-![sanic](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot001.jpg)
-![cool](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot002.jpg)
-![nice](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot003.jpg)
-![multiplayer](https://raw.githubusercontent.com/lekuruu/titanic/main/.github/images/screenshot004.jpg)
+![sanic](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot001.jpg)
+![cool](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot002.jpg)
+![nice](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot003.jpg)
+![multiplayer](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot004.jpg)
