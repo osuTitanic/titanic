@@ -281,6 +281,24 @@ CREATE TABLE name_history
 	name character varying NOT NULL
 );
 
+CREATE TABLE clients (
+    user_id int NOT NULL REFERENCES users (id),
+    executable character(32) NOT NULL,
+    adapters character(32) NOT NULL,
+    unique_id character(32) NOT NULL,
+    disk_signature character(32) NOT NULL,
+    banned boolean NOT NULL DEFAULT false,
+    PRIMARY KEY (user_id, executable, adapters, unique_id, disk_signature)
+);
+
+CREATE TABLE logins (
+    user_id int NOT NULL REFERENCES users (id),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
+    ip character varying(45) NOT NULL,
+    osu_version character varying(25) NOT NULL,
+    PRIMARY KEY (user_id, "time")
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
