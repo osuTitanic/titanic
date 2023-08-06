@@ -18,11 +18,8 @@ CREATE TABLE beatmapsets
     added_at timestamp without time zone DEFAULT now(), -- only if server is "osu!"
     osz_filesize int NOT NULL DEFAULT 0,
     osz_filesize_novideo int NOT NULL DEFAULT 0,
-    query_string character varying(2048) DEFAULT ''
-    -- TODO
-    -- language_id
-    -- genre_id
-    -- display_title
+    language_id smallint NOT NULL DEFAULT 1,
+    genre_id smallint NOT NULL DEFAULT 1
 );
 
 CREATE TABLE beatmaps
@@ -157,6 +154,7 @@ CREATE TABLE scores
 	replay_md5 CHARACTER(32),
     processes character varying,
     failtime int,
+    pinned boolean NOT NULL DEFAULT false,
     bad_flags int NOT NULL DEFAULT 0,
     ac_flags int NOT NULL DEFAULT 0
 );
