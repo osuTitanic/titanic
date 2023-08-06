@@ -299,6 +299,16 @@ CREATE TABLE logins (
     PRIMARY KEY (user_id, "time")
 );
 
+CREATE TABLE infringements (
+    id serial NOT NULL PRIMARY KEY,
+    user_id int NOT NULL REFERENCES users (id),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
+    action smallint NOT NULL DEFAULT 0, -- 0: ban 1: mute
+    length timestamp without time zone NOT NULL,
+    is_permanent boolean NOT NULL DEFAULT false,
+    description character varying(255)
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
