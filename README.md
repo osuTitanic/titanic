@@ -8,7 +8,7 @@
 Titanic is a work in progress private server for osu! stable clients from 2010-2013.
 The goal of this project was to gain deeper insights into the inner workings of bancho and how it changed over the years.
 
-You can view the progress [here](https://github.com/users/Lekuruu/projects/2).
+You can view the progress [here](https://github.com/users/osuTitanic/projects/2).
 
 # Testing it out
 
