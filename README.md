@@ -27,6 +27,8 @@ Please keep in mind that only one player can be online with this account!
 
 To set up and use this project I would recommend to use [docker](https://www.docker.com/).
 
+For manual setup, please view [this file](https://github.com/osuTitanic/titanic/blob/main/SETUP.md).
+
 Verify that both docker *and* docker-compose are installed:
 ```shell
 docker --version
