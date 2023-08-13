@@ -45,9 +45,6 @@ git clone --recursive https://github.com/Lekuruu/titanic.git
 
 Rename the `.example_env` to `.env` and edit it.
 
-You may also want to edit the `client.py` file inside the `bancho` folder, if you
-have the `DISABLE_CLIENT_VERIFICATION` set to `False`.
-
 Start the server:
 ```shell
 docker-compose up -d
@@ -68,16 +65,17 @@ Inside the `users` table, you will need to create a new row, with these attribut
 - pw (bcrypt)
 - activated (true)
 
-The password should be a bcrypt hash of a md5 hash in hex form.
+You can generate a password, by hashing your password with **MD5** *and then* hash it again with **bcrypt**.
+You can use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/tools/create_password.py) file, to do that.
 
 ## Adding beatmaps
 
 To add beatmaps, you will *again* need to create them manually, inside the database.
 
-**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with pgAdmin:
+**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with tools like pgAdmin:
 
-- [beatmapsets.pgdmp](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql)
-- [beatmaps.pgdmp](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql)
+- [beatmapsets.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql)
+- [beatmaps.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql)
 
 They contain a total of 127226 beatmaps from 2007-2013.
 
@@ -87,7 +85,7 @@ To actually use the client, you will need to patch it, and I would recommend usi
 
 Also, some older clients may be obfuscated.
 As far as I know, [b2013606.1](https://osekai.net/snapshots/?version=179) is the latest non-obfuscated version that will work with this server.
-Currently, there is support for clients from b20130716 to b1807.
+Currently, there is support for clients from b20130815 to b1700.
 
 You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
 
@@ -100,14 +98,14 @@ and edit the ip address to match your setup:
 You also may want to use a server switcher, like [ultimate-osu-server-switcher](https://github.com/minisbett/ultimate-osu-server-switcher),
 to use features such as score submission, leaderboards, etc...
 
-**Alternatively** you can patch every url in dnSpy, from `osu.ppy.sh` to match your domain, but that can be a bit annoying.
+**Alternatively** you can patch every url in dnSpy, from `osu.ppy.sh` to match your domain, but that can be a bit annoying to do.
 
 # Contributing
 
 If you want to clean up the mess that I made, then feel free to make a pull request.
 If somebody wants to make a frontend for this project, I would be very happy.
 
-Feel free to contact me, if you have any questions:
+Also, feel free to contact me, if you have any questions:
 [@Levi/Lekuru](https://www.github.com/lekuruu)
 
 # Screenshots
