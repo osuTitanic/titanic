@@ -46,6 +46,8 @@ After that run this command in both folders to install the dependencies:
 python3 -m pip install -r requirements.txt
 ```
 
+> *If pip returns an error saying that "py3rijndael" could not be found, you may need to downgrade your python version.*
+
 And lastly you need to rename the `.example_env` files, to `.env` and edit them, to match your setup.
 
 After that you should be ready to run the server:
