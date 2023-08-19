@@ -27,6 +27,11 @@ git clone --recursive https://github.com/osuTitanic/deck.git
 ```
 
 Please make sure that the folder in `app/common/` is not empty!
+If it is empty, then this command should fix it:
+
+```shell
+git submodule update --init
+```
 
 After that run this command in both folders to install the dependencies:
 

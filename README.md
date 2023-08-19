@@ -43,9 +43,17 @@ Clone this project onto your machine:
 git clone --recursive https://github.com/Lekuruu/titanic.git
 ```
 
+Please make sure that the folder in `bancho/app/common/` and `web/deck/app/common` is not empty!
+If it is empty, then this command should fix it:
+
+```shell
+git submodule update --init
+```
+
 Rename the `.example_env` to `.env` and edit it.
 
 Start the server:
+
 ```shell
 docker-compose up -d
 ```
