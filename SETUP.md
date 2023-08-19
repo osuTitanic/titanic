@@ -5,6 +5,13 @@ To use [bancho](https://github.com/osuTitanic/anchor) and the [api server](https
 you need to have a [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/) server set up and also
 have [Python](https://www.python.org/) and pip installed.
 
+For pp calculations you will also need the [rust toolchain](https://rustup.rs/) installed.
+You can check if its installed it by running:
+
+```shell
+cargo --version
+```
+
 ### Applying migrations
 
 After that, log in to your postgres server and apply/run this [base.sql](https://github.com/osuTitanic/titanic/blob/main/migrations/base.sql) file, that contains all the tables needed.
