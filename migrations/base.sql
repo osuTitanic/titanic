@@ -324,8 +324,6 @@ VALUES ('#osu', 'General discussion.', 1, 1),
        ('#admin', 'General discussion for administrators.', 16, 16);
 
 -- TODO
--- blocked_ips
--- logins
 -- bancho_stats
 -- api_stats
 -- beatmap_packs
