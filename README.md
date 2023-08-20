@@ -5,7 +5,7 @@
 
 # Titanic
 
-Titanic is a work in progress private server for osu! stable clients from 2009-2013.
+Titanic is a work in progress private server for osu! stable clients from 2008-2013.
 The goal of this project was to gain deeper insights into the inner workings of bancho and how it changed over the years.
 
 You can view the progress [here](https://github.com/users/osuTitanic/projects/2).
@@ -93,7 +93,7 @@ To actually use the client, you will need to patch it, and I would recommend usi
 
 Also, some older clients may be obfuscated.
 As far as I know, [b2013606.1](https://osekai.net/snapshots/?version=179) is the latest non-obfuscated version that will work with this server.
-Currently, there is support for clients from b2013716 to b1122.
+Currently, there is support for clients from b2013716 to b487.
 
 You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
 
