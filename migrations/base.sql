@@ -91,6 +91,7 @@ CREATE TABLE users
     userpage_content character varying(2048),
     userpage_banner character varying(256),
     userpage_title character varying(64),
+    discord_id bigint,
     UNIQUE(name, safe_name, email)
 );
 
