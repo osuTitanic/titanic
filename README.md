@@ -30,6 +30,7 @@ To set up and use this project I would recommend to use [docker](https://www.doc
 For manual setup, please view [this file](https://github.com/osuTitanic/titanic/blob/main/SETUP.md).
 
 Verify that both docker *and* docker-compose are installed:
+
 ```shell
 docker --version
   Docker version X.X.X
@@ -39,6 +40,7 @@ docker-compose --version
 ```
 
 Clone this project onto your machine:
+
 ```shell
 git clone --recursive https://github.com/Lekuruu/titanic.git
 ```
