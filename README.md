@@ -85,7 +85,7 @@ To add beatmaps, you will *again* need to create them manually, inside the datab
 - [beatmapsets.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql)
 - [beatmaps.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql)
 
-They contain a total of 127226 beatmaps from 2007-2013.
+They contain a total of 140291 beatmaps from 2007-2013.
 
 ## Patching the client
 
