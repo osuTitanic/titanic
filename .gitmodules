@@ -6,3 +6,6 @@
 	path = web/deck
 	url = https://github.com/Lekuruu/deck.git
 	branch = main
+[submodule "bot"]
+	path = bot
+	url = https://github.com/osuTitanic/banchobot

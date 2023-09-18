@@ -97,6 +97,27 @@ services:
       cache:
         condition: service_healthy
 
+  bot:
+    build: ./bot
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    networks:
+      - titanic
+    links:
+      - db:db
+      - cache:cache
+    volumes:
+      - ./.data:/bot/.data
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
 networks:
   titanic:
     driver: bridge
