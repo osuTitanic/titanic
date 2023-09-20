@@ -12,14 +12,12 @@ You can view the progress [here](https://github.com/users/osuTitanic/projects/2)
 
 # Testing it out
 
-You can test it out on my servers, using a pre-patched client: [osu.zip](https://github.com/osuTitanic/titanic/raw/main/.github/osu.zip)
+For anyone interested, we got a discord server: https://discord.gg/qupv72e7YH
 
-I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip).
-
-For any legal issues with both of these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekuru.xyz)!
+You can test it out on my servers, using a pre-patched client: [osu.zip](https://github.com/osuTitanic/titanic/raw/main/.github/osu.zip). I've also made a little song collection that you can download [here](https://eu2.contabostorage.com/6e40dbfbcaa94330a7e1a3f939ff105f:public/songs.zip). For any legal issues with both of these files, please contact me on [contact@lekuru.xyz](mailto:contact@lekuru.xyz)!
 
 Log in with the username `Anonymous` and the password `test`.
-If you want a account for yourself, please message me on discord: `lekuru`.
+If you want a account for yourself, please join the discord server!
 
 Please keep in mind that only one player can be online with this account!
 
