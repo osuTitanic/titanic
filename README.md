@@ -93,7 +93,7 @@ To actually use the client, you will need to patch it, and I would recommend usi
 
 Also, some older clients may be obfuscated.
 As far as I know, [b2013606.1](https://osekai.net/snapshots/?version=179) is the latest non-obfuscated version that will work with this server.
-Currently, there is support for clients from b2013716 to b487.
+There is support for clients from b2013716 to b282.
 
 You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
 
