@@ -303,7 +303,7 @@ CREATE TABLE infringements (
     user_id int NOT NULL REFERENCES users (id),
     "time" timestamp without time zone NOT NULL DEFAULT now(),
     action smallint NOT NULL DEFAULT 0, -- 0: ban 1: mute
-    length timestamp without time zone NOT NULL,
+    length timestamp without time zone,
     is_permanent boolean NOT NULL DEFAULT false,
     description character varying(255)
 );
