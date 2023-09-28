@@ -308,6 +308,23 @@ CREATE TABLE infringements (
     description character varying(255)
 );
 
+CREATE TABLE mp_matches (
+    id bigserial NOT NULL PRIMARY KEY,
+    bancho_id smallint NOT NULL,
+    name character varying(50) NOT NULL,
+    creator_id int NOT NULL REFERENCES users (id),
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    ended_at timestamp without time zone
+);
+
+CREATE TABLE mp_events (
+    match_id int NOT NULL REFERENCES mp_matches (id),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
+    type smallint NOT NULL,
+    data jsonb NOT NULL,
+    PRIMARY KEY (match_id, "time")
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
