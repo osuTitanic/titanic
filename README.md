@@ -108,13 +108,17 @@ to use features such as score submission, leaderboards, etc...
 
 **Alternatively** you can patch every url in dnSpy, from `osu.ppy.sh` to match your domain, but that can be a bit annoying to do.
 
+# Credits
+
+- [kanaarima](https://github.com/kanaarima/) for helping with the discord bot
+- [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) beatmap mirrors
+
 # Contributing
 
 If you want to clean up the mess that I made, then feel free to make a pull request.
-If somebody wants to make a frontend for this project, I would be very happy.
+I am planning on making a frontend soon™ and I would appreciate any help or suggestions.
 
-Also, feel free to contact me, if you have any questions:
-[@Levi/Lekuru](https://www.github.com/lekuruu)
+Contact me on the discord server, if you have any questions.
 
 # Screenshots
 
