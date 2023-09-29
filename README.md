@@ -113,7 +113,7 @@ to use features such as score submission, leaderboards, etc...
 I would like to thank...
 
 - [kanaarima](https://github.com/kanaarima/) for helping with the discord bot
-- [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg).
+- [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
 - [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
 
 # Contributing
