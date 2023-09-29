@@ -118,7 +118,12 @@ Also, feel free to contact me, if you have any questions:
 
 # Screenshots
 
-![sanic](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot001.jpg)
-![cool](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot002.jpg)
-![nice](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot003.jpg)
-![multiplayer](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot004.jpg)
+#### b20130606.1
+
+![sanic](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot007.jpg)
+![cool](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot008.jpg)
+
+#### b1700
+
+![nice](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot005.jpg)
+![multiplayer](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot006.jpg)
