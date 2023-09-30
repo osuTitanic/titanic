@@ -298,6 +298,15 @@ CREATE TABLE logins (
     PRIMARY KEY (user_id, "time")
 );
 
+CREATE TABLE reports (
+    id serial NOT NULL PRIMARY KEY,
+    target_id int NOT NULL REFERENCES users (id),
+    sender_id int NOT NULL REFERENCES users (id),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
+    reason character varying(255),
+    resolved boolean NOT NULL DEFAULT false
+);
+
 CREATE TABLE infringements (
     id serial NOT NULL PRIMARY KEY,
     user_id int NOT NULL REFERENCES users (id),
