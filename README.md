@@ -85,24 +85,7 @@ They contain a total of 140291 beatmaps from 2007-2013.
 
 ## Patching the client
 
-To actually use the client, you will need to patch it, and I would recommend using [dnSpy](https://github.com/dnSpy/dnSpy) for that.
-
-Also, some older clients may be obfuscated.
-As far as I know, [b2013606.1](https://osekai.net/snapshots/?version=179) is the latest non-obfuscated version that will work with this server.
-There is support for clients from b2013716 to b282.
-
-You will need to find a line inside `osu.Online.BanchoClient` that looks something like this:
-
-![unpatched](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/unpatched.png)
-
-and edit the ip address to match your setup:
-
-![patched](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/patched.png)
-
-You also may want to use a server switcher, like [ultimate-osu-server-switcher](https://github.com/minisbett/ultimate-osu-server-switcher),
-to use features such as score submission, leaderboards, etc...
-
-**Alternatively** you can patch every url in dnSpy, from `osu.ppy.sh` to match your domain, but that can be a bit annoying to do.
+You can view the instructions [here](https://github.com/osuTitanic/clients/blob/main/PATCHING.md).
 
 # Credits
 
