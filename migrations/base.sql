@@ -334,6 +334,13 @@ CREATE TABLE mp_events (
     PRIMARY KEY (match_id, "time")
 );
 
+CREATE TABLE user_count
+(
+    "time" timestamp with time zone NOT NULL DEFAULT now(),
+    count int NOT NULL DEFAULT 0,
+    PRIMARY KEY ("time")
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
