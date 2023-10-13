@@ -7,6 +7,7 @@ CREATE TABLE beatmapsets
     creator character varying(128),
     source character varying(128),
     tags character varying(1024) DEFAULT '',
+    description text DEFAULT '',
     submission_status int NOT NULL DEFAULT 3,
     has_video boolean NOT NULL DEFAULT false,
     has_storyboard boolean NOT NULL DEFAULT false,
