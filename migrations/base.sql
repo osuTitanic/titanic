@@ -337,7 +337,7 @@ CREATE TABLE mp_events (
 
 CREATE TABLE user_count
 (
-    "time" timestamp with time zone NOT NULL DEFAULT now(),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
     count int NOT NULL DEFAULT 0,
     PRIMARY KEY ("time")
 );
