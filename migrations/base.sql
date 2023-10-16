@@ -90,7 +90,7 @@ CREATE TABLE users
     activated boolean NOT NULL DEFAULT false,
     preferred_mode int NOT NULL DEFAULT 0,
     playstyle int NOT NULL DEFAULT 0,
-    userpage_content text,
+    userpage_about text,
     userpage_signature text,
     userpage_banner character varying(255),
     userpage_website character varying(64),
