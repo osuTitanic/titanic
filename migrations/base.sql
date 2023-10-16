@@ -79,6 +79,7 @@ CREATE TABLE users
     safe_name character varying(32) NOT NULL,
     email character varying(255) NOT NULL,
     pw character(60) NOT NULL, -- bcrypt
+    discord_id bigint,
     permissions int NOT NULL DEFAULT 1,
     country character varying NOT NULL DEFAULT 'XX',
     silence_end timestamp without time zone,
@@ -89,11 +90,15 @@ CREATE TABLE users
     activated boolean NOT NULL DEFAULT false,
     preferred_mode int NOT NULL DEFAULT 0,
     playstyle int NOT NULL DEFAULT 0,
-    userpage_content character varying(2048),
-    userpage_banner character varying(256),
-    userpage_title character varying(64),
-    discord_id bigint,
-    UNIQUE(name, safe_name, email)
+    userpage_content text,
+    userpage_signature text,
+    userpage_banner character varying(255),
+    userpage_website character varying(64),
+    userpage_discord character varying(64),
+    userpage_twitter character varying(64),
+    userpage_location character varying(30),
+    userpage_interests character varying(30),
+    UNIQUE(name, safe_name, email, discord_id)
 );
 
 CREATE TABLE stats
