@@ -112,6 +112,7 @@ services:
       - cache:cache
     volumes:
       - ./.data:/bot/.data
+      - ./.data/logs/bot:/bot/logs
     depends_on:
       db:
         condition: service_healthy
