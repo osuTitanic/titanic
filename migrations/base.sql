@@ -210,7 +210,7 @@ CREATE TABLE achievements
     name character varying NOT NULL,
     category character varying NOT NULL,
     filename character varying NOT NULL,
-    unlocked_at time without time zone NOT NULL DEFAULT now(),
+    unlocked_at timestamp without time zone NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, name)
 );
 
