@@ -19,7 +19,7 @@ After that, log in to your postgres server and apply/run this [base.sql](https:/
 ### Changing the default user
 
 You also might want to change the default user `peppy` inside the `users` table, if you want to have a different username/password.
-Speaking of password... you might want to use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/tools/create_password.py) file, to generate a password. *Or*, alternatively you can generate one by yourself, by hashing your password with **MD5** *and then* hash it again with **bcrypt**.
+Speaking of password... you might want to use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/.github/create_password.py) file, to generate a password. *Or*, alternatively you can generate one by yourself, by hashing your password with **MD5** *and then* hash it again with **bcrypt**.
 
 ### Set up the repositories
 

@@ -70,7 +70,7 @@ Inside the `users` table, you will need to create a new row, with these attribut
 - activated (true)
 
 You can generate a password, by hashing your password with **MD5** *and then* hash it again with **bcrypt**.
-You can use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/tools/create_password.py) file, to do that.
+You can use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/.github/create_password.py) file, to do that.
 
 ## Adding beatmaps
 
