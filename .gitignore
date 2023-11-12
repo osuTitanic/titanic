@@ -1,2 +1,3 @@
+web/nginx/conf.d/
 .data
 .env
