@@ -9,3 +9,6 @@
 [submodule "bot"]
 	path = bot
 	url = https://github.com/osuTitanic/banchobot
+[submodule "web/stern"]
+	path = web/stern
+	url = https://github.com/osuTitanic/stern.git
