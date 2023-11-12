@@ -36,7 +36,7 @@ docker-compose --version
 Clone this project onto your machine:
 
 ```shell
-git clone --recursive https://github.com/Lekuruu/titanic.git
+git clone  --recurse-submodules --shallow-submodules https://github.com/Lekuruu/titanic.git
 ```
 
 **Please make sure** that the folder in `bancho/app/common/` and `web/deck/app/common` is not empty!
