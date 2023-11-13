@@ -109,6 +109,7 @@ CREATE TABLE stats
     tscore bigint NOT NULL DEFAULT 0,
     rscore bigint NOT NULL DEFAULT 0,
     pp real NOT NULL DEFAULT 0,
+    ppv1 real NOT NULL DEFAULT 0,
     playcount bigint NOT NULL DEFAULT 0,
     playtime int NOT NULL DEFAULT 0,
     acc real NOT NULL DEFAULT 0.000,
@@ -254,9 +255,11 @@ CREATE TABLE profile_rank_history (
     mode smallint NOT NULL,
     rscore bigint NOT NULL,
     pp real NOT NULL,
+    ppv1 real NOT NULL,
     global_rank int NOT NULL,
     country_rank int NOT NULL,
     score_rank int NOT NULL,
+    ppv1_rank int NOT NULL,
 	PRIMARY KEY (user_id, "time")
 );
 
