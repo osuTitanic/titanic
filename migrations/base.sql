@@ -350,6 +350,16 @@ CREATE TABLE user_count
     PRIMARY KEY ("time")
 );
 
+CREATE TABLE verifications
+(
+    id serial NOT NULL PRIMARY KEY,
+    token character varying(32) NOT NULL,
+    user_id int NOT NULL REFERENCES users (id),
+    sent_at timestamp without time zone NOT NULL DEFAULT now(),
+    value character varying(64), -- new password
+    type smallint NOT NULL -- 0: activation - 1: password reset
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
