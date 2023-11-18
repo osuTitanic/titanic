@@ -356,7 +356,6 @@ CREATE TABLE verifications
     token character varying(32) NOT NULL,
     user_id int NOT NULL REFERENCES users (id),
     sent_at timestamp without time zone NOT NULL DEFAULT now(),
-    value character varying(64), -- new password
     type smallint NOT NULL -- 0: activation - 1: password reset
 );
 
