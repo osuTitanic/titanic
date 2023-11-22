@@ -375,7 +375,20 @@ VALUES ('#osu', 'General discussion.', 1, 1),
        ('#lobby', 'Multiplayer lobby discussion room.', 1, 1),
        ('#admin', 'General discussion for administrators.', 16, 16);
 
+CREATE INDEX users_name_idx ON users (name);
+CREATE INDEX users_id_idx ON users (id);
+CREATE INDEX stats_id_idx ON stats (id);
+
+CREATE INDEX beatmapsets_id_idx ON beatmapsets (id);
+CREATE INDEX beatmaps_filename_idx ON beatmaps (filename);
+CREATE INDEX beatmaps_md5_idx ON beatmaps (md5);
+CREATE INDEX beatmaps_id_idx ON beatmaps (id);
+
+CREATE INDEX idx_beatmap_user_mode_status ON scores (beatmap_id, mode, user_id, status);
+CREATE INDEX idx_beatmap_mode_status ON scores (beatmap_id, mode, status);
+
 -- TODO
--- bancho_stats
--- api_stats
+-- groups
+-- notifications
 -- beatmap_packs
+-- pms
