@@ -14,12 +14,9 @@ You can view the progress [here](https://github.com/users/osuTitanic/projects/2)
 
 For anyone interested, we got a discord server: https://discord.gg/qupv72e7YH
 
-You can test it out on my servers using a pre-patched client, which you can find [here](https://github.com/osuTitanic/clients). Log in with the username `Anonymous` and the password `test`.
-If you want a account for yourself, please join the discord server!
+You can test it out on my servers using a pre-patched client, which you can find [here](https://github.com/osuTitanic/clients). Please join the discord server to create an account!
 
-Please keep in mind that only one player can be online with this account!
-
-# Quick Start
+# Server Setup
 
 To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md).
 
