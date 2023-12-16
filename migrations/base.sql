@@ -1,3 +1,4 @@
+CREATE extension IF NOT EXISTS pgcrypto;
 
 CREATE TABLE beatmapsets
 (
@@ -90,6 +91,7 @@ CREATE TABLE users
     activated boolean NOT NULL DEFAULT false,
     preferred_mode int NOT NULL DEFAULT 0,
     playstyle int NOT NULL DEFAULT 0,
+    irc_token character(10) NOT NULL DEFAULT encode(gen_random_bytes(5), 'hex'),
     userpage_about text,
     userpage_signature text,
     userpage_banner character varying(255),
@@ -163,6 +165,7 @@ CREATE TABLE scores
     processes character varying,
     failtime int,
     pinned boolean NOT NULL DEFAULT false,
+    -- TODO: Remove this
     bad_flags int NOT NULL DEFAULT 0,
     ac_flags int NOT NULL DEFAULT 0
 );
