@@ -81,6 +81,7 @@ CREATE TABLE users
     email character varying(255) NOT NULL,
     pw character(60) NOT NULL, -- bcrypt
     discord_id bigint,
+    bot boolean NOT NULL DEFAULT false,
     permissions int NOT NULL DEFAULT 1,
     country character varying NOT NULL DEFAULT 'XX',
     silence_end timestamp without time zone,
