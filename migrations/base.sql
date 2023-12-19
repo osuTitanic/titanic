@@ -166,10 +166,7 @@ CREATE TABLE scores
 	replay_md5 CHARACTER(32),
     processes character varying,
     failtime int,
-    pinned boolean NOT NULL DEFAULT false,
-    -- TODO: Remove this
-    bad_flags int NOT NULL DEFAULT 0,
-    ac_flags int NOT NULL DEFAULT 0
+    pinned boolean NOT NULL DEFAULT false
 );
 
 -- Status:
