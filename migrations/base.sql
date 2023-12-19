@@ -377,6 +377,16 @@ CREATE TABLE group_entries
     user_id int NOT NULL PRIMARY KEY REFERENCES users (id)
 );
 
+CREATE TABLE notifications
+(
+    id bigserial NOT NULL PRIMARY KEY,
+    user_id int NOT NULL REFERENCES users (id),
+    type smallint NOT NULL,
+    header character varying(128) NOT NULL,
+    content text NOT NULL,
+    link character varying(255)
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
