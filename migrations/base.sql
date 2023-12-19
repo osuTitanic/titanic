@@ -361,6 +361,22 @@ CREATE TABLE verifications
     type smallint NOT NULL -- 0: activation - 1: password reset
 );
 
+CREATE TABLE groups
+(
+    id serial NOT NULL PRIMARY KEY,
+    bancho_permissions smallint,
+    name character varying(45),
+    short_name character varying(8),
+    description text,
+    color character varying(8)
+);
+
+CREATE TABLE group_entries
+(
+    group_id int NOT NULL PRIMARY KEY REFERENCES groups (id),
+    user_id int NOT NULL PRIMARY KEY REFERENCES users (id)
+);
+
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
