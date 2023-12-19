@@ -373,8 +373,9 @@ CREATE TABLE groups
 
 CREATE TABLE group_entries
 (
-    group_id int NOT NULL PRIMARY KEY REFERENCES groups (id),
-    user_id int NOT NULL PRIMARY KEY REFERENCES users (id)
+    group_id int NOT NULL REFERENCES groups (id),
+    user_id int NOT NULL REFERENCES users (id),
+    PRIMARY KEY (group_id, user_id)
 );
 
 CREATE TABLE notifications
