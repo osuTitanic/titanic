@@ -95,6 +95,7 @@ CREATE TABLE users
     irc_token character(10) NOT NULL DEFAULT encode(gen_random_bytes(5), 'hex'),
     userpage_about text,
     userpage_signature text,
+    userpage_title character varying(64),
     userpage_banner character varying(255),
     userpage_website character varying(64),
     userpage_discord character varying(64),
