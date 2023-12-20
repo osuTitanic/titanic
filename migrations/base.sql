@@ -364,7 +364,7 @@ CREATE TABLE verifications
 CREATE TABLE groups
 (
     id serial NOT NULL PRIMARY KEY,
-    bancho_permissions smallint,
+    bancho_permissions smallint DEFAULT 0,
     name character varying(45) NOT NULL,
     short_name character varying(8) NOT NULL,
     description text,
