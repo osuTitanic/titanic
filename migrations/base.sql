@@ -386,7 +386,8 @@ CREATE TABLE notifications
     type smallint NOT NULL,
     header character varying(128) NOT NULL,
     content text NOT NULL,
-    link character varying(255)
+    link character varying(255),
+    read boolean NOT NULL DEFAULT false
 );
 
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
@@ -418,7 +419,5 @@ CREATE INDEX idx_beatmap_user_mode_status ON scores (beatmap_id, mode, user_id, 
 CREATE INDEX idx_beatmap_mode_status ON scores (beatmap_id, mode, status);
 
 -- TODO
--- groups
--- notifications
 -- beatmap_packs
 -- pms
