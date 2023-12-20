@@ -368,7 +368,8 @@ CREATE TABLE groups
     name character varying(45),
     short_name character varying(8),
     description text,
-    color character varying(8)
+    color character varying(8),
+    hidden boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE group_entries
