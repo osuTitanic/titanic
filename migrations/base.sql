@@ -367,7 +367,7 @@ CREATE TABLE groups
     bancho_permissions smallint,
     name character varying(45) NOT NULL,
     short_name character varying(8) NOT NULL,
-    description text NOT NULL,
+    description text,
     color character varying(8) NOT NULL,
     hidden boolean NOT NULL DEFAULT false
 );
