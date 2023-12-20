@@ -365,10 +365,10 @@ CREATE TABLE groups
 (
     id serial NOT NULL PRIMARY KEY,
     bancho_permissions smallint,
-    name character varying(45),
-    short_name character varying(8),
-    description text,
-    color character varying(8),
+    name character varying(45) NOT NULL,
+    short_name character varying(8) NOT NULL,
+    description text NOT NULL,
+    color character varying(8) NOT NULL,
     hidden boolean NOT NULL DEFAULT false
 );
 
