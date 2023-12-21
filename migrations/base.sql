@@ -82,7 +82,7 @@ CREATE TABLE users
     pw character(60) NOT NULL, -- bcrypt
     discord_id bigint,
     bot boolean NOT NULL DEFAULT false,
-    permissions int NOT NULL DEFAULT 1,
+    permissions int NOT NULL DEFAULT 5,
     country character varying NOT NULL DEFAULT 'XX',
     silence_end timestamp without time zone,
     supporter_end timestamp without time zone,
@@ -405,6 +405,11 @@ VALUES ('#osu', 'General discussion.', 1, 1),
        ('#announce', 'Public announcements.', 1, 8),
        ('#lobby', 'Multiplayer lobby discussion room.', 1, 1),
        ('#admin', 'General discussion for administrators.', 16, 16);
+
+INSERT INTO groups (id, bancho_permissions, name, short_name, description, color, hidden)
+VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
+       (999, '4', 'Supporter', 'DIRECT', 'People with access to osu! direct.', '#ffffff', true),
+       (1000, '1', 'Players', 'PLAYER', 'People who play the game.', '#ffffff', true);
 
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
