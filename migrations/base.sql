@@ -411,6 +411,14 @@ VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
        (999, '4', 'Supporter', 'DIRECT', 'People with access to osu! direct.', '#ffffff', true),
        (1000, '1', 'Players', 'PLAYER', 'People who play the game.', '#ffffff', true);
 
+INSERT INTO group_entries (user_id, group_id)
+VALUES (1, 1),
+       (1, 999),
+       (1, 1000),
+       (2, 1),
+       (2, 999),
+       (2, 1000);
+
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
 CREATE INDEX stats_id_idx ON stats (id);
