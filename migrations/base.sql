@@ -387,7 +387,8 @@ CREATE TABLE notifications
     header character varying(128) NOT NULL,
     content text NOT NULL,
     link character varying(255),
-    read boolean NOT NULL DEFAULT false
+    read boolean NOT NULL DEFAULT false,
+    "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
 INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
