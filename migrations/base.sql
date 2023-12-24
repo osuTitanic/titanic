@@ -372,7 +372,7 @@ CREATE TABLE groups
     hidden boolean NOT NULL DEFAULT false
 );
 
-CREATE TABLE group_entries
+CREATE TABLE groups_entries
 (
     group_id int NOT NULL REFERENCES groups (id),
     user_id int NOT NULL REFERENCES users (id),
@@ -412,7 +412,7 @@ VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
        (999, '4', 'Supporter', 'DIRECT', 'People with access to osu! direct.', '#000000', true),
        (1000, '1', 'Players', 'PLAYER', 'People who play the game.', '#000000', true);
 
-INSERT INTO group_entries (user_id, group_id)
+INSERT INTO groups_entries (user_id, group_id)
 VALUES (1, 1),
        (1, 999),
        (1, 1000),
