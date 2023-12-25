@@ -420,6 +420,9 @@ VALUES (1, 1),
        (2, 999),
        (2, 1000);
 
+INSERT INTO user_count (count)
+VALUES (0);
+
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
 CREATE INDEX stats_id_idx ON stats (id);
