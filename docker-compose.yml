@@ -11,8 +11,8 @@ services:
     ports:
       - '127.0.0.1:${POSTGRES_PORT}:5432'
     volumes: 
-      - ./.data/postgres:/var/lib/postgresql/data
-      - ./migrations/base.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - './.data/postgres:/var/lib/postgresql/data'
+      - './migrations/:/docker-entrypoint-initdb.d/'
     networks:
       - titanic
     healthcheck:
@@ -30,7 +30,7 @@ services:
     networks:
       - titanic
     volumes: 
-      - ./.data/redis:/var/lib/postgresql/data
+      - './.data/redis:/var/lib/postgresql/data'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -60,8 +60,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./.data:/bancho/.data
-      - ./.data/logs/bancho:/bancho/logs
+      - './.data:/bancho/.data'
+      - './.data/logs/bancho:/bancho/logs'
     depends_on:
       db:
         condition: service_healthy
@@ -89,8 +89,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./.data:/deck/.data
-      - ./.data/logs/deck:/deck/logs
+      - './.data:/deck/.data'
+      - './.data/logs/deck:/deck/logs'
     depends_on:
       db:
         condition: service_healthy
@@ -111,8 +111,8 @@ services:
       - db:db
       - cache:cache
     volumes:
-      - ./.data:/bot/.data
-      - ./.data/logs/bot:/bot/logs
+      - './.data:/bot/.data'
+      - './.data/logs/bot:/bot/logs'
     depends_on:
       db:
         condition: service_healthy
@@ -140,7 +140,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./.data/logs/stern:/stern/logs
+      - './.data/logs/stern:/stern/logs'
     depends_on:
       db:
         condition: service_healthy
@@ -153,16 +153,14 @@ services:
     env_file:
       - '.env'
     environment:
-      - DOLLAR=$
+      - DOLLAR=$$
     ports:
       - "${NGINX_HOST}:${NGINX_PORT}:80"
     networks:
       - titanic
     volumes:
-      - ./web/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./web/nginx/conf.d/:/etc/nginx/conf.d/
-      - ./web/nginx/templates/default.conf.template:/etc/nginx/templates/default.conf.template
-      - ./.data/static:/etc/nginx/static
+      - './web/nginx/templates:/etc/nginx/templates'
+      - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
     depends_on:
       - deck
       - stern
