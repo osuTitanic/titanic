@@ -20,20 +20,17 @@ You can test it out on my servers using a pre-patched client, which you can find
 
 To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md).
 
-Verify that both docker *and* docker-compose are installed:
+Verify that docker is installed:
 
 ```shell
 docker --version
-  Docker version X.X.X
-
-docker-compose --version
-  Docker Compose version vX.X.X
+  Docker version X.X.X, build ...
 ```
 
 Clone this project onto your machine:
 
 ```shell
-git clone  --recurse-submodules --shallow-submodules https://github.com/Lekuruu/titanic.git
+git clone --recurse-submodules --shallow-submodules https://github.com/Lekuruu/titanic.git
 ```
 
 Rename the `.example_env` to `.env` and edit it.
@@ -41,7 +38,7 @@ Rename the `.example_env` to `.env` and edit it.
 Start the server:
 
 ```shell
-docker-compose up -d
+docker compose up -d
 ```
 
 and hope that nothing goes wrong 😅
