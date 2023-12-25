@@ -1,11 +1,11 @@
 
 # Manual Setup
 
-To use [bancho](https://github.com/osuTitanic/anchor) and the [api server](https://github.com/osuTitanic/deck),
-you need to have a [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/) server set up and also
-have [Python](https://www.python.org/) and pip installed.
+To use [bancho](https://github.com/osuTitanic/anchor), the [api server](https://github.com/osuTitanic/deck)
+and the [website](https://github.com/osuTitanic/stern), you need to have a [PostgreSQL](https://www.postgresql.org/)
+and [Redis](https://redis.io/) server set up and also have [Python](https://www.python.org/) with pip installed.
 
-For pp calculations you will also need the [rust toolchain](https://rustup.rs/) installed.
+For pp calculations you will also need to install the [rust toolchain](https://rustup.rs/).
 You can check if its installed it by running:
 
 ```shell
@@ -23,7 +23,7 @@ Speaking of password... you might want to use the [create_password.py](https://g
 
 ### Set up the repositories
 
-You can now clone both of the repositories
+You can now clone all of the repositories
 
 ```shell
 git clone --recursive https://github.com/osuTitanic/anchor.git
@@ -33,11 +33,8 @@ git clone --recursive https://github.com/osuTitanic/anchor.git
 git clone --recursive https://github.com/osuTitanic/deck.git
 ```
 
-Please make sure that the folder in `app/common/` is not empty!
-If it is empty, then this command should fix it:
-
 ```shell
-git submodule update --init
+git clone --recursive https://github.com/osuTitanic/stern.git
 ```
 
 After that run this command in both folders to install the dependencies:
@@ -50,10 +47,10 @@ python3 -m pip install -r requirements.txt
 
 And lastly you need to rename the `.example_env` files, to `.env` and edit them, to match your setup.
 
-After that you should be ready to run the server:
+After that you should be ready to run the all the servers:
 
 ```shell
 python3 main.py
 ```
 
-You may now want to follow the rest of the setup [here](https://github.com/osuTitanic/titanic#adding-beatmaps).
+You may now follow the rest of the setup [here](https://github.com/osuTitanic/titanic#adding-beatmaps).
