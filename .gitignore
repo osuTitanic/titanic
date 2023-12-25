@@ -1,3 +1,4 @@
 web/nginx/conf.d/
+.idea
 .data
 .env
