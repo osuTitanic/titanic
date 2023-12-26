@@ -45,23 +45,11 @@ and hope that nothing goes wrong 😅
 
 ## Creating a user
 
-To create a user you will need to edit the database manually, because the old clients don't support registrations
-and I currently don't have a website/frontend.
-
-Inside the `users` table, you will need to create a new row, with these attributes:
-
-- name
-- safe_name
-- email
-- pw (bcrypt)
-- activated (true)
-
-You can generate a password, by hashing your password with **MD5** *and then* hash it again with **bcrypt**.
-You can use the [create_password.py](https://github.com/osuTitanic/titanic/blob/main/.github/create_password.py) file, to do that.
+You can create users by simply registering on the website. New users will appear in the `users` table, inside the database.
 
 ## Adding beatmaps
 
-To add beatmaps, you will *again* need to create them manually, inside the database.
+To add beatmaps, you will need to create them manually, inside the database.
 
 **However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with tools like pgAdmin:
 
@@ -81,11 +69,11 @@ I would like to thank...
 - [kanaarima](https://github.com/kanaarima/) for helping with the discord bot
 - [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
 - [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
+- Everyone that donated & contributed to this project (you guys are a big help!)
 
 # Contributing
 
 If you want to clean up the mess that I made, then feel free to fork and make a pull request.
-I am also working on frontend, which will be available soon™ and I would appreciate any help or suggestions.
 
 Contact me on the discord server, if you have any questions.
 
