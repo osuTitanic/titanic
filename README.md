@@ -13,6 +13,7 @@ You can view the progress [here](https://github.com/users/osuTitanic/projects/2)
 # Testing it out
 
 You can test it out on my servers, by registering on the website: https://osu.lekuru.xyz
+
 For anyone interested, we got a discord server: https://discord.gg/qupv72e7YH
 
 # Server Setup
