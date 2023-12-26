@@ -73,7 +73,6 @@ I would like to thank...
 # Contributing
 
 If you want to clean up the mess that I made, then feel free to fork and make a pull request.
-I am also working on frontend, which will be available soon™ and I would appreciate any help or suggestions.
 
 Contact me on the discord server, if you have any questions.
 
