@@ -45,11 +45,11 @@ and hope that nothing goes wrong 😅
 
 ## Creating a user
 
-(https://github.com/osuTitanic/titanic/blob/main/.github/create_password.py) file, to do that.
+You can create users by simply registering on the website. New users will appear in the `users` table, inside the database.
 
 ## Adding beatmaps
 
-To add beatmaps, you will *again* need to create them manually, inside the database.
+To add beatmaps, you will need to create them manually, inside the database.
 
 **However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with tools like pgAdmin:
 
