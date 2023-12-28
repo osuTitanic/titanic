@@ -409,6 +409,7 @@ VALUES ('#osu', 'General discussion.', 1, 1),
 
 INSERT INTO groups (id, bancho_permissions, name, short_name, description, color, hidden)
 VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
+       (998, '1', 'Verified', 'VERIFIED', 'Verified players.', '#000000', true),
        (999, '4', 'Supporter', 'DIRECT', 'People with access to osu! direct.', '#000000', true),
        (1000, '1', 'Players', 'PLAYER', 'People who play the game.', '#000000', true);
 
