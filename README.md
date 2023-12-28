@@ -30,7 +30,7 @@ docker --version
 Clone this project onto your machine:
 
 ```shell
-git clone --recurse-submodules --shallow-submodules https://github.com/Lekuruu/titanic.git
+git clone --recurse-submodules --shallow-submodules https://github.com/osuTitanic/titanic.git
 ```
 
 Rename the `.example_env` to `.env` and edit it.
