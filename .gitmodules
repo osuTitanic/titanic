@@ -1,10 +1,10 @@
 [submodule "bancho"]
 	path = bancho
-	url = https://github.com/Lekuruu/anchor.git
+	url = https://github.com/osuTitanic/anchor.git
 	branch = main
 [submodule "web/deck"]
 	path = web/deck
-	url = https://github.com/Lekuruu/deck.git
+	url = https://github.com/osuTitanic/deck.git
 	branch = main
 [submodule "bot"]
 	path = bot
