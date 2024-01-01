@@ -261,10 +261,16 @@ CREATE TABLE profile_rank_history (
     rscore bigint NOT NULL,
     pp real NOT NULL,
     ppv1 real NOT NULL,
+    pp_vn real NOT NULL,
+    pp_rx real NOT NULL,
+    pp_ap real NOT NULL,
     global_rank int NOT NULL,
     country_rank int NOT NULL,
     score_rank int NOT NULL,
     ppv1_rank int NOT NULL,
+    pp_vn_rank int NOT NULL,
+    pp_rx_rank int NOT NULL,
+    pp_ap_rank int NOT NULL,
 	PRIMARY KEY (user_id, "time")
 );
 
