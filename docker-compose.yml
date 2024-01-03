@@ -51,9 +51,11 @@ services:
       - db:db
       - cache:cache
     ports:
+      - ${HTTP_BANCHO_PORT}:${HTTP_BANCHO_PORT}
       - 13381:13381
       - 13382:13382
       - 13383:13383
+      - 13384:13384
     healthcheck:
       test: "curl -sS http://127.0.0.1:13381 || exit 1"
       interval: 15s
@@ -161,9 +163,6 @@ services:
     volumes:
       - './web/nginx/templates:/etc/nginx/templates'
       - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
-    depends_on:
-      - deck
-      - stern
     command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
 
 networks:
