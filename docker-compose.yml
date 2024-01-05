@@ -160,6 +160,10 @@ services:
       - "${NGINX_HOST}:${NGINX_PORT}:80"
     networks:
       - titanic
+    links:
+      - anchor:anchor
+      - deck:deck
+      - stern:stern
     volumes:
       - './web/nginx/templates:/etc/nginx/templates'
       - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
