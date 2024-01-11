@@ -148,7 +148,7 @@ CREATE TABLE scores
     beatmap_id int NOT NULL REFERENCES beatmaps (id),
     user_id int NOT NULL REFERENCES users (id),
     client_version int NOT NULL,
-    client_hash character varying NOT NULL,
+    client_hash character varying,
     score_checksum character(32) NOT NULL,
     mode smallint NOT NULL,
     pp real NOT NULL,
