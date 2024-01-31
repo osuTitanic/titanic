@@ -17,9 +17,9 @@ services:
       - titanic
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
-      interval: 10s
+      interval: 4s
       timeout: 5s
-      retries: 5
+      retries: 15
 
   cache:
     image: redis:7.2-rc
@@ -45,22 +45,18 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
+      - BANCHO_HTTP_PORT=80
     networks:
       - titanic
     links:
       - db:db
       - cache:cache
     ports:
-      - ${HTTP_BANCHO_PORT}:${HTTP_BANCHO_PORT}
+      - 127.0.0.1:5050:80
       - 13381:13381
       - 13382:13382
       - 13383:13383
       - 13384:13384
-    healthcheck:
-      test: "curl -sS http://127.0.0.1:13381 || exit 1"
-      interval: 15s
-      timeout: 5s
-      retries: 5
     volumes:
       - './.data:/bancho/.data'
       - './.data/logs/bancho:/bancho/logs'
@@ -78,18 +74,15 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
+      - WEB_HOST=127.0.0.1
+      - WEB_PORT=6060
     networks:
       - titanic
     links:
       - db:db
       - cache:cache
     ports:
-      - ${WEB_HOST}:${WEB_PORT}:80
-    healthcheck:
-      test: "curl -sS http://127.0.0.1:80 || exit 1"
-      interval: 30s
-      timeout: 5s
-      retries: 5
+      - 127.0.0.1:6060:80
     volumes:
       - './.data:/deck/.data'
       - './.data/logs/deck:/deck/logs'
@@ -101,7 +94,7 @@ services:
 
   bot:
     build: ./bot
-    restart: unless-stopped
+    restart: on-failure
     env_file:
       - '.env'
     environment:
@@ -129,18 +122,15 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
+      - FRONTEND_HOST=127.0.0.1
+      - FRONTEND_PORT=7070
     networks:
       - titanic
     links:
       - db:db
       - cache:cache
     ports:
-      - ${FRONTEND_HOST}:${FRONTEND_PORT}:80
-    healthcheck:
-      test: "curl -sS http://127.0.0.1:80 || exit 1"
-      interval: 120s
-      timeout: 5s
-      retries: 5
+      - 127.0.0.1:7070:80
     volumes:
       - './.data/logs/stern:/stern/logs'
     depends_on:
