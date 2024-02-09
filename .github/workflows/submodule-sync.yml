@@ -22,7 +22,7 @@ jobs:
     - name: Git submodule update
       run: |
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/anchor.git HEAD | awk '{ print $1}'),bancho
-        git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/banchobot HEAD | awk '{ print $1}'),banchobot
+        git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/banchobot HEAD | awk '{ print $1}'),bot
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/deck.git HEAD | awk '{ print $1}'),web/deck
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/stern.git HEAD | awk '{ print $1}'),web/stern
 
