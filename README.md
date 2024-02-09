@@ -5,16 +5,17 @@
 
 # Titanic
 
-Titanic is a work in progress private server for osu! stable clients from 2008-2013.
+Titanic is a work in progress private server for all osu! stable clients (2008-2024).
 The goal of this project was to gain deeper insights into the inner workings of bancho and how it changed over the years.
 
-You can view the progress [here](https://github.com/users/osuTitanic/projects/2).
+The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
 # Testing it out
 
-You can test it out on my servers, by registering on the website: https://osu.lekuru.xyz
+You can test it out on my servers, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) the client from the website.
+**Please note that it will only work with the clients downloaded from the website.**
 
-For anyone interested, we got a discord server: https://discord.gg/qupv72e7YH
+For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
 
 # Server Setup
 
