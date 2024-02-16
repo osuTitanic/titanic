@@ -65,8 +65,6 @@ You can view the instructions [here](https://github.com/osuTitanic/clients/blob/
 
 # Credits
 
-I would like to thank...
-
 - [kanaarima](https://github.com/kanaarima/) for helping with the discord bot
 - [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
 - [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
@@ -74,9 +72,8 @@ I would like to thank...
 
 # Contributing
 
-If you want to clean up the mess that I made, then feel free to fork and make a pull request.
-
-Contact me on the discord server, if you have any questions.
+You are welcome to make any kinds of suggestions or contributions to this project.
+Feel free to contact me if you have any questions.
 
 # Screenshots
 
