@@ -19,7 +19,7 @@ For anyone interested, we also got a discord server: https://discord.gg/qupv72e7
 
 # Server Setup
 
-To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md).
+To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
 
 Verify that docker is installed:
 
