@@ -10,14 +10,9 @@ The goal of this project was to gain deeper insights into the inner workings of 
 
 The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
-# Testing it out
+You can test it out on my servers, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) the client from the website. For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
 
-You can test it out on my servers, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) the client from the website.
-**Please note that it will only work with the clients downloaded from the website.**
-
-For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
-
-# Server Setup
+## Setup
 
 To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
 
@@ -42,12 +37,6 @@ Start the server:
 docker compose up -d
 ```
 
-and hope that nothing goes wrong 😅
-
-## Creating a user
-
-You can create users by simply registering on the website. New users will appear in the `users` table, inside the database.
-
 ## Adding beatmaps
 
 To add beatmaps, you will need to create them manually, inside the database.
@@ -61,21 +50,21 @@ They contain a total of 140291 beatmaps from 2007-2013.
 
 ## Patching the client
 
-You can view the instructions [here](https://github.com/osuTitanic/clients/blob/main/PATCHING.md).
+You can view the instructions for patching the client [here](https://github.com/osuTitanic/clients/blob/main/PATCHING.md).
 
-# Credits
-
-- [kanaarima](https://github.com/kanaarima/) for helping with the discord bot
-- [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
-- [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
-- Everyone that donated & contributed to this project (you guys are a big help!)
-
-# Contributing
+## Contributing
 
 You are welcome to make any kinds of suggestions or contributions to this project.
 Feel free to contact me if you have any questions.
 
-# Screenshots
+## Credits
+
+- [kanaarima](https://github.com/kanaarima/) for helping with the discord bot & developing the pp system
+- [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
+- [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
+- Everyone that donated & contributed to this project (you guys are a big help!)
+
+## Screenshots
 
 #### b20130606.1
 
