@@ -1,18 +1,16 @@
 
 # Manual Setup
 
-To use [bancho](https://github.com/osuTitanic/anchor), the [api server](https://github.com/osuTitanic/deck) and the [website](https://github.com/osuTitanic/stern), you need to have a [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/) server set up and also have [Python](https://www.python.org/) with pip installed. The recommended python version for this project is 3.11.
+### Dependencies
 
-For pp calculations you will also need to install the [rust toolchain](https://rustup.rs/).
-You can check if its installed it by running:
-
-```shell
-cargo --version
-```
+- [PostgreSQL](https://www.postgresql.org/)
+- [Redis](https://redis.io/)
+- [Python](https://www.python.org/) with pip (3.11 is recommended)
+- [Rust Toolchain](https://rustup.rs/) for pp calculations
 
 ### Applying migrations
 
-After that, log in to your postgres server with your database management tool of choice, and apply/run this [base.sql](https://github.com/osuTitanic/titanic/blob/main/migrations/base.sql) file, that contains all the tables needed.
+Log in to your postgres server with your database management tool of choice, and apply/run this [base.sql](https://github.com/osuTitanic/titanic/blob/main/migrations/base.sql) file, that contains all the tables needed.
 
 ### Set up the repositories
 
@@ -38,12 +36,11 @@ python3 -m pip install -r requirements.txt
 
 You might want to use a [virtual environment](https://docs.python.org/3/tutorial/venv.html) for that.
 
-And lastly you need to rename the `.example_env` files, to `.env` and edit them, to match your setup.
-
+Rename the `.example_env` files, to `.env` and edit them, to match your setup.
 After that you should be ready to run the all the servers:
 
 ```shell
 python3 main.py
 ```
 
-You may now follow the rest of the setup [here](https://github.com/osuTitanic/titanic#adding-beatmaps).
+You may now want to follow the rest of the setup [here](https://github.com/osuTitanic/titanic#adding-beatmaps).
