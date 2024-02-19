@@ -41,12 +41,12 @@ docker compose up -d
 
 To add beatmaps, you will need to create them manually, inside the database.
 
-**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database with tools like pgAdmin:
+**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database:
 
-- [beatmapsets.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql)
-- [beatmaps.sql](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql)
+- [beatmapsets.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql.gz)
+- [beatmaps.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql.gz)
 
-They contain a total of 140291 beatmaps from 2007-2013.
+They are gzip-compressed sql files, which contain a total of 140k beatmaps from 2007-2013.
 
 ## Patching the client
 
