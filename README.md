@@ -39,7 +39,7 @@ docker compose up -d
 
 ## Adding beatmaps
 
-To add beatmaps, you will need to create them manually, inside the database.
+To add beatmaps, you will need to create them manually, inside the database, since the beatmap submission system is not implemented at the moment.
 
 **However**, I have a small collection of beatmaps and beatmapsets that you can import to your database:
 
