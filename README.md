@@ -14,7 +14,7 @@ You can test it out on my servers, by [registering on the website](https://osu.l
 
 ## Setup
 
-To set up and use this project I would recommend to use [docker](https://www.docker.com/). Otherwise here are some instructions for [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
+To set up and use this project I would recommend to use [docker](https://www.docker.com/), as it's easier to set up in most cases. If you do not feel comfortable using docker, here are some instructions for the [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
 
 Verify that docker is installed:
 
