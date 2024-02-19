@@ -1,9 +1,7 @@
 
 # Manual Setup
 
-To use [bancho](https://github.com/osuTitanic/anchor), the [api server](https://github.com/osuTitanic/deck)
-and the [website](https://github.com/osuTitanic/stern), you need to have a [PostgreSQL](https://www.postgresql.org/)
-and [Redis](https://redis.io/) server set up and also have [Python](https://www.python.org/) with pip installed.
+To use [bancho](https://github.com/osuTitanic/anchor), the [api server](https://github.com/osuTitanic/deck) and the [website](https://github.com/osuTitanic/stern), you need to have a [PostgreSQL](https://www.postgresql.org/) and [Redis](https://redis.io/) server set up and also have [Python](https://www.python.org/) with pip installed. The recommended python version for this project is 3.11.
 
 For pp calculations you will also need to install the [rust toolchain](https://rustup.rs/).
 You can check if its installed it by running:
