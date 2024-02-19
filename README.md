@@ -20,7 +20,6 @@ Verify that docker is installed:
 
 ```shell
 docker --version
-  Docker version X.X.X, build ...
 ```
 
 Clone this project onto your machine:
