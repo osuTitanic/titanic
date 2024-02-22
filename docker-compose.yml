@@ -159,6 +159,86 @@ services:
       - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
     command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
 
+  jobs-ppv1:
+    build: ./jobs
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    links:
+      - db:db
+      - cache:cache
+    networks:
+      - titanic
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    entrypoint: python3 main.py --name update_ppv1 --interval 3600
+
+  jobs-ranks:
+    build: ./jobs
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    links:
+      - db:db
+      - cache:cache
+    networks:
+      - titanic
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    entrypoint: python3 main.py --name update_ranks --interval 1800
+
+  jobs-stats:
+    build: ./jobs
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    networks:
+      - titanic
+    links:
+      - db:db
+      - cache:cache
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    entrypoint: python3 main.py --name update_website_stats
+
+  jobs-usercount:
+    build: ./jobs
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    links:
+      - db:db
+      - cache:cache
+    networks:
+      - titanic
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    entrypoint: python3 main.py --name update_usercount_history
+
 networks:
   titanic:
     driver: bridge
