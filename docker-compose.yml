@@ -173,10 +173,8 @@ services:
     networks:
       - titanic
     depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
+      - db
+      - cache
     entrypoint: python3 main.py --name update_ppv1 --interval 3600
 
   jobs-ranks:
@@ -193,10 +191,8 @@ services:
     networks:
       - titanic
     depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
+      - db
+      - cache
     entrypoint: python3 main.py --name update_ranks --interval 1800
 
   jobs-stats:
@@ -213,10 +209,8 @@ services:
       - db:db
       - cache:cache
     depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
+      - db
+      - cache
     entrypoint: python3 main.py --name update_website_stats
 
   jobs-usercount:
@@ -233,10 +227,8 @@ services:
     networks:
       - titanic
     depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
+      - db
+      - cache
     entrypoint: python3 main.py --name update_usercount_history
 
 networks:
