@@ -12,3 +12,6 @@
 [submodule "web/stern"]
 	path = web/stern
 	url = https://github.com/osuTitanic/stern.git
+[submodule "jobs"]
+	path = jobs
+	url = https://github.com/osuTitanic/jobs.git
