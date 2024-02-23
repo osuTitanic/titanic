@@ -82,7 +82,6 @@ CREATE TABLE users
     pw character(60) NOT NULL, -- bcrypt
     discord_id bigint,
     bot boolean NOT NULL DEFAULT false,
-    permissions int NOT NULL DEFAULT 5,
     country character varying NOT NULL DEFAULT 'XX',
     silence_end timestamp without time zone,
     supporter_end timestamp without time zone,
@@ -400,10 +399,6 @@ CREATE TABLE notifications
     "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
-INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
-VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
-       ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
-
 CREATE TABLE forums
 (
     id serial NOT NULL PRIMARY KEY,
@@ -486,6 +481,11 @@ CREATE TABLE forum_subscribers
     PRIMARY KEY (user_id, topic_id)
 );
 
+INSERT INTO users (name, safe_name, email, pw, country, activated, bot)
+VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 'OC', true, true),
+       ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 'AU', true, false);
+
+-- Default stats for BanchoBot
 INSERT INTO stats (id, mode)
 VALUES (1, 0),
        (1, 1),
