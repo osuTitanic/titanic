@@ -404,6 +404,88 @@ INSERT INTO users (name, safe_name, email, pw, permissions, country, activated)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 21, 'OC', true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 21, 'AU', true);
 
+CREATE TABLE forums
+(
+    id serial NOT NULL PRIMARY KEY,
+    parent_id int REFERENCES forums (id) DEFAULT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    name character varying(32) NOT NULL,
+    description character varying(255) NOT NULL DEFAULT '',
+    hidden boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_icons
+(
+    id serial NOT NULL PRIMARY KEY,
+    name character varying(32) NOT NULL,
+    location character varying(255) NOT NULL
+);
+
+CREATE TABLE forum_topics
+(
+    id serial NOT NULL PRIMARY KEY,
+    forum_id int NOT NULL REFERENCES forums (id),
+    creator_id int NOT NULL REFERENCES users (id),
+    title character varying(255) NOT NULL,
+    status_text character varying(255) DEFAULT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    last_post_at timestamp without time zone NOT NULL DEFAULT now(),
+    locked_at timestamp without time zone DEFAULT NULL,
+    views int NOT NULL DEFAULT 0,
+    icon smallint REFERENCES forum_icons (id) DEFAULT NULL,
+    can_change_icon boolean NOT NULL DEFAULT true,
+    can_star boolean NOT NULL DEFAULT false,
+    announcement boolean NOT NULL DEFAULT false,
+    hidden boolean NOT NULL DEFAULT false,
+    pinned boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_stars
+(
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    user_id int NOT NULL REFERENCES users (id),
+    created_at timestamp without time zone NOT NULL DEFAULT now()
+);
+
+CREATE TABLE forum_posts
+(
+    id bigserial NOT NULL PRIMARY KEY,
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    forum_id int NOT NULL REFERENCES forums (id),
+    user_id int NOT NULL REFERENCES users (id),
+    content text NOT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    edit_time timestamp without time zone NOT NULL DEFAULT now(),
+    edit_count int NOT NULL DEFAULT 0,
+    edit_locked boolean NOT NULL DEFAULT false,
+    hidden boolean NOT NULL DEFAULT false,
+    draft boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_reports
+(
+    post_id int NOT NULL REFERENCES forum_posts (id),
+    user_id int NOT NULL REFERENCES users (id),
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    resolved_at timestamp without time zone DEFAULT NULL,
+    reason character varying(255) NOT NULL,
+    PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE forum_bookmarks
+(
+    user_id int NOT NULL REFERENCES users (id),
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    PRIMARY KEY (user_id, topic_id)
+);
+
+CREATE TABLE forum_subscribers
+(
+    user_id int NOT NULL REFERENCES users (id),
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    PRIMARY KEY (user_id, topic_id)
+);
+
 INSERT INTO stats (id, mode)
 VALUES (1, 0),
        (1, 1),
@@ -444,7 +526,3 @@ CREATE INDEX beatmaps_id_idx ON beatmaps (id);
 
 CREATE INDEX idx_beatmap_user_mode_status ON scores (beatmap_id, mode, user_id, status);
 CREATE INDEX idx_beatmap_mode_status ON scores (beatmap_id, mode, status);
-
--- TODO
--- beatmap_packs
--- pms
