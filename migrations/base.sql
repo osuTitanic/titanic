@@ -506,15 +506,52 @@ VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
        (1000, '1', 'Players', 'PLAYER', 'People who play the game.', '#000000', true);
 
 INSERT INTO groups_entries (user_id, group_id)
-VALUES (1, 1),
-       (1, 999),
-       (1, 1000),
-       (2, 1),
-       (2, 999),
-       (2, 1000);
+VALUES (1, 1),    -- BanchoBot -> Admins
+       (1, 999),  -- BanchoBot -> Supporter
+       (1, 1000), -- BanchoBot -> Players
+       (2, 1),    -- peppy -> Admins
+       (2, 999),  -- peppy -> Supporter
+       (2, 1000); -- peppy -> Players
 
 INSERT INTO user_count (count)
 VALUES (0);
+
+INSERT INTO forums (name)
+VALUES ('Titanic!'),
+       ('Beatmaps')
+
+INSERT INTO forums (name, description, parent_id)
+VALUES ('Development', 'Discuss the future of this project.', 0),
+       ('Gameplay & Rankings', 'Show off your scores to the world and discuss them.', 0),
+       ('Skinning', 'Discuss & share skins and other customizations.', 0),
+       ('Feature Requests', 'Suggest what you would like to see in this project.', 0),
+       ('Support', 'Need help? You will find it here.', 0),
+       ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 1),
+       ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 1),
+       ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 1),
+       ('Map Requests', 'Request beatmaps from the official servers.', 1);
+
+INSERT INTO forums (name, parent_id)
+VALUES ('Taiko', 3),
+       ('Catch the Beat', 3),
+       ('osu!mania', 3),
+       ('Completed Skins', 4);
+
+INSERT INTO forum_icons (name, location)
+VALUES ('heart', '/images/icons/forum/heart.gif'),
+       ('heartpop', '/images/icons/forum/heartpop.gif'),
+       ('bubble', '/images/icons/forum/bubble.gif'),
+       ('bubblepop', '/images/icons/forum/bubblepop.gif'),
+       ('fire', '/images/icons/forum/fire.gif'),
+       ('star', '/images/icons/forum/star.gif'),
+       ('radioactive', '/images/icons/forum/radioactive.gif'),
+       ('alert', '/images/icons/forum/alert.gif'),
+       ('info', '/images/icons/forum/info.gif'),
+       ('question', '/images/icons/forum/question.gif'),
+       ('osu', '/images/icons/forum/osu.gif'),
+       ('taiko', '/images/icons/forum/taiko.gif'),
+       ('ctb', '/images/icons/forum/ctb.gif'),
+       ('mania', '/images/icons/forum/mania.gif');
 
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
