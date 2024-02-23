@@ -1,5 +1,119 @@
 CREATE extension IF NOT EXISTS pgcrypto;
 
+CREATE TABLE users
+(
+    id serial NOT NULL PRIMARY KEY,
+    name character varying(32) NOT NULL,
+    safe_name character varying(32) NOT NULL,
+    email character varying(255) NOT NULL,
+    pw character(60) NOT NULL, -- bcrypt
+    discord_id bigint,
+    bot boolean NOT NULL DEFAULT false,
+    country character varying NOT NULL DEFAULT 'XX',
+    silence_end timestamp without time zone,
+    supporter_end timestamp without time zone,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    latest_activity timestamp without time zone NOT NULL DEFAULT now(),
+    restricted boolean NOT NULL DEFAULT false,
+    activated boolean NOT NULL DEFAULT false,
+    preferred_mode int NOT NULL DEFAULT 0,
+    playstyle int NOT NULL DEFAULT 0,
+    kudosu int NOT NULL DEFAULT 0,
+    irc_token character(10) NOT NULL DEFAULT encode(gen_random_bytes(5), 'hex'),
+    userpage_about text,
+    userpage_signature text,
+    userpage_title character varying(64),
+    userpage_banner character varying(255),
+    userpage_website character varying(64),
+    userpage_discord character varying(64),
+    userpage_twitter character varying(64),
+    userpage_location character varying(30),
+    userpage_interests character varying(30),
+    UNIQUE(name, safe_name, email, discord_id)
+);
+
+CREATE TABLE forums
+(
+    id serial NOT NULL PRIMARY KEY,
+    parent_id int REFERENCES forums (id) DEFAULT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    name character varying(32) NOT NULL,
+    description character varying(255) NOT NULL DEFAULT '',
+    hidden boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_icons
+(
+    id serial NOT NULL PRIMARY KEY,
+    name character varying(32) NOT NULL,
+    location character varying(255) NOT NULL
+);
+
+CREATE TABLE forum_topics
+(
+    id serial NOT NULL PRIMARY KEY,
+    forum_id int NOT NULL REFERENCES forums (id),
+    creator_id int NOT NULL REFERENCES users (id),
+    title character varying(255) NOT NULL,
+    status_text character varying(255) DEFAULT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    last_post_at timestamp without time zone NOT NULL DEFAULT now(),
+    locked_at timestamp without time zone DEFAULT NULL,
+    views int NOT NULL DEFAULT 0,
+    icon smallint REFERENCES forum_icons (id) DEFAULT NULL,
+    can_change_icon boolean NOT NULL DEFAULT true,
+    can_star boolean NOT NULL DEFAULT false,
+    announcement boolean NOT NULL DEFAULT false,
+    hidden boolean NOT NULL DEFAULT false,
+    pinned boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_stars
+(
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    user_id int NOT NULL REFERENCES users (id),
+    created_at timestamp without time zone NOT NULL DEFAULT now()
+);
+
+CREATE TABLE forum_posts
+(
+    id bigserial NOT NULL PRIMARY KEY,
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    forum_id int NOT NULL REFERENCES forums (id),
+    user_id int NOT NULL REFERENCES users (id),
+    content text NOT NULL,
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    edit_time timestamp without time zone NOT NULL DEFAULT now(),
+    edit_count int NOT NULL DEFAULT 0,
+    edit_locked boolean NOT NULL DEFAULT false,
+    hidden boolean NOT NULL DEFAULT false,
+    draft boolean NOT NULL DEFAULT false
+);
+
+CREATE TABLE forum_reports
+(
+    post_id int NOT NULL REFERENCES forum_posts (id),
+    user_id int NOT NULL REFERENCES users (id),
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
+    resolved_at timestamp without time zone DEFAULT NULL,
+    reason character varying(255) NOT NULL,
+    PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE forum_bookmarks
+(
+    user_id int NOT NULL REFERENCES users (id),
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    PRIMARY KEY (user_id, topic_id)
+);
+
+CREATE TABLE forum_subscribers
+(
+    user_id int NOT NULL REFERENCES users (id),
+    topic_id int NOT NULL REFERENCES forum_topics (id),
+    PRIMARY KEY (user_id, topic_id)
+);
+
 CREATE TABLE beatmapsets
 (
     id serial NOT NULL PRIMARY KEY,
@@ -73,38 +187,6 @@ CREATE TABLE messages
     target character varying(32) NOT NULL,
     message character varying(512) NOT NULL,
     "time" time without time zone NOT NULL DEFAULT now()
-);
-
-CREATE TABLE users
-(
-    id serial NOT NULL PRIMARY KEY,
-    name character varying(32) NOT NULL,
-    safe_name character varying(32) NOT NULL,
-    email character varying(255) NOT NULL,
-    pw character(60) NOT NULL, -- bcrypt
-    discord_id bigint,
-    bot boolean NOT NULL DEFAULT false,
-    country character varying NOT NULL DEFAULT 'XX',
-    silence_end timestamp without time zone,
-    supporter_end timestamp without time zone,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    latest_activity timestamp without time zone NOT NULL DEFAULT now(),
-    restricted boolean NOT NULL DEFAULT false,
-    activated boolean NOT NULL DEFAULT false,
-    preferred_mode int NOT NULL DEFAULT 0,
-    playstyle int NOT NULL DEFAULT 0,
-    kudosu int NOT NULL DEFAULT 0,
-    irc_token character(10) NOT NULL DEFAULT encode(gen_random_bytes(5), 'hex'),
-    userpage_about text,
-    userpage_signature text,
-    userpage_title character varying(64),
-    userpage_banner character varying(255),
-    userpage_website character varying(64),
-    userpage_discord character varying(64),
-    userpage_twitter character varying(64),
-    userpage_location character varying(30),
-    userpage_interests character varying(30),
-    UNIQUE(name, safe_name, email, discord_id)
 );
 
 CREATE TABLE stats
@@ -402,88 +484,6 @@ CREATE TABLE notifications
     "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
-CREATE TABLE forums
-(
-    id serial NOT NULL PRIMARY KEY,
-    parent_id int REFERENCES forums (id) DEFAULT NULL,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    name character varying(32) NOT NULL,
-    description character varying(255) NOT NULL DEFAULT '',
-    hidden boolean NOT NULL DEFAULT false
-);
-
-CREATE TABLE forum_icons
-(
-    id serial NOT NULL PRIMARY KEY,
-    name character varying(32) NOT NULL,
-    location character varying(255) NOT NULL
-);
-
-CREATE TABLE forum_topics
-(
-    id serial NOT NULL PRIMARY KEY,
-    forum_id int NOT NULL REFERENCES forums (id),
-    creator_id int NOT NULL REFERENCES users (id),
-    title character varying(255) NOT NULL,
-    status_text character varying(255) DEFAULT NULL,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    last_post_at timestamp without time zone NOT NULL DEFAULT now(),
-    locked_at timestamp without time zone DEFAULT NULL,
-    views int NOT NULL DEFAULT 0,
-    icon smallint REFERENCES forum_icons (id) DEFAULT NULL,
-    can_change_icon boolean NOT NULL DEFAULT true,
-    can_star boolean NOT NULL DEFAULT false,
-    announcement boolean NOT NULL DEFAULT false,
-    hidden boolean NOT NULL DEFAULT false,
-    pinned boolean NOT NULL DEFAULT false
-);
-
-CREATE TABLE forum_stars
-(
-    topic_id int NOT NULL REFERENCES forum_topics (id),
-    user_id int NOT NULL REFERENCES users (id),
-    created_at timestamp without time zone NOT NULL DEFAULT now()
-);
-
-CREATE TABLE forum_posts
-(
-    id bigserial NOT NULL PRIMARY KEY,
-    topic_id int NOT NULL REFERENCES forum_topics (id),
-    forum_id int NOT NULL REFERENCES forums (id),
-    user_id int NOT NULL REFERENCES users (id),
-    content text NOT NULL,
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    edit_time timestamp without time zone NOT NULL DEFAULT now(),
-    edit_count int NOT NULL DEFAULT 0,
-    edit_locked boolean NOT NULL DEFAULT false,
-    hidden boolean NOT NULL DEFAULT false,
-    draft boolean NOT NULL DEFAULT false
-);
-
-CREATE TABLE forum_reports
-(
-    post_id int NOT NULL REFERENCES forum_posts (id),
-    user_id int NOT NULL REFERENCES users (id),
-    created_at timestamp without time zone NOT NULL DEFAULT now(),
-    resolved_at timestamp without time zone DEFAULT NULL,
-    reason character varying(255) NOT NULL,
-    PRIMARY KEY (post_id, user_id)
-);
-
-CREATE TABLE forum_bookmarks
-(
-    user_id int NOT NULL REFERENCES users (id),
-    topic_id int NOT NULL REFERENCES forum_topics (id),
-    PRIMARY KEY (user_id, topic_id)
-);
-
-CREATE TABLE forum_subscribers
-(
-    user_id int NOT NULL REFERENCES users (id),
-    topic_id int NOT NULL REFERENCES forum_topics (id),
-    PRIMARY KEY (user_id, topic_id)
-);
-
 INSERT INTO users (name, safe_name, email, pw, country, activated, bot)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 'OC', true, true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 'AU', true, false);
@@ -520,24 +520,24 @@ VALUES (0);
 
 INSERT INTO forums (name)
 VALUES ('Titanic!'),
-       ('Beatmaps')
+       ('Beatmaps');
 
 INSERT INTO forums (name, description, parent_id)
-VALUES ('Development', 'Discuss the future of this project.', 0),
-       ('Gameplay & Rankings', 'Show off your scores to the world and discuss them.', 0),
-       ('Skinning', 'Discuss & share skins and other customizations.', 0),
-       ('Feature Requests', 'Suggest what you would like to see in this project.', 0),
-       ('Support', 'Need help? You will find it here.', 0),
-       ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 1),
-       ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 1),
-       ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 1),
-       ('Map Requests', 'Request beatmaps from the official servers.', 1);
+VALUES ('Development', 'Discuss the future of this project.', 1),
+       ('Gameplay & Rankings', 'Show off your scores to the world and discuss them.', 1),
+       ('Skinning', 'Discuss & share skins and other customizations.', 1),
+       ('Feature Requests', 'Suggest what you would like to see in this project.', 1),
+       ('Support', 'Need help? You will find it here.', 1),
+       ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2),
+       ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2),
+       ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2),
+       ('Map Requests', 'Request beatmaps from the official servers.', 2);
 
 INSERT INTO forums (name, parent_id)
-VALUES ('Taiko', 3),
-       ('Catch the Beat', 3),
-       ('osu!mania', 3),
-       ('Completed Skins', 4);
+VALUES ('Taiko', 4),
+       ('Catch the Beat', 4),
+       ('osu!mania', 4),
+       ('Completed Skins', 5);
 
 INSERT INTO forum_icons (name, location)
 VALUES ('heart', '/images/icons/forum/heart.gif'),
