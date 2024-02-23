@@ -12,12 +12,14 @@ CREATE TABLE beatmapsets
     submission_status int NOT NULL DEFAULT 3,
     has_video boolean NOT NULL DEFAULT false,
     has_storyboard boolean NOT NULL DEFAULT false,
-    server smallint NOT NULL DEFAULT 0, -- 1: osu! 2: private
+    server smallint NOT NULL DEFAULT 0, -- 0: osu! 1: private
+    topic_id int REFERENCES forums (id) DEFAULT NULL, -- only if server is "private"
+    creator_id int REFERENCES users (id) DEFAULT NULL, -- only if server is "private"
     available boolean NOT NULL DEFAULT true,
     submission_date timestamp without time zone NOT NULL DEFAULT now(),
     approved_date timestamp without time zone,
     last_updated timestamp without time zone NOT NULL DEFAULT now(),
-    added_at timestamp without time zone DEFAULT now(), -- only if server is "osu!"
+    added_at timestamp without time zone DEFAULT now(),
     osz_filesize int NOT NULL DEFAULT 0,
     osz_filesize_novideo int NOT NULL DEFAULT 0,
     language_id smallint NOT NULL DEFAULT 1,
