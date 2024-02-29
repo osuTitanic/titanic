@@ -10,7 +10,8 @@ The goal of this project was to gain deeper insights into the inner workings of 
 
 The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
-You can test it out on my servers, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) the client from the website. For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
+You can play on it, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) a client from the website. Keep in mind that only a smaller range of clients will be available there.
+For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
 
 ## Setup
 
