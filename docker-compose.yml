@@ -74,8 +74,6 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
-      - WEB_HOST=127.0.0.1
-      - WEB_PORT=6060
     networks:
       - titanic
     links:
@@ -122,8 +120,6 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
-      - FRONTEND_HOST=127.0.0.1
-      - FRONTEND_PORT=7070
     networks:
       - titanic
     links:
