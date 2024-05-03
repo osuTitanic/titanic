@@ -328,7 +328,8 @@ CREATE TABLE profile_badges
 	badge_url character varying
 );
 
-CREATE TABLE profile_activity (
+CREATE TABLE profile_activity
+(
 	id serial NOT NULL PRIMARY KEY,
 	user_id int NOT NULL REFERENCES users (id),
     mode smallint NOT NULL,
@@ -338,7 +339,8 @@ CREATE TABLE profile_activity (
 	activity_links character varying(256)
 );
 
-CREATE TABLE profile_rank_history (
+CREATE TABLE profile_rank_history
+(
    	user_id int NOT NULL REFERENCES users (id),
 	"time" timestamp without time zone NOT NULL DEFAULT now(),
     mode smallint NOT NULL,
@@ -358,7 +360,8 @@ CREATE TABLE profile_rank_history (
 	PRIMARY KEY (user_id, "time")
 );
 
-CREATE TABLE profile_play_history (
+CREATE TABLE profile_play_history
+(
     user_id int NOT NULL REFERENCES users (id),
     mode smallint NOT NULL,
     year int NOT NULL,
@@ -367,7 +370,8 @@ CREATE TABLE profile_play_history (
     PRIMARY KEY (user_id, year, month, mode)
 );
 
-CREATE TABLE profile_replay_history (
+CREATE TABLE profile_replay_history
+(
     user_id int NOT NULL REFERENCES users (id),
     mode smallint NOT NULL,
     year int NOT NULL,
@@ -384,7 +388,8 @@ CREATE TABLE name_history
 	name character varying NOT NULL
 );
 
-CREATE TABLE clients (
+CREATE TABLE clients
+(
     user_id int NOT NULL REFERENCES users (id),
     executable character(32) NOT NULL,
     adapters character(32) NOT NULL,
@@ -394,7 +399,8 @@ CREATE TABLE clients (
     PRIMARY KEY (user_id, executable, adapters, unique_id, disk_signature)
 );
 
-CREATE TABLE logins (
+CREATE TABLE logins
+(
     user_id int NOT NULL REFERENCES users (id),
     "time" timestamp without time zone NOT NULL DEFAULT now(),
     ip character varying(45) NOT NULL,
@@ -402,7 +408,8 @@ CREATE TABLE logins (
     PRIMARY KEY (user_id, "time")
 );
 
-CREATE TABLE reports (
+CREATE TABLE reports
+(
     id serial NOT NULL PRIMARY KEY,
     target_id int NOT NULL REFERENCES users (id),
     sender_id int NOT NULL REFERENCES users (id),
@@ -411,7 +418,8 @@ CREATE TABLE reports (
     resolved boolean NOT NULL DEFAULT false
 );
 
-CREATE TABLE infringements (
+CREATE TABLE infringements
+(
     id serial NOT NULL PRIMARY KEY,
     user_id int NOT NULL REFERENCES users (id),
     "time" timestamp without time zone NOT NULL DEFAULT now(),
@@ -421,7 +429,8 @@ CREATE TABLE infringements (
     description character varying(255)
 );
 
-CREATE TABLE mp_matches (
+CREATE TABLE mp_matches
+(
     id bigserial NOT NULL PRIMARY KEY,
     bancho_id smallint NOT NULL,
     name character varying(50) NOT NULL,
@@ -430,7 +439,8 @@ CREATE TABLE mp_matches (
     ended_at timestamp without time zone
 );
 
-CREATE TABLE mp_events (
+CREATE TABLE mp_events
+(
     match_id int NOT NULL REFERENCES mp_matches (id),
     "time" timestamp without time zone NOT NULL DEFAULT now(),
     type smallint NOT NULL,
@@ -482,6 +492,22 @@ CREATE TABLE notifications
     link character varying(255),
     read boolean NOT NULL DEFAULT false,
     "time" timestamp without time zone NOT NULL DEFAULT now()
+);
+
+CREATE TABLE releases
+(
+    name character varying(64) NOT NULL PRIMARY KEY,
+    version int NOT NULL,
+    description text NOT NULL,
+    known_bugs text,
+    supported boolean NOT NULL DEFAULT true,
+    recommended boolean NOT NULL DEFAULT false,
+    preview boolean NOT NULL DEFAULT false,
+    downloads varchar[] NOT NULL DEFAULT '{}',
+    hashes jsonb NOT NULL DEFAULT '[]',
+    screenshots jsonb NOT NULL DEFAULT '[]',
+    actions jsonb NOT NULL DEFAULT '[]',
+    created_at timestamp without time zone NOT NULL DEFAULT now()
 );
 
 INSERT INTO users (name, safe_name, email, pw, country, activated, bot)
