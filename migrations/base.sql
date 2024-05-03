@@ -126,7 +126,7 @@ CREATE TABLE beatmapsets
     submission_status int NOT NULL DEFAULT 3,
     has_video boolean NOT NULL DEFAULT false,
     has_storyboard boolean NOT NULL DEFAULT false,
-    server smallint NOT NULL DEFAULT 0, -- 0: osu! 1: private
+    server smallint NOT NULL DEFAULT 0, -- 0: ppy 1: private
     topic_id int REFERENCES forums (id) DEFAULT NULL, -- only if server is "private"
     creator_id int REFERENCES users (id) DEFAULT NULL, -- only if server is "private"
     available boolean NOT NULL DEFAULT true,
@@ -510,6 +510,22 @@ CREATE TABLE releases
     created_at timestamp without time zone NOT NULL DEFAULT now()
 );
 
+-- resource type:
+--   0: osz
+--   1: osz_novideo
+--   2: beatmap_file
+--   3: beatmap_thumbnail
+--   4: beatmap_thumbnail_large
+--   5: beatmap_audio_preview
+
+CREATE TABLE resource_mirrors
+(
+    url character varying NOT NULL PRIMARY KEY,
+    type int NOT NULL,
+    server int, -- 0: ppy 1: private
+    priority int DEFAULT 0
+);
+
 INSERT INTO users (name, safe_name, email, pw, country, activated, bot)
 VALUES ('BanchoBot', 'banchobot', 'bot@example.com', '------------------------------------------------------------', 'OC', true, true),
        ('peppy', 'peppy', 'pe@ppy.sh', '$2b$12$W5ppLwlSEJ3rpJQRq8UcX.QA5cTm7HvsVpn6MXQHE/6OEO.Iv4DGW', 'AU', true, false);
@@ -580,6 +596,17 @@ VALUES ('heart', '/images/icons/forum/heart.gif'),
        ('taiko', '/images/icons/forum/taiko.gif'),
        ('ctb', '/images/icons/forum/ctb.gif'),
        ('mania', '/images/icons/forum/mania.gif');
+
+INSERT INTO resource_mirrors (url, type, server, priority)
+VALUES ('https://api.osu.direct/osu/{}', 2, 0, 0),
+       ('https://old.ppy.sh/osu/{}', 2, 0, 1),
+       ('https://b.ppy.sh/thumb/{}l.jpg', 4, 0, 0),
+       ('https://b.ppy.sh/thumb/{}.jpg', 3, 0, 0),
+       ('https://b.ppy.sh/preview/{}.mp3', 5, 0, 0),
+       ('https://api.nerinyan.moe/d/{}?noVideo=true', 1, 0, 1),
+       ('https://api.nerinyan.moe/d/{}', 0, 0, 1),
+       ('https://api.osu.direct/d/{}?noVideo=', 1, 0, 0),
+       ('https://api.osu.direct/d/{}', 0, 0, 0);
 
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
