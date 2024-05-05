@@ -606,7 +606,13 @@ VALUES ('https://api.osu.direct/osu/{}', 2, 0, 0),
        ('https://api.nerinyan.moe/d/{}?noVideo=true', 1, 0, 1),
        ('https://api.nerinyan.moe/d/{}', 0, 0, 1),
        ('https://api.osu.direct/d/{}?noVideo=', 1, 0, 0),
-       ('https://api.osu.direct/d/{}', 0, 0, 0);
+       ('https://api.osu.direct/d/{}', 0, 0, 0),
+       ('/api/beatmaps/osz/{}', 0, 1, 0),
+       ('/api/beatmaps/osz/{}?noVideo=true', 1, 1, 0),
+       ('/api/beatmaps/osu/{}', 2, 1, 0),
+       ('/api/beatmaps/mp3/{}', 5, 1, 0),
+       ('/api/beatmaps/mt/{}', 3, 1, 0),
+       ('/api/beatmaps/mt/{}?large=true', 4, 1, 0);
 
 CREATE INDEX users_name_idx ON users (name);
 CREATE INDEX users_id_idx ON users (id);
