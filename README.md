@@ -37,6 +37,23 @@ Start the server:
 docker compose up -d
 ```
 
+("-d" argument means detached, meaning that containers will run in background)
+
+To turn off the server, from the titanic root folder, execute:
+
+```
+docker compose stop
+```
+
+If you changed some files around, and don't see your changes applied, execute:
+
+```
+(rebuild)
+docker compose build
+(apply changes & restart affected containers)
+docker compose up -d
+```
+
 ## Adding beatmaps
 
 To add beatmaps, you will need to create them manually, inside the database, since the beatmap submission system is not implemented at the moment.
