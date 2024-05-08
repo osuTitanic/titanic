@@ -626,3 +626,7 @@ CREATE INDEX beatmaps_id_idx ON beatmaps (id);
 CREATE INDEX idx_score_user_mode_status_pp ON scores (user_id, mode, status, pp DESC);
 CREATE INDEX idx_beatmap_mode_status ON scores (beatmap_id, mode, status);
 CREATE INDEX idx_beatmap_status ON scores (status);
+
+-- Change beatmap(set) ID offset for beatmap submission
+ALTER SEQUENCE beatmapsets_id_seq RESTART WITH 1000000000;
+ALTER SEQUENCE beatmaps_id_seq RESTART WITH 1000000000;
