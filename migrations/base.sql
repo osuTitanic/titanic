@@ -118,9 +118,12 @@ CREATE TABLE beatmapsets
 (
     id serial NOT NULL PRIMARY KEY,
     title character varying(128),
+    title_unicode character varying(128),
     artist character varying(128),
-    creator character varying(128),
+    artist_unicode character varying(128),
     source character varying(128),
+    source_unicode character varying(128),
+    creator character varying(128),
     tags character varying(1024) DEFAULT '',
     description text DEFAULT '',
     submission_status int NOT NULL DEFAULT 3,
