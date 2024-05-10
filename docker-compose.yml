@@ -74,7 +74,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
-      - OSZ2_SERVICE_URL=http://osz2-service
+      - OSZ2_SERVICE_URL=http://osz2-service:8080
     networks:
       - titanic
     links:
