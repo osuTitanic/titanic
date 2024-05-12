@@ -135,12 +135,18 @@ CREATE TABLE beatmapsets
     available boolean NOT NULL DEFAULT true,
     submission_date timestamp without time zone NOT NULL DEFAULT now(),
     approved_date timestamp without time zone,
+    approved_by int REFERENCES users (id) DEFAULT NULL,
     last_updated timestamp without time zone NOT NULL DEFAULT now(),
     added_at timestamp without time zone DEFAULT now(),
     osz_filesize int NOT NULL DEFAULT 0,
     osz_filesize_novideo int NOT NULL DEFAULT 0,
     language_id smallint NOT NULL DEFAULT 1,
-    genre_id smallint NOT NULL DEFAULT 1
+    genre_id smallint NOT NULL DEFAULT 1,
+    star_priority int NOT NULL DEFAULT 0,
+    offset int NOT NULL DEFAULT 0,
+    meta_hash character(32) DEFAULT NULL,
+    info_hash character(32) DEFAULT NULL,
+    body_hash character(32) DEFAULT NULL
 );
 
 CREATE TABLE beatmaps
