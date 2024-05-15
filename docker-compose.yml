@@ -74,11 +74,13 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
+      - OSZ2_SERVICE_URL=http://osz2-service:8080
     networks:
       - titanic
     links:
       - db:db
       - cache:cache
+      - osz2-service:osz2-service
     ports:
       - 127.0.0.1:6060:80
     volumes:
@@ -226,6 +228,12 @@ services:
       - db
       - cache
     entrypoint: python3 main.py --name update_usercount_history
+
+  osz2-service:
+    build: ./web/osz2-service
+    restart: unless-stopped
+    networks:
+      - titanic
 
 networks:
   titanic:

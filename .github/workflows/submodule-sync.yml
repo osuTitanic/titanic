@@ -26,6 +26,7 @@ jobs:
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/jobs.git HEAD | awk '{ print $1}'),jobs
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/deck.git HEAD | awk '{ print $1}'),web/deck
         git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/stern.git HEAD | awk '{ print $1}'),web/stern
+        git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/osz2-service.git HEAD | awk '{ print $1}'),web/osz2-service
 
     - name: Commit update
       run: |
