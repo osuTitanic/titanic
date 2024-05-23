@@ -131,6 +131,7 @@ services:
       - 127.0.0.1:7070:80
     volumes:
       - './.data/logs/stern:/stern/logs'
+      - './.data:/stern/.data'
     depends_on:
       db:
         condition: service_healthy
