@@ -143,7 +143,7 @@ CREATE TABLE beatmapsets
     language_id smallint NOT NULL DEFAULT 1,
     genre_id smallint NOT NULL DEFAULT 1,
     star_priority int NOT NULL DEFAULT 0,
-    offset int NOT NULL DEFAULT 0,
+    "offset" int NOT NULL DEFAULT 0,
     meta_hash character(32) DEFAULT NULL,
     info_hash character(32) DEFAULT NULL,
     body_hash character(32) DEFAULT NULL
