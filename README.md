@@ -54,7 +54,7 @@ docker compose build
 docker compose up -d
 ```
 
-After the setup is done, you will have access to a PostgreSQL database, which you can access using your database management system of choice.
+After the setup is done, you should have a PostgreSQL database instance, which you can access using your database management system of choice.
 By default, it contains the user `peppy` with the password `recorderinthesandybridge`.
 
 ## Adding beatmaps
