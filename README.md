@@ -6,7 +6,7 @@
 # Titanic
 
 Titanic is a private server made to be compatible with all osu! stable clients (2008-2024).
-The goal of this project was to gain deeper insights into the inner functions of Bancho and how it changed over the years.
+The goal of this project was to gain deeper insights into the inner workings of Bancho and how it changed over the years.
 
 The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
