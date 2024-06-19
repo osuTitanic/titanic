@@ -593,7 +593,7 @@ VALUES ('Taiko', 4),
 INSERT INTO forum_icons (name, location)
 VALUES ('heart', '/images/icons/forum/heart.gif'),
        ('heartpop', '/images/icons/forum/heartpop.gif'),
-       ('bubble', '/images/icons/forum/bubble.gif'),
+       ('bubble', '/images/icons/forum/thinking.gif'),
        ('bubblepop', '/images/icons/forum/bubblepop.png'),
        ('fire', '/images/icons/forum/fire.gif'),
        ('star', '/images/icons/forum/star.gif'),
