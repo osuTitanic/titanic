@@ -39,6 +39,7 @@ CREATE TABLE forums
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     name character varying(32) NOT NULL,
     description character varying(255) NOT NULL DEFAULT '',
+    allow_icons boolean NOT NULL DEFAULT true,
     hidden boolean NOT NULL DEFAULT false
 );
 
@@ -573,16 +574,16 @@ INSERT INTO forums (name)
 VALUES ('Titanic!'),
        ('Beatmaps');
 
-INSERT INTO forums (name, description, parent_id)
-VALUES ('Development', 'Discuss the future of this project.', 1),
-       ('Gameplay & Rankings', 'Show off your scores to the world and discuss them.', 1),
-       ('Skinning', 'Discuss & share skins and other customizations.', 1),
-       ('Feature Requests', 'Suggest what you would like to see in this project.', 1),
-       ('Support', 'Need help? You will find it here.', 1),
-       ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2),
-       ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2),
-       ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2),
-       ('Map Requests', 'Request beatmaps from the official servers.', 2);
+INSERT INTO forums (name, description, parent_id, allow_icons)
+VALUES ('Development', 'Discuss the future of this project.', 1, true),
+       ('Gameplay & Rankings', 'Show off your scores to the world and discuss them.', 1, true),
+       ('Skinning', 'Discuss & share skins and other customizations.', 1, true),
+       ('Feature Requests', 'Suggest what you would like to see in this project.', 1, true),
+       ('Support', 'Need help? You will find it here.', 1, true),
+       ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2, false),
+       ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2, false),
+       ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2, false),
+       ('Map Requests', 'Request beatmaps from the official servers.', 2, false);
 
 INSERT INTO forums (name, parent_id)
 VALUES ('Taiko', 4),
