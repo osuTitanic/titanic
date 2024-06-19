@@ -6,12 +6,12 @@
 # Titanic
 
 Titanic is a private server made to be compatible with all osu! stable clients (2008-2024).
-The goal of this project was to gain deeper insights into the inner workings of bancho and how it changed over the years.
+The goal of this project was to gain deeper insights into the inner workings of Bancho and how it changed over the years.
 
 The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
 You can play on it, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) a client from the website. **Keep in mind that only a smaller range of clients will be available there.**
-For anyone interested, we also got a discord server: https://discord.gg/qupv72e7YH
+For anyone interested, we also have a Discord server: https://discord.gg/qupv72e7YH
 
 ## Setup
 
@@ -79,7 +79,7 @@ Feel free to contact me if you have any questions.
 
 ## Credits
 
-- [kanaarima](https://github.com/kanaarima/) for helping with the discord bot & developing the pp system
+- [kanaarima](https://github.com/kanaarima/) for helping with the Discord bot & developing the pp system
 - [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
 - [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
 - Everyone that donated & contributed to this project (you guys are a big help!)
