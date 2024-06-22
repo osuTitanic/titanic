@@ -88,7 +88,8 @@ CREATE TABLE forum_posts
     edit_count int NOT NULL DEFAULT 0,
     edit_locked boolean NOT NULL DEFAULT false,
     hidden boolean NOT NULL DEFAULT false,
-    draft boolean NOT NULL DEFAULT false
+    draft boolean NOT NULL DEFAULT false,
+    deleted boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE forum_reports
