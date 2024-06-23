@@ -178,9 +178,9 @@ CREATE TABLE beatmaps
 CREATE TABLE beatmap_nominations
 (
     user_id int NOT NULL REFERENCES users (id),
-    beatmap_id int NOT NULL REFERENCES beatmaps (id),
+    set_id int NOT NULL REFERENCES beatmapsets (id),
     time timestamp without time zone NOT NULL DEFAULT now(),
-    PRIMARY KEY (user_id, beatmap_id)
+    PRIMARY KEY (user_id, set_id)
 );
 
 CREATE TABLE channels
