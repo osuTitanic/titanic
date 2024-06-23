@@ -175,6 +175,13 @@ CREATE TABLE beatmaps
     diff real NOT NULL DEFAULT 0.000
 );
 
+CREATE TABLE beatmap_nominations
+(
+    user_id int NOT NULL REFERENCES users (id),
+    beatmap_id int NOT NULL REFERENCES beatmaps (id),
+    PRIMARY KEY (user_id, beatmap_id)
+);
+
 CREATE TABLE channels
 (
     name character varying(32) NOT NULL PRIMARY KEY,
