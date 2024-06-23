@@ -127,6 +127,7 @@ CREATE TABLE beatmapsets
     source_unicode character varying(128),
     creator character varying(128),
     tags character varying(1024) DEFAULT '',
+    display_title text NOT NULL DEFAULT '',
     description text DEFAULT '',
     submission_status int NOT NULL DEFAULT 3,
     has_video boolean NOT NULL DEFAULT false,
