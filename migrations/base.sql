@@ -179,6 +179,7 @@ CREATE TABLE beatmap_nominations
 (
     user_id int NOT NULL REFERENCES users (id),
     beatmap_id int NOT NULL REFERENCES beatmaps (id),
+    time timestamp without time zone NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, beatmap_id)
 );
 
