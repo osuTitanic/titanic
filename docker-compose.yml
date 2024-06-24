@@ -52,7 +52,8 @@ services:
       - db:db
       - cache:cache
     ports:
-      - 127.0.0.1:5050:80
+      # Uncomment to access http bancho from outside
+      # - 127.0.0.1:5050:80
       - 13381:13381
       - 13382:13382
       - 13383:13383
@@ -81,8 +82,9 @@ services:
       - db:db
       - cache:cache
       - osz2-service:osz2-service
-    ports:
-      - 127.0.0.1:6060:80
+    # ports:
+      # Uncomment to access deck from outside
+      # - 127.0.0.1:6060:80
     volumes:
       - './.data:/deck/.data'
       - './.data/logs/deck:/deck/logs'
@@ -127,8 +129,9 @@ services:
     links:
       - db:db
       - cache:cache
-    ports:
-      - 127.0.0.1:7070:80
+    # ports:
+      # Uncomment to access stern from outside
+      # - 127.0.0.1:7070:80
     volumes:
       - './.data/logs/stern:/stern/logs'
       - './.data:/stern/.data'
