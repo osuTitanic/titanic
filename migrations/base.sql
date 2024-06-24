@@ -206,7 +206,7 @@ CREATE TABLE messages
     sender character varying(32) NOT NULL,
     target character varying(32) NOT NULL,
     message character varying(512) NOT NULL,
-    "time" time without time zone NOT NULL DEFAULT now()
+    "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE stats
@@ -242,7 +242,7 @@ CREATE TABLE screenshots
 (
     id bigserial NOT NULL PRIMARY KEY,
     user_id int NOT NULL REFERENCES users (id),
-    created_at time without time zone NOT NULL DEFAULT now(),
+    created_at timestamp without time zone NOT NULL DEFAULT now(),
     hidden boolean NOT NULL DEFAULT false
 );
 
@@ -310,7 +310,7 @@ create table favourites
 (
 	user_id int NOT NULL REFERENCES users (id),
 	set_id int NOT NULL REFERENCES beatmapsets (id),
-	created_at time without time zone NOT NULL DEFAULT now(),
+	created_at timestamp without time zone NOT NULL DEFAULT now(),
 	PRIMARY KEY (user_id, set_id)
 );
 
