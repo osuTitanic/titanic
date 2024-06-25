@@ -602,7 +602,8 @@ VALUES ('Development', 'Discuss the future of this project.', 1, true),
        ('Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2, false),
        ('Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2, false),
        ('Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2, false),
-       ('Map Requests', 'Request beatmaps from the official servers.', 2, false);
+       ('Map Requests', 'Request beatmaps from the official servers.', 2, false),
+       ('Beatmap Graveyard', 'Beatmaps that havent been active for 4 weeks or more will be moved here.', 2, false);
 
 INSERT INTO forums (name, parent_id)
 VALUES ('Taiko', 4),
