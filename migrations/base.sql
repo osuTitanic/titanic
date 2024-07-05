@@ -644,7 +644,7 @@ INSERT INTO forums (id, name)
 VALUES (19, 'Other');
 
 INSERT INTO forums (id, name, description, parent_id, allow_icons)
-VALUES (20, 'General discussion', 'The place where you dont post crap.', 19, false),
+VALUES (20, 'General Discussion', 'The place where you dont post crap.', 19, false),
        (21, 'Off-Topic', 'The perfect place for brainrot.', 19, false),
        (22, 'Introductions', 'Introduce yourself to other passengers.', 19, false),
        (23, 'Client Modding', 'Discover a new world of osu!.', 19, false),
