@@ -644,12 +644,12 @@ INSERT INTO forums (id, name)
 VALUES (19, 'Other');
 
 INSERT INTO forums (id, name, description, parent_id, allow_icons)
-VALUES (20, 'General discussion', 'The place where you dont post crap.', 17, false),
-       (21, 'Off-Topic', 'The perfect place for brainrot.', 17, false),
-       (22, 'Introductions', 'Introduce yourself to other passengers.', 17, false),
-       (23, 'Client Modding', 'Discover a new world of osu!.', 17, false),
-       (24, 'Video Games', 'Discuss any non-osu! games in here.', 17, false),
-       (25, 'Art', 'Share your artistic masterpieces, find new avatars and more.', 17, false);
+VALUES (20, 'General discussion', 'The place where you dont post crap.', 19, false),
+       (21, 'Off-Topic', 'The perfect place for brainrot.', 19, false),
+       (22, 'Introductions', 'Introduce yourself to other passengers.', 19, false),
+       (23, 'Client Modding', 'Discover a new world of osu!.', 19, false),
+       (24, 'Video Games', 'Discuss any non-osu! games in here.', 19, false),
+       (25, 'Art', 'Share your artistic masterpieces, find new avatars and more.', 19, false);
 
 INSERT INTO forum_icons (name, location)
 VALUES ('heart', '/images/icons/forum/heart.gif'),
