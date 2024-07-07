@@ -83,7 +83,7 @@ CREATE TABLE forum_posts
     forum_id int NOT NULL REFERENCES forums (id),
     user_id int NOT NULL REFERENCES users (id),
     content text NOT NULL,
-    icon smallint REFERENCES forum_icons (id) DEFAULT NULL,
+    icon_id smallint REFERENCES forum_icons (id) DEFAULT NULL,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     edit_time timestamp without time zone NOT NULL DEFAULT now(),
     edit_count int NOT NULL DEFAULT 0,
