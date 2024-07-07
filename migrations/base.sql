@@ -182,7 +182,8 @@ CREATE TABLE benchmarks (
     smoothness real NOT NULL,
     framerate int NOT NULL,
     score int NOT NULL,
-    grade character varying(2) NOT NULL DEFAULT 'N'
+    grade character varying(2) NOT NULL DEFAULT 'N',
+    created_at timestamp without time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE beatmap_nominations
