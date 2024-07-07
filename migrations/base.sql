@@ -175,6 +175,15 @@ CREATE TABLE beatmaps
     diff real NOT NULL DEFAULT 0.000
 );
 
+CREATE TABLE benchmarks (
+    id serial NOT NULL PRIMARY KEY,
+    user_id bigint NOT NULL,
+    smoothness real NOT NULL,
+    framerate int NOT NULL,
+    score int NOT NULL,
+    grade character varying(2) NOT NULL DEFAULT 'N'
+);
+
 CREATE TABLE beatmap_nominations
 (
     user_id int NOT NULL REFERENCES users (id),
