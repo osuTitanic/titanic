@@ -647,7 +647,7 @@ INSERT INTO forums (id, name, parent_id, allow_icons)
 VALUES (14, 'Taiko', 4, false),
        (15, 'Catch the Beat', 4, false),
        (16, 'osu!mania', 4, false),
-       (17, 'Completed Skins', 4, false),
+       (17, 'Completed Skins', 5, false),
        (18, 'Bug Reports', 3, false);
 
 INSERT INTO forums (id, name)
