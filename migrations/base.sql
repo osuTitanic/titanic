@@ -190,8 +190,19 @@ CREATE TABLE beatmap_nominations
 (
     user_id int NOT NULL REFERENCES users (id),
     set_id int NOT NULL REFERENCES beatmapsets (id),
-    time timestamp without time zone NOT NULL DEFAULT now(),
+    "time" timestamp without time zone NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, set_id)
+);
+
+CREATE TABLE beatmap_modding
+(
+    id serial NOT NULL PRIMARY KEY,
+    target_id int NOT NULL REFERENCES users (id),
+    sender_id int NOT NULL REFERENCES users (id),
+    set_id int NOT NULL REFERENCES beatmapsets (id),
+    post_id int NOT NULL REFERENCES forum_posts (id),
+    amount int NOT NULL DEFAULT 0,
+    "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE channels
