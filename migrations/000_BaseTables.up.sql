@@ -328,7 +328,7 @@ CREATE TABLE plays
     PRIMARY KEY (user_id, beatmap_id)
 );
 
-create table favourites
+CREATE TABLE favourites
 (
 	user_id int NOT NULL REFERENCES users (id),
 	set_id int NOT NULL REFERENCES beatmapsets (id),

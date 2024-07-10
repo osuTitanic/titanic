@@ -1,4 +1,3 @@
-
 INSERT INTO forums (id, name)
 VALUES (1, 'Titanic!'),
        (2, 'Beatmaps');
