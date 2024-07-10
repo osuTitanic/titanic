@@ -20,6 +20,20 @@ services:
       timeout: 5s
       retries: 15
 
+  migrations:
+    image: migrate/migrate
+    restart: no
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - './migrations:/migrations'
+    networks:
+      - titanic
+    links:
+      - db:db
+    command: -path=/migrations/ -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_USER}?sslmode=disable up
+
   cache:
     image: redis:7.2-rc
     restart: unless-stopped
@@ -174,8 +188,10 @@ services:
     networks:
       - titanic
     depends_on:
-      - db
-      - cache
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
     entrypoint: python3 main.py --file ./schedule.prod.json
 
   osz2-service:
