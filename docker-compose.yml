@@ -12,7 +12,6 @@ services:
       - '127.0.0.1:${POSTGRES_PORT}:5432'
     volumes: 
       - './.data/postgres:/var/lib/postgresql/data'
-      - './migrations/:/docker-entrypoint-initdb.d/'
     networks:
       - titanic
     healthcheck:
