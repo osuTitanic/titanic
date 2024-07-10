@@ -14,5 +14,5 @@ WHERE url IN (
     '/api/beatmaps/osu/{}',
     '/api/beatmaps/mp3/{}',
     '/api/beatmaps/mt/{}',
-    '/api/beatmaps/mt/{}?large=true',
+    '/api/beatmaps/mt/{}?large=true'
 );

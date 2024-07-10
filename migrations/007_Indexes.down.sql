@@ -1,12 +1,12 @@
-DELETE INDEX users_name_idx ON users;
-DELETE INDEX users_id_idx ON users;
-DELETE INDEX stats_id_idx ON stats;
+DROP INDEX users_name_idx;
+DROP INDEX users_id_idx;
+DROP INDEX stats_id_idx;
 
-DELETE INDEX beatmapsets_id_idx ON beatmapsets;
-DELETE INDEX beatmaps_filename_idx ON beatmaps;
-DELETE INDEX beatmaps_md5_idx ON beatmaps;
-DELETE INDEX beatmaps_id_idx ON beatmaps;
+DROP INDEX beatmapsets_id_idx;
+DROP INDEX beatmaps_filename_idx;
+DROP INDEX beatmaps_md5_idx;
+DROP INDEX beatmaps_id_idx;
 
-DELETE INDEX idx_score_user_mode_status_pp ON scores;
-DELETE INDEX idx_beatmap_mode_status ON scores;
-DELETE INDEX idx_beatmap_status ON scores;
+DROP INDEX idx_score_user_mode_status_pp;
+DROP INDEX idx_beatmap_mode_status;
+DROP INDEX idx_beatmap_status;
