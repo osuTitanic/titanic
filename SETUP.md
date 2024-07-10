@@ -10,7 +10,7 @@
 
 ### Applying migrations
 
-Follow the installation instructions for [golang-migrate](https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md#installation).
+Follow the installation guide for [golang-migrate](https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md#installation).
 
 Please open the `migrations.sh` file in the `scripts` folder, and change your database credentials.
 After that run the script:
