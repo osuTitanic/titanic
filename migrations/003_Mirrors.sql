@@ -1,0 +1,16 @@
+INSERT INTO resource_mirrors (url, type, server, priority)
+VALUES ('https://api.osu.direct/osu/{}', 2, 0, 0),
+       ('https://old.ppy.sh/osu/{}', 2, 0, 1),
+       ('https://b.ppy.sh/thumb/{}l.jpg', 4, 0, 0),
+       ('https://b.ppy.sh/thumb/{}.jpg', 3, 0, 0),
+       ('https://b.ppy.sh/preview/{}.mp3', 5, 0, 0),
+       ('https://api.nerinyan.moe/d/{}?noVideo=true', 1, 0, 1),
+       ('https://api.nerinyan.moe/d/{}', 0, 0, 1),
+       ('https://api.osu.direct/d/{}?noVideo=', 1, 0, 0),
+       ('https://api.osu.direct/d/{}', 0, 0, 0),
+       ('/api/beatmaps/osz/{}', 0, 1, 0),
+       ('/api/beatmaps/osz/{}?noVideo=true', 1, 1, 0),
+       ('/api/beatmaps/osu/{}', 2, 1, 0),
+       ('/api/beatmaps/mp3/{}', 5, 1, 0),
+       ('/api/beatmaps/mt/{}', 3, 1, 0),
+       ('/api/beatmaps/mt/{}?large=true', 4, 1, 0);
