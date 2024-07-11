@@ -1,2 +1,0 @@
-ALTER SEQUENCE beatmapsets_id_seq RESTART WITH 1;
-ALTER SEQUENCE beatmaps_id_seq RESTART WITH 1;

@@ -1,0 +1,1 @@
+DROP extension IF EXISTS pgcrypto;

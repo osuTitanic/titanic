@@ -1,3 +1,4 @@
+
 DELETE FROM clients_verified
 WHERE (
     hash = 'b4ec3c4334a0249dae95c284ec5983df' AND type = 0 OR
@@ -13,3 +14,7 @@ WHERE (
     hash = 'd41d8cd98f00b204e9800998ecf8427e' AND type = 2 OR
     hash = 'd1c651c36f499849f1c9a5843567e686' AND type = 2
 );
+
+DROP TABLE IF EXISTS clients_verified;
+DROP TABLE IF EXISTS clients;
+DROP TABLE IF EXISTS releases;
