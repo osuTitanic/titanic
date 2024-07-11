@@ -19,13 +19,13 @@ To set up and use this project I would recommend to use [docker](https://www.doc
 
 Verify that docker is installed:
 
-```shell
+```
 docker --version
 ```
 
 Clone this project onto your machine:
 
-```shell
+```
 git clone --recurse-submodules --shallow-submodules https://github.com/osuTitanic/titanic.git
 ```
 
@@ -33,7 +33,7 @@ Rename the `.example_env` to `.env` and **edit it**.
 
 Start the server:
 
-```shell
+```
 docker compose up -d
 ```
 
@@ -62,6 +62,29 @@ docker compose up -d
 
 After the setup is done, you should have a PostgreSQL database instance, which you can access using your database management system of choice.
 By default, it contains the user `peppy` with the password `recorderinthesandybridge`.
+
+## Updating
+
+Titanic will get updates from time to time, so it's a good idea to apply them once in a while.
+
+Start by first pulling all pending changes into your root folder:
+
+```
+git pull
+```
+
+After that update all of your submodules:
+
+```
+git submodule update --recursive
+```
+
+Finally, rebuild and restart all of your containers:
+
+```
+docker compose build
+docker compose up -d
+```
 
 ## Patching the client
 
