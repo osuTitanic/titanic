@@ -9,7 +9,7 @@ WHERE id IN (
 );
 
 DELETE FROM stats
-WHERE id = 1;
+WHERE id in (1, 2);
 
 DELETE FROM users
 WHERE name = 'BanchoBot' OR name = 'peppy';
@@ -20,13 +20,13 @@ DROP INDEX IF EXISTS users_name_idx;
 DROP INDEX IF EXISTS users_id_idx;
 DROP INDEX IF EXISTS stats_id_idx;
 
-DROP TABLE IF EXISTS groups_entries;
-DROP TABLE IF EXISTS verifications;
+DROP TABLE IF EXISTS screenshots;
 DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS verifications;
 DROP TABLE IF EXISTS infringements;
 DROP TABLE IF EXISTS relationships;
-DROP TABLE IF EXISTS screenshots;
 DROP TABLE IF EXISTS user_count;
+DROP TABLE IF EXISTS groups_entries;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS stats;
 DROP TABLE IF EXISTS users;
