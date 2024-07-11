@@ -19,13 +19,13 @@ To set up and use this project I would recommend to use [docker](https://www.doc
 
 Verify that docker is installed:
 
-```shell
+```
 docker --version
 ```
 
 Clone this project onto your machine:
 
-```shell
+```
 git clone --recurse-submodules --shallow-submodules https://github.com/osuTitanic/titanic.git
 ```
 
@@ -33,7 +33,7 @@ Rename the `.example_env` to `.env` and **edit it**.
 
 Start the server:
 
-```shell
+```
 docker compose up -d
 ```
 
@@ -43,6 +43,12 @@ To turn off the server, from the titanic root folder, execute:
 
 ```
 docker compose stop
+```
+
+If you experience issues on the first run, you may need to restart your containers:
+
+```
+docker compose restart
 ```
 
 If you changed some files around, and don't see your changes applied, execute:
@@ -57,16 +63,28 @@ docker compose up -d
 After the setup is done, you should have a PostgreSQL database instance, which you can access using your database management system of choice.
 By default, it contains the user `peppy` with the password `recorderinthesandybridge`.
 
-## Adding beatmaps
+## Updating
 
-To add beatmaps, you will need to create them manually, inside the database, since the beatmap submission system is not implemented at the moment.
+Titanic will get updates from time to time, so it's a good idea to apply them once in a while.
 
-**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database:
+Start by first pulling all pending changes into your root folder:
 
-- [beatmapsets.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql.gz)
-- [beatmaps.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql.gz)
+```
+git pull
+```
 
-They are gzip-compressed sql files, which contain a total of 140k beatmaps from 2007-2013.
+After that update all of your submodules:
+
+```
+git submodule update --recursive
+```
+
+Finally, rebuild and restart all of your containers:
+
+```
+docker compose build
+docker compose up -d
+```
 
 ## Patching the client
 
