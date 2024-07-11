@@ -63,17 +63,6 @@ docker compose up -d
 After the setup is done, you should have a PostgreSQL database instance, which you can access using your database management system of choice.
 By default, it contains the user `peppy` with the password `recorderinthesandybridge`.
 
-## Adding beatmaps
-
-To add beatmaps, you will need to create them manually, inside the database, since the beatmap submission system is not implemented at the moment.
-
-**However**, I have a small collection of beatmaps and beatmapsets that you can import to your database:
-
-- [beatmapsets.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmapsets.sql.gz)
-- [beatmaps.sql.gz](https://github.com/osuTitanic/titanic/raw/main/migrations/beatmaps.sql.gz)
-
-They are gzip-compressed sql files, which contain a total of 140k beatmaps from 2007-2013.
-
 ## Patching the client
 
 You can view the instructions for patching the client [here](https://github.com/osuTitanic/clients/blob/main/PATCHING.md).
