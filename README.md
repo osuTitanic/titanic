@@ -45,6 +45,12 @@ To turn off the server, from the titanic root folder, execute:
 docker compose stop
 ```
 
+If you experience issues on the first run, you may need to restart your containers:
+
+```
+docker compose restart
+```
+
 If you changed some files around, and don't see your changes applied, execute:
 
 ```
