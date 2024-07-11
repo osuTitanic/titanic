@@ -1,3 +1,15 @@
+DROP INDEX IF EXISTS forum_id_idx;
+DROP INDEX IF EXISTS forum_topics_forum_id_idx;
+
+DROP INDEX IF EXISTS topics_id_idx;
+DROP INDEX IF EXISTS topics_forum_id_idx;
+
+DROP INDEX IF EXISTS posts_id_idx;
+DROP INDEX IF EXISTS posts_user_id_idx;
+DROP INDEX IF EXISTS posts_topic_id_idx;
+DROP INDEX IF EXISTS posts_forum_id_idx;
+DROP INDEX IF EXISTS posts_id_topic_id_hidden_idx;
+
 DELETE FROM forum_icons
 WHERE name IN (
     'heart',

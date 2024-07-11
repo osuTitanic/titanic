@@ -133,3 +133,15 @@ VALUES ('heart', '/images/icons/forum/heart.gif'),
        ('taiko', '/images/icons/forum/taiko.gif'),
        ('ctb', '/images/icons/forum/ctb.gif'),
        ('mania', '/images/icons/forum/mania.gif');
+
+CREATE INDEX IF NOT EXISTS forum_id_idx ON forums (id);
+CREATE INDEX IF NOT EXISTS forum_parent_id_hidden_idx ON forums (parent_id, hidden);
+
+CREATE INDEX IF NOT EXISTS topics_id_idx ON forum_topics (id);
+CREATE INDEX IF NOT EXISTS topics_forum_id_idx ON forum_topics (forum_id);
+
+CREATE INDEX IF NOT EXISTS posts_id_idx ON forum_posts (id);
+CREATE INDEX IF NOT EXISTS posts_user_id_idx ON forum_posts (user_id);
+CREATE INDEX IF NOT EXISTS posts_topic_id_idx ON forum_posts (topic_id);
+CREATE INDEX IF NOT EXISTS posts_forum_id_idx ON forum_posts (forum_id);
+CREATE INDEX IF NOT EXISTS posts_id_topic_id_hidden_idx ON forum_posts (id, topic_id, hidden);
