@@ -97,23 +97,15 @@ Feel free to contact me if you have any questions.
 
 ## Credits
 
-- [kanaarima](https://github.com/kanaarima/) for helping with the Discord bot & developing the pp system
-- [osu.direct](https://osu.direct/) & [nerinyan.moe](https://nerinyan.moe/) for providing beatmap resources
-- [rory](https://github.com/TheArcaneBrony) for [funny playtesting](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot022.jpg)
+- All [testers](https://osu.lekuru.xyz/g/8) that somehow found the project through this GitHub repo and decided to register through Discord DMs
 - Everyone that donated & contributed to this project (you guys are a big help!)
+- [Adachi](https://github.com/kanaarima/) for helping with the Discord bot & developing the pp system
+- Beatmap mirrors ([osu.direct](https://osu.direct/), [nerinyan](https://nerinyan.moe/) & [mino](https://catboy.best))
 
 ## Screenshots
 
-#### b20130606.1
-
 ![sanic](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot007.jpg)
 ![cool](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot008.jpg)
-
-#### b20130303
-
 ![wow](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot023.jpg)
-
-#### b1700
-
 ![nice](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot005.jpg)
 ![multiplayer](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot006.jpg)
