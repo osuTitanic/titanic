@@ -10,7 +10,7 @@ The goal of this project was to gain deeper insights into the inner workings of 
 
 The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
-You can play on it, by [registering on the website](https://osu.lekuru.xyz/account/register), and [downloading](https://osu.lekuru.xyz/download) a client from the website. **Keep in mind that only a smaller range of clients will be available there.**
+You can play on it, by [registering on the website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download) a client from the website. **Keep in mind that only a smaller range of clients will be available there.**
 For anyone interested, we also have a Discord server: https://discord.gg/qupv72e7YH
 
 ## Setup
@@ -97,7 +97,7 @@ Feel free to contact me if you have any questions.
 
 ## Credits
 
-- All [testers](https://osu.lekuru.xyz/g/8) that somehow found the project through this GitHub repo and decided to register through Discord DMs
+- All [testers](https://osu.titanic.sh/g/8) that somehow found the project through this GitHub repo and decided to register through Discord DMs
 - Everyone that donated & contributed to this project (you guys are a big help!)
 - [Adachi](https://github.com/kanaarima/) for helping with the Discord bot & developing the pp system
 - Beatmap mirrors ([osu.direct](https://osu.direct/), [nerinyan](https://nerinyan.moe/) & [mino](https://catboy.best))
