@@ -1,1 +1,1 @@
-ALTER TABLE benchmarks ADD COLUMN hardware character varying;
+ALTER TABLE benchmarks ADD COLUMN hardware jsonb;
