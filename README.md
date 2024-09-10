@@ -8,14 +8,16 @@
 Titanic is a private server made to be compatible with all osu! stable clients (2008-2024).
 The goal of this project was to gain deeper insights into the inner workings of Bancho and how it changed over the years.
 
-The main goal of this project was achieved. There are still some features that I want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
+You can play on it, by [registering on our website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download) a client. **Keep in mind that only a smaller range of clients will be available there.**
+For more questions, feel free to join our Discord server: https://discord.gg/qupv72e7YH
 
-You can play on it, by [registering on the website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download) a client from the website. **Keep in mind that only a smaller range of clients will be available there.**
-For anyone interested, we also have a Discord server: https://discord.gg/qupv72e7YH
+The main goal of this project was achieved. However, there are still a good amount of features that we want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
 
 ## Setup
 
-To set up and use this project I would recommend to use [docker](https://www.docker.com/), as it's easier to set up in most cases. If you do not feel comfortable using docker, here are some instructions for the [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
+Be aware that this project is typically not recommended for use on your own private server, as it is largely customized for our specific needs and can be challenging to modify. However, you are still welcome to use the project as you see fit.
+
+To set up and use this project, it is advisable to use [Docker](https://www.docker.com/), as it is much simpler in most cases. If you do not feel comfortable using docker, here are some instructions for the [manual setup](https://github.com/osuTitanic/titanic/blob/main/SETUP.md), which is not recommended but still possible to do.
 
 Verify that docker is installed:
 
