@@ -17,7 +17,7 @@ Clone this project onto your machine:
 git clone --recurse-submodules --shallow-submodules https://github.com/osuTitanic/titanic.git
 ```
 
-Rename the `.example_env` to `.env` and **edit it**.
+Rename the `.example.env` to `.env` and **edit it**.
 
 Start the server:
 
