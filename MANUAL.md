@@ -61,7 +61,7 @@ python3 -m pip install -r requirements.txt
 
 You might want to use a [virtual environment](https://docs.python.org/3/tutorial/venv.html) for that, if any dependencies conflict with each other.
 
-Rename the `.example_env` files, to `.env` and edit them, to match your setup.
+Rename the `.example.env` files, to `.env` and edit them, to match your setup.
 After that you should be ready to run the all the servers, by running this command for all projects:
 
 ```shell
