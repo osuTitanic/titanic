@@ -32,8 +32,11 @@ Please note that I've been working on this solo for about three years, so I am v
 
 ## Screenshots
 
+![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot001.jpg)
+![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot002.jpg)
+![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot003.jpg)
+![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot004.jpg)
 ![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot005.jpg)
 ![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot006.jpg)
-![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot023.jpg)
-![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot008.jpg)
 ![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot007.jpg)
+![image](https://raw.githubusercontent.com/osuTitanic/titanic/main/.github/images/screenshot008.jpg)
