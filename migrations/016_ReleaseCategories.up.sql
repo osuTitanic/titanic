@@ -1,0 +1,1 @@
+ALTER TABLE releases ADD COLUMN category CHARACTER VARYING(255) NOT NULL DEFAULT 'Uncategorized';
