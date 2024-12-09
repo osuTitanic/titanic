@@ -1,0 +1,3 @@
+
+ALTER TABLE scores ADD COLUMN hidden BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE scores SET hidden = TRUE WHERE status = -1;
