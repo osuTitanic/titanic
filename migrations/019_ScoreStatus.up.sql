@@ -1,0 +1,1 @@
+ALTER TABLE scores ADD COLUMN "status_score" SMALLINT NOT NULL DEFAULT -1;
