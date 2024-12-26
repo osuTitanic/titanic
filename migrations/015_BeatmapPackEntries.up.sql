@@ -59,15 +59,13 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (4, 23073),
     (4, 7077),
     (4, 9580),
-    (4, 9668),
-    (4, 9854);
+    (4, 9668);
 
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (5, 'Anime Pack vol.1', 'Standard', '', 1);
 INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (5, 1005),
     (5, 1377),
     (5, 1414),
-    (5, 1464),
     (5, 147),
     (5, 1806),
     (5, 301),
@@ -123,8 +121,7 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (8, 5438),
     (8, 6301),
     (8, 8422),
-    (8, 8829),
-    (8, 9556);
+    (8, 8829);
 
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (9, 'Internet! Pack vol.1', 'Standard', '', 1);
 INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
@@ -159,7 +156,6 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
 
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (11, 'Internet! Pack vol.3', 'Standard', '', 1);
 INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
-    (11, 1839),
     (11, 3337),
     (11, 3367),
     (11, 3688),
@@ -191,8 +187,6 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
 
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (13, 'Rhythm Game Pack vol.1', 'Standard', '', 1);
 INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
-    (13, 1452),
-    (13, 1450),
     (13, 1078),
     (13, 1201),
     (13, 1300),
@@ -226,7 +220,6 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (15, 1206),
     (15, 4357),
     (15, 4617),
-    (15, 4772),
     (15, 4954),
     (15, 5180),
     (15, 5672),
@@ -234,7 +227,6 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (15, 6598),
     (15, 7094),
     (15, 7237),
-    (15, 7612),
     (15, 7983);
 
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (16, 'Rhythm Game Pack vol.4', 'Standard', '', 1);
@@ -243,7 +235,6 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (16, 11135),
     (16, 11488),
     (16, 12052),
-    (16, 12190),
     (16, 12710),
     (16, 13249),
     (16, 14572),
