@@ -1,3 +1,6 @@
+-- This migration has been removed due to failure on new setups
+
+/*
 INSERT INTO beatmap_packs (id, name, category, download_link, creator_id) VALUES (1, 'Video Game Pack vol.1', 'Standard', '', 1);
 INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (1, 1635),
@@ -243,3 +246,4 @@ INSERT INTO beatmap_pack_entries (pack_id, beatmapset_id) VALUES
     (16, 18492),
     (16, 19809),
     (16, 22401);
+*/
