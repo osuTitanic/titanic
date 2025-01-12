@@ -65,6 +65,7 @@ services:
     ports:
       # Uncomment to access http bancho from outside
       # - 127.0.0.1:5050:80
+      - 13380:13380
       - 13381:13381
       - 13382:13382
       - 13383:13383
