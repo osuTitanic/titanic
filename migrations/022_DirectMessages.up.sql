@@ -25,3 +25,6 @@ JOIN
     users AS target_user ON target_user.name = msg.target
 WHERE
     msg.target NOT LIKE '#%';
+
+-- Delete direct messages from old table
+DELETE FROM messages WHERE target NOT LIKE '#%';
