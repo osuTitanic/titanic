@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS resource_mirrors
 );
 
 INSERT INTO resource_mirrors (url, type, server, priority)
-VALUES ('https://api.osu.direct/osu/{}', 2, 0, 0),
+VALUES ('https://osu.direct/api/osu/{}', 2, 0, 0),
        ('https://old.ppy.sh/osu/{}', 2, 0, 1),
        ('https://b.ppy.sh/thumb/{}l.jpg', 4, 0, 0),
        ('https://b.ppy.sh/thumb/{}.jpg', 3, 0, 0),
