@@ -1,3 +1,5 @@
+-- The "score_status" update was made to track the personal best for both pp and score.
+-- This means that players are not able to loose score or pp anymore (in most cases).
 ALTER TABLE scores ADD COLUMN "status_score" SMALLINT NOT NULL DEFAULT -1;
 UPDATE scores SET status_score = status;
 
