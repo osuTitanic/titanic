@@ -168,6 +168,7 @@ services:
       - anchor:anchor
       - deck:deck
       - stern:stern
+      - keel:keel
     volumes:
       - './web/nginx/templates:/etc/nginx/templates'
       - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
