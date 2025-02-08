@@ -193,6 +193,31 @@ services:
         condition: service_healthy
     entrypoint: python3 main.py --file ./schedule.prod.json
 
+  keel:
+    build: ./web/keel
+    restart: unless-stopped
+    env_file:
+      - '.env'
+    environment:
+      - POSTGRES_HOST=db
+      - REDIS_HOST=cache
+    networks:
+      - titanic
+    links:
+      - db:db
+      - cache:cache
+    # ports:
+      # Uncomment to access keel from outside
+      # - 127.0.0.1:8090:80
+    volumes:
+      - './.data/logs/keel:/keel/logs'
+      - './.data:/keel/.data'
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
   osz2-service:
     build: ./web/osz2-service
     restart: unless-stopped
