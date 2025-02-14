@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS messages
     id bigserial NOT NULL PRIMARY KEY,
     sender character varying(32) NOT NULL,
     target character varying(32) NOT NULL,
-    message character varying(512) NOT NULL,
+    message text NOT NULL,
     "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 

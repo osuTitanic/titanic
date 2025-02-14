@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS direct_messages
     id bigserial NOT NULL PRIMARY KEY,
     sender_id bigint NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     target_id bigint NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    message character varying(512) NOT NULL,
+    message text NOT NULL,
     "time" timestamp without time zone NOT NULL DEFAULT now()
 );
 
