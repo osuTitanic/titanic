@@ -22,7 +22,8 @@ CREATE TABLE wiki_content (
     title varchar(255) NOT NULL,
     content text NOT NULL,
     search tsvector NOT NULL GENERATED ALWAYS AS (
-        setweight(to_tsvector('simple', coalesce(content, '')), 'A') :: tsvector
+        setweight(to_tsvector('simple', coalesce(title, '')), 'A') :: tsvector ||
+        setweight(to_tsvector('simple', coalesce(content, '')), 'B') :: tsvector
     ) STORED,
     PRIMARY KEY (page_id, language)
 );
