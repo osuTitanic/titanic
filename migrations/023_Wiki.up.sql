@@ -1,6 +1,7 @@
 CREATE TABLE wiki_categories (
     id serial PRIMARY KEY,
     name varchar(255) NOT NULL,
+    translations jsonb NOT NULL DEFAULT '{}',
     parent_id int REFERENCES wiki_categories (id) DEFAULT null,
     created_at timestamp without time zone NOT NULL DEFAULT now()
 );
@@ -18,6 +19,7 @@ CREATE TABLE wiki_content (
     language varchar(255) NOT NULL,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     last_updated timestamp without time zone NOT NULL DEFAULT now(),
+    title varchar(255) NOT NULL,
     content text NOT NULL,
     search tsvector NOT NULL GENERATED ALWAYS AS (
         setweight(to_tsvector('simple', coalesce(content, '')), 'A') :: tsvector
