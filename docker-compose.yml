@@ -78,6 +78,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   deck:
     build: ./web/deck
@@ -105,6 +107,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   bot:
     build: ./bot
@@ -127,6 +131,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   stern:
     build: ./web/stern
@@ -152,6 +158,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   nginx:
     image: nginx:latest
@@ -192,6 +200,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
     entrypoint: python3 main.py --file ./schedule.prod.json
 
   keel:
@@ -218,6 +228,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   osz2-service:
     build: ./web/osz2-service
