@@ -96,6 +96,7 @@ services:
       - db:db
       - cache:cache
       - osz2-service:osz2-service
+      - stern:stern
     # ports:
       # Uncomment to access deck from outside
       # - 127.0.0.1:6060:80
