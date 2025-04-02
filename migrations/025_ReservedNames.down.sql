@@ -1,0 +1,1 @@
+ALTER TABLE name_history DROP COLUMN reserved;
