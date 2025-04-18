@@ -15,3 +15,8 @@ CREATE TABLE group_permissions (
     created_at timestamp DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 );
+
+CREATE INDEX idx_user_permissions_user_id ON user_permissions(user_id);
+CREATE INDEX idx_group_permissions_group_id ON group_permissions(group_id);
+CREATE INDEX idx_user_permissions_user_id_rejected ON user_permissions(user_id, rejected);
+CREATE INDEX idx_group_permissions_group_id_rejected ON group_permissions(group_id, rejected);
