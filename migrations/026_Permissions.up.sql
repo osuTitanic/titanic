@@ -25,7 +25,11 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     -- Admins
     (1, '*', false),
     -- Developers
-    (2, '*', false),
+    (2, 'commands.moderation.*', false),
+    (2, 'users.moderation.*', false),
+    (2, 'forum.moderation.*', false),
+    (2, 'chat.moderation.*', false),
+    (2, 'beatmaps.*', false),
     -- BAT
     (3, 'beatmaps.*', false),
     (3, 'forum.topics.lock', false),
@@ -34,10 +38,11 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (3, 'forum.beatmaps.edit_icon', false),
     (3, 'forum.kudosu.*', false),
     -- Moderators
-    (4, 'beatmaps.nuke', false),
+    (4, 'commands.moderation.*', false),
     (4, 'users.moderation.*', false),
     (4, 'forum.moderation.*', false),
     (4, 'chat.moderation.*', false),
+    (4, 'beatmaps.nuke', false),
     -- Tournament Manager Team
     (5, 'commands.multiplayer.tournaments.create_match', false),
     (5, 'commands.multiplayer.tournaments.force_invite', false),
