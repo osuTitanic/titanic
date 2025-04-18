@@ -44,10 +44,10 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (4, 'chat.moderation.*', false),
     (4, 'beatmaps.nuke', false),
     -- Tournament Manager Team
-    (5, 'commands.multiplayer.tournaments.create_match', false),
-    (5, 'commands.multiplayer.tournaments.force_invite', false),
-    (5, 'commands.multiplayer.tournaments.addref', false),
-    (5, 'commands.multiplayer.tournaments.remref', false),
+    (5, 'commands.tournaments.create_match', false),
+    (5, 'commands.tournaments.force_invite', false),
+    (5, 'commands.tournaments.addref', false),
+    (5, 'commands.tournaments.remref', false),
     -- Donator
     (6, 'clients.preview', false),
     -- Bots
