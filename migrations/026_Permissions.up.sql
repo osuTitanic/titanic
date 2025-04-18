@@ -37,7 +37,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (4, 'beatmaps.nuke', false),
     (4, 'users.moderation.*', false),
     (4, 'forum.moderation.*', false),
-    (3, 'chat.moderation.*', false),
+    (4, 'chat.moderation.*', false),
     -- Tournament Manager Team
     (5, 'commands.multiplayer.tournaments.create_match', false),
     (5, 'commands.multiplayer.tournaments.force_invite', false),
