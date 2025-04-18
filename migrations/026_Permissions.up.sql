@@ -16,10 +16,14 @@ CREATE TABLE group_permissions (
     updated_at timestamp DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_user_permissions_user_id ON user_permissions(user_id);
-CREATE INDEX idx_group_permissions_group_id ON group_permissions(group_id);
-CREATE INDEX idx_user_permissions_user_id_rejected ON user_permissions(user_id, rejected);
-CREATE INDEX idx_group_permissions_group_id_rejected ON group_permissions(group_id, rejected);
+CREATE INDEX idx_user_permissions_user_id ON user_permissions (user_id);
+CREATE INDEX idx_group_permissions_group_id ON group_permissions (group_id);
+CREATE INDEX idx_user_permissions_user_id_rejected ON user_permissions (user_id, rejected);
+CREATE INDEX idx_group_permissions_group_id_rejected ON group_permissions (group_id, rejected);
+
+CREATE INDEX idx_groups_entries_user_id ON groups_entries (user_id, group_id);
+CREATE INDEX idx_user_perms_u_r_p ON user_permissions(user_id, rejected) INCLUDE (permission);
+CREATE INDEX idx_group_perms_g_r_p ON group_permissions (group_id, rejected) INCLUDE (permission);
 
 INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     -- Admins
