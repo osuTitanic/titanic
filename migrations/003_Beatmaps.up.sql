@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS beatmaps
     mode smallint NOT NULL DEFAULT 0,
     md5 character(32) NOT NULL,
     status smallint NOT NULL DEFAULT 2,
-    version  character varying(128) NOT NULL,
+    version character varying(128) NOT NULL,
     filename character varying(512) NOT NULL,
     submission_date timestamp without time zone NOT NULL DEFAULT now(),
     last_updated timestamp without time zone NOT NULL DEFAULT now(),
