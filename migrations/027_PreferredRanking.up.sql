@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN preferred_ranking VARCHAR(16) DEFAULT 'global' NOT NULL;
