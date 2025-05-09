@@ -1,0 +1,1 @@
+ALTER TABLE scores ADD COLUMN replay_views INT DEFAULT 0 NOT NULL;
