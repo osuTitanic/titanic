@@ -33,7 +33,7 @@ services:
     command: -path=/migrations/ -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_USER}?sslmode=disable up
 
   cache:
-    image: redis:7.2-rc
+    image: redis:8
     restart: unless-stopped
     ports:
       - '127.0.0.1:${REDIS_PORT}:6379'
