@@ -74,7 +74,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (1000, 'users.notifications.delete', false),
     (1000, 'users.profile.update', false),
     (1000, 'users.friends.delete', false),
-    (1000, 'users.friends.add', false),
+    (1000, 'users.friends.create', false),
     (1000, 'beatmaps.search', false),
     (1000, 'beatmaps.upload', false),
     (1000, 'beatmaps.revive', false),
