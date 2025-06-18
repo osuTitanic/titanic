@@ -5,7 +5,7 @@
 
 # Titanic
 
-Titanic is an osu! private server designed to be compatible with all osu! stable clients (2008–2024).
+Titanic is an osu! private server designed to be compatible with all osu! stable clients (2007–2025).
 The goal of this project was to gain deeper insights into the inner workings of Bancho and how it has evolved over the years.
 
 You can play on it, by [registering on our website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download/) a client.
@@ -25,10 +25,9 @@ Please note that I've been working on this solo for about three years, so I am v
 
 ## Special Thanks
 
-- Everyone that is playing, donating & contributing to this project (you guys are a big help!)
-- All early [Testers](https://osu.titanic.sh/g/8) that somehow found the project through GitHub and decided to register through Discord DMs
-- [Adachi](https://osu.titanic.sh/u/39) for helping with the Discord bot & developing the pp system
-- [BlueChinchompa](https://osu.titanic.sh/u/40) for managing our discord and social media
+- Everyone that is playing, donating & contributing to this project
+- All early [Testers](https://osu.titanic.sh/g/8) that somehow found this project through GitHub and decided to register through Discord DMs
+- [Adachi](https://osu.titanic.sh/u/39), [BlueChinchompa](https://osu.titanic.sh/u/40) & [Meru](https://osu.titanic.sh/u/41) for community management
 - Beatmap mirrors, such as [osu.direct](https://osu.direct/), [nerinyan](https://nerinyan.moe/) & [mino](https://catboy.best)
 
 ## Screenshots
