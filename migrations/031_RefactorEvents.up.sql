@@ -16,6 +16,7 @@ SET
         WHEN activity_text LIKE '%has lost first place%'      THEN 4 -- lost_first_place
         WHEN activity_text LIKE '%has set the new pp record%' THEN 5 -- pp_record
         WHEN activity_text LIKE '%got a new top play%'        THEN 6 -- top_play
+        WHEN activity_text LIKE '%unlocked an achievement%'   THEN 7 -- achievement_unlocked
     ELSE type
 END;
 
