@@ -3,7 +3,8 @@ BEGIN;
 -- Add new columns
 ALTER TABLE profile_activity
     ADD COLUMN data jsonb NOT NULL DEFAULT '{}',
-    ADD COLUMN type smallint NOT NULL DEFAULT 0;
+    ADD COLUMN type smallint NOT NULL DEFAULT 0,
+    ADD COLUMN hidden boolean NOT NULL DEFAULT false;
 
 -- Migrate existing rows partially
 UPDATE profile_activity
