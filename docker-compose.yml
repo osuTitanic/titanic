@@ -41,7 +41,8 @@ services:
     networks:
       - titanic
     volumes: 
-      - './.data/redis:/var/lib/postgresql/data'
+      - './.data/redis/data:/root/redis'
+      - './.data/redis/config:/usr/local/etc/redis'
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
