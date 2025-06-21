@@ -2,10 +2,11 @@ services:
   db:
     image: postgres
     restart: unless-stopped
-    env_file:
-      - '.env'
     environment:
       - PGUSER=${POSTGRES_USER}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
     ports:
       - '127.0.0.1:${POSTGRES_PORT}:5432'
     volumes: 
