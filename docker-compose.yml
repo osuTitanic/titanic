@@ -84,6 +84,10 @@ services:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
+    ulimits:
+      nofile:
+        soft: 16384
+        hard: 32768
 
   deck:
     build: ./web/deck
