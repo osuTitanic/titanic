@@ -18,6 +18,10 @@ services:
       interval: 4s
       timeout: 5s
       retries: 15
+    ulimits:
+      nofile:
+        soft: 8192
+        hard: 32456
 
   migrations:
     image: migrate/migrate
