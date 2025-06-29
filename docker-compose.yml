@@ -64,6 +64,7 @@ services:
       - REDIS_HOST=cache
       - BANCHO_HTTP_PORT=80
       - BANCHO_IRC_PORT=6667
+      - BANCHO_TCP_PORTS=[13380, 13381, 13382, 13383, 13384]
     networks:
       - titanic
     links:
