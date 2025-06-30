@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS profile_activity
+    ALTER COLUMN mode DROP NOT NULL;
