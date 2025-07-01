@@ -5,7 +5,7 @@
 
 - [PostgreSQL](https://www.postgresql.org/)
 - [Redis](https://redis.io/)
-- [Python](https://www.python.org/) with pip (3.11 is recommended)
+- [Python](https://www.python.org/) with pip (3.13 is recommended)
 - [Rust Toolchain](https://rustup.rs/) for pp calculations
 
 ## Cloning the main repository
