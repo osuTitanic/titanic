@@ -150,7 +150,7 @@ INSERT INTO groups (id, bancho_permissions, name, short_name, description, color
 VALUES (1, '16', 'Admins', 'ADMIN', 'Some cool people.', '#9d6b15', false),
        (2, '8', 'Developers', 'DEV', 'These people actively contribute to the titanic codebase.', '#69159d', false),
        (3, '2', 'Beatmap Approval Team', 'BAT', 'These people handle map requests from users and decide which should be approved.', '#1959b8', false),
-       (4, '8', 'Global Moderator Team', 'GMT', 'These people focus on player moderation and ensuring the community is a safe place for everyone.', '#59c51b', false),
+       (4, '8', 'Global Moderation Team', 'GMT', 'These people focus on player moderation and ensuring the community is a safe place for everyone.', '#59c51b', false),
        (5, '32', 'Tournament Manager Team', 'TMT', 'These people help organize & referee tournament.', '#2117ab', false),
        (6, 4, 'Donators', 'DONOR', 'These people have donated money to this project and are helping to keep it alive. Eternal thanks to them!', '#cf9c02', false),
        (7, 0, 'Alumni', 'ALM', 'These people have voluntary contributed to this project in some way.', '#c51b54', false),
