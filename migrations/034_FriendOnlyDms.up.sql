@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN friendonly_dms BOOLEAN DEFAULT false;
