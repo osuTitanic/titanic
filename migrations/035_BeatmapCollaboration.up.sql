@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS beatmap_collaboration
 (
-    user_id int NOT NULL REFERENCES users (id),
-    beatmap_id int NOT NULL REFERENCES beatmaps (id),
+    user_id int NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    beatmap_id int NOT NULL REFERENCES beatmaps (id) ON DELETE CASCADE,
     is_beatmap_author boolean NOT NULL DEFAULT false,
     allow_resource_updates boolean NOT NULL DEFAULT false,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
@@ -11,17 +11,17 @@ CREATE TABLE IF NOT EXISTS beatmap_collaboration
 CREATE TABLE IF NOT EXISTS beatmap_collaboration_requests
 (
     id serial NOT NULL PRIMARY KEY,
-    user_id int NOT NULL REFERENCES users (id),
-    target_id int NOT NULL REFERENCES users (id),
-    beatmap_id int NOT NULL REFERENCES beatmaps (id),
+    user_id int NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    target_id int NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    beatmap_id int NOT NULL REFERENCES beatmaps (id) ON DELETE CASCADE,
     allow_resource_updates boolean NOT NULL DEFAULT false,
     created_at timestamp without time zone NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS beatmap_collaboration_blacklist
 (
-    user_id int NOT NULL REFERENCES users (id),
-    target_id int NOT NULL REFERENCES users (id),
+    user_id int NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    target_id int NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     created_at timestamp without time zone NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, target_id)
 );
