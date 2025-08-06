@@ -1,6 +1,6 @@
 -- Add a seperate read-only column to beatmapsets for max difficulty
 -- This will be used to optimize queries for most difficult beatmapsets
-ALTER TABLE beatmapsets ADD COLUMN max_diff bigint NOT NULL DEFAULT 0;
+ALTER TABLE beatmapsets ADD COLUMN max_diff real NOT NULL DEFAULT 0;
 
 CREATE OR REPLACE FUNCTION beatmapsets_update_max_diff()
 RETURNS TRIGGER AS $$
