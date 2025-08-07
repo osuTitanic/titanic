@@ -5,7 +5,7 @@
 
 # Titanic
 
-Titanic is an osu! private server designed to be compatible with all osu! stable clients (2007–2025).
+Titanic is an osu! private server designed to be compatible with every osu! stable client out there (2007–2025).
 The goal of this project was to gain deeper insights into the inner workings of Bancho and how it has evolved over the years.
 
 You can play on it, by [registering on our website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download/) a client.
