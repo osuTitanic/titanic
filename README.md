@@ -20,9 +20,6 @@ I would suggest starting by familiarizing yourself with the different kinds of e
 I have written a document about it [here](https://github.com/osuTitanic/common/blob/main/USAGE.md).
 For large-scale changes you want to make, I'd suggest to contact me for further help and coordination.
 
-Although the project at this point is quite stable, there may be some outdated code that should have been refactored a while ago.
-Please note that I've been working on this solo for about three years, so I am very happy when stuff just works.
-
 ## Special Thanks
 
 - Everyone that is playing, donating & contributing to this project
