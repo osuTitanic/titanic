@@ -74,6 +74,39 @@ docker compose build
 docker compose up -d
 ```
 
-## Patching the client
+## Connecting with osu!
 
-You can view the instructions for patching the client [here](https://github.com/osuTitanic/clients/blob/main/PATCHING.md).
+To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. Please look up instructions to do this online! I would personally recommend the guide from [PEACE](https://peace.osu.icu/docs/guide#2-generate-test-ssl-certificate).
+
+If you are using a local setup environment, the easiest way to get a connection working is by editing your hosts file.  
+Under Windows: `C:\Windows\System32\drivers\etc\hosts`
+Under Linux: `/etc/hosts`
+
+Add the following entries, depending on your domain name:
+
+```
+127.0.0.1 osu.bancho.local
+127.0.0.1 c.bancho.local
+127.0.0.1 a.bancho.local
+127.0.0.1 bancho.local
+127.0.0.1 ce.bancho.local
+127.0.0.1 c1.bancho.local
+127.0.0.1 c2.bancho.local
+127.0.0.1 c3.bancho.local
+127.0.0.1 c4.bancho.local
+127.0.0.1 c5.bancho.local
+127.0.0.1 c6.bancho.local
+127.0.0.1 s.bancho.local
+127.0.0.1 i.bancho.local
+```
+
+Finally, connect to your server by using the `-devserver` argument:
+
+```shell
+osu!.exe -devserver bancho.local
+```
+
+### Using older clients
+
+The purpose of Titanic! is to be able to use older clients.
+For this them to work, we made a special [patcher](https://github.com/osuTitanic/patcher), that will automatically patch all server URLs from `ppy.sh` to your specified domain.
