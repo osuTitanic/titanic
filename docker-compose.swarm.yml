@@ -48,61 +48,6 @@ services:
       -path=/migrations/
       -database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_USER}?sslmode=disable up
 
-  anchor:
-    build: ./bancho
-    restart: unless-stopped
-    env_file:
-      - '.env'
-    environment:
-      - POSTGRES_HOST=db
-      - REDIS_HOST=cache
-      - BANCHO_HTTP_PORT=80
-      - BANCHO_IRC_PORT=6667
-      - BANCHO_TCP_PORTS=[13380, 13381, 13382, 13383, 13384]
-    networks:
-      - titanic
-    links:
-      - db:db
-      - cache:cache
-    ports:
-      # Uncomment to access http bancho from outside
-      # - 127.0.0.1:5050:80
-      - 6667:6667
-      - 13380:13380
-      - 13381:13381
-      - 13382:13382
-      - 13383:13383
-      - 13384:13384
-    volumes:
-      - './.data:/bancho/.data'
-      - './.data/logs/bancho:/bancho/logs'
-    ulimits:
-      nofile:
-        soft: 16384
-        hard: 32768
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-
-  bot:
-    build: ./bot
-    restart: on-failure
-    env_file:
-      - '.env'
-    environment:
-      - POSTGRES_HOST=db
-      - REDIS_HOST=cache
-    networks:
-      - titanic
-    links:
-      - db:db
-      - cache:cache
-    volumes:
-      - './.data:/bot/.data'
-      - './.data/logs/bot:/bot/logs'
-
   deck:
     build: ./web/deck
     restart: unless-stopped
@@ -196,21 +141,6 @@ services:
         delay: 5s
         max_attempts: 3
     entrypoint: ["./wait-for-deps.sh"]
-
-  jobs:
-    build: ./jobs
-    restart: unless-stopped
-    env_file:
-      - '.env'
-    environment:
-      - POSTGRES_HOST=db
-      - REDIS_HOST=cache
-    links:
-      - db:db
-      - cache:cache
-    networks:
-      - titanic
-    entrypoint: python3 main.py --file ./schedule.prod.json
 
   nginx:
     image: nginx:latest
