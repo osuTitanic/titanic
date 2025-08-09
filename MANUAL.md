@@ -71,4 +71,4 @@ After that you should be ready to run the all the servers, by running this comma
 python3 main.py
 ```
 
-You may now want to patch a client, using [this guide](https://github.com/osuTitanic/clients/blob/main/PATCHING.md). It is also recommended to run the website, as well as the score server behind a reverse proxy, so that both servers can be accessed under `osu.yourdomain.com`. However this guide won't contain any instructions for that.
+It recommended to run the website, as well as the score server behind a reverse proxy, so that both servers can be accessed under `osu.yourdomain.com`. However this guide won't contain any instructions for that.
