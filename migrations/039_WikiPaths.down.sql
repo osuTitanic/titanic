@@ -1,0 +1,1 @@
+ALTER TABLE wiki_pages DROP COLUMN path;

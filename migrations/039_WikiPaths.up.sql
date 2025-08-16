@@ -1,0 +1,1 @@
+ALTER TABLE wiki_pages ADD COLUMN path TEXT NOT NULL DEFAULT '';
