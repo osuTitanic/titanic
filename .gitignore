@@ -3,3 +3,6 @@ web/nginx/*.pem
 .idea
 .data
 .env
+
+# Custom configuration for ssl
+docker-compose.ssl.yml
