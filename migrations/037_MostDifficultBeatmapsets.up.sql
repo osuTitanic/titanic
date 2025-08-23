@@ -2,6 +2,15 @@
 -- This will be used to optimize queries for most difficult beatmapsets
 ALTER TABLE beatmapsets ADD COLUMN max_diff real NOT NULL DEFAULT 0;
 
+-- Create index to make following query faster
+CREATE INDEX idx_beatmaps_set_id_diff ON beatmaps (set_id, diff DESC);
+
+-- Backfill existing beatmapsets with max difficulty
+UPDATE beatmapsets b
+SET max_diff = m.max_diff
+FROM (SELECT set_id, MAX(diff) AS max_diff FROM beatmaps GROUP BY set_id) m
+WHERE b.id = m.set_id;
+
 CREATE OR REPLACE FUNCTION beatmapsets_update_max_diff()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -25,10 +34,6 @@ CREATE TRIGGER recalculate_max_diff_on_delete
   FOR EACH ROW
   WHEN (OLD.set_id IS NOT NULL)
   EXECUTE FUNCTION beatmapsets_update_max_diff();
-
--- Backfill existing beatmapsets with max difficulty
-UPDATE beatmapsets
-SET max_diff = COALESCE((SELECT MAX(diff) FROM beatmaps WHERE set_id = beatmapsets.id), 0);
 
 -- Create index for faster queries on max_diff
 CREATE INDEX idx_beatmapsets_max_diff ON beatmapsets (max_diff DESC);
