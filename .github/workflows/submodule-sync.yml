@@ -21,7 +21,7 @@ jobs:
         git init .
         git remote add origin https://github.com/${{ github.repository }}.git
         git fetch --depth=1 origin origin/${{ github.ref_name }}
-        git checkout origin/${{ github.ref_name }}
+        git checkout ${{ github.ref_name }}
 
     - name: Git submodule update
       run: |
