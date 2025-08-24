@@ -1,0 +1,1 @@
+ALTER TABLE mp_matches ALTER COLUMN name TYPE varchar(50);
