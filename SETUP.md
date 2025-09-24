@@ -109,4 +109,7 @@ osu!.exe -devserver bancho.local
 ### Using older clients
 
 The purpose of Titanic! is to be able to use older clients.
-For this them to work, we made a special [patcher](https://github.com/osuTitanic/patcher), that will automatically patch all server URLs from `ppy.sh` to your specified domain.
+For this them to work, we made a special [patcher](https://github.com/osuTitanic/hook/releases), that will automatically change all server URLs from `ppy.sh` to your specified domain.
+
+Simply download the patcher, put it in your osu! installation folder and run it.  
+After the first run, you'll see a configuration file `Titanic!.cfg`, which you can edit to use a custom `ServerName`.
