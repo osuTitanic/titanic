@@ -11,8 +11,6 @@ The goal of this project was to gain deeper insights into the inner workings of 
 You can play on it, by [registering on our website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download/) a client.
 For more questions, feel free to join our Discord server: https://discord.gg/qupv72e7YH
 
-The main goal of this project was achieved. However, there are still a good amount of features that we want to add, which you can view [here](https://github.com/users/osuTitanic/projects/2).
-
 ## Contributing
 
 You are very welcome to make any kinds of suggestions or contributions to this project.
