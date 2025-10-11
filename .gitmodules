@@ -15,9 +15,6 @@
 [submodule "jobs"]
 	path = jobs
 	url = https://github.com/osuTitanic/jobs.git
-[submodule "web/osz2-service"]
-	path = web/osz2-service
-	url = https://github.com/osuTitanic/osz2-service.git
 [submodule "web/keel"]
 	path = web/keel
 	url = https://github.com/osuTitanic/keel.git

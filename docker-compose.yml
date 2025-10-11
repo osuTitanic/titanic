@@ -107,13 +107,11 @@ services:
     environment:
       - POSTGRES_HOST=db
       - REDIS_HOST=cache
-      - OSZ2_SERVICE_URL=http://osz2-service:8080
     networks:
       - titanic
     links:
       - db:db
       - cache:cache
-      - osz2-service:osz2-service
       - stern:stern
     # ports:
       # Uncomment to access deck from outside
@@ -264,12 +262,6 @@ services:
       interval: 60s
       timeout: 5s
       retries: 10
-
-  osz2-service:
-    build: ./web/osz2-service
-    restart: unless-stopped
-    networks:
-      - titanic
 
 networks:
   titanic:
