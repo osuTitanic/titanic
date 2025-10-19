@@ -112,7 +112,6 @@ services:
     links:
       - db:db
       - cache:cache
-      - stern:stern
     # ports:
       # Uncomment to access deck from outside
       # - 127.0.0.1:6060:80
