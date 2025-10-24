@@ -1,0 +1,2 @@
+ALTER TABLE direct_messages
+ADD COLUMN read BOOLEAN NOT NULL DEFAULT true;
