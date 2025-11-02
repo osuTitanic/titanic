@@ -1,0 +1,1 @@
+ALTER TABLE beatmaps DROP COLUMN slider_multiplier;

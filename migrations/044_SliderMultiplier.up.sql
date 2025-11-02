@@ -1,0 +1,1 @@
+ALTER TABLE beatmaps ADD COLUMN slider_multiplier real NOT NULL DEFAULT 0;
