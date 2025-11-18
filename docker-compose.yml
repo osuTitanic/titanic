@@ -258,7 +258,7 @@ services:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost/stats || exit 1"]
-      interval: 60s
+      interval: 30s
       timeout: 5s
       retries: 10
 
