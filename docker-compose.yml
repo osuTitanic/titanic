@@ -172,6 +172,7 @@ services:
       # Uncomment to access stern from outside
       # - 127.0.0.1:7070:80
     volumes:
+      - './web/stern/app/static:/stern/app/static'
       - './.data/logs/stern:/stern/logs'
       - './.data:/stern/.data'
     depends_on:
