@@ -9,8 +9,8 @@ services:
       - POSTGRES_PORT=${POSTGRES_PORT}
     ports:
       - '127.0.0.1:${POSTGRES_PORT}:5432'
-    volumes: 
-      - './.data/postgres:/var/lib/postgresql/data'
+    volumes:
+      - './.data/postgresql:/var/lib/postgresql'
     networks:
       - titanic
     healthcheck:
