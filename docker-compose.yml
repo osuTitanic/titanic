@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres
+    image: postgres:17
     restart: unless-stopped
     environment:
       - PGUSER=${POSTGRES_USER}
@@ -10,7 +10,7 @@ services:
     ports:
       - '127.0.0.1:${POSTGRES_PORT}:5432'
     volumes:
-      - './.data/postgresql:/var/lib/postgresql'
+      - './.data/postgres:/var/lib/postgresql/data'
     networks:
       - titanic
     healthcheck:
@@ -45,7 +45,7 @@ services:
     command: redis-server --save 20 1
     networks:
       - titanic
-    volumes: 
+    volumes:
       - './.data/redis/data:/root/redis'
       - './.data/redis/config:/usr/local/etc/redis'
     healthcheck:
