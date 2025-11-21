@@ -143,14 +143,14 @@ VALUES ('https://osu.direct/api/osu/{}', 2, 0, 0),
        ('https://api.nerinyan.moe/d/{}', 0, 0, 2),
        ('https://osu.direct/api/d/{}?noVideo=', 1, 0, 1),
        ('https://osu.direct/api/d/{}', 0, 0, 1),
-       ('https://catboy.best/api/d/{}n', 1, 0, 0),
-       ('https://catboy.best/api/d/{}', 0, 0, 0),
-       ('/api/resources/osz/{}', 0, 1, 0),
-       ('/api/resources/osz/{}?no_video=true', 1, 1, 0),
-       ('/api/resources/osu/{}', 2, 1, 0),
-       ('/api/resources/mp3/{}', 5, 1, 0),
-       ('/api/resources/mt/{}/small', 3, 1, 0),
-       ('/api/resources/mt/{}', 4, 1, 0);
+       ('https://catboy.best/d/{}n', 1, 0, 0),
+       ('https://catboy.best/d/{}', 0, 0, 0),
+       ('http://keel/resources/osz/{}', 0, 1, 0),
+       ('http://keel/resources/osz/{}?no_video=true', 1, 1, 0),
+       ('http://keel/resources/osu/{}', 2, 1, 0),
+       ('http://keel/resources/mp3/{}', 5, 1, 0),
+       ('http://keel/resources/mt/{}/small', 3, 1, 0),
+       ('http://keel/resources/mt/{}', 4, 1, 0);
 
 -- Change beatmap(set) ID offset for beatmap submission
 ALTER SEQUENCE beatmapsets_id_seq RESTART WITH 1000000000;
