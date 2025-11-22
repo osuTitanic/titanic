@@ -1,8 +1,8 @@
 server {
     listen 80;
-    server_name osu.$DOMAIN_NAME $DOMAIN_NAME;
+    server_name osu.$DOMAIN_NAME ha.$DOMAIN_NAME $DOMAIN_NAME;
 
-    location ~ ^/api/v2/ {
+    location ~ /api/ {
         proxy_pass http://keel;
         proxy_set_header Host ${DOLLAR}host;
         proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
@@ -79,20 +79,32 @@ server {
     listen 80;
     server_name s.$DOMAIN_NAME;
 
-    location ~ ^/(mt|thumb|images/map-thumb)/ {
-        proxy_pass http://deck;
-        proxy_set_header Host ${DOLLAR}host;
-        proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
-        proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
+    location @error_404 {
+        add_header Content-Type text/plain;
+        return 404 "404 Not Found";
     }
 
-    location ~ ^/(preview|mp3/preview)/ {
-        proxy_pass http://deck;
+    location @error_400 {
+        add_header Content-Type text/plain;
+        return 400 "400 Bad Request";
+    }
+
+    location @error_403 {
+        add_header Content-Type text/plain;
+        return 403 "403 Forbidden";
+    }
+
+    location /images/ {
+        proxy_pass http://stern;
         proxy_set_header Host ${DOLLAR}host;
         proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
         proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
+
+        proxy_intercept_errors on;
+        error_page 400 = @error_400;
+        error_page 403 = @error_403;
+        error_page 404 = @error_404;
     }
 
     location /a/ {
@@ -103,16 +115,16 @@ server {
         proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
     }
 
-    location /images/achievements/ {
-        proxy_pass http://stern;
+    location ~ ^/(mt|thumb|images/map-thumb)/ {
+        proxy_pass http://deck;
         proxy_set_header Host ${DOLLAR}host;
         proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
         proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
     }
 
-    location /images/ {
-        proxy_pass http://stern;
+    location ~ ^/(preview|mp3/preview)/ {
+        proxy_pass http://deck;
         proxy_set_header Host ${DOLLAR}host;
         proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
         proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
@@ -143,7 +155,7 @@ server {
 
 server {
     listen 80;
-    server_name c.$DOMAIN_NAME;
+    server_name c.$DOMAIN_NAME c1.$DOMAIN_NAME c2.$DOMAIN_NAME c3.$DOMAIN_NAME cho.$DOMAIN_NAME mahbahowc.$DOMAIN_NAME;
 
     location / {
         proxy_pass http://anchor;
@@ -194,5 +206,18 @@ server {
 
     location /medals/client {
         return 404;
+    }
+}
+
+server {
+    listen 80;
+    server_name d.$DOMAIN_NAME d.osu.$DOMAIN_NAME;
+
+    location /d/ {
+        proxy_pass http://deck;
+        proxy_set_header Host ${DOLLAR}host;
+        proxy_set_header X-Real-IP ${DOLLAR}remote_addr;
+        proxy_set_header X-Forwarded-For ${DOLLAR}proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto ${DOLLAR}scheme;
     }
 }
