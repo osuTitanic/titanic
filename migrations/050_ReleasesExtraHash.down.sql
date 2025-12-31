@@ -1,0 +1,1 @@
+ALTER TABLE releases_extra DROP COLUMN md5;

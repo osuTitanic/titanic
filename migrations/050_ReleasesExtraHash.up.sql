@@ -1,0 +1,1 @@
+ALTER TABLE releases_extra ADD COLUMN md5 CHARACTER (32) NOT NULL;
