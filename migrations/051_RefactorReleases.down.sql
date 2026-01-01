@@ -1,5 +1,6 @@
--- Drop the modding entries table
+-- Drop new tables
 DROP TABLE IF EXISTS releases_modding_entries;
+DROP TABLE IF EXISTS releases_modding_changelog;
 
 -- Drop compatibility views
 DROP VIEW IF EXISTS releases_changelog;

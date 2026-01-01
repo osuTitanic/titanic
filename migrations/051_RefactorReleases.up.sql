@@ -63,3 +63,16 @@ CREATE TABLE releases_modding_entries (
     post_id int REFERENCES forum_posts (id),
     created_at timestamp without time zone NOT NULL DEFAULT now()
 );
+
+-- Add changelog table for modded releases
+CREATE TABLE releases_modding_changelog (
+    id SERIAL PRIMARY KEY,
+    entry_id INT REFERENCES releases_modding_entries (id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    type TEXT NOT NULL,
+    branch TEXT NOT NULL,
+    author TEXT NOT NULL,
+    author_id INT REFERENCES users (id),
+    area TEXT,
+    created_at timestamp without time zone NOT NULL DEFAULT now()
+);
