@@ -85,6 +85,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (1000, 'beatmaps.revive', false),
     (1000, 'beatmaps.delete', false),
     (1000, 'beatmaps.download', false),
+    (1000, 'beatmaps.update_description', false),
     (1000, 'beatmaps.rating.submit', false),
     (1000, 'beatmaps.rating.view', false),
     (1000, 'beatmaps.favourites.create', false),
