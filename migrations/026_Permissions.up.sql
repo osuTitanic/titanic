@@ -57,6 +57,9 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     -- Bots
     (9, 'chat.bypass_filter', false),
     (9, 'chat.bypass_spam', false),
+    -- TMG
+    (10, 'releases.modded.upload', false),
+    (10, 'releases.modded.delete', false),
     -- Preview
     (997, 'clients.validation.bypass', false),
     -- Bypass
