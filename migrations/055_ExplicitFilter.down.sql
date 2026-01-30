@@ -1,0 +1,1 @@
+ALTER TABLE beatmapsets DROP COLUMN IF EXISTS explicit;
