@@ -52,6 +52,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (5, 'commands.tournaments.force_invite', false),
     (5, 'commands.tournaments.addref', false),
     (5, 'commands.tournaments.remref', false),
+    (5, 'bancho.matches.bypass_limit', false),
     -- Donator
     (6, 'clients.preview', false),
     -- Bots
