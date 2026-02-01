@@ -107,6 +107,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (1000, 'chat.messages.private.create', false),
     (1000, 'forum.search', false),
     (1000, 'forum.topics.create', false),
+    (1000, 'forum.topics.edit', false),
     (1000, 'forum.posts.create', false),
     (1000, 'forum.posts.edit', false),
     (1000, 'forum.posts.delete', false),
