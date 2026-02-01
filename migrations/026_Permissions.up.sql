@@ -39,7 +39,7 @@ INSERT INTO group_permissions (group_id, permission, rejected) VALUES
     (3, 'forum.topics.lock', false),
     (3, 'forum.posts.lock', false),
     (3, 'forum.posts.edit_locked', false),
-    (3, 'forum.beatmaps.edit_icon', false),
+    (3, 'forum.topics.edit_icon', false),
     (3, 'forum.kudosu.*', false),
     -- Moderators
     (4, 'commands.moderation.*', false),
