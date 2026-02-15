@@ -25,3 +25,15 @@ DELETE FROM releases_official_entries WHERE file_id IN (
 ) AND release_id IN (
     SELECT id FROM releases_official WHERE stream != 'lazer'
 );
+
+-- osu!spring.dll was only used in 2017
+-- https://osu.ppy.sh/home/changelog/stable40/20170503.4
+DELETE FROM releases_official_entries WHERE file_id = 3253 AND release_id IN (
+    SELECT id FROM releases_official WHERE version > 20170615
+);
+
+-- osu!spooky.dll was only used in 2017
+-- https://osu.ppy.sh/home/changelog/stable40/20171031.24
+DELETE FROM releases_official_entries WHERE file_id = 3249 AND release_id IN (
+    SELECT id FROM releases_official WHERE version > 20171105
+);
