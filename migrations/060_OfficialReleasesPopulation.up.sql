@@ -8220,7 +8220,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1063, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 4, '2015-02-05T11:54:26')
+    VALUES (20150205, 'ce45', 4, '2015-02-05T11:54:26')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8230,7 +8230,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1065, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 5, '2015-02-05T12:52:38')
+    VALUES (20150205, 'ce45', 5, '2015-02-05T12:52:38')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8240,7 +8240,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1067, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 6, '2015-02-05T13:14:07')
+    VALUES (20150205, 'ce45', 6, '2015-02-05T13:14:07')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8250,7 +8250,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1069, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 7, '2015-02-05T14:05:38')
+    VALUES (20150205, 'ce45', 7, '2015-02-05T14:05:38')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8260,7 +8260,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1071, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 8, '2015-02-05T14:51:05')
+    VALUES (20150205, 'ce45', 8, '2015-02-05T14:51:05')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8270,7 +8270,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1073, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 9, '2015-02-05T15:37:17')
+    VALUES (20150205, 'ce45', 9, '2015-02-05T15:37:17')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8280,7 +8280,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1075, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 10, '2015-02-05T16:50:59')
+    VALUES (20150205, 'ce45', 10, '2015-02-05T16:50:59')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8290,7 +8290,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1077, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 11, '2015-02-05T17:12:07')
+    VALUES (20150205, 'ce45', 11, '2015-02-05T17:12:07')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8300,7 +8300,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1079, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 12, '2015-02-05T17:18:27')
+    VALUES (20150205, 'ce45', 12, '2015-02-05T17:18:27')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8310,7 +8310,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1081, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 13, '2015-02-05T17:23:11')
+    VALUES (20150205, 'ce45', 13, '2015-02-05T17:23:11')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8320,7 +8320,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1083, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 14, '2015-02-05T17:26:32')
+    VALUES (20150205, 'ce45', 14, '2015-02-05T17:26:32')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8340,7 +8340,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1087, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150205, 'stable', 16, '2015-02-06T05:33:47')
+    VALUES (20150205, 'ce45', 16, '2015-02-06T05:33:47')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8380,7 +8380,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1095, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 2, '2015-02-06T07:07:00')
+    VALUES (20150206, 'ce45', 2, '2015-02-06T07:07:00')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8390,7 +8390,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1097, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 3, '2015-02-06T07:33:23')
+    VALUES (20150206, 'ce45', 3, '2015-02-06T07:33:23')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8410,7 +8410,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1101, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 5, '2015-02-06T07:35:11')
+    VALUES (20150206, 'ce45', 5, '2015-02-06T07:35:11')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8430,7 +8430,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1105, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 7, '2015-02-06T07:37:35')
+    VALUES (20150206, 'ce45', 7, '2015-02-06T07:37:35')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8470,7 +8470,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1113, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 11, '2015-02-06T11:23:35')
+    VALUES (20150206, 'ce45', 11, '2015-02-06T11:23:35')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8510,7 +8510,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1121, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150206, 'stable', 15, '2015-02-06T11:55:46')
+    VALUES (20150206, 'ce45', 15, '2015-02-06T11:55:46')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8560,7 +8560,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1131, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150208, 'stable', 1, '2015-02-08T10:49:02')
+    VALUES (20150208, 'ce45', 1, '2015-02-08T10:49:02')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8600,7 +8600,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1139, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150208, 'stable', 5, '2015-02-08T15:43:21')
+    VALUES (20150208, 'ce45', 5, '2015-02-08T15:43:21')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8660,7 +8660,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1151, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150210, 'stable', 1, '2015-02-10T19:07:49')
+    VALUES (20150210, 'ce45', 1, '2015-02-10T19:07:49')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8710,7 +8710,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1161, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150211, 'stable', 1, '2015-02-11T06:09:29')
+    VALUES (20150211, 'ce45', 1, '2015-02-11T06:09:29')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8740,7 +8740,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1167, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150211, 'stable', 4, '2015-02-11T09:38:01')
+    VALUES (20150211, 'ce45', 4, '2015-02-11T09:38:01')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8760,7 +8760,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1173, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150212, 'stable', 1, '2015-02-12T14:44:30')
+    VALUES (20150212, 'ce45', 1, '2015-02-12T14:44:30')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8780,7 +8780,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1177, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150212, 'stable', 3, '2015-02-12T16:56:14')
+    VALUES (20150212, 'ce45', 3, '2015-02-12T16:56:14')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8790,7 +8790,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1179, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150212, 'stable', 4, '2015-02-12T17:07:53')
+    VALUES (20150212, 'ce45', 4, '2015-02-12T17:07:53')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8800,7 +8800,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1181, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150212, 'stable', 5, '2015-02-12T17:46:05')
+    VALUES (20150212, 'ce45', 5, '2015-02-12T17:46:05')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8820,7 +8820,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1185, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150213, 'stable', 0, '2015-02-13T06:48:18')
+    VALUES (20150213, 'ce45', 0, '2015-02-13T06:48:18')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8840,7 +8840,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1189, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150213, 'stable', 2, '2015-02-13T08:51:30')
+    VALUES (20150213, 'ce45', 2, '2015-02-13T08:51:30')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8850,7 +8850,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1191, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150213, 'stable', 3, '2015-02-13T10:01:32')
+    VALUES (20150213, 'ce45', 3, '2015-02-13T10:01:32')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8860,7 +8860,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1193, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150213, 'stable', 4, '2015-02-13T10:11:59')
+    VALUES (20150213, 'ce45', 4, '2015-02-13T10:11:59')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -8880,7 +8880,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1196, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150216, 'stable', 1, '2015-02-16T10:18:54')
+    VALUES (20150216, 'ce45', 1, '2015-02-16T10:18:54')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9070,7 +9070,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1216, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150219, 'stable', 3, '2015-02-19T17:50:32')
+    VALUES (20150219, 'ce45', 3, '2015-02-19T17:50:32')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9100,7 +9100,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1219, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150221, 'stable', 0, '2015-02-22T04:34:04')
+    VALUES (20150221, 'ce45', 0, '2015-02-22T04:34:04')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9110,7 +9110,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1220, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150222, 'stable', 0, '2015-02-23T01:13:49')
+    VALUES (20150222, 'ce45', 0, '2015-02-23T01:13:49')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9120,7 +9120,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1221, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150223, 'stable', 0, '2015-02-23T10:34:05')
+    VALUES (20150223, 'ce45', 0, '2015-02-23T10:34:05')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9140,7 +9140,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1223, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150223, 'stable', 2, '2015-02-23T14:28:40')
+    VALUES (20150223, 'ce45', 2, '2015-02-23T14:28:40')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9150,7 +9150,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1224, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150223, 'stable', 3, '2015-02-23T14:52:58')
+    VALUES (20150223, 'ce45', 3, '2015-02-23T14:52:58')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9160,7 +9160,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1225, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150223, 'stable', 4, '2015-02-24T02:15:07')
+    VALUES (20150223, 'ce45', 4, '2015-02-24T02:15:07')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9260,7 +9260,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1235, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150226, 'stable', 0, '2015-02-27T01:46:28')
+    VALUES (20150226, 'ce45', 0, '2015-02-27T01:46:28')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9450,7 +9450,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1254, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150303, 'stable', 1, '2015-03-03T06:05:00')
+    VALUES (20150303, 'ce45', 1, '2015-03-03T06:05:00')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9540,7 +9540,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1263, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150304, 'stable', 4, '2015-03-04T10:34:37')
+    VALUES (20150304, 'ce45', 4, '2015-03-04T10:34:37')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9560,7 +9560,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1265, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150304, 'stable', 6, '2015-03-04T12:44:34')
+    VALUES (20150304, 'ce45', 6, '2015-03-04T12:44:34')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9740,7 +9740,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1283, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150317, 'stable', 9, '2015-03-17T12:41:55')
+    VALUES (20150317, 'ce45', 9, '2015-03-17T12:41:55')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9800,7 +9800,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1289, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150318, 'stable', 5, '2015-03-18T11:05:00')
+    VALUES (20150318, 'ce45', 5, '2015-03-18T11:05:00')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9850,7 +9850,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1294, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150324, 'stable', 0, '2015-03-24T07:37:03')
+    VALUES (20150324, 'ce45', 0, '2015-03-24T07:37:03')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9890,7 +9890,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1298, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150325, 'stable', 3, '2015-03-25T04:58:24')
+    VALUES (20150325, 'ce45', 3, '2015-03-25T04:58:24')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -9980,7 +9980,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1307, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150326, 'stable', 5, '2015-03-26T07:40:05')
+    VALUES (20150326, 'ce45', 5, '2015-03-26T07:40:05')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10080,7 +10080,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1320, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150402, 'stable', 0, '2015-04-02T05:25:54')
+    VALUES (20150402, 'ce45', 0, '2015-04-02T05:25:54')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10170,7 +10170,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1329, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150403, 'stable', 7, '2015-04-03T08:27:56')
+    VALUES (20150403, 'ce45', 7, '2015-04-03T08:27:56')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10230,7 +10230,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1335, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150403, 'stable', 13, '2015-04-03T17:25:56')
+    VALUES (20150403, 'ce45', 13, '2015-04-03T17:25:56')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10240,7 +10240,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1336, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150403, 'stable', 14, '2015-04-03T17:34:54')
+    VALUES (20150403, 'ce45', 14, '2015-04-03T17:34:54')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10290,7 +10290,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1341, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150406, 'stable', 3, '2015-04-06T11:07:34')
+    VALUES (20150406, 'ce45', 3, '2015-04-06T11:07:34')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10300,7 +10300,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1342, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150406, 'stable', 4, '2015-04-06T11:27:17')
+    VALUES (20150406, 'ce45', 4, '2015-04-06T11:27:17')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10340,7 +10340,7 @@ WHERE releases_official_files.file_version IN (1, 2, 3, 16, 17, 18, 7, 8, 1346, 
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150407, 'stable', 0, '2015-04-07T06:34:41')
+    VALUES (20150407, 'ce45', 0, '2015-04-07T06:34:41')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10360,7 +10360,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150407, 'stable', 2, '2015-04-07T08:38:47')
+    VALUES (20150407, 'ce45', 2, '2015-04-07T08:38:47')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10370,7 +10370,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150408, 'stable', 0, '2015-04-08T11:11:44')
+    VALUES (20150408, 'ce45', 0, '2015-04-08T11:11:44')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10420,7 +10420,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150408, 'stable', 5, '2015-04-08T12:54:39')
+    VALUES (20150408, 'ce45', 5, '2015-04-08T12:54:39')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10480,7 +10480,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150410, 'stable', 3, '2015-04-10T09:04:21')
+    VALUES (20150410, 'ce45', 3, '2015-04-10T09:04:21')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10490,7 +10490,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150410, 'stable', 4, '2015-04-10T11:08:47')
+    VALUES (20150410, 'ce45', 4, '2015-04-10T11:08:47')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10510,7 +10510,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150413, 'stable', 1, '2015-04-13T05:33:49')
+    VALUES (20150413, 'ce45', 1, '2015-04-13T05:33:49')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10550,7 +10550,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150413, 'stable', 5, '2015-04-13T12:40:56')
+    VALUES (20150413, 'ce45', 5, '2015-04-13T12:40:56')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10560,7 +10560,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150414, 'stable', 0, '2015-04-14T06:28:12')
+    VALUES (20150414, 'ce45', 0, '2015-04-14T06:28:12')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10570,7 +10570,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150414, 'stable', 1, '2015-04-14T06:34:23')
+    VALUES (20150414, 'ce45', 1, '2015-04-14T06:34:23')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10600,7 +10600,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150415, 'stable', 1, '2015-04-15T02:56:09')
+    VALUES (20150415, 'ce45', 1, '2015-04-15T02:56:09')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10610,7 +10610,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150415, 'stable', 2, '2015-04-15T03:33:44')
+    VALUES (20150415, 'ce45', 2, '2015-04-15T03:33:44')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10620,7 +10620,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150415, 'stable', 3, '2015-04-15T05:10:48')
+    VALUES (20150415, 'ce45', 3, '2015-04-15T05:10:48')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10630,7 +10630,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150415, 'stable', 4, '2015-04-15T07:45:45')
+    VALUES (20150415, 'ce45', 4, '2015-04-15T07:45:45')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10640,7 +10640,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150416, 'stable', 0, '2015-04-16T05:19:08')
+    VALUES (20150416, 'ce45', 0, '2015-04-16T05:19:08')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10670,7 +10670,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150421, 'stable', 1, '2015-04-21T09:02:33')
+    VALUES (20150421, 'ce45', 1, '2015-04-21T09:02:33')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10680,7 +10680,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150421, 'stable', 2, '2015-04-21T09:05:01')
+    VALUES (20150421, 'ce45', 2, '2015-04-21T09:05:01')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10690,7 +10690,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150421, 'stable', 3, '2015-04-21T09:09:52')
+    VALUES (20150421, 'ce45', 3, '2015-04-21T09:09:52')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -10970,7 +10970,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1353, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20150428, 'stable', 4, '2015-04-28T07:14:48')
+    VALUES (20150428, 'ce45', 4, '2015-04-28T07:14:48')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -16940,7 +16940,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 1890, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20151016, 'stable40', 6, '2015-10-16T10:03:08')
+    VALUES (20151016, 'noxna', 6, '2015-10-16T10:03:08')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -21900,7 +21900,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 2207, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20161026, 'stable40', 1, '2016-10-26T00:30:55')
+    VALUES (20161026, 'noxna', 1, '2016-10-26T00:30:55')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
@@ -21970,7 +21970,7 @@ WHERE releases_official_files.file_version IN (1350, 1351, 1349, 1352, 2207, 18,
 
 WITH inserted_release AS (
     INSERT INTO releases_official (version, stream, subversion, created_at)
-    VALUES (20161029, 'stable40', 2, '2016-10-29T05:56:39')
+    VALUES (20161029, 'noxna', 2, '2016-10-29T05:56:39')
     RETURNING id
 )
 INSERT INTO releases_official_entries (release_id, file_id)
