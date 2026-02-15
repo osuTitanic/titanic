@@ -1,0 +1,2 @@
+DELETE FROM releases_official_entries;
+DELETE FROM releases_official;

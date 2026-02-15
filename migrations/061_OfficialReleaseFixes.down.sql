@@ -1,0 +1,1 @@
+-- idk how to make a down migration for this so lmao, get fucked
