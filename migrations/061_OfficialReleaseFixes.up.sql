@@ -9,12 +9,12 @@ DELETE FROM releases_official_entries WHERE file_id = 11 AND release_id IN (
 );
 
 -- d3dx9_31.dll is not present in non-xna releases (unsure about date)
-DELETE FROM releases_official_entries WHERE file_id = 18 AND release_id IN (
+DELETE FROM releases_official_entries WHERE file_id = 50 AND release_id IN (
     SELECT id FROM releases_official WHERE stream IN ('noxna', 'ce45') OR (version > 20151001 AND stream != 'stable')
 );
 
 -- x3daudio1_1.dll is not present in non-xna releases (unsure about date)
-DELETE FROM releases_official_entries WHERE file_id = 13 AND release_id IN (
+DELETE FROM releases_official_entries WHERE file_id = 3353 AND release_id IN (
     SELECT id FROM releases_official WHERE stream IN ('noxna', 'ce45') OR (version > 20151001 AND stream != 'stable')
 );
 
