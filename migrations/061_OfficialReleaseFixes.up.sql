@@ -4,7 +4,7 @@ DELETE FROM releases_official_entries WHERE file_id = 3348 AND release_id > (
 );
 
 -- Microsoft.Xna.Framework.dll was removed in b20150522cuttingedge
-DELETE FROM releases_official_entries WHERE file_id = 1892 AND release_id IN (
+DELETE FROM releases_official_entries WHERE file_id = 11 AND release_id IN (
     SELECT id FROM releases_official WHERE version >= 20150522 AND stream != 'stable'
 );
 
