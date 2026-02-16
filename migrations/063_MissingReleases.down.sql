@@ -1,0 +1,1 @@
+DELETE FROM releases_official WHERE version > 20250620;
