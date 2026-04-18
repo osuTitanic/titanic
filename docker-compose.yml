@@ -219,7 +219,7 @@ services:
     command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
 
   jobs:
-    build: ./jobs
+    image: ghcr.io/osutitanic/jobs:latest
     restart: unless-stopped
     env_file:
       - ".env"
@@ -233,6 +233,8 @@ services:
       - cache:cache
     networks:
       - titanic
+    volumes:
+      - "./.data:/app/.data"
     depends_on:
       db:
         condition: service_healthy
@@ -240,7 +242,6 @@ services:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
-    entrypoint: python3 main.py --file ./schedule.prod.json
 
   keel:
     build: ./web/keel
