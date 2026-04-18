@@ -8,9 +8,9 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_PORT=${POSTGRES_PORT}
     ports:
-      - '127.0.0.1:${POSTGRES_PORT}:5432'
+      - "127.0.0.1:${POSTGRES_PORT}:5432"
     volumes:
-      - './.data/postgres:/var/lib/postgresql/data'
+      - "./.data/postgres:/var/lib/postgresql/data"
     networks:
       - titanic
     healthcheck:
@@ -30,7 +30,7 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - './migrations:/migrations'
+      - "./migrations:/migrations"
     networks:
       - titanic
     links:
@@ -41,13 +41,13 @@ services:
     image: redis:8
     restart: unless-stopped
     ports:
-      - '127.0.0.1:${REDIS_PORT}:6379'
+      - "127.0.0.1:${REDIS_PORT}:6379"
     command: redis-server --save 20 1
     networks:
       - titanic
     volumes:
-      - './.data/redis/data:/root/redis'
-      - './.data/redis/config:/usr/local/etc/redis'
+      - "./.data/redis/data:/root/redis"
+      - "./.data/redis/config:/usr/local/etc/redis"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -58,7 +58,7 @@ services:
     build: ./bancho
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -76,14 +76,15 @@ services:
       # Uncomment to access http bancho from outside
       # - 127.0.0.1:5050:80
       - 6667:6667
+      - 5001:5001
       - 13380:13380
       - 13381:13381
       - 13382:13382
       - 13383:13383
       - 13384:13384
     volumes:
-      - './.data:/bancho/.data'
-      - './.data/logs/bancho:/bancho/logs'
+      - "./.data:/bancho/.data"
+      - "./.data/logs/bancho:/bancho/logs"
     depends_on:
       db:
         condition: service_healthy
@@ -105,7 +106,7 @@ services:
     build: ./web/deck
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -117,11 +118,11 @@ services:
       - db:db
       - cache:cache
     # ports:
-      # Uncomment to access deck from outside
-      # - 127.0.0.1:6060:80
+    # Uncomment to access deck from outside
+    # - 127.0.0.1:6060:80
     volumes:
-      - './.data:/deck/.data'
-      - './.data/logs/deck:/deck/logs'
+      - "./.data:/deck/.data"
+      - "./.data/logs/deck:/deck/logs"
     depends_on:
       db:
         condition: service_healthy
@@ -139,7 +140,7 @@ services:
     build: ./bot
     restart: on-failure
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -151,8 +152,8 @@ services:
       - db:db
       - cache:cache
     volumes:
-      - './.data:/bot/.data'
-      - './.data/logs/bot:/bot/logs'
+      - "./.data:/bot/.data"
+      - "./.data/logs/bot:/bot/logs"
     depends_on:
       db:
         condition: service_healthy
@@ -165,7 +166,7 @@ services:
     build: ./web/stern
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -177,12 +178,12 @@ services:
       - db:db
       - cache:cache
     # ports:
-      # Uncomment to access stern from outside
-      # - 127.0.0.1:7070:80
+    # Uncomment to access stern from outside
+    # - 127.0.0.1:7070:80
     volumes:
-      - './web/stern/app/static:/stern/app/static'
-      - './.data/logs/stern:/stern/logs'
-      - './.data:/stern/.data'
+      - "./web/stern/app/static:/stern/app/static"
+      - "./.data/logs/stern:/stern/logs"
+      - "./.data:/stern/.data"
     depends_on:
       db:
         condition: service_healthy
@@ -200,7 +201,7 @@ services:
     image: nginx:latest
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - DOLLAR=$$
     ports:
@@ -213,15 +214,15 @@ services:
       - stern:stern
       - keel:keel
     volumes:
-      - './web/nginx/templates:/etc/nginx/templates'
-      - './web/nginx/nginx.conf:/etc/nginx/nginx.conf'
+      - "./web/nginx/templates:/etc/nginx/templates"
+      - "./web/nginx/nginx.conf:/etc/nginx/nginx.conf"
     command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
 
   jobs:
     build: ./jobs
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -245,7 +246,7 @@ services:
     build: ./web/keel
     restart: unless-stopped
     env_file:
-      - '.env'
+      - ".env"
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -257,11 +258,11 @@ services:
       - db:db
       - cache:cache
     # ports:
-      # Uncomment to access keel from outside
-      # - 127.0.0.1:8090:80
+    # Uncomment to access keel from outside
+    # - 127.0.0.1:8090:80
     volumes:
-      - './.data/logs/keel:/keel/logs'
-      - './.data:/keel/.data'
+      - "./.data/logs/keel:/keel/logs"
+      - "./.data:/keel/.data"
     depends_on:
       db:
         condition: service_healthy
