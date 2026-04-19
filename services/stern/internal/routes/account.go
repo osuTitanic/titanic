@@ -74,19 +74,16 @@ func AccountLogin(ctx *server.Context) {
 	remember := ctx.Request.FormValue("remember") != ""
 	sessionTTL, persistCookie := resolveWebsiteSessionLifetime(remember)
 
-	// TODO: Move store to context or state
-	store := authentication.NewWebsiteSessionStore(ctx.State.Redis)
-	session, err := store.Create(ctx.Request.Context(), user.Id, time.Now(), sessionTTL)
+	session, err := ctx.State.SessionStore.Create(ctx.Request.Context(), user.Id, time.Now(), sessionTTL)
 	if err != nil {
 		ctx.Logger.Error("Failed to create website session", "user_id", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	// TODO: Move store to context or state
-	token, err := authentication.NewCSRFStore(ctx.State.Redis).Upsert(ctx.Request.Context(), user.Id)
+	token, err := ctx.State.CSRFStore.Upsert(ctx.Request.Context(), user.Id)
 	if err != nil {
-		_ = store.Delete(ctx.Request.Context(), session.Id)
+		ctx.State.SessionStore.Delete(ctx.Request.Context(), session.Id)
 		ctx.Logger.Error("Failed to create csrf token", "user_id", user.Id, "error", err)
 		InternalServerError(ctx)
 		return

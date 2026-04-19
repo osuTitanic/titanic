@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/database"
 	"github.com/osuTitanic/titanic-go/internal/email"
@@ -32,6 +33,11 @@ type State struct {
 	// Services
 	Rankings *rankings.RankingsService
 	PPv1     *performance.PPv1Service
+
+	// Authentication
+	SessionStore    *authentication.WebsiteSessionStore
+	SessionStoreApi *authentication.SessionStore
+	CSRFStore       *authentication.CSRFStore
 }
 
 func NewState(environmentFiles ...string) (*State, error) {
@@ -84,15 +90,18 @@ func NewState(environmentFiles ...string) (*State, error) {
 	repos := NewRepositories(db)
 
 	return &State{
-		Config:       cfg,
-		Database:     db,
-		Storage:      fs,
-		Logger:       logger,
-		Email:        mailer,
-		Redis:        redisClient,
-		Repositories: repos,
-		Rankings:     rankings.NewRankingsService(redisClient),
-		PPv1:         performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
+		Config:          cfg,
+		Database:        db,
+		Storage:         fs,
+		Logger:          logger,
+		Email:           mailer,
+		Redis:           redisClient,
+		Repositories:    repos,
+		Rankings:        rankings.NewRankingsService(redisClient),
+		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
+		CSRFStore:       authentication.NewCSRFStore(redisClient),
+		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),
+		SessionStoreApi: authentication.NewSessionStore(redisClient),
 	}, nil
 }
 

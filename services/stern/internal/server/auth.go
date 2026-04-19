@@ -20,9 +20,7 @@ func (ctx *Context) ResolveAuthentication() {
 		return
 	}
 
-	// TODO: Move store to context or state
-	store := authentication.NewWebsiteSessionStore(ctx.State.Redis)
-	session, err := store.Validate(ctx.Request.Context(), cookie.Value, time.Now())
+	session, err := ctx.State.SessionStore.Validate(ctx.Request.Context(), cookie.Value, time.Now())
 	if err != nil {
 		ctx.Logger.Warn("Failed to validate website session", "error", err)
 		ctx.ExpireSessionCookie()
@@ -57,9 +55,7 @@ func (ctx *Context) EnsureCSRFToken() (string, error) {
 		return "", nil
 	}
 
-	// TODO: Move store to context or state
-	store := authentication.NewCSRFStore(ctx.State.Redis)
-	token, err := store.Get(ctx.Request.Context(), ctx.CurrentUser.Id)
+	token, err := ctx.State.CSRFStore.Get(ctx.Request.Context(), ctx.CurrentUser.Id)
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +63,7 @@ func (ctx *Context) EnsureCSRFToken() (string, error) {
 		return token, nil
 	}
 
-	return store.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
+	return ctx.State.CSRFStore.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
 }
 
 func (ctx *Context) RefreshCSRFToken() (string, error) {
@@ -75,9 +71,7 @@ func (ctx *Context) RefreshCSRFToken() (string, error) {
 		return "", nil
 	}
 
-	// TODO: Move store to context or state
-	store := authentication.NewCSRFStore(ctx.State.Redis)
-	token, err := store.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
+	token, err := ctx.State.CSRFStore.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
 	if err != nil {
 		return "", err
 	}
@@ -96,9 +90,7 @@ func (ctx *Context) ValidateCSRF() (bool, error) {
 		token = strings.TrimSpace(ctx.Request.FormValue("csrf_token"))
 	}
 
-	// TODO: Move store to context or state
-	store := authentication.NewCSRFStore(ctx.State.Redis)
-	return store.Validate(ctx.Request.Context(), ctx.CurrentUser.Id, token)
+	return ctx.State.CSRFStore.Validate(ctx.Request.Context(), ctx.CurrentUser.Id, token)
 }
 
 func (ctx *Context) ExpireSessionCookie() {
@@ -128,9 +120,7 @@ func (ctx *Context) DeleteCurrentSessionCookie() error {
 		return nil
 	}
 
-	// TODO: Move store to context or state
-	store := authentication.NewWebsiteSessionStore(ctx.State.Redis)
-	return store.Delete(ctx.Request.Context(), sessionId)
+	return ctx.State.SessionStore.Delete(ctx.Request.Context(), sessionId)
 }
 
 func (ctx *Context) DeleteCurrentCSRFToken() error {
