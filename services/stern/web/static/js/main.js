@@ -407,12 +407,6 @@ function performApiRequest(method, path, data, callbackSuccess, callbackError) {
         if (contentType !== null) {
             xhr.setRequestHeader("Content-Type", contentType);
         }
-
-        if (cookieExists("access_token")) {
-            // Set the Authorization header, if the access_token cookie is accessible via. javascript
-            // This will be useful for local development, where the api is located on a different domain
-            xhr.setRequestHeader("Authorization", "Bearer " + getCookie("access_token"));
-        }
     } catch (e) {
         console.warn("This browser does not support setting headers.");
     }
