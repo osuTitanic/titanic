@@ -3,7 +3,9 @@ package routes
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
@@ -13,7 +15,7 @@ import (
 func NotFound(ctx *server.Context) {
 	ctx.RenderTemplate(
 		http.StatusNotFound, "errors/404",
-		BuildDefaultView(ctx.State),
+		BuildDefaultView(ctx),
 	)
 }
 
@@ -24,7 +26,7 @@ func InternalServerError(ctx *server.Context) {
 		return
 	}
 
-	body, err := ctx.Templates.Render("errors/500", BuildDefaultView(ctx.State))
+	body, err := ctx.Templates.Render("errors/500", BuildDefaultView(ctx))
 	if err != nil {
 		ctx.Logger.Error("Failed to render template", "template", "errors/500", "error", err)
 		templates.InternalServerErrorFallback(ctx.Response)
@@ -38,10 +40,21 @@ func InternalServerError(ctx *server.Context) {
 	}
 }
 
-func BuildDefaultView(state *state.State) templates.DefaultView {
+func BuildDefaultView(ctx *server.Context) templates.DefaultView {
+	currentPath := ctx.Request.URL.Path
+	currentURI := "/"
+
+	if requestURI := ctx.Request.URL.RequestURI(); requestURI != "" {
+		currentURI = requestURI
+	}
+
 	return templates.DefaultView{
-		Stats:  BuildStatistics(state),
-		Config: state.Config,
+		Stats:       BuildStatistics(ctx.State),
+		Config:      ctx.State.Config,
+		CSRFToken:   ctx.CSRFToken,
+		CurrentUser: ctx.CurrentUser,
+		CurrentPath: currentPath,
+		CurrentURI:  currentURI,
 	}
 }
 
@@ -72,4 +85,23 @@ func BuildStatistics(state *state.State) (stats templates.Statistics) {
 		stats.TotalScores, _ = strconv.Atoi(totalScores)
 	}
 	return stats
+}
+
+func SanitizeRedirectTarget(target string) string {
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return ""
+	}
+
+	parsed, err := url.Parse(target)
+	if err != nil || parsed.IsAbs() || parsed.Host != "" {
+		return "/"
+	}
+
+	requestURI := parsed.RequestURI()
+	if requestURI == "" || !strings.HasPrefix(requestURI, "/") || strings.HasPrefix(requestURI, "//") {
+		return "/"
+	}
+
+	return requestURI
 }

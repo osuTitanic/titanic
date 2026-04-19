@@ -3,7 +3,7 @@
 {{ block head() }}
 <title>Titanic! - Reviving old osu!</title>
 <meta property="og:title" content="Titanic! - Reviving old osu!">
-<meta property="og:image" content="/images/logo/main-low.png">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}">
 <meta property="og:description" content="Relive the early days of osu! with Titanic.">
 <link rel="stylesheet" href="/css/home.css">

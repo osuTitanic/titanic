@@ -27,9 +27,9 @@
         var osuBaseurl = "{{ .Config.OsuBaseUrl() }}";
         var staticBaseurl = "{{ .Config.StaticBaseUrl() }}";
         var approvedRewards = {{ .Config.ApprovedMapRewards }};
-        var currentUser = null; // TODO: add the authenticated user ID
-        var currentUsername = ""; // TODO: add the authenticated username
-        var csrfToken = ""; // TODO: add CSRF tokens
+        var currentUser = {{ if .CurrentUser }}{{ .CurrentUser.Id }}{{ else }}null{{ end }};
+        var currentUsername = "{{ if .CurrentUser }}{{ .CurrentUser.Name }}{{ end }}";
+        var csrfToken = "{{ .CSRFToken }}";
     </script>
     <script src="/lib/instant.page.js" type="module" defer></script>
     <!-- TODO: add modern-browser-only assets -->
@@ -137,22 +137,48 @@
                     </form>
                 </div>
                 <div class="login-container">
-                    <!-- TODO: add authentication logic -->
-                    <span class="nav-login" id="welcome-text">Welcome, guest!</span>
-                    <a onclick="showLoginForm()" class="nav-login" id="login-text">
-                        <i class="icon-caret-down"></i>
-                        Login
-                    </a>
-                    <a href="/account/register" class="nav-login" id="register-text">
-                        <i class="icon-magic"></i>
-                        I'm new!
-                    </a>
+                    {{ if .CurrentUser }}
+                        <span class="nav-login" id="welcome-text">
+                            Welcome, <b><a href="/u/{{ .CurrentUser.Id }}">{{ .CurrentUser.Name }}</a></b>
+                        </span>
+                        <a href="/account/profile#avatar" style="height: 25px">
+                            <img class="small-avatar" src="{{ .CurrentUser.AvatarUrl() }}" alt="">
+                        </a>
+                        <a href="/account"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
+                        <a href="/account#notifications">
+                            <i class="icon-bell-alt" style="color: #808080;"></i>
+                            No notifications
+                            <!-- TODO: Notifications -->
+                        </a>
+                        <a href="#" onclick="document.getElementById('logout-form').submit()" class="nav-login" id="logout-text">
+                            <i class="icon-power-off" style="color: #808080;"></i> Logout
+                        </a>
+                        <form action="/account/logout" id="logout-form" method="post" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+                            <input type="hidden" name="redirect" value="{{ .CurrentURI }}"/>
+                        </form>
+                    {{ else }}
+                        {{ if .CurrentPath != "/account/login" }}
+                        <span class="nav-login" id="welcome-text">Welcome, guest!</span>
+                        <a onclick="showLoginForm()" class="nav-login" id="login-text">
+                            <i class="icon-caret-down"></i>
+                            Login
+                        </a>
+                        <a href="/account/register" class="nav-login" id="register-text">
+                            <i class="icon-magic"></i>
+                            I'm new!
+                        </a>
+                        {{ end }}
+                    {{ end }}
                 </div>
             </div>
             <div class="login-dropdown" style="display: none;">
                 <form action="/account/login" method="post">
+                    {{ if .CurrentPath }}
+                    <input type="hidden" name="redirect" value="{{ .CurrentPath }}">
+                    {{ else }}
                     <input type="hidden" name="redirect" value="/">
-                    <!-- TODO: populate the login redirect target -->
+                    {{ end }}
                     Please enter your credentials:
                     <br>
                     <input id="username-field" class="post" type="text" name="username" placeholder="Username" maxlength="30" value="" tabindex="0" autocomplete="off">
@@ -173,11 +199,10 @@
                             Create new account!
                         </a>
                     </div>
-                    <input type="hidden" name="csrf_token" value="">
-                    <!-- TODO: add a real CSRF tokens -->
+                    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
                 </form>
             </div>
-            <!-- TODO: add IE-only scripts -->
+            <!-- TODO: Add IE-only scripts -->
             <script src="/lib/jquery.min.js"></script>
             <script src="/lib/jquery.migrate.min.js" defer></script>
             <script src="/lib/jquery.timeago.js" defer></script>
@@ -189,7 +214,7 @@
             </div>
             <div class="gradient"></div>
             <script src="/js/editor.js" fetchpriority="low" defer></script>
-            <!-- TODO: add the seasonal snow script -->
+            <!-- TODO: Add the seasonal snow script -->
         </div>
     </div>
 </body>

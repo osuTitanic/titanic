@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/authentication"
+	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -57,11 +60,14 @@ func NewServer(host string, port int, name string, state *state.State, engine *t
 
 // Context is a struct that holds the request context for each endpoint call.
 type Context struct {
-	Response  http.ResponseWriter
-	Request   *http.Request
-	State     *state.State
-	Templates *templates.Engine
-	Logger    *slog.Logger
+	Response       http.ResponseWriter
+	Request        *http.Request
+	State          *state.State
+	Templates      *templates.Engine
+	Logger         *slog.Logger
+	CurrentUser    *schemas.User
+	CurrentSession *authentication.WebsiteSession
+	CSRFToken      string
 }
 
 func (ctx *Context) IP() string {
@@ -72,6 +78,10 @@ func (ctx *Context) IP() string {
 // e.g. if the route is "/users/{id}", you can get the "id" variable by calling ctx.PathValue("id").
 func (ctx *Context) PathValue(name string) string {
 	return ctx.Request.PathValue(name)
+}
+
+func (ctx *Context) Redirect(status int, location string) {
+	http.Redirect(ctx.Response, ctx.Request, location, status)
 }
 
 func (ctx *Context) RenderTemplate(status int, name string, data any) error {
@@ -92,6 +102,18 @@ func (ctx *Context) RenderTemplate(status int, name string, data any) error {
 	ctx.Response.Header().Set("Content-Type", "text/html; charset=utf-8")
 	ctx.Response.WriteHeader(status)
 	_, err = ctx.Response.Write(body)
+	return err
+}
+
+func (ctx *Context) RenderJson(status int, data any) error {
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	ctx.Response.Header().Set("Content-Type", "application/json; charset=utf-8")
+	ctx.Response.WriteHeader(status)
+	_, err = ctx.Response.Write(payload)
 	return err
 }
 
@@ -154,6 +176,7 @@ func (server *Server) ContextMiddleware(handler func(*Context)) http.HandlerFunc
 		}
 
 		w.Header().Set("Server", server.Name)
+		context.ResolveAuthentication()
 		handler(context)
 	}
 }

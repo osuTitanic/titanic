@@ -13,6 +13,9 @@ import (
 
 func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /{$}", routes.Home)
+	server.Handle("GET /account/login", routes.AccountLoginPage)
+	server.Handle("POST /account/login", routes.AccountLogin)
+	server.Handle("POST /account/logout", routes.AccountLogout)
 	server.Handle("GET /", routes.NotFound)
 }
 
