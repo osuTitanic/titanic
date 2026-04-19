@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -58,6 +59,13 @@ type User struct {
 
 func (User) TableName() string {
 	return "users"
+}
+
+func (user User) AvatarUrl() string {
+	if user.AvatarHash == nil {
+		return fmt.Sprintf("/a/%d", user.Id)
+	}
+	return fmt.Sprintf("/a/%d?c=%s", user.Id, *user.AvatarHash)
 }
 
 type Stats struct {
