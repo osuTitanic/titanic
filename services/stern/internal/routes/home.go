@@ -12,5 +12,5 @@ func Home(ctx *server.Context) {
 		DefaultView: BuildDefaultView(ctx),
 		// TODO: Add more data
 	}
-	ctx.RenderTemplate(http.StatusOK, "pages/home", view)
+	ctx.RenderTemplate(http.StatusOK, "pages/public/home", view)
 }
