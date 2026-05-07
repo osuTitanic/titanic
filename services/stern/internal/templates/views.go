@@ -22,7 +22,9 @@ type DefaultView struct {
 
 type HomeView struct {
 	DefaultView
-	// TODO: Add news, chat, most played maps, ...
+	News               []schemas.ForumPost
+	ChatMessages       []schemas.Message
+	MostPlayedBeatmaps map[int]schemas.Beatmapset
 }
 
 type LoginView struct {

@@ -19,6 +19,17 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 		jet.DevelopmentMode(cfg.Reload),
 	)
 	set.AddGlobalFunc("formatNumber", formatNumber)
+	set.AddGlobalFunc("homeNewsDate", homeNewsDate)
+	set.AddGlobalFunc("homeNewsLink", homeNewsLink)
+	set.AddGlobalFunc("homeNewsTitle", homeNewsTitle)
+	set.AddGlobalFunc("homeNewsAuthor", homeNewsAuthor)
+	set.AddGlobalFunc("homeNewsText", homeNewsText)
+	set.AddGlobalFunc("homeChatTime", homeChatTime)
+	set.AddGlobalFunc("homeMostPlayedRows", homeMostPlayedRows)
+	set.AddGlobalFunc("homeBeatmapsetURL", homeBeatmapsetURL)
+	set.AddGlobalFunc("homeBeatmapsetName", homeBeatmapsetName)
+	set.AddGlobalFunc("homeBeatmapsetCreatorName", homeBeatmapsetCreatorName)
+	set.AddGlobalFunc("homeBeatmapsetCreatorURL", homeBeatmapsetCreatorUrl)
 	return &Engine{Set: set}, nil
 }
 
