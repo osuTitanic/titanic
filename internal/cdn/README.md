@@ -17,7 +17,7 @@ func main() {
 }
 ```
 
-You can also use `NewClient` to target the redirect host (`cdn.DefaultRedirectBaseUrl`) or a local CDN server:
+You can also use `NewClient` to target the redirect host / s3 passthrough (`cdn.DefaultRedirectBaseUrl`) or a local CDN server:
 
 ```go
 client, err := cdn.NewClient(
@@ -39,21 +39,6 @@ if err != nil {
 defer object.Body.Close()
 
 _, err = io.Copy(destination, object.Body)
-```
-
-When using the redirect host / s3 passthrough, `GetObject` returns the `307` response with the `Location` header:
-
-```go
-client, err := cdn.NewClient(cdn.DefaultRedirectBaseUrl)
-if err != nil {
-	return err
-}
-
-object, err := client.GetObject(context.Background(), "path/to/object", nil)
-if err != nil {
-	return err
-}
-fmt.Println(object.Location())
 ```
 
 You can call admin endpoints using the authenticated client:

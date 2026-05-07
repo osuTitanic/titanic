@@ -23,12 +23,7 @@ func isResponseJson(resp *http.Response) bool {
 }
 
 func defaultHttpClient() *http.Client {
-	return &http.Client{
-		Timeout: 30 * time.Second,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
+	return &http.Client{Timeout: 30 * time.Second}
 }
 
 func joinUrlPath(basePath string, requestPath string) string {
