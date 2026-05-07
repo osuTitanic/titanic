@@ -1,15 +1,14 @@
 package tasks
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"strings"
-	"sync"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
+	"github.com/osuTitanic/titanic-go/services/jobs/internal/workers"
 )
 
 // TODO: somehow defer this into cli
@@ -70,81 +69,11 @@ func indexRanksForPlayer(app *state.State, logger *slog.Logger, player *schemas.
 
 func indexRanksForPlayers(app *state.State, logger *slog.Logger, players []*schemas.User) error {
 	workerCount := rankIndexWorkerCount(app, len(players))
-	if workerCount == 0 {
-		return nil
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	var wg sync.WaitGroup
-
-	jobs := make(chan *schemas.User)
-	errs := make(chan error, 1)
-
-	worker := func() {
-		defer wg.Done()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case player, ok := <-jobs:
-				if !ok {
-					return
-				}
-				if err := indexRanksForPlayer(app, logger, player); err != nil {
-					select {
-					case errs <- err:
-						cancel()
-					default:
-					}
-					return
-				}
-			}
-		}
-	}
-
-	for range workerCount {
-		wg.Add(1)
-		go worker()
-	}
-
-	for _, player := range players {
-		select {
-		case <-ctx.Done():
-			close(jobs)
-			wg.Wait()
-			return <-errs
-		case jobs <- player:
-		}
-	}
-
-	close(jobs)
-	wg.Wait()
-
-	select {
-	case err := <-errs:
-		return err
-	default:
-		return nil
-	}
+	return workers.RunWorkerPool(players, workerCount, func(player *schemas.User) error {
+		return indexRanksForPlayer(app, logger, player)
+	})
 }
 
 func rankIndexWorkerCount(app *state.State, playerCount int) int {
-	if playerCount <= 0 {
-		return 0
-	}
-	workerCount := rankIndexWorkers
-
-	if app.Config.PostgresPoolSize > 0 {
-		workerCount = app.Config.PostgresPoolSize
-	}
-
-	if workerCount < 1 {
-		return 1
-	}
-	if workerCount > playerCount {
-		return playerCount
-	}
-	return workerCount
+	return workers.TaskWorkerCount(app, playerCount, rankIndexWorkers)
 }
