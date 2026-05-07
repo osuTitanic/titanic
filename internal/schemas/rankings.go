@@ -26,7 +26,6 @@ type Score struct {
 	BeatmapId     int                   `gorm:"column:beatmap_id"`
 	ClientVersion int                   `gorm:"column:client_version"`
 	ClientString  string                `gorm:"column:client_version_string;default:"`
-	ClientHash    *string               `gorm:"column:client_hash"`
 	Checksum      string                `gorm:"column:score_checksum"`
 	Mode          constants.Mode        `gorm:"column:mode"`
 	PP            float64               `gorm:"column:pp"`
