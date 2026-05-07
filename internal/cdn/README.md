@@ -59,49 +59,49 @@ fmt.Println(object.Location())
 You can call admin endpoints using the authenticated client:
 
 1. Use `AdminSession` to fetch the current access key permissions
-```go
-session, err := client.AdminSession(context.Background())
-if err != nil {
-	return err
-}
-fmt.Println(session.Name, session.Permissions)
-```
+	```go
+	session, err := client.AdminSession(context.Background())
+	if err != nil {
+		return err
+	}
+	fmt.Println(session.Name, session.Permissions)
+	```
 
 2. Use `AdminListFiles` to list objects under a prefix
-```go
-files, err := client.AdminListFiles(context.Background(), cdn.ListFilesOptions{
-	Prefix: "path/to/prefix",
-	Limit:  100,
-})
-if err != nil {
-	return err
-}
-
-for _, file := range files.Items {
-	fmt.Println(file.Key, file.Size)
-}
-```
+	```go
+	files, err := client.AdminListFiles(context.Background(), cdn.ListFilesOptions{
+		Prefix: "path/to/prefix",
+		Limit:  100,
+	})
+	if err != nil {
+		return err
+	}
+	
+	for _, file := range files.Items {
+		fmt.Println(file.Key, file.Size)
+	}
+	```
 
 3. Use `AdminUploadFile` to upload or replace an object
-```go
-upload, err := client.AdminUploadFile(
-	context.Background(),
-	"path/to/object",
-	fileReader,
-	&cdn.UploadFileOptions{
-		ContentType:  "application/octet-stream",
-		CacheControl: "public, max-age=31536000, immutable",
-	},
-)
-if err != nil {
-	return err
-}
-fmt.Println(upload.Key, upload.ETag)
-```
+	```go
+	upload, err := client.AdminUploadFile(
+		context.Background(),
+		"path/to/object",
+		fileReader,
+		&cdn.UploadFileOptions{
+			ContentType:  "application/octet-stream",
+			CacheControl: "public, max-age=31536000, immutable",
+		},
+	)
+	if err != nil {
+		return err
+	}
+	fmt.Println(upload.Key, upload.ETag)
+	```
 
 4. Use `AdminDeleteFile` to delete an object
-```go
-if err := client.AdminDeleteFile(context.Background(), "path/to/object"); err != nil {
-	return err
-}
-```
+	```go
+	if err := client.AdminDeleteFile(context.Background(), "path/to/object"); err != nil {
+		return err
+	}
+	```
