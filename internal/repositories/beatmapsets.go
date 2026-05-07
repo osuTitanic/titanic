@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
@@ -55,4 +57,52 @@ func (r *BeatmapsetRepository) FetchByStatus(status constants.BeatmapStatus, pre
 	var beatmapsets []*schemas.Beatmapset
 	err := Preloaded(r.db, preload).Where("submission_status = ?", status).Find(&beatmapsets).Error
 	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) (map[int]schemas.Beatmapset, error) {
+	type result struct {
+		SetId     int
+		PlayCount int
+	}
+
+	var results []result
+	err := r.db.Model(&schemas.Score{}).
+		Select("beatmaps.set_id, COUNT(scores.id) AS play_count").
+		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
+		Where("scores.submitted_at >= ?", since).
+		Where("scores.hidden = ?", false).
+		Group("beatmaps.set_id").
+		Order("play_count DESC").
+		Limit(limit).
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	setIds := make([]int, 0, len(results))
+	for _, result := range results {
+		setIds = append(setIds, result.SetId)
+	}
+
+	beatmapsets, err := r.ManyById(setIds, preload...)
+	if err != nil {
+		return nil, err
+	}
+
+	beatmapsetsById := make(map[int]schemas.Beatmapset, len(beatmapsets))
+	for _, beatmapset := range beatmapsets {
+		beatmapsetsById[beatmapset.Id] = *beatmapset
+	}
+
+	mostPlayed := make(map[int]schemas.Beatmapset, len(results))
+	for _, result := range results {
+		beatmapset, ok := beatmapsetsById[result.SetId]
+		if !ok {
+			continue
+		}
+		mostPlayed[result.PlayCount] = beatmapset
+	}
+
+	// TODO: Check if we can put this into a subquery
+	return mostPlayed, nil
 }
