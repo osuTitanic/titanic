@@ -22,7 +22,11 @@ func (r *AchievementRepository) Delete(achievement *schemas.Achievement) error {
 }
 
 func (r *AchievementRepository) Update(updates *schemas.Achievement, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND name = ?", updates.UserId, updates.Name),
+		updates,
+		columns...,
+	)
 }
 
 func (r *AchievementRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Achievement, error) {

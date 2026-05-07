@@ -22,7 +22,11 @@ func (r *RelationshipRepository) Delete(relationship *schemas.Relationship) erro
 }
 
 func (r *RelationshipRepository) Update(updates *schemas.Relationship, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND target_id = ?", updates.UserId, updates.TargetId),
+		updates,
+		columns...,
+	)
 }
 
 func (r *RelationshipRepository) ByUserAndTarget(userId int, targetId int, preload ...string) (*schemas.Relationship, error) {

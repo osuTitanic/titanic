@@ -34,5 +34,9 @@ func (r *MatchRepository) DeleteEvent(event *schemas.MatchEvent) error {
 }
 
 func (r *MatchRepository) UpdateEvent(updates *schemas.MatchEvent, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("match_id = ? AND time = ?", updates.MatchId, updates.Time),
+		updates,
+		columns...,
+	)
 }

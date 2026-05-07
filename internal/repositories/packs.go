@@ -34,5 +34,9 @@ func (r *BeatmapPackRepository) DeleteEntry(entry *schemas.BeatmapPackEntry) err
 }
 
 func (r *BeatmapPackRepository) UpdateEntry(updates *schemas.BeatmapPackEntry, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("pack_id = ? AND beatmapset_id = ?", updates.PackId, updates.BeatmapsetId),
+		updates,
+		columns...,
+	)
 }

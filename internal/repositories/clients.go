@@ -22,7 +22,18 @@ func (r *ClientRepository) Delete(client *schemas.HardwareInfo) error {
 }
 
 func (r *ClientRepository) Update(updates *schemas.HardwareInfo, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where(
+			"user_id = ? AND executable = ? AND adapters = ? AND unique_id = ? AND disk_signature = ?",
+			updates.UserId,
+			updates.Executable,
+			updates.Adapters,
+			updates.UniqueId,
+			updates.DiskSignature,
+		),
+		updates,
+		columns...,
+	)
 }
 
 func (r *ClientRepository) CreateVerified(client *schemas.HardwareVerified) error {
@@ -34,5 +45,9 @@ func (r *ClientRepository) DeleteVerified(client *schemas.HardwareVerified) erro
 }
 
 func (r *ClientRepository) UpdateVerified(updates *schemas.HardwareVerified, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("type = ? AND hash = ?", updates.Type, updates.Hash),
+		updates,
+		columns...,
+	)
 }

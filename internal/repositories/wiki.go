@@ -62,7 +62,11 @@ func (r *WikiContentRepository) Delete(content *schemas.WikiContent) error {
 }
 
 func (r *WikiContentRepository) Update(updates *schemas.WikiContent, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("page_id = ? AND language = ?", updates.PageId, updates.Language),
+		updates,
+		columns...,
+	)
 }
 
 type WikiOutlinkRepository struct {
@@ -82,5 +86,9 @@ func (r *WikiOutlinkRepository) Delete(outlink *schemas.WikiOutlink) error {
 }
 
 func (r *WikiOutlinkRepository) Update(updates *schemas.WikiOutlink, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("page_id = ? AND target_id = ?", updates.PageId, updates.TargetId),
+		updates,
+		columns...,
+	)
 }

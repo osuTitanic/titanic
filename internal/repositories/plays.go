@@ -22,5 +22,9 @@ func (r *BeatmapPlaysRepository) Delete(plays *schemas.BeatmapPlays) error {
 }
 
 func (r *BeatmapPlaysRepository) Update(updates *schemas.BeatmapPlays, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND beatmap_id = ?", updates.UserId, updates.BeatmapId),
+		updates,
+		columns...,
+	)
 }

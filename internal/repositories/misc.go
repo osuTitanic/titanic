@@ -23,7 +23,11 @@ func (r *NotificationRepository) Delete(notification *schemas.Notification) erro
 }
 
 func (r *NotificationRepository) Update(updates *schemas.Notification, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("id = ? AND user_id = ?", updates.Id, updates.UserId),
+		updates,
+		columns...,
+	)
 }
 
 func (r *NotificationRepository) ById(id int64, preload ...string) (*schemas.Notification, error) {
