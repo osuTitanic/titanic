@@ -3,12 +3,14 @@ package tasks
 import (
 	"log/slog"
 	"sort"
-	"sync"
 
 	"github.com/osuTitanic/titanic-go/internal/performance"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
+	"github.com/osuTitanic/titanic-go/services/jobs/internal/workers"
 )
+
+var ppv1UpdateWorkers = 8
 
 // UpdatePPv1 updates ppv1 calculations for all users
 func UpdatePPv1(app *state.State, logger *slog.Logger) error {
@@ -30,21 +32,26 @@ func UpdatePPv1(app *state.State, logger *slog.Logger) error {
 	sort.Slice(userList, func(i, j int) bool {
 		return resolveUserPPv1(userList[i]) > resolveUserPPv1(userList[j])
 	})
-	var wg sync.WaitGroup
 
-	performUpdate := func(user *schemas.User) {
-		defer wg.Done()
+	logger.Info(
+		"Starting ppv1 update workers",
+		"workers", ppv1UpdateWorkerCount(app, len(userList)),
+	)
+	return updatePPv1ForUsers(app, logger, userList)
+}
+
+func updatePPv1ForUsers(app *state.State, logger *slog.Logger, users []*schemas.User) error {
+	workerCount := ppv1UpdateWorkerCount(app, len(users))
+	return workers.RunWorkerPool(users, workerCount, func(user *schemas.User) error {
 		if err := updatePPv1ForUser(app, logger, user); err != nil {
 			logger.Error("Failed to update user", "id", user.Id, "error", err)
 		}
-	}
-	for _, user := range userList {
-		wg.Add(1)
-		go performUpdate(user)
-	}
+		return nil
+	})
+}
 
-	wg.Wait()
-	return nil
+func ppv1UpdateWorkerCount(app *state.State, userCount int) int {
+	return workers.TaskWorkerCount(app, userCount, ppv1UpdateWorkers)
 }
 
 func updatePPv1ForUser(app *state.State, logger *slog.Logger, user *schemas.User) error {
