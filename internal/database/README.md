@@ -2,7 +2,7 @@
 
 This module manages the PostgreSQL database session used by the app, housing on [GORM](https://gorm.io/) with the PostgreSQL driver.
 
-### Usage with state system
+## Usage with state system
 
 Most services should use `state.NewState(...)` instead of creating a database session directly.
 `State` manages the database lifecycle and calls `database.CloseSession` from `state.Close()`.
