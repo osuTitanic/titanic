@@ -7,11 +7,9 @@ This module loads the app configuration from environment variables and dotenv fi
 Load the default `.env` file and parse the current process environment into a `Config`.
 
 ```go
-func main() {
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		panic(err)
-	}
+cfg, err := config.LoadConfig()
+if err != nil {
+	panic(err)
 }
 ```
 
@@ -21,7 +19,7 @@ Files are loaded in order before parsing the environment.
 ```go
 cfg, err := config.LoadConfig(".env", ".env.local")
 if err != nil {
-	return err
+	panic(err)
 }
 ```
 
