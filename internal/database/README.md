@@ -2,6 +2,10 @@
 
 This module manages the PostgreSQL database session used by the app, housing on [GORM](https://gorm.io/) with the PostgreSQL driver.
 
+For the database schemas & repositories, please view their respective documentations:
+- [Schemas](../schemas/README.md)
+- [Repositories](../repositories/README.md)
+
 ## Usage with state system
 
 Most services should use `state.NewState(...)` instead of creating a database session directly.
