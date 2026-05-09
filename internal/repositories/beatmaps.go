@@ -81,7 +81,7 @@ func (r *BeatmapRepository) GetCountGroupedByStatus(mode int) (map[int]int, erro
 	return counts, err
 }
 
-func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) (map[int]schemas.Beatmap, error) {
+func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) (map[int]*schemas.Beatmap, error) {
 	type result struct {
 		BeatmapId int
 		PlayCount int
@@ -110,12 +110,12 @@ func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, pre
 		return nil, err
 	}
 
-	beatmapsById := make(map[int]schemas.Beatmap, len(beatmaps))
+	beatmapsById := make(map[int]*schemas.Beatmap, len(beatmaps))
 	for _, beatmap := range beatmaps {
-		beatmapsById[beatmap.Id] = *beatmap
+		beatmapsById[beatmap.Id] = beatmap
 	}
 
-	mostPlayed := make(map[int]schemas.Beatmap, len(results))
+	mostPlayed := make(map[int]*schemas.Beatmap, len(results))
 	for _, result := range results {
 		beatmap, ok := beatmapsById[result.BeatmapId]
 		if !ok {

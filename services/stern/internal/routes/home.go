@@ -79,7 +79,7 @@ func fetchHomeChatMessages(ctx *server.Context) []schemas.Message {
 	return values
 }
 
-func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]schemas.Beatmap {
+func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]*schemas.Beatmap {
 	beatmaps, err := ctx.State.Beatmaps.FetchMostPlayedSince(
 		time.Now().Add(-mostPlayedDelta),
 		mostPlayedLimit,
@@ -88,7 +88,7 @@ func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]schemas.Beatmap {
 	)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home most played beatmaps", "error", err)
-		return map[int]schemas.Beatmap{}
+		return map[int]*schemas.Beatmap{}
 	}
 	return beatmaps
 }
