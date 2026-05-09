@@ -2,6 +2,8 @@ package schemas
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -85,8 +87,29 @@ func (ForumPost) TableName() string {
 	return "forum_posts"
 }
 
-func (post ForumPost) Link() string {
+func (post *ForumPost) Link() string {
 	return fmt.Sprintf("/forum/%d/t/%d/", post.ForumId, post.TopicId)
+}
+
+func (post *ForumPost) Render() string {
+	// TODO: BBCode rendering
+	return post.Content
+}
+
+func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
+	for line := range strings.SplitSeq(post.Content, "\n") {
+		content := strings.TrimSpace(line)
+		for _, regex := range ignoreTags {
+			content = regex.ReplaceAllString(content, "")
+		}
+
+		// TODO: BBCode rendering
+		content = strings.TrimSpace(content)
+		if content != "" {
+			return content
+		}
+	}
+	return ""
 }
 
 type ForumIcon struct {
