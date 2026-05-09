@@ -20,6 +20,7 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	)
 	set.AddGlobalFunc("formatNumber", formatNumber)
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
+	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
 	return &Engine{Set: set}, nil
 }
 

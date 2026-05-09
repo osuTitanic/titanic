@@ -168,17 +168,17 @@
             </tr>
         </thead>
         <tbody>
-        {{ range count, beatmap := . }}
+        {{ range item := homeIterateMostPlayed(.) }}
             <tr class="row-dark">
-                <td>{{ formatNumber(count) }}</td>
+                <td>{{ formatNumber(item.Count) }}</td>
                 <td>
-                    <img src="/mt/{{ beatmap.SetId }}" loading="lazy" alt="" width="80" height="60">
-                    <a href="{{ beatmap.Link() }}">
-                        {{ beatmap.Name() }}
+                    <img src="/mt/{{ item.Beatmap.SetId }}" loading="lazy" alt="" width="80" height="60">
+                    <a href="{{ item.Beatmap.Link() }}">
+                        {{ item.Beatmap.Name() }}
                     </a>
                 </td>
                 <td>
-                    <a href="{{ beatmap.Beatmapset.CreatorLink() }}">{{ beatmap.Beatmapset.CreatorName() }}</a>
+                    <a href="{{ item.Beatmap.Beatmapset.CreatorLink() }}">{{ item.Beatmap.Beatmapset.CreatorName() }}</a>
                 </td>
             </tr>
         {{ end }}
