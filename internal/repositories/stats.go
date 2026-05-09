@@ -22,7 +22,11 @@ func (r *StatsRepository) Delete(stats *schemas.Stats) error {
 }
 
 func (r *StatsRepository) Update(updates *schemas.Stats, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("id = ? AND mode = ?", updates.UserId, updates.Mode),
+		updates,
+		columns...,
+	)
 }
 
 func (r *StatsRepository) ByMode(userId int, mode int, preload ...string) (*schemas.Stats, error) {

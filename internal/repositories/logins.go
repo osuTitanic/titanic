@@ -22,5 +22,9 @@ func (r *LoginRepository) Delete(login *schemas.Login) error {
 }
 
 func (r *LoginRepository) Update(updates *schemas.Login, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND time = ?", updates.UserId, updates.Time),
+		updates,
+		columns...,
+	)
 }

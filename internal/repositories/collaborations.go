@@ -22,7 +22,11 @@ func (r *BeatmapCollaborationRepository) Delete(collaboration *schemas.BeatmapCo
 }
 
 func (r *BeatmapCollaborationRepository) Update(updates *schemas.BeatmapCollaboration, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND beatmap_id = ?", updates.UserId, updates.BeatmapId),
+		updates,
+		columns...,
+	)
 }
 
 func (r *BeatmapCollaborationRepository) CreateRequest(request *schemas.BeatmapCollaborationRequest) error {

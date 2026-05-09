@@ -22,7 +22,11 @@ func (r *InfringementRepository) Delete(infringement *schemas.Infringement) erro
 }
 
 func (r *InfringementRepository) Update(updates *schemas.Infringement, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("id = ? AND time = ?", updates.Id, updates.Time),
+		updates,
+		columns...,
+	)
 }
 
 func (r *InfringementRepository) ById(id int, preload ...string) (*schemas.Infringement, error) {

@@ -191,7 +191,11 @@ func (r *ForumReportRepository) Delete(report *schemas.ForumReport) error {
 }
 
 func (r *ForumReportRepository) Update(updates *schemas.ForumReport, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("post_id = ? AND user_id = ?", updates.PostId, updates.UserId),
+		updates,
+		columns...,
+	)
 }
 
 type ForumStarRepository struct {
@@ -211,7 +215,11 @@ func (r *ForumStarRepository) Delete(star *schemas.ForumStar) error {
 }
 
 func (r *ForumStarRepository) Update(updates *schemas.ForumStar, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("topic_id = ? AND user_id = ?", updates.TopicId, updates.UserId),
+		updates,
+		columns...,
+	)
 }
 
 type ForumBookmarkRepository struct {
@@ -231,7 +239,11 @@ func (r *ForumBookmarkRepository) Delete(bookmark *schemas.ForumBookmark) error 
 }
 
 func (r *ForumBookmarkRepository) Update(updates *schemas.ForumBookmark, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND topic_id = ?", updates.UserId, updates.TopicId),
+		updates,
+		columns...,
+	)
 }
 
 type ForumSubscriberRepository struct {
@@ -251,5 +263,9 @@ func (r *ForumSubscriberRepository) Delete(subscriber *schemas.ForumSubscriber) 
 }
 
 func (r *ForumSubscriberRepository) Update(updates *schemas.ForumSubscriber, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND topic_id = ?", updates.UserId, updates.TopicId),
+		updates,
+		columns...,
+	)
 }

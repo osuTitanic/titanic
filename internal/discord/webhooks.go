@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const WebhookUserAgent = "osuTitanic/officer"
+const WebhookUserAgent = "osuTitanic/titanic"
 
 type Footer struct {
 	Text         string  `json:"text"`

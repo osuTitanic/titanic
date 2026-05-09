@@ -118,7 +118,11 @@ func (r *ReleasesOfficialRepository) DeleteEntry(entry *schemas.ReleasesOfficial
 }
 
 func (r *ReleasesOfficialRepository) UpdateEntry(updates *schemas.ReleasesOfficialEntries, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("release_id = ? AND file_id = ?", updates.ReleaseId, updates.FileId),
+		updates,
+		columns...,
+	)
 }
 
 func (r *ReleasesOfficialRepository) CreateFile(file *schemas.ReleaseFiles) error {

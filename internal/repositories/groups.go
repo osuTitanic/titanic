@@ -50,7 +50,11 @@ func (r *GroupRepository) CreateEntry(entry *schemas.GroupEntry) error {
 }
 
 func (r *GroupRepository) UpdateEntry(updates *schemas.GroupEntry, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("group_id = ? AND user_id = ?", updates.GroupId, updates.UserId),
+		updates,
+		columns...,
+	)
 }
 
 func (r *GroupRepository) DeleteEntry(entry *schemas.GroupEntry) error {

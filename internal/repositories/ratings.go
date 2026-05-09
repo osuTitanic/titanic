@@ -22,5 +22,9 @@ func (r *BeatmapRatingRepository) Delete(rating *schemas.BeatmapRating) error {
 }
 
 func (r *BeatmapRatingRepository) Update(updates *schemas.BeatmapRating, columns ...string) (int64, error) {
-	return CommonUpdate(r.db, updates, columns...)
+	return CommonUpdate(
+		r.db.Where("user_id = ? AND map_checksum = ?", updates.UserId, updates.MapChecksum),
+		updates,
+		columns...,
+	)
 }

@@ -22,11 +22,12 @@ func (r *PermissionsRepository) DeleteUserPermission(permission *schemas.UserPer
 }
 
 func (r *PermissionsRepository) UpdateUserPermission(updates *schemas.UserPermission, columns ...string) (int64, error) {
+	query := r.db.Where("id = ? AND user_id = ?", updates.Id, updates.UserId)
 	if len(columns) == 0 {
-		result := r.db.Save(updates)
+		result := query.Save(updates)
 		return result.RowsAffected, result.Error
 	}
-	result := r.db.Model(updates).Select(columns).Updates(updates)
+	result := query.Model(updates).Select(columns).Updates(updates)
 	return result.RowsAffected, result.Error
 }
 
@@ -54,11 +55,12 @@ func (r *PermissionsRepository) DeleteGroupPermission(permission *schemas.GroupP
 }
 
 func (r *PermissionsRepository) UpdateGroupPermission(updates *schemas.GroupPermission, columns ...string) (int64, error) {
+	query := r.db.Where("id = ? AND group_id = ?", updates.Id, updates.GroupId)
 	if len(columns) == 0 {
-		result := r.db.Save(updates)
+		result := query.Save(updates)
 		return result.RowsAffected, result.Error
 	}
-	result := r.db.Model(updates).Select(columns).Updates(updates)
+	result := query.Model(updates).Select(columns).Updates(updates)
 	return result.RowsAffected, result.Error
 }
 
