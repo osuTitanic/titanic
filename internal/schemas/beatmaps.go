@@ -103,9 +103,8 @@ func (b *Beatmapset) CreatorLink() (creatorLink string) {
 
 	if b.Server == constants.BeatmapServerBancho {
 		creatorLink = "https://osu.ppy.sh" + creatorLink
-	} else {
-		return creatorLink
 	}
+	return creatorLink
 }
 
 type Beatmap struct {

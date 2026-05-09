@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
@@ -78,4 +79,50 @@ func (r *BeatmapRepository) GetCountGroupedByStatus(mode int) (map[int]int, erro
 	}
 
 	return counts, err
+}
+
+func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) (map[int]schemas.Beatmap, error) {
+	type result struct {
+		BeatmapId int
+		PlayCount int
+	}
+
+	var results []result
+	err := r.db.Model(&schemas.Score{}).
+		Select("scores.beatmap_id, COUNT(scores.id) AS play_count").
+		Where("scores.submitted_at >= ?", since).
+		Where("scores.hidden = ?", false).
+		Group("scores.beatmap_id").
+		Order("play_count DESC").
+		Limit(limit).
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	beatmapIds := make([]int, 0, len(results))
+	for _, result := range results {
+		beatmapIds = append(beatmapIds, result.BeatmapId)
+	}
+
+	beatmaps, err := r.ManyById(beatmapIds, preload...)
+	if err != nil {
+		return nil, err
+	}
+
+	beatmapsById := make(map[int]schemas.Beatmap, len(beatmaps))
+	for _, beatmap := range beatmaps {
+		beatmapsById[beatmap.Id] = *beatmap
+	}
+
+	mostPlayed := make(map[int]schemas.Beatmap, len(results))
+	for _, result := range results {
+		beatmap, ok := beatmapsById[result.BeatmapId]
+		if !ok {
+			continue
+		}
+		mostPlayed[result.PlayCount] = beatmap
+	}
+
+	return mostPlayed, nil
 }

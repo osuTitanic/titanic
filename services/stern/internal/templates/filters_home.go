@@ -11,8 +11,8 @@ import (
 )
 
 type HomeMostPlayedRow struct {
-	PlayCount  int
-	Beatmapset schemas.Beatmapset
+	PlayCount int
+	Beatmap   schemas.Beatmap
 }
 
 var homeNewsIgnoredTags = []*regexp.Regexp{
@@ -23,7 +23,7 @@ var homeNewsIgnoredTags = []*regexp.Regexp{
 }
 
 func homeRenderNewsText(a jet.Arguments) reflect.Value {
-	a.RequireNumOfArguments("homeNewsText", 1, 1)
+	a.RequireNumOfArguments("homeRenderNewsText", 1, 1)
 	post := a.Get(0).Interface().(schemas.ForumPost)
 
 	for line := range strings.SplitSeq(post.Content, "\n") {
@@ -49,13 +49,13 @@ func homeRenderNewsText(a jet.Arguments) reflect.Value {
 func homeMostPlayedRows(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("homeMostPlayedRows", 1, 1)
 
-	beatmapsets := a.Get(0).Interface().(map[int]schemas.Beatmapset)
-	rows := make([]HomeMostPlayedRow, 0, len(beatmapsets))
+	beatmaps := a.Get(0).Interface().(map[int]schemas.Beatmap)
+	rows := make([]HomeMostPlayedRow, 0, len(beatmaps))
 
-	for playCount, beatmapset := range beatmapsets {
+	for playCount, beatmap := range beatmaps {
 		rows = append(rows, HomeMostPlayedRow{
-			PlayCount:  playCount,
-			Beatmapset: beatmapset,
+			PlayCount: playCount,
+			Beatmap:   beatmap,
 		})
 	}
 

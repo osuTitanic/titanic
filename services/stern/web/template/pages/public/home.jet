@@ -172,13 +172,13 @@
             <tr class="{{ if i % 2 == 1 }}row-light{{ else }}row-dark{{ end }}">
                 <td>{{ formatNumber(row.PlayCount) }}</td>
                 <td>
-                    <img src="/mt/{{ row.Beatmapset.Id }}" loading="lazy" alt="" width="80" height="60">
-                    <a href="{{ row.Beatmapset.Link() }}">
-                        {{ row.Beatmapset.Name() }}
+                    <img src="/mt/{{ row.Beatmap.SetId }}" loading="lazy" alt="" width="80" height="60">
+                    <a href="{{ row.Beatmap.Link() }}">
+                        {{ row.Beatmap.Name() }}
                     </a>
                 </td>
                 <td>
-                    <a href="{{ row.Beatmapset.CreatorUrl() }}">{{ row.Beatmapset.CreatorName() }}</a>
+                    <a href="{{ row.Beatmap.Beatmapset.CreatorLink() }}">{{ row.Beatmap.Beatmapset.CreatorName() }}</a>
                 </td>
             </tr>
         {{ end }}

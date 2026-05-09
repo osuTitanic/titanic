@@ -10,9 +10,9 @@ import (
 )
 
 const mostPlayedDelta = 7 * 24 * time.Hour
-const mostPlayedLimit = 4
+const mostPlayedLimit = 5
 const chatMessagesChannel = "#osu"
-const chatMessagesLimit = 5
+const chatMessagesLimit = 10
 const newsLimit = 4
 
 func Home(ctx *server.Context) {
@@ -79,16 +79,16 @@ func fetchHomeChatMessages(ctx *server.Context) []schemas.Message {
 	return values
 }
 
-func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]schemas.Beatmapset {
-	beatmapsets, err := ctx.State.Beatmapsets.FetchMostPlayedSince(
+func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]schemas.Beatmap {
+	beatmaps, err := ctx.State.Beatmaps.FetchMostPlayedSince(
 		time.Now().Add(-mostPlayedDelta),
 		mostPlayedLimit,
-		"Beatmaps",
-		"CreatorUser",
+		"Beatmapset",
+		"Beatmapset.CreatorUser",
 	)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home most played beatmaps", "error", err)
-		return map[int]schemas.Beatmapset{}
+		return map[int]schemas.Beatmap{}
 	}
-	return beatmapsets
+	return beatmaps
 }
