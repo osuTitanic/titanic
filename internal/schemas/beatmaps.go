@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -76,6 +77,37 @@ func (b *Beatmapset) Name() string {
 	return artist + " - " + title
 }
 
+func (b *Beatmapset) Link() string {
+	if b.Server == constants.BeatmapServerBancho {
+		return fmt.Sprintf("https://osu.ppy.sh/s/%d", b.Id)
+	} else {
+		return fmt.Sprintf("/s/%d", b.Id)
+	}
+}
+
+func (b *Beatmapset) CreatorName() string {
+	if b.Creator != nil {
+		return *b.Creator
+	}
+	return "Unknown"
+}
+
+func (b *Beatmapset) CreatorLink() (creatorLink string) {
+	if b.CreatorId != nil {
+		creatorLink = fmt.Sprintf("/u/%d", *b.CreatorId)
+	} else if b.Creator != nil {
+		creatorLink = fmt.Sprintf("/u/%s", *b.Creator)
+	} else {
+		creatorLink = "/u/0" // :ehbounce:
+	}
+
+	if b.Server == constants.BeatmapServerBancho {
+		creatorLink = "https://osu.ppy.sh" + creatorLink
+	} else {
+		return creatorLink
+	}
+}
+
 type Beatmap struct {
 	Id               int                     `gorm:"column:id;primaryKey;autoIncrement"`
 	SetId            int                     `gorm:"column:set_id"`
@@ -113,6 +145,23 @@ type Beatmap struct {
 
 func (Beatmap) TableName() string {
 	return "beatmaps"
+}
+
+func (b *Beatmap) Name() string {
+	if b.Beatmapset != nil {
+		return b.Beatmapset.Name() + " [" + b.Version + "]"
+	}
+	return b.Version
+}
+
+func (b *Beatmap) Link() string {
+	if b.Beatmapset == nil {
+		return fmt.Sprintf("/b/%d", b.Id)
+	}
+	if b.Beatmapset.Server == constants.BeatmapServerBancho {
+		return fmt.Sprintf("https://osu.ppy.sh/b/%d", b.Id)
+	}
+	return fmt.Sprintf("/b/%d", b.Id)
 }
 
 type BeatmapCollaboration struct {

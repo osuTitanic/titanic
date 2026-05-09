@@ -64,15 +64,16 @@
     {{ range i, message := . }}
     <div class="news">
         <div class="blurb-heading">
-            {{ homeNewsDate(message) }} <a href="{{ homeNewsLink(message) }}"><b>{{ homeNewsTitle(message) }}</b></a> ({{ homeNewsAuthor(message) }})
+            {{ message.CreatedAt.Format("2.1.2006") }} <a href="{{ message.Link() }}"><b>{{ message.Topic.Title }}</b></a> ({{ message.User.Name }})
         </div>
         <div class="news-blurb-box">
             <div class="blurb-text">
-                {{ homeNewsText(message) }}
+                <!-- TODO: BBCode -->
+                {{ homeRenderNewsText(message) }}
             </div>
         </div>
         <div class="blurb-readmore">
-            <a href="{{ homeNewsLink(message) }}">Read More / Comment...</a>
+            <a href="{{ message.Link() }}">Read More / Comment...</a>
         </div>
     </div>
     {{ else }}
@@ -104,7 +105,7 @@
         <tbody>
         {{ range i, message := . }}
             <tr class="{{ if i % 2 == 1 }}row-dark{{ else }}row-light{{ end }}">
-                <td class="chat-time">{{ homeChatTime(message) }}</td>
+                <td class="chat-time">{{ message.Time.Format("15:04:05") }}</td>
                 <td class="chat-message">{{ message.Sender }}: {{ message.Message }}</td>
             </tr>
         {{ end }}
@@ -172,12 +173,12 @@
                 <td>{{ formatNumber(row.PlayCount) }}</td>
                 <td>
                     <img src="/mt/{{ row.Beatmapset.Id }}" loading="lazy" alt="" width="80" height="60">
-                    <a href="{{ homeBeatmapsetURL(row.Beatmapset) }}">
-                        {{ homeBeatmapsetName(row.Beatmapset) }}
+                    <a href="{{ row.Beatmapset.Link() }}">
+                        {{ row.Beatmapset.Name() }}
                     </a>
                 </td>
                 <td>
-                    <a href="{{ homeBeatmapsetCreatorURL(row.Beatmapset) }}">{{ homeBeatmapsetCreatorName(row.Beatmapset) }}</a>
+                    <a href="{{ row.Beatmapset.CreatorUrl() }}">{{ row.Beatmapset.CreatorName() }}</a>
                 </td>
             </tr>
         {{ end }}

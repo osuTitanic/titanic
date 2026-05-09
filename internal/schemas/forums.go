@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -82,6 +83,10 @@ type ForumPost struct {
 
 func (ForumPost) TableName() string {
 	return "forum_posts"
+}
+
+func (post ForumPost) Link() string {
+	return fmt.Sprintf("/forum/%d/t/%d/", post.ForumId, post.TopicId)
 }
 
 type ForumIcon struct {
