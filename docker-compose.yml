@@ -46,7 +46,7 @@ services:
     networks:
       - titanic
     volumes:
-      - "./.data/redis/data:/root/redis"
+      - "./.data/redis/data:/data"
       - "./.data/redis/config:/usr/local/etc/redis"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
