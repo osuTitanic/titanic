@@ -42,7 +42,7 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:${REDIS_PORT}:6379"
-    command: redis-server --save 20 1
+    command: redis-server --save 20 1 --dir /data
     networks:
       - titanic
     volumes:
