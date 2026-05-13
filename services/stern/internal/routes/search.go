@@ -8,9 +8,22 @@ import (
 )
 
 func Search(ctx *server.Context) {
+	query := ctx.Request.URL.Query()
+	searchSort := query.Get("sort")
+	if searchSort == "" {
+		searchSort = "4" // Ranked
+	}
+
+	searchOrder := query.Get("order")
+	if searchOrder == "" {
+		searchOrder = "0" // Descending
+	}
+
 	view := templates.BeatmapSearchView{
 		DefaultView: buildDefaultView(ctx),
 		Beatmapsets: nil, // TODO
+		SearchSort:  searchSort,
+		SearchOrder: searchOrder,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/search", view)
 }

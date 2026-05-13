@@ -40,4 +40,6 @@ type LoginView struct {
 type BeatmapSearchView struct {
 	DefaultView
 	Beatmapsets []*schemas.Beatmapset
+	SearchSort  string
+	SearchOrder string
 }

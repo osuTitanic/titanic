@@ -130,114 +130,31 @@
 <table class="beatmap-order-select">
     <thead>
         <tr>
-            <th>
-                <a data-id="0">Title</a>
-                <!--
-                {% if sort == 0 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="1">Artist</a>
-                <!--
-                {% if sort == 1 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="2">Creator</a>
-                <!--
-                {% if sort == 2 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="3">Difficulty</a>
-                <!--
-                {% if sort == 3 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="4">Ranked</a>
-                <!--
-                {% if sort == 4 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="7">Created</a>
-                <!--
-                {% if sort == 7 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="5">Rating</a>
-                <!--
-                {% if sort == 5 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
-            <th>
-                <a data-id="6">Plays</a>
-                <!--
-                {% if sort == 6 %}
-                    {% if order == 0 %}
-                    <img src="/images/down.gif" alt="Descending">
-                    {% else %}
-                    <img src="/images/up.gif" alt="Ascending">
-                    {% endif %}
-                {% endif %}
-                -->
-            </th>
+            {{ yield orderElement(id="0", value="Title") }}
+            {{ yield orderElement(id="1", value="Artist") }}
+            {{ yield orderElement(id="2", value="Creator") }}
+            {{ yield orderElement(id="3", value="Difficulty") }}
+            {{ yield orderElement(id="4", value="Ranked") }}
+            {{ yield orderElement(id="7", value="Created") }}
+            {{ yield orderElement(id="5", value="Rating") }}
+            {{ yield orderElement(id="6", value="Plays") }}
         </tr>
     </thead>
 </table>
 {{ end }}
 
-{{ block beatmapListing() }}
-<div id="beatmap-list">
-    <noscript>
-        <h3 id="status-text">Please enable JavaScript to view the beatmap listing!</h3>
-    </noscript>
-</div>
-<script src="/js/search.js"></script>
+{{ block orderElement(id, value) }}
+<th>
+    <a data-id="{{ id }}">{{ value }}</a>
+
+    {{ if .SearchSort == id }}
+        {{ if .SearchOrder == "0" }}
+        <img src="/images/down.gif" alt="Descending">
+        {{ else }}
+        <img src="/images/up.gif" alt="Ascending">
+        {{ end }}
+    {{ end }}
+</th>
 {{ end }}
 
 {{ block dataElement(id, value, collection) }}
@@ -256,4 +173,13 @@
     >
        {{ value }}
     </a>
+{{ end }}
+
+{{ block beatmapListing() }}
+<div id="beatmap-list">
+    <noscript>
+        <h3 id="status-text">Please enable JavaScript to view the beatmap listing!</h3>
+    </noscript>
+</div>
+<script src="/js/search.js"></script>
 {{ end }}
