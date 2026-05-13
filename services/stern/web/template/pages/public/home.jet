@@ -1,7 +1,7 @@
 {{ extends "/layout.jet" }}
 
 {{ block head() }}
-<title>Titanic! - Reviving old osu!</title>
+<title>Titanic!</title>
 <meta property="og:title" content="Titanic! - Reviving old osu!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}">

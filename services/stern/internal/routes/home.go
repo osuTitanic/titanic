@@ -18,7 +18,7 @@ const newsLimit = 4
 func Home(ctx *server.Context) {
 	view := templates.HomeView{
 		// TODO: Refactor home view such that we don't have to dereference pointers
-		DefaultView:        BuildDefaultView(ctx),
+		DefaultView:        buildDefaultView(ctx),
 		News:               fetchHomeNews(ctx),
 		ChatMessages:       fetchHomeChatMessages(ctx),
 		MostPlayedBeatmaps: fetchHomeMostPlayedBeatmaps(ctx),

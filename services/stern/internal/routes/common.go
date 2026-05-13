@@ -15,7 +15,7 @@ import (
 func NotFound(ctx *server.Context) {
 	ctx.RenderTemplate(
 		http.StatusNotFound, "errors/404",
-		BuildDefaultView(ctx),
+		buildDefaultView(ctx),
 	)
 }
 
@@ -26,7 +26,7 @@ func InternalServerError(ctx *server.Context) {
 		return
 	}
 
-	body, err := ctx.Templates.Render("errors/500", BuildDefaultView(ctx))
+	body, err := ctx.Templates.Render("errors/500", buildDefaultView(ctx))
 	if err != nil {
 		ctx.Logger.Error("Failed to render template", "template", "errors/500", "error", err)
 		templates.InternalServerErrorFallback(ctx.Response)
@@ -40,7 +40,7 @@ func InternalServerError(ctx *server.Context) {
 	}
 }
 
-func BuildDefaultView(ctx *server.Context) templates.DefaultView {
+func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	currentPath := ctx.Request.URL.Path
 	currentURI := "/"
 
@@ -87,7 +87,7 @@ func BuildStatistics(state *state.State) (stats templates.Statistics) {
 	return stats
 }
 
-func SanitizeRedirectTarget(target string) string {
+func sanitizeRedirectTarget(target string) string {
 	target = strings.TrimSpace(target)
 	if target == "" {
 		return ""

@@ -28,7 +28,7 @@ func AccountLogin(ctx *server.Context) {
 	}
 
 	redirect := ctx.Request.FormValue("redirect")
-	redirectTarget := SanitizeRedirectTarget(redirect)
+	redirectTarget := sanitizeRedirectTarget(redirect)
 	if redirectTarget == "" {
 		redirectTarget = "/"
 	}
@@ -110,7 +110,7 @@ func AccountLogin(ctx *server.Context) {
 }
 
 func AccountLoginPage(ctx *server.Context) {
-	redirectTarget := SanitizeRedirectTarget(ctx.Request.URL.Query().Get("redirect"))
+	redirectTarget := sanitizeRedirectTarget(ctx.Request.URL.Query().Get("redirect"))
 	if ctx.IsAuthenticated() {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
 		return
@@ -124,7 +124,7 @@ func AccountLogout(ctx *server.Context) {
 		ctx.Logger.Warn("Failed to parse logout form", "error", err)
 	}
 
-	redirectTarget := SanitizeRedirectTarget(ctx.Request.FormValue("redirect"))
+	redirectTarget := sanitizeRedirectTarget(ctx.Request.FormValue("redirect"))
 	if redirectTarget == "" {
 		redirectTarget = "/"
 	}
@@ -161,8 +161,8 @@ func AccountLogout(ctx *server.Context) {
 
 func RenderLoginPage(ctx *server.Context, errorMessage string, redirectTarget string) {
 	view := templates.LoginView{
-		DefaultView:  BuildDefaultView(ctx),
-		Redirect:     SanitizeRedirectTarget(redirectTarget),
+		DefaultView:  buildDefaultView(ctx),
+		Redirect:     sanitizeRedirectTarget(redirectTarget),
 		ErrorMessage: errorMessage,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/account/login", view)
