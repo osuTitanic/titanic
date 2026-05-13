@@ -26,6 +26,10 @@ rerun_delay = 500
 send_interrupt = false
 stop_on_error = false
 
+[build.windows]
+bin = "./tmp/main.exe"
+cmd = "go build -o ./tmp/main.exe ./services/stern/cmd/web/"
+
 [color]
 app = ""
 build = "yellow"
