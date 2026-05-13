@@ -3,6 +3,7 @@ package templates
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/CloudyKit/jet/v6"
 	"golang.org/x/text/language"
@@ -27,4 +28,21 @@ func formatNumber(a jet.Arguments) reflect.Value {
 	}
 
 	return reflect.ValueOf(result)
+}
+
+func formatDateShort(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("formatDateShort", 1, 1)
+
+	value := a.Get(0).Interface()
+	switch value := value.(type) {
+	case time.Time:
+		return reflect.ValueOf(value.Format("Jan 2, 2006"))
+	case *time.Time:
+		if value == nil {
+			return reflect.ValueOf("")
+		}
+		return reflect.ValueOf(value.Format("Jan 2, 2006"))
+	default:
+		return reflect.ValueOf("")
+	}
 }

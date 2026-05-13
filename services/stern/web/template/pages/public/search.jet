@@ -183,9 +183,88 @@
 
 {{ block beatmapListing() }}
 <div id="beatmap-list">
-    <noscript>
-        <h3 id="status-text">Please enable JavaScript to view the beatmap listing!</h3>
-    </noscript>
+    {{ range .Beatmapsets }}
+        {{ yield beatmapsetItem() . }}
+    {{ end }}
 </div>
-<script src="/js/search.js"></script>
+{{ end }}
+
+{{ block beatmapsetItem() }}
+<div class="beatmapset" id="beatmapset-{{ .Id }}">
+    <div class="beatmap-image" style="background-image: url({{ .ThumbnailUrl() }})">
+        <i class="icon-play"></i>
+    </div>
+    <audio src="{{ .AudioPreviewUrl() }}" id="beatmap-preview-{{ .Id }}"></audio>
+    <div class="beatmap-side-options" style="overflow: hidden; width: 24px; display: none">
+        <a href="#">
+            <!-- TODO: Interaction -->
+            <i class="icon-heart"></i>
+        </a>
+        <a href="{{ .CommentLink() }}">
+            <i class="icon-comment"></i>
+        </a>
+        <a href="/d/{{ .Id }}">
+            <i class="icon-download-alt"></i>
+        </a>
+    </div>
+    <div class="beatmap-info">
+        {{ if .HasVideo }}
+        <i class="icon-film"></i>
+        {{ end }}
+        {{ if .HasStoryboard }}
+        <i class="icon-picture"></i>
+        {{ end }}
+        <a class="beatmap-link" href="/s/{{ .Id }}">
+            <span style="color: #555555">{{ .ArtistName() }}</span> -
+            <span class="beatmap-title">{{ .TitleName() }}</span>
+        </a>
+    </div>
+    <div class="beatmap-creator">
+        <span>mapped by </span>
+        <a href="{{ .CreatorLink() }}">{{ .CreatorName() }}</a>
+    </div>
+    <div class="beatmap-stats">
+        <div class="beatmap-tags">
+        {{ if .LanguageId > 0 }}
+            <a>{{ .LanguageId.String() }}</a>
+        {{ end }}
+        {{ if .GenreId > 0 }}
+            <a>{{ .GenreId.String() }}</a>
+        {{ end }}
+        </div>
+        <div class="beatmap-rating">
+            <div class="beatmap-rating-bar" style="width: {{ beatmapRatingWidth(.RatingAverage) }}%"></div>
+        </div>
+        <div class="beatmap-details">
+            <span class="hidden-elements" title="{{ .DisplayDateTitle() }}">{{ formatDateShort(.DisplayDate()) }}</span>
+            <i class="icon-heart"></i>{{ formatNumber(.FavouriteCount) }}
+            <i class="icon-play"></i>{{ formatNumber(.TotalPlaycount) }}
+        </div>
+    </div>
+    <div class="hidden-elements">
+        {{ source := .SourceName() }}
+        <div class="beatmap-source">
+            {{ if source != "" }}
+            from <span>{{ source }}</span>
+            {{ end }}
+        </div>
+        {{ range i, beatmap := beatmapDifficultySort(.Beatmaps) }}
+            {{ if i < 8 && beatmap }}
+            {{ yield beatmapDifficultyIcon() beatmap }}
+            {{ end }}
+        {{ end }}
+        {{ if len(.Beatmaps) > 8 }}
+        ...
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block beatmapDifficultyIcon() }}
+<a href="/b/{{ .Id }}">
+    <img class="beatmap-icon"
+         src="/images/beatmap/difficulties/{{ .DifficultyAlias() }}-{{ .Mode.Value() }}.png"
+         title="{{ .Version }}"
+         alt="{{ .Version }}">
+</a>
 {{ end }}

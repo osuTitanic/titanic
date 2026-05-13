@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -20,9 +21,16 @@ func Search(ctx *server.Context) {
 	}
 	// TODO: Move order & sort to enums
 
+	testBeatmapset, err := ctx.State.Repositories.Beatmapsets.ById(292301, "Beatmaps")
+	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+	// TODO: Implement actual search functionality
+
 	view := templates.BeatmapSearchView{
 		DefaultView: buildDefaultView(ctx),
-		Beatmapsets: nil, // TODO
+		Beatmapsets: []*schemas.Beatmapset{testBeatmapset},
 		SearchSort:  searchSort,
 		SearchOrder: searchOrder,
 	}

@@ -66,15 +66,28 @@ func (Beatmapset) TableName() string {
 }
 
 func (b *Beatmapset) Name() string {
-	artist := "Unknown Artist"
-	title := "Unknown Title"
+	return b.ArtistName() + " - " + b.TitleName()
+}
+
+func (b *Beatmapset) ArtistName() string {
 	if b.Artist != nil {
-		artist = *b.Artist
+		return *b.Artist
 	}
+	return "Unknown Artist"
+}
+
+func (b *Beatmapset) TitleName() string {
 	if b.Title != nil {
-		title = *b.Title
+		return *b.Title
 	}
-	return artist + " - " + title
+	return "Unknown Title"
+}
+
+func (b *Beatmapset) SourceName() string {
+	if b.Source != nil {
+		return *b.Source
+	}
+	return ""
 }
 
 func (b *Beatmapset) Link() string {
@@ -83,6 +96,16 @@ func (b *Beatmapset) Link() string {
 	} else {
 		return fmt.Sprintf("/s/%d", b.Id)
 	}
+}
+
+func (b *Beatmapset) CommentLink() string {
+	if b.Server == constants.BeatmapServerBancho {
+		return fmt.Sprintf("https://osu.ppy.sh/beatmapsets/%d#comments", b.Id)
+	}
+	if b.TopicId != nil {
+		return fmt.Sprintf("/forum/t/%d", *b.TopicId)
+	}
+	return "/forum/t/0"
 }
 
 func (b *Beatmapset) CreatorName() string {
@@ -105,6 +128,35 @@ func (b *Beatmapset) CreatorLink() (creatorLink string) {
 		creatorLink = "https://osu.ppy.sh" + creatorLink
 	}
 	return creatorLink
+}
+
+func (b *Beatmapset) ThumbnailUrl() string {
+	lastModified := b.LastUpdate.Unix()
+	return fmt.Sprintf("/mt/%d?c=%d", b.Id, lastModified)
+}
+
+func (b *Beatmapset) LargeThumbnailUrl() string {
+	lastModified := b.LastUpdate.Unix()
+	return fmt.Sprintf("/mt/%dl?c=%d", b.Id, lastModified)
+}
+
+func (b *Beatmapset) AudioPreviewUrl() string {
+	lastModified := b.LastUpdate.Unix()
+	return fmt.Sprintf("/mp3/preview/%d?c=%d", b.Id, lastModified)
+}
+
+func (b *Beatmapset) DisplayDate() time.Time {
+	if b.ApprovedAt != nil {
+		return *b.ApprovedAt
+	}
+	return b.LastUpdate
+}
+
+func (b *Beatmapset) DisplayDateTitle() string {
+	if b.ApprovedAt != nil {
+		return "Approved date"
+	}
+	return "Last update"
 }
 
 type Beatmap struct {
@@ -161,6 +213,20 @@ func (b *Beatmap) Link() string {
 		return fmt.Sprintf("https://osu.ppy.sh/b/%d", b.Id)
 	}
 	return fmt.Sprintf("/b/%d", b.Id)
+}
+
+func (b *Beatmap) DifficultyAlias() string {
+	difficulty := "expert"
+	if b.Diff < 2 {
+		difficulty = "easy"
+	} else if b.Diff < 2.7 {
+		difficulty = "normal"
+	} else if b.Diff < 4 {
+		difficulty = "hard"
+	} else if b.Diff < 5.3 {
+		difficulty = "insane"
+	}
+	return difficulty
 }
 
 type BeatmapCollaboration struct {
