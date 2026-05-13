@@ -37,6 +37,7 @@ body {
 .beatmap-options {
     padding: 20px 0 0;
     font-size: 78%;
+    margin-bottom: 5px;
 }
 
 .beatmap-options dl {
@@ -294,11 +295,6 @@ body {
     vertical-align: top;
     padding-top: 1.5px;
     opacity: 70%;
-}
-
-.pagination {
-    text-align: center;
-    margin-top: 10px;
 }
 
 .search-blurb-box {
