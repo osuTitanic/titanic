@@ -1,0 +1,23 @@
+{{ if .Total > 0 }}
+<div class="pagination">
+    Displaying {{ .From }} to {{ .To }} of {{ formatNumber(.Total) }} results.<br>
+
+    {{ if .HasPrevious }}
+        <a href="{{ .PreviousUrl }}">Previous</a>
+    {{ end }}
+
+    {{ range .Items }}
+        {{ if .Ellipsis }}
+            ...
+        {{ else if .Current }}
+            <b>{{ .Label }}</b>
+        {{ else }}
+            <a href="{{ .Url }}">{{ .Label }}</a>
+        {{ end }}
+    {{ end }}
+
+    {{ if .HasNext }}
+        <a href="{{ .NextUrl }}">Next</a>
+    {{ end }}
+</div>
+{{ end }}
