@@ -1,6 +1,8 @@
 package templates
 
 import (
+	"net/url"
+
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 )
@@ -12,6 +14,7 @@ type Statistics struct {
 }
 
 type DefaultView struct {
+	Query       url.Values
 	Config      *config.Config
 	CurrentUser *schemas.User
 	Stats       Statistics
@@ -37,5 +40,4 @@ type LoginView struct {
 type BeatmapSearchView struct {
 	DefaultView
 	Beatmapsets []*schemas.Beatmapset
-	Query       string
 }

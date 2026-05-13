@@ -12,7 +12,7 @@
 {{ block body() }}
 <div class="beatmap-search-container">
     <h1>Beatmap Listing</h1>
-    <input id="search-input" type="search" placeholder="Search for a beatmap..." value="{{ .Query }}">
+    <input id="search-input" type="search" placeholder="Search for a beatmap..." value="{{ .Query.Get("query") }}">
     <div class="beatmap-options">
         {{ yield selectionMode() }}
         {{ yield selectionCategory() }}
@@ -31,12 +31,11 @@
 <dl data-name="mode">
     <dt>Mode:</dt>
     <dd>
-        <!-- TODO: selected element -->
-        <a data-id="" class="">Any</a>
-        <a data-id="0" class="">osu!</a>
-        <a data-id="1" class="">osu!taiko</a>
-        <a data-id="2" class="">osu!catch</a>
-        <a data-id="3" class="">osu!mania</a>
+        {{ yield dataElement(id="", value="Any", collection="mode") }}
+        {{ yield dataElement(id="0", value="osu!", collection="mode") }}
+        {{ yield dataElement(id="1", value="osu!taiko", collection="mode") }}
+        {{ yield dataElement(id="2", value="osu!catch", collection="mode") }}
+        {{ yield dataElement(id="3", value="osu!mania", collection="mode") }}
     </dd>
 </dl>
 {{ end }}
@@ -45,16 +44,15 @@
 <dl>
     <dt>Category:</dt>
     <dd>
-        <!-- TODO: selected element -->
-        <a data-id="" class="">Has Leaderboard</a>
-        <a data-id="2" class="">Ranked</a>
-        <a data-id="3" class="">Qualified</a>
-        <a data-id="4" class="">Loved</a>
-        <a data-id="5" class="">Approved</a>
-        <a data-id="6" class="">Pending</a>
-        <a data-id="7" class="">WIP</a>
-        <a data-id="8" class="">Graveyard</a>
-        <a data-id="0" class="">All</a>
+        {{ yield dataElement(id="", value="Has Leaderboard", collection="category") }}
+        {{ yield dataElement(id="2", value="Ranked", collection="category") }}
+        {{ yield dataElement(id="3", value="Qualified", collection="category") }}
+        {{ yield dataElement(id="4", value="Loved", collection="category") }}
+        {{ yield dataElement(id="5", value="Approved", collection="category") }}
+        {{ yield dataElement(id="6", value="Pending", collection="category") }}
+        {{ yield dataElement(id="7", value="WIP", collection="category") }}
+        {{ yield dataElement(id="8", value="Graveyard", collection="category") }}
+        {{ yield dataElement(id="0", value="All", collection="category") }}
     </dd>
 </dl>
 {{ end }}
@@ -63,21 +61,20 @@
 <dl>
     <dt>Genre:</dt>
     <dd>
-        <!-- TODO: selected element -->
-        <a data-id="" class="">Any</a>
-        <a data-id="0" class="">Unspecified</a>
-        <a data-id="2" class="">Video Game</a>
-        <a data-id="3" class="">Anime</a>
-        <a data-id="4" class="">Rock</a>
-        <a data-id="5" class="">Pop</a>
-        <a data-id="6" class="">Other</a>
-        <a data-id="7" class="">Novelty</a>
-        <a data-id="9" class="">Hip Hop</a>
-        <a data-id="10" class="">Electronic</a>
-        <a data-id="11" class="">Metal</a>
-        <a data-id="12" class="">Classical</a>
-        <a data-id="13" class="">Folk</a>
-        <a data-id="14" class="">Jazz</a>
+        {{ yield dataElement(id="", value="Any", collection="genre") }}
+        {{ yield dataElement(id="0", value="Unspecified", collection="genre") }}
+        {{ yield dataElement(id="2", value="Video Game", collection="genre") }}
+        {{ yield dataElement(id="3", value="Anime", collection="genre") }}
+        {{ yield dataElement(id="4", value="Rock", collection="genre") }}
+        {{ yield dataElement(id="5", value="Pop", collection="genre") }}
+        {{ yield dataElement(id="6", value="Other", collection="genre") }}
+        {{ yield dataElement(id="7", value="Novelty", collection="genre") }}
+        {{ yield dataElement(id="9", value="Hip Hop", collection="genre") }}
+        {{ yield dataElement(id="10", value="Electronic", collection="genre") }}
+        {{ yield dataElement(id="11", value="Metal", collection="genre") }}
+        {{ yield dataElement(id="12", value="Classical", collection="genre") }}
+        {{ yield dataElement(id="13", value="Folk", collection="genre") }}
+        {{ yield dataElement(id="14", value="Jazz", collection="genre") }}
     </dd>
 </dl>
 {{ end }}
@@ -86,20 +83,19 @@
 <dl>
     <dt>Language:</dt>
     <dd>
-        <!-- TODO: selected element -->
-        <a data-id="" class="">Any</a>
-        <a data-id="2" class="">English</a>
-        <a data-id="3" class="">Japanese</a>
-        <a data-id="4" class="">Chinese</a>
-        <a data-id="5" class="">Instrumental</a>
-        <a data-id="6" class="">Korean</a>
-        <a data-id="7" class="">French</a>
-        <a data-id="8" class="">German</a>
-        <a data-id="9" class="">Swedish</a>
-        <a data-id="10" class="">Spanish</a>
-        <a data-id="11" class="">Italian</a>
-        <a data-id="12" class="">Russian</a>
-        <a data-id="13" class="">Polish</a>
+        {{ yield dataElement(id="", value="Any", collection="language") }}
+        {{ yield dataElement(id="2", value="English", collection="language") }}
+        {{ yield dataElement(id="3", value="Japanese", collection="language") }}
+        {{ yield dataElement(id="4", value="Chinese", collection="language") }}
+        {{ yield dataElement(id="5", value="Instrumental", collection="language") }}
+        {{ yield dataElement(id="6", value="Korean", collection="language") }}
+        {{ yield dataElement(id="7", value="French", collection="language") }}
+        {{ yield dataElement(id="8", value="German", collection="language") }}
+        {{ yield dataElement(id="9", value="Swedish", collection="language") }}
+        {{ yield dataElement(id="10", value="Spanish", collection="language") }}
+        {{ yield dataElement(id="11", value="Italian", collection="language") }}
+        {{ yield dataElement(id="12", value="Russian", collection="language") }}
+        {{ yield dataElement(id="13", value="Polish", collection="language") }}
     </dd>
 </dl>
 {{ end }}
@@ -120,6 +116,15 @@
         <a data-name="titanic">Titanic Exclusive</a>
     </dd>
 </dl>
+{{ end }}
+
+{{ block dataElement(id, value, collection) }}
+    {{ selectedElement := .Query.Get(collection) }}
+    {{ if selectedElement == id }}
+        <a data-id="{{ id }}" class="selected">{{ value }}</a>
+    {{ else }}
+        <a data-id="{{ id }}">{{ value }}</a>
+    {{ end }}
 {{ end }}
 
 {{ block qualifiedInfobox() }}

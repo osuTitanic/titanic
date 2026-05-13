@@ -50,6 +50,7 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 
 	return templates.DefaultView{
 		Stats:       BuildStatistics(ctx.State),
+		Query:       ctx.Request.URL.Query(),
 		Config:      ctx.State.Config,
 		CSRFToken:   ctx.CSRFToken,
 		CurrentUser: ctx.CurrentUser,

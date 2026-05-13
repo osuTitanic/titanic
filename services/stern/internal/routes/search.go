@@ -10,7 +10,7 @@ import (
 func Search(ctx *server.Context) {
 	view := templates.BeatmapSearchView{
 		DefaultView: buildDefaultView(ctx),
-		Query:       "", // TODO
+		Beatmapsets: nil, // TODO
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/search", view)
 }
