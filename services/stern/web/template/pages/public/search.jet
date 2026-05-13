@@ -223,14 +223,13 @@ $(".beatmapset").hover(
     </div>
     <audio src="{{ .AudioPreviewUrl() }}" id="beatmap-preview-{{ .Id }}"></audio>
     <div class="beatmap-side-options" style="overflow: hidden; width: 24px; display: none">
-        <a href="#">
-            <!-- TODO: Interaction -->
+        <a class="beatmap-favourite-link" href="#">
             <i class="icon-heart"></i>
         </a>
-        <a href="{{ .CommentLink() }}">
+        <a class="beatmap-comment-link" href="{{ .CommentLink() }}">
             <i class="icon-comment"></i>
         </a>
-        <a href="/d/{{ .Id }}">
+        <a class="beatmap-download-link" href="/d/{{ .Id }}">
             <i class="icon-download-alt"></i>
         </a>
     </div>

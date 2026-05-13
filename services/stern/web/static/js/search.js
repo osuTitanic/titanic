@@ -32,7 +32,7 @@ function bindBeatmapAudio() {
 }
 
 function bindFavourites() {
-    $(".beatmap-side-options a:first-child").each(function () {
+    $(".beatmap-favourite-link").each(function () {
         var beatmapsetId = $(this).closest(".beatmapset").attr("id");
         if (beatmapsetId) {
             markFavourite(beatmapsetId.replace("beatmapset-", ""), false);
@@ -65,7 +65,7 @@ function removeFavorite(beatmapsetId) {
 }
 
 function markFavourite(beatmapsetId, favourited) {
-    var $link = $("#beatmapset-" + beatmapsetId + " .beatmap-side-options a:first-child");
+    var $link = $("#beatmapset-" + beatmapsetId + " .beatmap-favourite-link");
     if (!$link.length) {
         return;
     }
