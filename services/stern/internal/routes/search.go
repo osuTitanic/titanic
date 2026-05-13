@@ -18,6 +18,7 @@ func Search(ctx *server.Context) {
 	if searchOrder == "" {
 		searchOrder = "0" // Descending
 	}
+	// TODO: Move order & sort to enums
 
 	view := templates.BeatmapSearchView{
 		DefaultView: buildDefaultView(ctx),
