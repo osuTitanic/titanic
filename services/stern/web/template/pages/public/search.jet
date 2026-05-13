@@ -12,7 +12,12 @@
 {{ block body() }}
 <div class="beatmap-search-container">
     <h1>Beatmap Listing</h1>
-    <input id="search-input" type="search" placeholder="Search for a beatmap..." value="{{ .Query.Get("query") }}">
+    <form id="beatmap-search-form" action="/beatmapsets" method="get">
+        {{ range searchHiddenInputs(.Query) }}
+        <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+        {{ end }}
+        <input id="search-input" name="query" type="search" placeholder="Search for a beatmap..." value="{{ .Query.Get("query") }}">
+    </form>
     <div class="beatmap-options">
         {{ yield selectionMode() }}
         {{ yield selectionCategory() }}
@@ -22,9 +27,12 @@
     </div>
 
     {{ yield qualifiedInfobox() }}
+    {{ include "/components/pagination.jet" .Pagination }}
     {{ yield selectionOrder() }}
 
     {{ yield beatmapListing() }}
+</div>
+<!--<script src="/js/search.js"></script>-->
 {{ end }}
 
 {{ block selectionMode() }}
@@ -151,7 +159,9 @@
 
 {{ block orderElement(id, value) }}
 <th>
-    <a data-id="{{ id }}">{{ value }}</a>
+    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}"
+       data-id="{{ id }}"
+       data-search-sort="{{ id }}">{{ value }}</a>
 
     {{ if .SearchSort == id }}
         {{ if .SearchOrder == "0" }}
@@ -166,15 +176,24 @@
 {{ block dataElement(id, value, collection) }}
     {{ selectedElement := .Query.Get(collection) }}
     {{ if selectedElement == id }}
-        <a data-id="{{ id }}" class="selected">{{ value }}</a>
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}"
+           data-id="{{ id }}"
+           data-search-param="{{ collection }}"
+           data-search-value="{{ id }}"
+           class="selected">{{ value }}</a>
     {{ else }}
-        <a data-id="{{ id }}">{{ value }}</a>
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}"
+           data-id="{{ id }}"
+           data-search-param="{{ collection }}"
+           data-search-value="{{ id }}">{{ value }}</a>
     {{ end }}
 {{ end }}
 
 {{ block dataFlag(id, value, removes="") }}
-    <a data-name="{{ id }}"
-       {{ if removes != "" }}removes="{{ removes }}"{{ end }}
+    <a href="{{ searchFlagUrl(.Query, "/beatmapsets", id, removes) }}"
+       data-name="{{ id }}"
+       data-search-flag="{{ id }}"
+       data-search-removes="{{ removes }}"
        {{ if .Query.Get(id) != "" }}class="selected"{{ end }}
     >
        {{ value }}

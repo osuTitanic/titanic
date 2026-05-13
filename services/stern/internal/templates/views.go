@@ -42,4 +42,5 @@ type BeatmapSearchView struct {
 	Beatmapsets []*schemas.Beatmapset
 	SearchSort  string
 	SearchOrder string
+	Pagination  PaginationView
 }

@@ -20,10 +20,14 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	)
 	set.AddGlobalFunc("formatNumber", formatNumber)
 	set.AddGlobalFunc("formatDateShort", formatDateShort)
-	set.AddGlobalFunc("beatmapDifficultySort", beatmapDifficultySort)
-	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
 	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
+	set.AddGlobalFunc("beatmapDifficultySort", beatmapDifficultySort)
+	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)
+	set.AddGlobalFunc("searchParamUrl", searchParamUrl)
+	set.AddGlobalFunc("searchFlagUrl", searchFlagUrl)
+	set.AddGlobalFunc("searchSortUrl", searchSortUrl)
+	set.AddGlobalFunc("searchHiddenInputs", searchHiddenInputs)
 	return &Engine{Set: set}, nil
 }
 
