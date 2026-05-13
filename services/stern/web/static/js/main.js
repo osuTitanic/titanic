@@ -156,6 +156,32 @@ BeatmapStatus.toString = function (status) {
 var isNavigatingAway = false;
 var pageLoaded = false;
 var apiRetries = 0;
+var partials = {};
+
+function registerPartial(query, load, interval) {
+    partials[query] = false;
+
+    function reload() {
+        var element = $(query);
+
+        if (partials[query]) return;
+        if (!element.length) return;
+        if (document.visibilityState && document.visibilityState === "hidden") return;
+
+        partials[query] = true;
+        element.load(load, function () {
+            partials[query] = false;
+        });
+    }
+
+    function reloader() {
+        reload();
+        setInterval(reload, interval);
+    }
+
+    $(document).ready(reloader);
+    $(document).on("visibilitychange", reload);
+}
 
 function slideDown(elem) {
     elem.style.height = "";

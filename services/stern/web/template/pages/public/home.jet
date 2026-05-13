@@ -42,6 +42,7 @@
         {{ yield homeMostPlayed() .MostPlayedBeatmaps }}
     </div>
 </div>
+<script defer>registerPartial("#chat", "/partials/home/chat #chat > *", 30000)</script>
 {{ end }}
 
 {{ block homeWelcome() }}
