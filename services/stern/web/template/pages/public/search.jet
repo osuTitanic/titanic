@@ -118,12 +118,18 @@
 {{ end }}
 
 {{ block qualifiedInfobox() }}
-<!-- TODO: Check account age -->
-<div class="search-blurb-box" style="padding: 5px; text-align: center;">
-    Interested in playing cutting-edge beatmaps before the masses?
-    Make sure to check out the <strong><a href="/beatmapsets/?category=3">qualified maps</a> category</strong>!<br>
-    (Scores <strong>won't be deleted</strong> once the map is ranked, unless the map is disqualified)
-</div>
+    {{ accountAge := 0 }}
+    {{ if .CurrentUser }}
+        {{ accountAge = .CurrentUser.AgeDays() }}
+    {{ end }}
+
+    {{ if accountAge < 14 }}
+    <div class="search-blurb-box" style="padding: 5px; text-align: center;">
+        Interested in playing cutting-edge beatmaps before the masses?
+        Make sure to check out the <strong><a href="/beatmapsets/?category=3">qualified maps</a> category</strong>!<br>
+        (Scores <strong>won't be deleted</strong> once the map is ranked, unless the map is disqualified)
+    </div>
+    {{ end }}
 {{ end }}
 
 {{ block selectionOrder() }}

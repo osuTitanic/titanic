@@ -65,6 +65,10 @@ func (user *User) Age() time.Duration {
 	return time.Since(user.CreatedAt)
 }
 
+func (user *User) AgeDays() int {
+	return int(user.Age().Hours() / 24)
+}
+
 func (user *User) AvatarUrl() string {
 	if user.AvatarHash == nil {
 		return fmt.Sprintf("/a/%d", user.Id)
