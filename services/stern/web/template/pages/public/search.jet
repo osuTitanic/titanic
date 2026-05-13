@@ -1,0 +1,246 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Beatmap Listing - Titanic!</title>
+<meta property="og:title" content="Beatmap Listing">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets">
+<meta property="og:description" content="Explore the vast collection of beatmaps to find songs which suit your tastes">
+<link rel="stylesheet" href="/css/search.css">
+{{ end }}
+
+{{ block body() }}
+<div class="beatmap-search-container">
+    <h1>Beatmap Listing</h1>
+    <input id="search-input" type="search" placeholder="Search for a beatmap..." value="{{ .Query }}">
+    <div class="beatmap-options">
+        {{ yield selectionMode() }}
+        {{ yield selectionCategory() }}
+        {{ yield selectionGenre() }}
+        {{ yield selectionLanguage() }}
+        {{ yield selectionExtra() }}
+    </div>
+
+    {{ yield qualifiedInfobox() }}
+    {{ yield selectionOrder() }}
+
+    {{ yield beatmapListing() }}
+{{ end }}
+
+{{ block selectionMode() }}
+<dl data-name="mode">
+    <dt>Mode:</dt>
+    <dd>
+        <!-- TODO: selected element -->
+        <a data-id="" class="">Any</a>
+        <a data-id="0" class="">osu!</a>
+        <a data-id="1" class="">osu!taiko</a>
+        <a data-id="2" class="">osu!catch</a>
+        <a data-id="3" class="">osu!mania</a>
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionCategory() }}
+<dl>
+    <dt>Category:</dt>
+    <dd>
+        <!-- TODO: selected element -->
+        <a data-id="" class="">Has Leaderboard</a>
+        <a data-id="2" class="">Ranked</a>
+        <a data-id="3" class="">Qualified</a>
+        <a data-id="4" class="">Loved</a>
+        <a data-id="5" class="">Approved</a>
+        <a data-id="6" class="">Pending</a>
+        <a data-id="7" class="">WIP</a>
+        <a data-id="8" class="">Graveyard</a>
+        <a data-id="0" class="">All</a>
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionGenre() }}
+<dl>
+    <dt>Genre:</dt>
+    <dd>
+        <!-- TODO: selected element -->
+        <a data-id="" class="">Any</a>
+        <a data-id="0" class="">Unspecified</a>
+        <a data-id="2" class="">Video Game</a>
+        <a data-id="3" class="">Anime</a>
+        <a data-id="4" class="">Rock</a>
+        <a data-id="5" class="">Pop</a>
+        <a data-id="6" class="">Other</a>
+        <a data-id="7" class="">Novelty</a>
+        <a data-id="9" class="">Hip Hop</a>
+        <a data-id="10" class="">Electronic</a>
+        <a data-id="11" class="">Metal</a>
+        <a data-id="12" class="">Classical</a>
+        <a data-id="13" class="">Folk</a>
+        <a data-id="14" class="">Jazz</a>
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionLanguage() }}
+<dl>
+    <dt>Language:</dt>
+    <dd>
+        <!-- TODO: selected element -->
+        <a data-id="" class="">Any</a>
+        <a data-id="2" class="">English</a>
+        <a data-id="3" class="">Japanese</a>
+        <a data-id="4" class="">Chinese</a>
+        <a data-id="5" class="">Instrumental</a>
+        <a data-id="6" class="">Korean</a>
+        <a data-id="7" class="">French</a>
+        <a data-id="8" class="">German</a>
+        <a data-id="9" class="">Swedish</a>
+        <a data-id="10" class="">Spanish</a>
+        <a data-id="11" class="">Italian</a>
+        <a data-id="12" class="">Russian</a>
+        <a data-id="13" class="">Polish</a>
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionExtra() }}
+<dl>
+    <dt>Extra:</dt>
+    <dd>
+        <!-- TODO: selected element -->
+        <a data-name="video">Has Video</a>
+        <a data-name="storyboard">Has Storyboard</a>
+        {{ if .CurrentUser }}
+        <a data-name="played" removes="unplayed">Has Played</a>
+        <a data-name="cleared" removes="uncleared">Has Cleared</a>
+        <a data-name="unplayed" removes="played">Unplayed</a>
+        <a data-name="uncleared" removes="cleared">Uncleared</a>
+        {{ end }}
+        <a data-name="titanic">Titanic Exclusive</a>
+    </dd>
+</dl>
+{{ end }}
+
+{{ block qualifiedInfobox() }}
+<!-- TODO: Check account age -->
+<div class="search-blurb-box" style="padding: 5px; text-align: center;">
+    Interested in playing cutting-edge beatmaps before the masses?
+    Make sure to check out the <strong><a href="/beatmapsets/?category=3">qualified maps</a> category</strong>!<br>
+    (Scores <strong>won't be deleted</strong> once the map is ranked, unless the map is disqualified)
+</div>
+{{ end }}
+
+{{ block selectionOrder() }}
+<table class="beatmap-order-select">
+    <thead>
+        <tr>
+            <th>
+                <a data-id="0">Title</a>
+                <!--
+                {% if sort == 0 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="1">Artist</a>
+                <!--
+                {% if sort == 1 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="2">Creator</a>
+                <!--
+                {% if sort == 2 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="3">Difficulty</a>
+                <!--
+                {% if sort == 3 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="4">Ranked</a>
+                <!--
+                {% if sort == 4 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="7">Created</a>
+                <!--
+                {% if sort == 7 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="5">Rating</a>
+                <!--
+                {% if sort == 5 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+            <th>
+                <a data-id="6">Plays</a>
+                <!--
+                {% if sort == 6 %}
+                    {% if order == 0 %}
+                    <img src="/images/down.gif" alt="Descending">
+                    {% else %}
+                    <img src="/images/up.gif" alt="Ascending">
+                    {% endif %}
+                {% endif %}
+                -->
+            </th>
+        </tr>
+    </thead>
+</table>
+{{ end }}
+
+{{ block beatmapListing() }}
+<div id="beatmap-list">
+    <noscript>
+        <h3 id="status-text">Please enable JavaScript to view the beatmap listing!</h3>
+    </noscript>
+</div>
+<script src="/js/search.js"></script>
+{{ end }}

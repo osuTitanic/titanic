@@ -33,3 +33,9 @@ type LoginView struct {
 	Redirect     string
 	ErrorMessage string
 }
+
+type BeatmapSearchView struct {
+	DefaultView
+	Beatmapsets []*schemas.Beatmapset
+	Query       string
+}
