@@ -32,7 +32,7 @@
 
     {{ yield beatmapListing() }}
 </div>
-<!--<script src="/js/search.js"></script>-->
+<script src="/js/search.js"></script>
 {{ end }}
 
 {{ block selectionMode() }}
@@ -159,9 +159,7 @@
 
 {{ block orderElement(id, value) }}
 <th>
-    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}"
-       data-id="{{ id }}"
-       data-search-sort="{{ id }}">{{ value }}</a>
+    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}">{{ value }}</a>
 
     {{ if .SearchSort == id }}
         {{ if .SearchOrder == "0" }}
@@ -177,23 +175,14 @@
     {{ selectedElement := .Query.Get(collection) }}
     {{ if selectedElement == id }}
         <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}"
-           data-id="{{ id }}"
-           data-search-param="{{ collection }}"
-           data-search-value="{{ id }}"
            class="selected">{{ value }}</a>
     {{ else }}
-        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}"
-           data-id="{{ id }}"
-           data-search-param="{{ collection }}"
-           data-search-value="{{ id }}">{{ value }}</a>
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}">{{ value }}</a>
     {{ end }}
 {{ end }}
 
 {{ block dataFlag(id, value, removes="") }}
     <a href="{{ searchFlagUrl(.Query, "/beatmapsets", id, removes) }}"
-       data-name="{{ id }}"
-       data-search-flag="{{ id }}"
-       data-search-removes="{{ removes }}"
        {{ if .Query.Get(id) != "" }}class="selected"{{ end }}
     >
        {{ value }}
