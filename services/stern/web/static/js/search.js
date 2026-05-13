@@ -4,13 +4,13 @@ function bindBeatmapAudio() {
 
         var $icon = $(this);
         var $beatmapset = $icon.closest(".beatmapset");
-        var audio = $beatmapset.find('audio[id^="beatmap-preview-"]')[0];
+        var audio = $beatmapset.find(".beatmap-preview-audio")[0];
 
         if (!audio) {
             return;
         }
 
-        $('audio[id^="beatmap-preview-"]')
+        $(".beatmap-preview-audio")
             .not(audio)
             .each(function () {
                 if (this.paused) {
@@ -26,7 +26,7 @@ function bindBeatmapAudio() {
         $icon.toggleClass("icon-play", audio.paused).toggleClass("icon-pause", !audio.paused);
     });
 
-    $('audio[id^="beatmap-preview-"]').on("ended", function () {
+    $(".beatmap-preview-audio").on("ended", function () {
         $(this).siblings(".beatmap-image").find("i").removeClass("icon-pause").addClass("icon-play");
     });
 }

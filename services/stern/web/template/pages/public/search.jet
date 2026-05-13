@@ -221,7 +221,7 @@ $(".beatmapset").hover(
     <div class="beatmap-image" style="background-image: url({{ .ThumbnailUrl() }})">
         <i class="icon-play"></i>
     </div>
-    <audio src="{{ .AudioPreviewUrl() }}" id="beatmap-preview-{{ .Id }}"></audio>
+    <audio class="beatmap-preview-audio" src="{{ .AudioPreviewUrl() }}" id="beatmap-preview-{{ .Id }}"></audio>
     <div class="beatmap-side-options" style="overflow: hidden; width: 24px; display: none">
         <a class="beatmap-favourite-link" href="#">
             <i class="icon-heart"></i>
