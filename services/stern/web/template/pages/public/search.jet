@@ -104,27 +104,17 @@
 <dl>
     <dt>Extra:</dt>
     <dd>
-        <!-- TODO: selected element -->
-        <a data-name="video">Has Video</a>
-        <a data-name="storyboard">Has Storyboard</a>
+        {{ yield dataFlag(id="video", value="Has Video") }}
+        {{ yield dataFlag(id="storyboard", value="Has Storyboard") }}
         {{ if .CurrentUser }}
-        <a data-name="played" removes="unplayed">Has Played</a>
-        <a data-name="cleared" removes="uncleared">Has Cleared</a>
-        <a data-name="unplayed" removes="played">Unplayed</a>
-        <a data-name="uncleared" removes="cleared">Uncleared</a>
+        {{ yield dataFlag(id="played", value="Has Played", removes="unplayed") }}
+        {{ yield dataFlag(id="cleared", value="Has Cleared", removes="uncleared") }}
+        {{ yield dataFlag(id="unplayed", value="Unplayed", removes="played") }}
+        {{ yield dataFlag(id="uncleared", value="Uncleared", removes="cleared") }}
         {{ end }}
-        <a data-name="titanic">Titanic Exclusive</a>
+        {{ yield dataFlag(id="titanic", value="Titanic Exclusive") }}
     </dd>
 </dl>
-{{ end }}
-
-{{ block dataElement(id, value, collection) }}
-    {{ selectedElement := .Query.Get(collection) }}
-    {{ if selectedElement == id }}
-        <a data-id="{{ id }}" class="selected">{{ value }}</a>
-    {{ else }}
-        <a data-id="{{ id }}">{{ value }}</a>
-    {{ end }}
 {{ end }}
 
 {{ block qualifiedInfobox() }}
@@ -248,4 +238,22 @@
     </noscript>
 </div>
 <script src="/js/search.js"></script>
+{{ end }}
+
+{{ block dataElement(id, value, collection) }}
+    {{ selectedElement := .Query.Get(collection) }}
+    {{ if selectedElement == id }}
+        <a data-id="{{ id }}" class="selected">{{ value }}</a>
+    {{ else }}
+        <a data-id="{{ id }}">{{ value }}</a>
+    {{ end }}
+{{ end }}
+
+{{ block dataFlag(id, value, removes="") }}
+    <a data-name="{{ id }}"
+       {{ if removes != "" }}removes="{{ removes }}"{{ end }}
+       {{ if .Query.Get(id) != "" }}class="selected"{{ end }}
+    >
+       {{ value }}
+    </a>
 {{ end }}
