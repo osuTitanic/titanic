@@ -97,7 +97,7 @@
 {{ end }}
 
 {{ block homeChat() }}
-<div class="chat-wrapper">
+<div id="chat" class="chat-wrapper">
     <h2 class="headers">
         Chat <span>also connect from <a href="/account/security#irc">irc</a></span>
     </h2>

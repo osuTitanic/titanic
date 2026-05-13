@@ -1,0 +1,2 @@
+{{ import "/pages/public/home.jet" }}
+{{ yield homeChat() . }}

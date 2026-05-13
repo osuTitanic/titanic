@@ -26,6 +26,11 @@ func Home(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/public/home", view)
 }
 
+func HomeChatPartial(ctx *server.Context) {
+	view := any(fetchHomeChatMessages(ctx))
+	ctx.RenderTemplate(http.StatusOK, "partials/home_chat", view)
+}
+
 func fetchHomeNews(ctx *server.Context) []schemas.ForumPost {
 	topics, err := ctx.State.ForumTopics.FetchAnnouncements(newsLimit, 0, "Creator")
 	if err != nil {
