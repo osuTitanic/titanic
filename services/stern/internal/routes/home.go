@@ -26,9 +26,19 @@ func Home(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/public/home", view)
 }
 
+func HomeNewsPartial(ctx *server.Context) {
+	view := any(fetchHomeNews(ctx))
+	ctx.RenderTemplate(http.StatusOK, "partials/home_news", view)
+}
+
 func HomeChatPartial(ctx *server.Context) {
 	view := any(fetchHomeChatMessages(ctx))
 	ctx.RenderTemplate(http.StatusOK, "partials/home_chat", view)
+}
+
+func HomePlaysPartial(ctx *server.Context) {
+	view := any(fetchHomeMostPlayedBeatmaps(ctx))
+	ctx.RenderTemplate(http.StatusOK, "partials/home_plays", view)
 }
 
 func fetchHomeNews(ctx *server.Context) []schemas.ForumPost {
