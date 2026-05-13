@@ -1,6 +1,6 @@
 {{ if .Total > 0 }}
 <div class="pagination">
-    Displaying {{ .From }} to {{ .To }} of {{ formatNumber(.Total) }} results.<br>
+    Displaying {{ formatNumber(.From) }} to {{ formatNumber(.To) }} of {{ formatNumber(.Total) }} results.<br>
 
     {{ if .HasPrevious }}
         <a href="{{ .PreviousUrl }}">Previous</a>
