@@ -61,7 +61,11 @@ func (User) TableName() string {
 	return "users"
 }
 
-func (user User) AvatarUrl() string {
+func (user *User) Age() time.Duration {
+	return time.Since(user.CreatedAt)
+}
+
+func (user *User) AvatarUrl() string {
 	if user.AvatarHash == nil {
 		return fmt.Sprintf("/a/%d", user.Id)
 	}
