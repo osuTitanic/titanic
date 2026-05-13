@@ -187,6 +187,25 @@
         {{ yield beatmapsetItem() . }}
     {{ end }}
 </div>
+{* Enable hover effects *}
+<script>
+$(".beatmapset").hover(
+    function () {
+        $(this).find(".beatmap-info").marquee({ speed: 50 });
+        $(this).find(".hidden-elements").stop().fadeTo(1, 100);
+        $(this).find(".beatmap-side-options").clearQueue().stop().delay(500).animate(
+            { width: "show" }, 100
+        );
+    },
+    function () {
+        $(this).find(".beatmap-info").attr("stop", 1);
+        $(this).find(".hidden-elements").fadeOut(400);
+        $(this).find(".beatmap-side-options").clearQueue().stop().delay(500).animate(
+            { width: "hide" }, 100
+        );
+    }
+);
+</script>
 {{ end }}
 
 {{ block beatmapsetItem() }}
