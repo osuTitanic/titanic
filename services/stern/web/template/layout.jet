@@ -126,7 +126,7 @@
             </ul>
         </div>
         <div class="bancho-stats">
-            <b>{{ formatNumber(.Stats.TotalUsers) }}</b> users, <b>{{ formatNumber(.Stats.OnlineUsers) }}</b> online now.<br>
+            <b>{{ formatNumber(.Stats.TotalUsers) }}</b> users, <b>{{ formatNumber(.Stats.OnlineUsers()) }}</b> online now.<br>
             A total of <b>{{ formatNumber(.Stats.TotalScores) }}</b> plays!
         </div>
         <div class="content">

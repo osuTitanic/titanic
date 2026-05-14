@@ -8,16 +8,21 @@ import (
 )
 
 type Statistics struct {
-	TotalUsers  int
-	OnlineUsers int
-	TotalScores int
+	TotalUsers     int
+	TotalScores    int
+	OnlineUsersOsu int
+	OnlineUsersIrc int
+}
+
+func (stats *Statistics) OnlineUsers() int {
+	return stats.OnlineUsersOsu + stats.OnlineUsersIrc
 }
 
 type DefaultView struct {
 	Query       url.Values
 	Config      *config.Config
 	CurrentUser *schemas.User
-	Stats       Statistics
+	Stats       *Statistics
 	CSRFToken   string
 	CurrentPath string
 	CurrentURI  string

@@ -49,7 +49,7 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	}
 
 	return templates.DefaultView{
-		Stats:       BuildStatistics(ctx.State),
+		Stats:       buildStatistics(ctx.State),
 		Query:       ctx.Request.URL.Query(),
 		Config:      ctx.State.Config,
 		CSRFToken:   ctx.CSRFToken,
@@ -59,17 +59,19 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	}
 }
 
-func BuildStatistics(state *state.State) (stats templates.Statistics) {
-	stats = templates.Statistics{
-		TotalUsers:  0,
-		OnlineUsers: 0,
-		TotalScores: 0,
+func buildStatistics(state *state.State) (stats *templates.Statistics) {
+	stats = &templates.Statistics{
+		TotalUsers:     0,
+		TotalScores:    0,
+		OnlineUsersOsu: 0,
+		OnlineUsersIrc: 0,
 	}
 
 	values, err := state.Redis.MGet(context.TODO(),
 		"bancho:totalusers",
-		"bancho:activity:osu",
 		"bancho:totalscores",
+		"bancho:activity:osu",
+		"bancho:activity:irc",
 	).Result()
 	if err != nil {
 		state.Logger.Error("Failed to fetch statistics from redis", "error", err)
@@ -79,11 +81,14 @@ func BuildStatistics(state *state.State) (stats templates.Statistics) {
 	if totalUsers, ok := values[0].(string); ok {
 		stats.TotalUsers, _ = strconv.Atoi(totalUsers)
 	}
-	if onlineUsers, ok := values[1].(string); ok {
-		stats.OnlineUsers, _ = strconv.Atoi(onlineUsers)
-	}
-	if totalScores, ok := values[2].(string); ok {
+	if totalScores, ok := values[1].(string); ok {
 		stats.TotalScores, _ = strconv.Atoi(totalScores)
+	}
+	if onlineUsers, ok := values[2].(string); ok {
+		stats.OnlineUsersOsu, _ = strconv.Atoi(onlineUsers)
+	}
+	if onlineUsers, ok := values[3].(string); ok {
+		stats.OnlineUsersIrc, _ = strconv.Atoi(onlineUsers)
 	}
 	return stats
 }
