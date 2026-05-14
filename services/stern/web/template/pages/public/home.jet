@@ -170,7 +170,7 @@
         </thead>
         <tbody>
         {{ range i, item := homeIterateMostPlayed(.) }}
-            <tr class="row-dark">
+            <tr class="{{ if i % 2 == 0 }}row-dark{{ else }}row-light{{ end }}">
                 <td>{{ formatNumber(item.Count) }}</td>
                 <td>
                     <img src="/mt/{{ item.Beatmap.SetId }}" loading="lazy" alt="" width="80" height="60">
