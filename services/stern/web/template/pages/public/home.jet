@@ -69,8 +69,7 @@
         </div>
         <div class="news-blurb-box">
             <div class="blurb-text">
-                <!-- TODO: BBCode -->
-                {{ homeRenderNewsText(message) }}
+                {{ homeRenderNewsText(message) | unsafe }}
             </div>
         </div>
         <div class="blurb-readmore">

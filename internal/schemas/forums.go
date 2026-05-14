@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/bbcode"
 	"github.com/osuTitanic/titanic-go/internal/constants"
 )
 
@@ -92,8 +93,7 @@ func (post *ForumPost) Link() string {
 }
 
 func (post *ForumPost) Render() string {
-	// TODO: BBCode rendering
-	return post.Content
+	return bbcode.RenderHtml(post.Content)
 }
 
 func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
@@ -103,8 +103,7 @@ func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
 			content = regex.ReplaceAllString(content, "")
 		}
 
-		// TODO: BBCode rendering
-		content = strings.TrimSpace(content)
+		content = strings.TrimSpace(bbcode.RenderHtml(content))
 		if content != "" {
 			return content
 		}
