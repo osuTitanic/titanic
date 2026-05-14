@@ -92,3 +92,28 @@
     </tr>
 </tr>
 {{ end }}
+
+{{ block beatmapPackInfo() }}
+<tr>
+    <td colspan="3">
+        <div id="pack-{{ pack.Id }}" class="loaded">
+            <h2 style="margin-top: 10px">{{ pack.Name }}</h2>
+            <p>
+                Created by <a href="/u/{{ pack.CreatorId }}">{{ pack.Creator.Name }}</a>
+                on <time datetime="{{ pack.CreatedAt.Format("Jan 02, 2006 15:04:05") }}">{{ pack.CreatedAt.Format("Jan 02, 2006 15:04:05") }}</time>
+            </p>
+            <p>{{ pack.Description }}</p>
+            <ul style="margin-top: 10px">
+                {{ range _, entry := pack.Entries }}
+                <li>
+                    <a href="/s/{{ entry.Beatmapset.Id }}">
+                        {{ entry.Beatmapset.Name() }} ({{ entry.Beatmapset.CreatorName() }})
+                    </a>
+                </li>
+                {{ end }}
+            </ul>
+            <br>
+        </div>
+    </td>
+</tr>
+{{ end }}
