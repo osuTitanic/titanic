@@ -25,9 +25,8 @@ type DefaultView struct {
 
 type HomeView struct {
 	DefaultView
-	// TODO: use pointers here
-	News               []schemas.ForumPost
-	ChatMessages       []schemas.Message
+	News               []*schemas.ForumPost
+	ChatMessages       []*schemas.Message
 	MostPlayedBeatmaps map[int]*schemas.Beatmap
 }
 

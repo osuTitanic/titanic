@@ -17,7 +17,6 @@ const newsLimit = 4
 
 func Home(ctx *server.Context) {
 	view := templates.HomeView{
-		// TODO: Refactor home view such that we don't have to dereference pointers
 		DefaultView:        buildDefaultView(ctx),
 		News:               fetchHomeNews(ctx),
 		ChatMessages:       fetchHomeChatMessages(ctx),
@@ -41,11 +40,11 @@ func HomePlaysPartial(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "partials/home_plays", view)
 }
 
-func fetchHomeNews(ctx *server.Context) []schemas.ForumPost {
+func fetchHomeNews(ctx *server.Context) []*schemas.ForumPost {
 	topics, err := ctx.State.ForumTopics.FetchAnnouncements(newsLimit, 0, "Creator")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home news topics", "error", err)
-		return []schemas.ForumPost{}
+		return []*schemas.ForumPost{}
 	}
 
 	topicIds := make([]int, 0, len(topics))
@@ -56,42 +55,27 @@ func fetchHomeNews(ctx *server.Context) []schemas.ForumPost {
 	postsByTopic, err := ctx.State.ForumPosts.FetchInitialByTopicIds(topicIds, "Topic", "User")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home news posts", "error", err)
-		return []schemas.ForumPost{}
+		return []*schemas.ForumPost{}
 	}
 
-	posts := make([]schemas.ForumPost, 0, len(topics))
+	posts := make([]*schemas.ForumPost, 0, len(topics))
 	for _, topic := range topics {
 		post, ok := postsByTopic[topic.Id]
 		if ok {
-			posts = append(posts, *post)
+			posts = append(posts, post)
 			continue
 		}
-
-		posts = append(posts, schemas.ForumPost{
-			TopicId:   topic.Id,
-			ForumId:   topic.ForumId,
-			UserId:    topic.CreatorId,
-			CreatedAt: topic.CreatedAt,
-			Topic:     topic,
-			User:      topic.Creator,
-		})
 	}
 	return posts
 }
 
-func fetchHomeChatMessages(ctx *server.Context) []schemas.Message {
+func fetchHomeChatMessages(ctx *server.Context) []*schemas.Message {
 	messages, err := ctx.State.Messages.FetchRecent(chatMessagesChannel, chatMessagesLimit, 0)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home chat messages", "error", err)
-		return []schemas.Message{}
+		return []*schemas.Message{}
 	}
-
-	values := make([]schemas.Message, 0, len(messages))
-	for i := len(messages) - 1; i >= 0; i-- {
-		message := messages[i]
-		values = append(values, *message)
-	}
-	return values
+	return messages
 }
 
 func fetchHomeMostPlayedBeatmaps(ctx *server.Context) map[int]*schemas.Beatmap {

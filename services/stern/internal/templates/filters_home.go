@@ -25,7 +25,7 @@ type BeatmapWithCountItem struct {
 
 func homeRenderNewsText(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("homeRenderNewsText", 1, 1)
-	post := a.Get(0).Interface().(schemas.ForumPost)
+	post := a.Get(0).Interface().(*schemas.ForumPost)
 
 	content := post.RenderForNews(homeNewsIgnoredTags...)
 	return reflect.ValueOf(content)
