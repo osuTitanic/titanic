@@ -19,7 +19,7 @@ git clone --recurse-submodules --shallow-submodules https://github.com/osuTitani
 
 Rename the `.example.env` to `.env` and **edit it**.
 
-Start the server without the bundled nginx reverse proxy:
+Start the server without the bundled Caddy reverse proxy:
 
 ```
 docker compose up -d
@@ -29,10 +29,10 @@ docker compose up -d
 
 This is the recommended option if you want to provide your own reverse proxy. If your proxy runs as a container on the `titanic` docker network, it can reach the internal services by using their service names, such as `anchor`, `deck`, `stern`, and `keel`. If your proxy runs on the host or somewhere else, expose the required http ports from those services in `docker-compose.yml` and proxy to those host ports instead.
 
-If you want to use the bundled nginx reverse proxy instead, include the optional nginx compose file whenever you run compose commands:
+If you want to use the bundled Caddy reverse proxy instead, include the optional Caddy compose file whenever you run compose commands:
 
 ```
-docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
 ```
 
 To turn off the server, from the titanic root folder, execute:
@@ -41,10 +41,10 @@ To turn off the server, from the titanic root folder, execute:
 docker compose stop
 ```
 
-If you started the bundled nginx reverse proxy, include both compose files for stop/restart/build commands as well:
+If you started the bundled Caddy reverse proxy, include both compose files for stop/restart/build commands as well:
 
 ```
-docker compose -f docker-compose.yml -f docker-compose.nginx.yml stop
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml stop
 ```
 
 If you experience issues on the first run, you may need to restart your containers:
@@ -88,16 +88,16 @@ docker compose build
 docker compose up -d
 ```
 
-If you use the bundled nginx reverse proxy, include the optional nginx compose file:
+If you use the bundled Caddy reverse proxy, include the optional Caddy compose file:
 
 ```
-docker compose -f docker-compose.yml -f docker-compose.nginx.yml build
-docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml build
+docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
 ```
 
 ## Connecting with osu!
 
-To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. Please look up instructions to do this online! I would personally recommend the guide from [PEACE](https://peace.osu.icu/docs/guide#2-generate-test-ssl-certificate).
+To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. The bundled Caddy reverse proxy will try to automatically request one.
 
 If you are using a local setup environment, the easiest way to get a connection working is by editing your hosts file.  
 Under Windows: `C:\Windows\System32\drivers\etc\hosts`
