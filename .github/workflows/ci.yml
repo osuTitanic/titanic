@@ -34,13 +34,20 @@ jobs:
     outputs:
       build_matrix: ${{ steps.matrix.outputs.build_matrix }}
       publish_matrix: ${{ steps.matrix.outputs.publish_matrix }}
+      publish_enabled: ${{ steps.matrix.outputs.publish_enabled }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Prepare service matrices
         id: matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
         run: |
           build_matrix="$(
             jq -c '
@@ -62,11 +69,27 @@ jobs:
             ' .github/services.json
           )"
 
+          changed_files="$(mktemp)"
+          if [ "$EVENT_NAME" = "push" ]; then
+            zero_sha="0000000000000000000000000000000000000000"
+
+            if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "$zero_sha" ]; then
+              git diff --name-only --no-renames "$BEFORE_SHA" "$CURRENT_SHA" > "$changed_files"
+            else
+              git diff-tree --no-commit-id --name-only --no-renames -r "$CURRENT_SHA" > "$changed_files"
+            fi
+          fi
+
           publish_matrix="$(
-            jq -c '
-              {
+            jq -c --rawfile changed_files "$changed_files" '
+              ($changed_files | split("\n") | map(select(. != ""))) as $changed
+              | {
                 include: [
                   .services[]
+                  | select(
+                      any((.push_folders // [])[]; . as $folder
+                        | any($changed[]; startswith($folder)))
+                    )
                   | {
                       service: .name,
                       dockerfile: .dockerfile,
@@ -80,8 +103,13 @@ jobs:
             ' .github/services.json
           )"
 
+          publish_enabled="$(
+            jq -r '.include | length > 0' <<< "$publish_matrix"
+          )"
+
           echo "build_matrix=$build_matrix" >> "$GITHUB_OUTPUT"
           echo "publish_matrix=$publish_matrix" >> "$GITHUB_OUTPUT"
+          echo "publish_enabled=$publish_enabled" >> "$GITHUB_OUTPUT"
 
   build:
     needs:
@@ -119,7 +147,7 @@ jobs:
           go build -trimpath -o "$output" "${{ matrix.go_build_path }}"
 
   publish:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.prepare.outputs.publish_enabled == 'true' }}
     needs:
       - build
       - prepare
