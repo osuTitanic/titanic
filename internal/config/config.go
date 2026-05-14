@@ -281,8 +281,20 @@ func (c *Config) DefaultLoungeBackend() string {
 	return fmt.Sprintf("%s://lounge.%s", scheme, c.DomainName)
 }
 
+var defaultValidImageServices = []string{
+	"ibb.co",
+	"i.ibb.co",
+	"i.ppy.sh",
+	"i.imgur.com",
+	"cdn.discordapp.com",
+	"media.discordapp.net",
+}
+
 func (c *Config) ValidImageServices() []string {
 	services := make(map[string]struct{})
+	for _, s := range defaultValidImageServices {
+		services[s] = struct{}{}
+	}
 	for _, s := range c.ValidImageServicesOverride {
 		services[s] = struct{}{}
 	}

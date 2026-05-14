@@ -34,6 +34,36 @@ func TestRenderHtml(t *testing.T) {
 	}
 }
 
+func TestMediaProxy(t *testing.T) {
+	renderer := New(Options{
+		ImageProxyBaseUrl:  "https://proxy.example.com",
+		ImageProxySecret:   "secret",
+		ValidImageServices: []string{"trusted.example.com"},
+	})
+
+	source := "https://untrusted.example.com/a.png"
+	got := renderer.RenderHtml("[img]" + source + "[/img]")
+	want := `<img src="https://proxy.example.com` + signUrl(source, []byte("secret")) + `" loading="lazy">`
+	if got != want {
+		t.Fatalf("want %q, got %q", want, got)
+	}
+}
+
+func TestMediaProxyTrustedService(t *testing.T) {
+	renderer := New(Options{
+		ImageProxyBaseUrl:  "https://proxy.example.com",
+		ImageProxySecret:   "secret",
+		ValidImageServices: []string{"trusted.example.com"},
+	})
+
+	source := "https://trusted.example.com/a.png"
+	got := renderer.RenderHtml("[img]" + source + "[/img]")
+	want := `<img src="https://trusted.example.com/a.png" loading="lazy">`
+	if got != want {
+		t.Fatalf("want %q, got %q", want, got)
+	}
+}
+
 func TestRendererOptions(t *testing.T) {
 	renderer := New(Options{BaseUrl: "https://example.com"})
 	got := renderer.RenderHtml("[profile=1]Alice[/profile]")

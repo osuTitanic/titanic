@@ -1,7 +1,11 @@
 package bbcode
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -18,7 +22,10 @@ var (
 
 // Options contains bbcode rendering settings
 type Options struct {
-	BaseUrl string
+	BaseUrl            string
+	ImageProxyBaseUrl  string
+	ImageProxySecret   string
+	ValidImageServices []string
 }
 
 // Renderer wraps bbgo with the tag set used by the application
@@ -36,7 +43,7 @@ func New(options Options) *Renderer {
 	registerRawTags(parser)
 	registerContainerTags(parser)
 	registerLinkTags(parser, options)
-	registerMediaTags(parser)
+	registerMediaTags(parser, options)
 
 	return &Renderer{parser: parser}
 }
@@ -44,6 +51,11 @@ func New(options Options) *Renderer {
 // RenderHtml renders input using the default renderer
 func RenderHtml(input string) string {
 	return defaultRenderer.RenderHtml(input)
+}
+
+// ConfigureDefault replaces the package-level renderer used by helper functions
+func ConfigureDefault(options Options) {
+	defaultRenderer = New(options)
 }
 
 // Strip removes recognized bbcode tags using the default renderer
@@ -95,9 +107,9 @@ func registerLinkTags(parser *bbgo.BBGO, options Options) {
 	parser.AddFormatter("profile", renderProfile(options), embeddedOptions())
 }
 
-func registerMediaTags(parser *bbgo.BBGO) {
-	parser.AddFormatter("img", renderImage, rawOptions())
-	parser.AddFormatter("video", renderVideo, rawOptions())
+func registerMediaTags(parser *bbgo.BBGO, options Options) {
+	parser.AddFormatter("img", renderImage(options), rawOptions())
+	parser.AddFormatter("video", renderVideo(options), rawOptions())
 	parser.AddFormatter("youtube", renderYoutube, rawOptions())
 }
 
@@ -204,20 +216,24 @@ func renderProfile(options Options) bbgo.RenderFunc {
 	}
 }
 
-func renderImage(ctx bbgo.RenderContext) string {
-	source := validAbsoluteUrl(ctx.Value)
-	if source == "" {
-		return ""
+func renderImage(options Options) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		source := resolveMediaUrl(ctx.Value, options)
+		if source == "" {
+			return ""
+		}
+		return fmt.Sprintf(`<img src="%s" loading="lazy">`, sanitizeInput(source))
 	}
-	return fmt.Sprintf(`<img src="%s" loading="lazy">`, sanitizeInput(source))
 }
 
-func renderVideo(ctx bbgo.RenderContext) string {
-	source := validAbsoluteUrl(ctx.Value)
-	if source == "" {
-		return ""
+func renderVideo(options Options) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		source := resolveMediaUrl(ctx.Value, options)
+		if source == "" {
+			return ""
+		}
+		return fmt.Sprintf(`<video src="%s" controls></video>`, sanitizeInput(source))
 	}
-	return fmt.Sprintf(`<video src="%s" controls></video>`, sanitizeInput(source))
 }
 
 func renderYoutube(ctx bbgo.RenderContext) string {
@@ -277,6 +293,53 @@ func validAbsoluteUrl(input string) string {
 		return ""
 	}
 	return input
+}
+
+func resolveMediaUrl(input string, options Options) string {
+	mediaUrl := validAbsoluteUrl(input)
+	if mediaUrl == "" || options.ImageProxyBaseUrl == "" {
+		return mediaUrl
+	}
+
+	parsed, err := url.Parse(mediaUrl)
+	if err != nil || trustedImageService(parsed, options.ValidImageServices) {
+		return mediaUrl
+	}
+
+	return strings.TrimRight(options.ImageProxyBaseUrl, "/") + signUrl(mediaUrl, []byte(options.ImageProxySecret))
+}
+
+func trustedImageService(parsed *url.URL, validServices []string) bool {
+	host := strings.ToLower(parsed.Hostname())
+	if host == "" {
+		host = strings.ToLower(stripPort(parsed.Host))
+	}
+
+	for _, service := range validServices {
+		if host == strings.ToLower(service) {
+			return true
+		}
+	}
+	return false
+}
+
+func stripPort(host string) string {
+	name, _, err := net.SplitHostPort(host)
+	if err == nil {
+		return name
+	}
+	return strings.Split(host, ":")[0]
+}
+
+func signUrl(value string, key []byte) string {
+	mac := hmac.New(sha1.New, key)
+	mac.Write([]byte(value))
+
+	return fmt.Sprintf(
+		"/%s/%s",
+		hex.EncodeToString(mac.Sum(nil)),
+		hex.EncodeToString([]byte(value)),
+	)
 }
 
 func youtubeId(input string) string {

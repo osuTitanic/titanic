@@ -5,6 +5,7 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/CloudyKit/jet/v6/loaders/embedfs"
+	"github.com/osuTitanic/titanic-go/internal/bbcode"
 	"github.com/osuTitanic/titanic-go/internal/config"
 	web "github.com/osuTitanic/titanic-go/services/stern/web"
 )
@@ -14,6 +15,13 @@ type Engine struct {
 }
 
 func NewEngine(cfg *config.Config) (*Engine, error) {
+	bbcode.ConfigureDefault(bbcode.Options{
+		BaseUrl:            cfg.OsuBaseUrl(),
+		ValidImageServices: cfg.ValidImageServices(),
+		ImageProxyBaseUrl:  cfg.ImageProxyBaseUrl,
+		ImageProxySecret:   cfg.FrontendSecretKey,
+	})
+
 	set := jet.NewSet(
 		embedfs.NewLoader("template", web.Templates),
 		jet.DevelopmentMode(cfg.Reload),
