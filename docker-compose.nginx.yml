@@ -13,4 +13,4 @@ services:
     volumes:
       - "./web/nginx/templates:/etc/nginx/templates"
       - "./web/nginx/nginx.conf:/etc/nginx/nginx.conf"
-    command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+    command: /bin/bash -c 'for template in /etc/nginx/templates/*.template; do envsubst < "$$template" > "/etc/nginx/conf.d/$$(basename "$$template" .template)"; done; nginx -g "daemon off;"'
