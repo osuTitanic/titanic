@@ -25,6 +25,12 @@ func (r *ReleaseRepository) Update(updates *schemas.Release, columns ...string) 
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ReleaseRepository) FetchAll() ([]*schemas.Release, error) {
+	var releases []*schemas.Release
+	err := r.db.Order("version DESC").Find(&releases).Error
+	return releases, err
+}
+
 type ModdedReleaseRepository struct {
 	db *gorm.DB
 }
