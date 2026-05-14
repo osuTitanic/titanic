@@ -46,7 +46,7 @@
 {{ block downloadCategories() }}
 <div class="category-wrapper">
     {{ range . }}
-    <a class="category{{ if .Selected }} selected{{ end }}" href="{{ .Url }}">
+    <a class="category{{ if .Selected }} selected{{ end }}" href="{{ .Url }}" data-instant>
         {{ .Name }}
     </a>
     {{ end }}
