@@ -1,0 +1,221 @@
+.category {
+    text-shadow: #f3c8e0 0px 0px 10px;
+    color: #e15fac;
+    font-weight: normal;
+    font-size: 140%;
+    padding: 5px 5px 0 5px;
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 15px;
+    transition: 0.4s all;
+}
+
+.category:visited {
+    color: #e15fac;
+}
+
+.category:hover {
+    color: #aa156e;
+    text-shadow: #f3c8e0 0px 0px 10px;
+    transition: 0.4s all;
+}
+
+.category-wrapper .selected {
+    color: #a5126a !important;
+    font-weight: bold;
+}
+
+.category-wrapper {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+}
+
+.client-container {
+    background-color: #ffdef5;
+    padding: 5px;
+    margin: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: 0.4s all;
+    text-align: center;
+}
+
+.client-container b {
+    margin-left: 10px;
+}
+
+.client {
+    display: inline-block;
+    border-radius: 5px;
+    border-width: 2px;
+    padding: 10px;
+    margin: 10px;
+    overflow: hidden;
+    vertical-align: middle;
+    background-color: #ffd6f3;
+    filter: drop-shadow(1px 2px 1px #c6c6ca);
+    min-width: 300px;
+    text-align: left;
+}
+
+.client p {
+    white-space: pre-wrap;
+}
+
+.description {
+    max-width: 350px;
+    margin-top: 5px;
+}
+
+.client img {
+    margin-top: 8px;
+    border-radius: 2px;
+    max-height: 200px;
+    min-height: 200px;
+    min-width: 250px;
+    color: grey;
+}
+
+.client .download-link {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    color: #ff5d93;
+    background-color: #e9cedf;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1.2em;
+    transition: all 0.1s ease;
+}
+
+.client .download-link:hover {
+    color: #ebebeb;
+    background-color: #ff5d93;
+    transition: all 0.1s ease;
+}
+
+.known-bugs {
+    float: right;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 115%;
+    position: relative;
+    z-index: 1;
+}
+
+.version {
+    font-weight: bold;
+    font-size: large;
+    filter: drop-shadow(2px 2px 1px #d6d6d6);
+}
+
+.bottom-text {
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+.bottom-text a {
+    text-decoration: none;
+}
+
+.bottom-text a:hover {
+    text-decoration: underline;
+}
+
+@supports (display: flex) {
+    .category-wrapper {
+        display: flex;
+        justify-content: space-evenly;
+        text-align: initial;
+    }
+    .category-wrapper .category {
+        display: initial;
+    }
+}
+
+.timeline-overview {
+    background: #ffdef5;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.timeline-empty {
+    text-align: center;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.timeline-year-labels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.timeline-year-link {
+    color: #fe6f9f !important;
+    text-decoration: none !important;
+    text-align: center;
+    border-radius: 3px;
+    padding: 2px 4px;
+    font-size: 12px;
+    transition: 0.3s all;
+}
+
+.timeline-year-link.selected {
+    background: #ff5d93;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.timeline-year-link:hover {
+    background: #ff5d93;
+    color: #ffffff !important;
+    font-weight: bold;
+}
+
+.timeline-bars-container {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    align-items: end;
+}
+
+.timeline-year-bars {
+    height: 72px;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 1px;
+    background: #dedede;
+    border-radius: 3px;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.timeline-year-bars.selected {
+    outline: 2px solid #ff5d93;
+}
+
+.timeline-bar {
+    width: 100%;
+    align-self: end;
+    background: #bdbdbd;
+}
+
+.timeline-bar.level-0 { height: 4%; }
+.timeline-bar.level-1 { height: 10%; background: #a8a8a8; }
+.timeline-bar.level-2 { height: 20%; background: #989898; }
+.timeline-bar.level-3 { height: 30%; background: #898989; }
+.timeline-bar.level-4 { height: 40%; background: #797979; }
+.timeline-bar.level-5 { height: 50%; background: #696969; }
+.timeline-bar.level-6 { height: 60%; background: #5a5a5a; }
+.timeline-bar.level-7 { height: 70%; background: #4a4a4a; }
+.timeline-bar.level-8 { height: 80%; background: #3b3b3b; }
+.timeline-bar.level-9 { height: 90%; background: #2b2b2b; }
+.timeline-bar.level-10 { height: 96%; background: #111; }

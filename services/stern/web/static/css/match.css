@@ -1,0 +1,94 @@
+#info-text {
+    font-size: 80%;
+    margin-top: 2.5px;
+}
+
+#match-events {
+    display: grid;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 80%;
+}
+
+.match-details {
+    float: left;
+}
+
+.event {
+    color: #555555;
+    width: 30%;
+    margin: auto;
+}
+
+.game {
+    margin: 25px auto 25px auto;
+    border-radius: 5px;
+    border: solid 1px #c9c1e5;
+    box-shadow: #c9c1e5 0px 0px 10px;
+    padding: 10px;
+    width: 70%;
+    text-align: left;
+}
+
+.match-results {
+    margin: 0 auto;
+    margin-top: 60px;
+    margin-bottom: 10px;
+    width: 100%;
+    text-align: center;
+}
+
+.match-results table {
+    margin: 0 auto;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px 3px;
+}
+
+.match-results table td {
+    padding: 1px 0 1px 0;
+}
+
+.match-results .flag {
+    margin-right: 4px;
+    margin-top: 1.5px;
+}
+
+.event-time {
+    margin-right: 8px;
+}
+
+.team-red {
+    background-color: #ff0000;
+    color: white;
+}
+
+.team-blue {
+    background-color: #0000ff;
+    color: white;
+}
+
+.dark-row {
+    background-color: #dad7fb;
+}
+
+.light-row {
+    background-color: #e7e4fc;
+}
+
+.fail {
+    color: #888888
+}
+
+.beatmap-info {
+    float: right;
+    margin: 3px;
+    width: 60%;
+}
+
+.team-results {
+    text-align: center;
+    margin: 15px 0 5px 0;
+    font-size: 135%;
+    width: 100%;
+}

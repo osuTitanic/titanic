@@ -1,0 +1,68 @@
+.page {
+    margin: 0;
+}
+
+.heading {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.centered {
+    margin: 0 auto;
+    text-align: center;
+    font-size: 80%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.country .flag-large {
+    margin-top: 25px;
+    margin-bottom: 8px;
+    box-shadow: #e6c6d9 0px 1px 15px;
+    border: 0;
+}
+
+.country a {
+    width: 100%;
+    text-align: center;
+    float: left;
+}
+
+.country-select {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.country-select a {
+    margin: 1px;
+}
+
+.player-listing {
+    margin: auto;
+    width: 100%;
+    border-spacing: 0;
+    font-size: 73.5%;
+    margin-bottom: 5px;
+    border-collapse: separate;
+}
+
+.player-listing th {
+    background-color: #d7d2fb;
+    border-bottom: 1px solid #a79ef3;
+    vertical-align: middle;
+}
+
+.player-listing td {
+    padding: 2px 5px 2px 5px;
+    vertical-align: middle;
+}
+
+.ranking-flag-link,
+.ranking-flag-link:hover,
+.ranking-flag-link:focus,
+.ranking-flag-link:active {
+    text-decoration: none;
+    vertical-align: text-bottom;
+}

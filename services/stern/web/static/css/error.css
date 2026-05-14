@@ -1,0 +1,32 @@
+
+.top {
+    margin-bottom: 15px;
+}
+
+.page {
+    font-weight: normal;
+    display: grid;
+    margin: auto 25px auto;
+    justify-content: center;
+}
+
+.page h1 {
+    color: #e15fac;
+    font-size: 120%;
+    margin-bottom: 15px;
+    text-shadow: #efcfe1 0px 0px 10px;
+    font-weight: normal;
+}
+
+.page img {
+    margin-bottom: 15px;
+    max-height: 150px;
+    align-self: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.description {
+    max-width: 550px;
+}

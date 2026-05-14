@@ -3,6 +3,8 @@ package schemas
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type Release struct {
@@ -13,14 +15,44 @@ type Release struct {
 	KnownBugs   *string         `gorm:"column:known_bugs"`
 	Supported   bool            `gorm:"column:supported;default:true"`
 	Preview     bool            `gorm:"column:preview;default:false"`
-	Downloads   []string        `gorm:"column:downloads;type:text[];default:'{}'"`
-	Screenshots []string        `gorm:"column:screenshots;type:text[];default:'{}'"`
+	Downloads   pq.StringArray  `gorm:"column:downloads;type:text[];default:'{}'"`
+	Screenshots pq.StringArray  `gorm:"column:screenshots;type:text[];default:'{}'"`
 	Hashes      json.RawMessage `gorm:"column:hashes;type:jsonb;default:'[]'"`
 	CreatedAt   time.Time       `gorm:"column:created_at;autoCreateTime"`
 }
 
 func (Release) TableName() string {
 	return "releases_titanic"
+}
+
+func (r *Release) PrimaryDownloadUrl() string {
+	if r == nil || len(r.Downloads) == 0 {
+		return ""
+	}
+	return r.Downloads[0]
+}
+
+func (r *Release) PrimaryScreenshotUrl() string {
+	if r == nil || len(r.Screenshots) == 0 {
+		return ""
+	}
+	return r.Screenshots[0]
+}
+
+func (r *Release) IsDisplayable() bool {
+	if r == nil {
+		return false
+	}
+	if !r.Supported {
+		return false
+	}
+	if r.Preview {
+		return false
+	}
+	if len(r.Downloads) == 0 {
+		return false
+	}
+	return true
 }
 
 type ModdedRelease struct {

@@ -13,6 +13,10 @@ const (
 
 var Modes = []Mode{ModeOsu, ModeTaiko, ModeCatch, ModeMania}
 
+func (m Mode) Value() int {
+	return int(m)
+}
+
 func (m Mode) String() string {
 	switch m {
 	case ModeOsu:

@@ -66,6 +66,19 @@ func (r *ForumTopicRepository) ManyById(ids []int, preload ...string) ([]*schema
 	return topics, err
 }
 
+func (r *ForumTopicRepository) FetchAnnouncements(limit int, offset int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("announcement = ?", true).
+		Where("hidden = ?", false).
+		Order("created_at DESC").
+		Order("id DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
 type ForumPostRepository struct {
 	db *gorm.DB
 }
@@ -111,6 +124,34 @@ func (r *ForumPostRepository) ManyById(ids []int64, preload ...string) ([]*schem
 	var posts []*schemas.ForumPost
 	err := Preloaded(r.db, preload).Where("id IN ?", ids).Find(&posts).Error
 	return posts, err
+}
+
+func (r *ForumPostRepository) FetchInitialByTopicIds(topicIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
+	if len(topicIds) == 0 {
+		return map[int]*schemas.ForumPost{}, nil
+	}
+
+	initialPostIds := r.db.Model(&schemas.ForumPost{}).
+		Select("MIN(id)").
+		Where("topic_id IN ?", topicIds).
+		Where("hidden = ?", false).
+		Where("draft = ?", false).
+		Where("deleted = ?", false).
+		Group("topic_id")
+
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("id IN (?)", initialPostIds).
+		Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	postsByTopic := make(map[int]*schemas.ForumPost, len(posts))
+	for _, post := range posts {
+		postsByTopic[post.TopicId] = post
+	}
+	return postsByTopic, nil
 }
 
 type ForumIconRepository struct {

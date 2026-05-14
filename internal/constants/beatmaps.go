@@ -50,6 +50,41 @@ const (
 	BeatmapGenreJazz        BeatmapGenre = 14
 )
 
+func (genre BeatmapGenre) String() string {
+	switch genre {
+	case BeatmapGenreAny:
+		return "Any"
+	case BeatmapGenreUnspecified:
+		return "Unspecified"
+	case BeatmapGenreVideoGame:
+		return "Video Game"
+	case BeatmapGenreAnime:
+		return "Anime"
+	case BeatmapGenreRock:
+		return "Rock"
+	case BeatmapGenrePop:
+		return "Pop"
+	case BeatmapGenreOther:
+		return "Other"
+	case BeatmapGenreNovelty:
+		return "Novelty"
+	case BeatmapGenreHipHop:
+		return "Hip Hop"
+	case BeatmapGenreElectronic:
+		return "Electronic"
+	case BeatmapGenreMetal:
+		return "Metal"
+	case BeatmapGenreClassical:
+		return "Classical"
+	case BeatmapGenreFolk:
+		return "Folk"
+	case BeatmapGenreJazz:
+		return "Jazz"
+	default:
+		return "Unknown"
+	}
+}
+
 type BeatmapLanguage int
 
 const (
@@ -69,3 +104,40 @@ const (
 	BeatmapLanguagePolish       BeatmapLanguage = 13
 	BeatmapLanguageOther        BeatmapLanguage = 14
 )
+
+func (language BeatmapLanguage) String() string {
+	switch language {
+	case BeatmapLanguageAny:
+		return "Any"
+	case BeatmapLanguageUnspecified:
+		return "Unspecified"
+	case BeatmapLanguageEnglish:
+		return "English"
+	case BeatmapLanguageJapanese:
+		return "Japanese"
+	case BeatmapLanguageChinese:
+		return "Chinese"
+	case BeatmapLanguageInstrumental:
+		return "Instrumental"
+	case BeatmapLanguageKorean:
+		return "Korean"
+	case BeatmapLanguageFrench:
+		return "French"
+	case BeatmapLanguageGerman:
+		return "German"
+	case BeatmapLanguageSwedish:
+		return "Swedish"
+	case BeatmapLanguageSpanish:
+		return "Spanish"
+	case BeatmapLanguageItalian:
+		return "Italian"
+	case BeatmapLanguageRussian:
+		return "Russian"
+	case BeatmapLanguagePolish:
+		return "Polish"
+	case BeatmapLanguageOther:
+		return "Other"
+	default:
+		return "Unknown"
+	}
+}

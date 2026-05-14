@@ -1,0 +1,100 @@
+.pack-container {
+    background: #f9f7fe;
+    border: 1px solid #e1dfe7;
+    padding: 10px;
+}
+
+.pack-container h2 {
+    font-size: 110%;
+    margin-bottom: 10px;
+    text-shadow: #efcfe1 0px 0px 2px;
+    font-weight: 100;
+    color: #e15fac;
+}
+
+.pack-container p {
+    font-size: 85%;
+}
+
+.pack-categories {
+    display: block;
+    background-color: #ece4fd;
+    border-bottom: 1px solid #cfc1ef;
+    width: 100%;
+    float: left;
+    padding: 0;
+}
+
+.pack-categories ul {
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.category-item {
+    margin: 0;
+    width: auto;
+    float: left;
+    display: block;
+}
+
+.category-item a {
+    text-decoration: none;
+    font-size: 90%;
+    padding: 7px 8px 7px 8px;
+    line-height: 15px;
+    color: #716d72;
+    display: flex;
+}
+
+.category-item a:visited {
+    color: #716d72;
+}
+
+.category-item .active {
+    background-color: #bfa8f8;
+}
+
+.category-item a:hover {
+    background-color: white;
+    text-decoration: none;
+}
+
+.pack-listing {
+    width: 100%;
+    font-size: 80%;
+}
+
+.pack-listing thead {
+    padding: 0;
+    margin: 0;
+}
+
+.pack-listing th {
+    background: #d7d2fb;
+    border-bottom: 1px solid #a79ef3;
+}
+
+.pack-listing td {
+    padding-bottom: 1px;
+    padding-top: 1px;
+}
+
+.dark-row {
+    background-color: #e3e1fa;
+}
+
+.light-row {
+    background-color: #edebfa;
+}
+
+.pack-listing [id^="pack-"] {
+    overflow: hidden;
+    z-index: 0;
+}
+
+.pack-listing .expanded {
+    position: relative;
+}

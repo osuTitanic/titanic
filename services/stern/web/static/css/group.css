@@ -1,0 +1,28 @@
+.page {
+    height: 100%;
+}
+
+.group-head {
+    text-align: center;
+}
+
+.group-header {
+    font-size: 180%;
+    font-weight: normal;
+}
+
+.group-description {
+    margin: 5px;
+    font-size: 85%;
+}
+
+.group-users {
+    height: 100%;
+    margin-top: 35px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+a:hover {
+    text-decoration: none;
+}

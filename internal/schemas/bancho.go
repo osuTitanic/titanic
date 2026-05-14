@@ -118,8 +118,8 @@ type Match struct {
 	CreatedAt time.Time  `gorm:"column:created_at"`
 	EndedAt   *time.Time `gorm:"column:ended_at"`
 
-	Creator *User        `gorm:"foreignKey:CreatorId;references:Id"`
-	Events  []MatchEvent `gorm:"foreignKey:MatchId;references:Id"`
+	Creator *User         `gorm:"foreignKey:CreatorId;references:Id"`
+	Events  []*MatchEvent `gorm:"foreignKey:MatchId;references:Id"`
 }
 
 func (Match) TableName() string {

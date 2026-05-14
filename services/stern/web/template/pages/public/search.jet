@@ -1,0 +1,293 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Beatmap Listing - Titanic!</title>
+<meta property="og:title" content="Beatmap Listing">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets">
+<meta property="og:description" content="Explore the vast collection of beatmaps to find songs which suit your tastes">
+<link rel="stylesheet" href="/css/search.css">
+{{ end }}
+
+{{ block body() }}
+<div class="beatmap-search-container">
+    <h1>Beatmap Listing</h1>
+    <form id="beatmap-search-form" action="/beatmapsets" method="get">
+        {{ range searchHiddenInputs(.Query) }}
+        <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+        {{ end }}
+        <input id="search-input" name="query" type="search" placeholder="Search for a beatmap..." value="{{ .Query.Get("query") }}">
+    </form>
+    <div class="beatmap-options">
+        {{ yield selectionMode() }}
+        {{ yield selectionCategory() }}
+        {{ yield selectionGenre() }}
+        {{ yield selectionLanguage() }}
+        {{ yield selectionExtra() }}
+    </div>
+
+    {{ yield qualifiedInfobox() }}
+    {{ include "/components/pagination.jet" .Pagination }}
+    {{ yield selectionOrder() }}
+
+    {{ yield beatmapListing() }}
+</div>
+<script src="/js/search.js"></script>
+{{ end }}
+
+{{ block selectionMode() }}
+<dl data-name="mode">
+    <dt>Mode:</dt>
+    <dd>
+        {{ yield dataElement(id="", value="Any", collection="mode") }}
+        {{ yield dataElement(id="0", value="osu!", collection="mode") }}
+        {{ yield dataElement(id="1", value="osu!taiko", collection="mode") }}
+        {{ yield dataElement(id="2", value="osu!catch", collection="mode") }}
+        {{ yield dataElement(id="3", value="osu!mania", collection="mode") }}
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionCategory() }}
+<dl>
+    <dt>Category:</dt>
+    <dd>
+        {{ yield dataElement(id="", value="Has Leaderboard", collection="category") }}
+        {{ yield dataElement(id="2", value="Ranked", collection="category") }}
+        {{ yield dataElement(id="3", value="Qualified", collection="category") }}
+        {{ yield dataElement(id="4", value="Loved", collection="category") }}
+        {{ yield dataElement(id="5", value="Approved", collection="category") }}
+        {{ yield dataElement(id="6", value="Pending", collection="category") }}
+        {{ yield dataElement(id="7", value="WIP", collection="category") }}
+        {{ yield dataElement(id="8", value="Graveyard", collection="category") }}
+        {{ yield dataElement(id="0", value="All", collection="category") }}
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionGenre() }}
+<dl>
+    <dt>Genre:</dt>
+    <dd>
+        {{ yield dataElement(id="", value="Any", collection="genre") }}
+        {{ yield dataElement(id="0", value="Unspecified", collection="genre") }}
+        {{ yield dataElement(id="2", value="Video Game", collection="genre") }}
+        {{ yield dataElement(id="3", value="Anime", collection="genre") }}
+        {{ yield dataElement(id="4", value="Rock", collection="genre") }}
+        {{ yield dataElement(id="5", value="Pop", collection="genre") }}
+        {{ yield dataElement(id="6", value="Other", collection="genre") }}
+        {{ yield dataElement(id="7", value="Novelty", collection="genre") }}
+        {{ yield dataElement(id="9", value="Hip Hop", collection="genre") }}
+        {{ yield dataElement(id="10", value="Electronic", collection="genre") }}
+        {{ yield dataElement(id="11", value="Metal", collection="genre") }}
+        {{ yield dataElement(id="12", value="Classical", collection="genre") }}
+        {{ yield dataElement(id="13", value="Folk", collection="genre") }}
+        {{ yield dataElement(id="14", value="Jazz", collection="genre") }}
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionLanguage() }}
+<dl>
+    <dt>Language:</dt>
+    <dd>
+        {{ yield dataElement(id="", value="Any", collection="language") }}
+        {{ yield dataElement(id="2", value="English", collection="language") }}
+        {{ yield dataElement(id="3", value="Japanese", collection="language") }}
+        {{ yield dataElement(id="4", value="Chinese", collection="language") }}
+        {{ yield dataElement(id="5", value="Instrumental", collection="language") }}
+        {{ yield dataElement(id="6", value="Korean", collection="language") }}
+        {{ yield dataElement(id="7", value="French", collection="language") }}
+        {{ yield dataElement(id="8", value="German", collection="language") }}
+        {{ yield dataElement(id="9", value="Swedish", collection="language") }}
+        {{ yield dataElement(id="10", value="Spanish", collection="language") }}
+        {{ yield dataElement(id="11", value="Italian", collection="language") }}
+        {{ yield dataElement(id="12", value="Russian", collection="language") }}
+        {{ yield dataElement(id="13", value="Polish", collection="language") }}
+    </dd>
+</dl>
+{{ end }}
+
+{{ block selectionExtra() }}
+<dl>
+    <dt>Extra:</dt>
+    <dd>
+        {{ yield dataFlag(id="video", value="Has Video") }}
+        {{ yield dataFlag(id="storyboard", value="Has Storyboard") }}
+        {{ if .CurrentUser }}
+        {{ yield dataFlag(id="played", value="Has Played", removes="unplayed") }}
+        {{ yield dataFlag(id="cleared", value="Has Cleared", removes="uncleared") }}
+        {{ yield dataFlag(id="unplayed", value="Unplayed", removes="played") }}
+        {{ yield dataFlag(id="uncleared", value="Uncleared", removes="cleared") }}
+        {{ end }}
+        {{ yield dataFlag(id="titanic", value="Titanic Exclusive") }}
+    </dd>
+</dl>
+{{ end }}
+
+{{ block qualifiedInfobox() }}
+    {{ accountAge := 0 }}
+    {{ if .CurrentUser }}
+        {{ accountAge = .CurrentUser.AgeDays() }}
+    {{ end }}
+
+    {{ if accountAge < 14 }}
+    <div class="search-blurb-box" style="padding: 5px; text-align: center;">
+        Interested in playing cutting-edge beatmaps before the masses?
+        Make sure to check out the <strong><a href="/beatmapsets/?category=3">qualified maps</a> category</strong>!<br>
+        (Scores <strong>won't be deleted</strong> once the map is ranked, unless the map is disqualified)
+    </div>
+    {{ end }}
+{{ end }}
+
+{{ block selectionOrder() }}
+<table class="beatmap-order-select">
+    <thead>
+        <tr>
+            {{ yield orderElement(id="0", value="Title") }}
+            {{ yield orderElement(id="1", value="Artist") }}
+            {{ yield orderElement(id="2", value="Creator") }}
+            {{ yield orderElement(id="3", value="Difficulty") }}
+            {{ yield orderElement(id="4", value="Ranked") }}
+            {{ yield orderElement(id="7", value="Created") }}
+            {{ yield orderElement(id="5", value="Rating") }}
+            {{ yield orderElement(id="6", value="Plays") }}
+        </tr>
+    </thead>
+</table>
+{{ end }}
+
+{{ block orderElement(id, value) }}
+<th>
+    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}">{{ value }}</a>
+
+    {{ if .SearchSort == id }}
+        {{ if .SearchOrder == "0" }}
+        <img src="/images/down.gif" alt="Descending">
+        {{ else }}
+        <img src="/images/up.gif" alt="Ascending">
+        {{ end }}
+    {{ end }}
+</th>
+{{ end }}
+
+{{ block dataElement(id, value, collection) }}
+    {{ selectedElement := .Query.Get(collection) }}
+    {{ if selectedElement == id }}
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}" class="selected">{{ value }}</a>
+    {{ else }}
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}">{{ value }}</a>
+    {{ end }}
+{{ end }}
+
+{{ block dataFlag(id, value, removes="") }}
+    <a href="{{ searchFlagUrl(.Query, "/beatmapsets", id, removes) }}" {{ if .Query.Get(id) != "" }}class="selected"{{ end }}>
+       {{ value }}
+    </a>
+{{ end }}
+
+{{ block beatmapListing() }}
+<div id="beatmap-list">
+    {{ range .Beatmapsets }}
+        {{ yield beatmapsetItem() . }}
+    {{ end }}
+</div>
+{* Enable hover effects *}
+<script>
+$(".beatmapset").hover(
+    function () {
+        $(this).find(".beatmap-info").marquee({ speed: 50 });
+        $(this).find(".hidden-elements").stop().fadeTo(1, 100);
+        $(this).find(".beatmap-side-options").clearQueue().stop().delay(500).animate(
+            { width: "show" }, 100
+        );
+    },
+    function () {
+        $(this).find(".beatmap-info").attr("stop", 1);
+        $(this).find(".hidden-elements").fadeOut(400);
+        $(this).find(".beatmap-side-options").clearQueue().stop().delay(500).animate(
+            { width: "hide" }, 100
+        );
+    }
+);
+</script>
+{{ end }}
+
+{{ block beatmapsetItem() }}
+<div class="beatmapset" id="beatmapset-{{ .Id }}">
+    <div class="beatmap-image" style="background-image: url({{ .ThumbnailUrl() }})">
+        <i class="icon-play"></i>
+    </div>
+    <audio class="beatmap-preview-audio" src="{{ .AudioPreviewUrl() }}" id="beatmap-preview-{{ .Id }}"></audio>
+    <div class="beatmap-side-options" style="overflow: hidden; width: 24px; display: none">
+        <a class="beatmap-favourite-link" href="#">
+            <i class="icon-heart"></i>
+        </a>
+        <a class="beatmap-comment-link" href="{{ .CommentLink() }}">
+            <i class="icon-comment"></i>
+        </a>
+        <a class="beatmap-download-link" href="/d/{{ .Id }}">
+            <i class="icon-download-alt"></i>
+        </a>
+    </div>
+    <div class="beatmap-info">
+        {{ if .HasVideo }}
+        <i class="icon-film"></i>
+        {{ end }}
+        {{ if .HasStoryboard }}
+        <i class="icon-picture"></i>
+        {{ end }}
+        <a class="beatmap-link" href="/s/{{ .Id }}">
+            <span style="color: #555555">{{ .ArtistName() }}</span> -
+            <span class="beatmap-title">{{ .TitleName() }}</span>
+        </a>
+    </div>
+    <div class="beatmap-creator">
+        <span>mapped by </span>
+        <a href="{{ .CreatorLink() }}">{{ .CreatorName() }}</a>
+    </div>
+    <div class="beatmap-stats">
+        <div class="beatmap-tags">
+        {{ if .LanguageId > 0 }}
+            <a>{{ .LanguageId.String() }}</a>
+        {{ end }}
+        {{ if .GenreId > 0 }}
+            <a>{{ .GenreId.String() }}</a>
+        {{ end }}
+        </div>
+        <div class="beatmap-rating">
+            <div class="beatmap-rating-bar" style="width: {{ beatmapRatingWidth(.RatingAverage) }}%"></div>
+        </div>
+        <div class="beatmap-details">
+            <span class="hidden-elements" title="{{ .DisplayDateTitle() }}">{{ formatDateShort(.DisplayDate()) }}</span>
+            <i class="icon-heart"></i>{{ formatNumber(.FavouriteCount) }}
+            <i class="icon-play"></i>{{ formatNumber(.TotalPlaycount) }}
+        </div>
+    </div>
+    <div class="hidden-elements">
+        {{ source := .SourceName() }}
+        <div class="beatmap-source">
+            {{ if source != "" }}
+            from <span>{{ source }}</span>
+            {{ end }}
+        </div>
+        {{ range i, beatmap := beatmapDifficultySort(.Beatmaps) }}
+            {{ if i < 8 && beatmap }}
+            {{ yield beatmapDifficultyIcon() beatmap }}
+            {{ end }}
+        {{ end }}
+        {{ if len(.Beatmaps) > 8 }}
+        ...
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block beatmapDifficultyIcon() }}
+<a href="/b/{{ .Id }}">
+    <img class="beatmap-icon"
+         src="/images/beatmap/difficulties/{{ .DifficultyAlias() }}-{{ .Mode.Value() }}.png"
+         title="{{ .Version }}"
+         alt="{{ .Version }}">
+</a>
+{{ end }}

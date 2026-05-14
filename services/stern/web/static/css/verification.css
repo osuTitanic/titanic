@@ -1,0 +1,68 @@
+
+.page h1, .page h2 {
+    color: #cc2e8a;
+    text-shadow: #efcfe1 0px 0px 10px;
+    overflow: visible;
+    font-weight: normal;
+    font-size: 160%;
+}
+
+.left {
+    float: left;
+    margin-right: 15px;
+}
+
+.right {
+    text-align: left;
+    margin: 15px;
+}
+
+.right div {
+    background-color: #efeafc;
+    box-shadow: 0px 0px 50px #ffffff;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 15px;
+    display: -webkit-box;
+    display: flow-root;
+}
+
+.password-reset-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.password-reset-form div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.password-reset-form input[type="submit"],
+.password-reset-form input[type="text"],
+.password-reset-form input[type="password"],
+.password-reset-form input[type="email"] {
+    border: 1px solid #90ace7;
+    vertical-align: middle;
+    border-radius: 3px;
+    width: 300px;
+    height: 30px;
+    float: left;
+}
+
+.reset-button {
+    background-color: rgb(138,138,138);
+    transition: all 200ms ease-in-out;
+    border-radius: 5px !important;
+    color: white;
+}
+
+.reset-button:hover {
+    text-decoration: none;
+    text-shadow: 0px 0px 5px #ffffff;
+    color: white;
+    cursor: pointer;
+}

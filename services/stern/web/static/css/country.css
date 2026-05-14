@@ -1,0 +1,39 @@
+.page {
+    margin: 0;
+}
+
+.heading {
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.centered {
+    margin: 0 auto;
+    text-align: center;
+    font-size: 80%;
+    margin-top: 25px;
+    margin-bottom: 15px;
+}
+
+.country-listing {
+    margin: auto;
+    width: 100%;
+    border-spacing: 0;
+    font-size: 73%;
+    margin-bottom: 5px;
+    border-collapse: separate;
+}
+
+.country-listing th {
+    background-color: #d7d2fb;
+    border-bottom: 1px solid #a79ef3;
+    vertical-align: middle;
+    height: 15px;
+}
+
+.country-listing td {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding: 2px 5px 2px 5px;
+    vertical-align: middle;
+}

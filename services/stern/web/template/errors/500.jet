@@ -1,0 +1,19 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Internal Server Error</title>
+<link rel="stylesheet" href="/css/error.css">
+{{ end }}
+
+{{ block body() }}
+<img src="/images/art/titanic.gif" alt="Error Image">
+<div style="text-align: center" class="description">
+    <h1>Internal Server Error</h1>
+    <p>Hmm.. I guess something went wrong, huh?</p>
+    <p>
+        Either the server is dying or you are trying to break something, whether it was intentional or not.
+        Or maybe contabo is just trolling us again. Who knows?
+        Anyway, please try again later or contact the server administrator.
+    </p>
+</div>
+{{ end }}

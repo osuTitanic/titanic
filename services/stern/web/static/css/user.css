@@ -1,0 +1,876 @@
+body {
+    overflow-y: scroll;
+}
+
+.page {
+    /* TODO: Revisit margin structure on this page when global page style is more accurate */
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.profile-left {
+    width: 200px;
+    float: left;
+    padding-left: 7px;
+
+    /* TODO: Belongs at the root of the site, not here */
+    font-size: 8pt;
+    line-height: normal;
+
+    /* TODO: Revisit margin structure on this page when global page style is more accurate */
+    margin-top: -10px;
+}
+
+/* Some versions of the osu! website had a sticky profile card, in others it didn't work */
+#titanic .profile-left {
+    position: sticky;
+    top: 0;
+}
+
+/* TODO: Shouldn't need to un-reset some of the reset like this */
+.profile-left * {
+    font-size: unset;
+}
+
+.profile-user-card {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.avatar {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    max-width: 128px;
+    max-height: 128px;
+    text-align: center;
+    vertical-align: middle;
+    margin: auto;
+    padding: 3px;
+}
+
+.avatar > img {
+    display: inline-block;
+    max-width: 128px;
+    max-height: 128px;
+}
+
+.profile-username-container {
+    position: relative;
+}
+
+.profile-username {
+    padding-bottom: 2px;
+    font-size: 250%;
+}
+
+#titanic .profile-username {
+    padding-top: 2px;
+    padding-bottom: 0;
+}
+
+.change-username {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 5px;
+    text-align: right;
+}
+
+.profile-username-container:hover > .change-username {
+    display: inline-block;
+}
+
+.groups {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin: 6px 0;
+}
+
+.group {
+    background: #fff9;
+    padding: 1px 3px;
+    font-size: 75%;
+    font-weight: bold;
+}
+
+.group:hover,
+.group:focus {
+    background: #fff;
+    text-decoration: none;
+}
+
+.group:active {
+    text-decoration: none;
+}
+
+.badge {
+    line-height: 0;
+}
+
+.badge img {
+    /* Difference from osu!: Larger badge images */
+    max-width: 103px;
+    padding: 3px;
+}
+
+#titanic .banned-container {
+    /* Difference from osu!: Margin to avoid awkward missing gap below banned image */
+    margin-bottom: 5px;
+}
+
+.flag {
+    width: 16px;
+    height: 11px;
+}
+
+#titanic .flag {
+    /* Difference from osu!: Preserve the flag art style at high DPI */
+    image-rendering: pixelated;
+}
+
+#friend-status {
+    padding-bottom: 8px;
+    text-align: center;
+}
+
+#friend-status a {
+    color: #fff;
+    font-size: 15px;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 6px;
+    min-width: 100px;
+}
+
+#friend-status a:hover {
+    color: #fff;
+    text-decoration: none;
+    text-shadow: 0 0 5px #fff;
+}
+
+#friend-status a:focus {
+    text-decoration: none;
+}
+
+#friend-status a {
+    display: none;
+}
+
+#friend-status.friend-current-true-target-true a:nth-child(1),
+#friend-status.friend-current-true-target-false a:nth-child(2),
+#friend-status.friend-current-false-target-true a:nth-child(3),
+#friend-status.friend-current-false-target-false a:nth-child(4) {
+    display: inline-block;
+}
+
+.friend-current-false-target-true a,
+.friend-current-false-target-false a {
+    background: #5db8ef;
+}
+
+.friend-current-true-target-false a {
+    background: #54bd21;
+}
+
+.friend-current-true-target-true a {
+    background: #ef77af;
+}
+
+.profile-details {
+    position: relative;
+    font-size: 120%;
+}
+
+.profile-details > div {
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.profile-details > div > div {
+    margin-left: 23px;
+}
+
+.profile-details i {
+    position: absolute;
+    width: 23px;
+    text-align: center;
+    color: #76777b;
+    font-size: 130%;
+}
+
+#titanic .profile-details i.online {
+    color: #c966c9;
+}
+
+.last-fm-unlink {
+    font-size: 60%;
+}
+
+.edit-profile {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 5px;
+    text-align: right;
+}
+
+.profile-details:hover > .edit-profile {
+    display: inline-block;
+}
+
+.playstyle-container {
+    margin: 5px auto;
+    text-align: center;
+    background: #e1ddfc;
+    border-radius: 5px;
+}
+
+.playstyle {
+    display: none;
+    width: 32px;
+    height: 32px;
+    opacity: 0.2;
+    background-image: url("/images/playstyles.png");
+}
+
+.playstyle-mouse {
+    background-position: 0px 0px;
+}
+
+.playstyle-keyboard {
+    background-position: -64px 0px;
+}
+
+.playstyle-tablet {
+    background-position: -32px 0px;
+}
+
+.playstyle-touch {
+    background-position: -96px 0px;
+}
+
+.playstyle-using {
+    display: inline-block;
+    opacity: 1;
+}
+
+.playstyle-toggleable {
+    display: inline-block;
+}
+
+.playstyle-toggleable:hover {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.playstyle-using.playstyle-toggleable:hover {
+    opacity: 0.9;
+}
+
+@media
+(min--moz-device-pixel-ratio: 1.4),
+(-o-min-device-pixel-ratio: 7/5),
+(-webkit-min-device-pixel-ratio: 1.4),
+(min-device-pixel-ratio: 1.4),
+(min-resolution: 134dpi) {
+    .playstyle {
+        background-image: url("/images/playstyles@2x.png");
+        background-size: 128px 64px;
+    }
+}
+
+.profile-right {
+    text-align: left;
+    float: right;
+    width: 640px;
+}
+
+.edit-button {
+    float: right;
+    text-align: right;
+    margin-left: 10px;
+}
+
+.userpage {
+    max-height: 300px;
+    min-height: 32px;
+    overflow-x: hidden;
+    overflow: auto;
+    position: relative;
+    background-color: #e7e4fc;
+    font-size: 85%;
+    font-weight: normal;
+}
+
+.gamemode-container {
+    height: 35px;
+    margin: 10px auto;
+    text-align: center;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.gamemode-button {
+    display: inline-block;
+    background: #e7e4fc;
+    border: solid 2px #978cd0;
+    border-radius: 5px;
+    font-size: 110%;
+    width: 136px;
+    height: 30px;
+    line-height: 30px;
+    margin: 5px;
+    padding: 0;
+    color: #3843a6;
+}
+
+.gamemode-button:hover {
+    text-shadow: #e5c6db 1px 1px 2.5px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.active-mode {
+    background-color: #bea8f4;
+    color: white;
+}
+
+.active-mode:hover {
+    text-shadow: rgb(215, 215, 215) 1px 1px 2.5px;
+}
+
+.profile-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 1px 2px;
+}
+
+.profile-tabs {
+    width: 100%;
+    border-spacing: 7px 0;
+    border-collapse: separate;
+}
+
+.profile-tabs td {
+    background-color: #e7e4fc;
+    text-align: center;
+    font-weight: bold;
+    font-size: 80%;
+    border-top: solid 2px #dad7fb;
+    border-left: solid 2px #dad7fb;
+    border-right: solid 2px #dad7fb;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-tabs td:hover,
+.profile-tabs td:focus,
+.profile-tabs td:active {
+    background:#dae4ff;
+}
+
+.tab-heading {
+    border-bottom: 1px solid #4a4a4a;
+    border-top: 1px solid #4a4a4a;
+    background-color: #5f5f5f;
+    color: white;
+    cursor: pointer;
+    font-size: 100%;
+    padding-left: 2.5px;
+    padding-bottom: 1px;
+    padding-top: 1px;
+    z-index: 1;
+    margin-bottom: 5px;
+}
+
+.tab-heading-account {
+    background-color: #2f2f65;
+    cursor: auto;
+}
+
+.tab-content {
+    overflow: hidden;
+    background-color: white;
+    font-size: 80%;
+    z-index: 0;
+    position: relative;
+}
+
+#general.expanded {
+    overflow: visible;
+}
+
+#history.expanded {
+    overflow: visible;
+}
+
+.tab-spacing {
+    margin: 0px 0px 15px 0px;
+}
+
+.profile-stats-header {
+    background-color: #f5f2fe;
+    border-bottom: 1px solid #a9a9ff;
+    color: #5a539a;
+    font-weight: bold;
+    font-size: 125%;
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
+
+.profile-stats-header:before {
+    content: "\25BC";
+}
+
+.profile-stats-header a {
+    color: #5a539a;
+    text-decoration: none;
+}
+
+.profile-achievement-header {
+    border-bottom: solid 1px #eacd5b;
+    font-weight: bold;
+    font-size: 120%;
+    clear: both;
+    margin-bottom: 5px;
+    margin-top: 15px;
+}
+
+.profile-performance {
+    font-size: 120%;
+    font-weight: normal;
+    background-color: #f5f2fe;
+    border-bottom: 1px dashed #a9a9ff;
+    padding-bottom: 2.5px;
+    display: block ruby;
+}
+
+.profile-performance strong {
+    font-weight: bold;
+    font-size: 115%;
+}
+
+.profile-graph {
+    min-height: 80px;
+    font-size: 95%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: block;
+    text-align: right;
+}
+
+.profile-graph svg {
+    height: 160px;
+}
+
+.profile-stats-element {
+    border-bottom: 1px dashed #a9a9ff;
+    background-color: #f5f2fe;
+    font-weight: normal;
+    font-size: 115%;
+    padding: 1px;
+}
+
+.profile-stats-element-blue {
+    color: #0e3062;
+}
+
+.profile-stats-element b {
+    font-weight: bold;
+}
+
+.level-bar {
+    margin: 0 auto;
+    border: solid 2px #ffa10d;
+    border-spacing: 0;
+    border-radius: 2px;
+    width: 300px;
+    height: 20px;
+    padding: 0;
+}
+
+.level-bar-percent {
+    background-color: #eacd5b;
+    font-weight: bold;
+    box-shadow: 0 0 40px 5px #ffda00;
+    border-right: 2px solid #ffa10d;
+    text-align: right;
+}
+
+.profile-ranks {
+    text-align: center;
+    margin: 0 auto;
+    width: 60%;
+    margin-top: 15px;
+}
+
+#top-scores, #leader-scores, #pinned-scores {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#profile-recent-preview table {
+    border-collapse: separate;
+    border-spacing: 2px 3px;
+}
+
+#leader h2 {
+    text-shadow: #efcfe1 0px 0px 10px;
+    font-weight: normal;
+    font-size: 130%;
+    color: #cc2e8a;
+    overflow: visible;
+    margin-bottom: 10px;
+}
+
+.score {
+    background-color: #e7e4fc;
+    border: 1px solid #dad7fb;
+    margin: 3px;
+    padding: 2.5px;
+}
+
+.score:hover {
+    background-color: #dedbfd;
+    cursor: pointer;
+}
+
+.score table {
+    border-spacing: 0px;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.score table td {
+    padding: 0px;
+}
+
+.score-right {
+    font-size: 95%;
+    text-align: right;
+    float: right;
+    width: max-content;
+    display: table-cell;
+    vertical-align: bottom;
+}
+
+.score-left {
+    font-size: 95%;
+    text-align: left;
+    overflow: hidden;
+    max-width: 88%;
+}
+
+.score-left img {
+    width: 12px;
+    height: 15px;
+    vertical-align: middle;
+}
+
+.score-left div {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.score-left * {
+    margin: 1.5px;
+}
+
+.pp-display {
+    font-weight: bold;
+    font-size: 160%;
+    color: #9492dc;
+    text-shadow: #b5c6cb 2px 0px 3px;
+    margin-left: auto;
+    padding-bottom: 4px;
+    line-height: 18px;
+}
+
+.score-bottom time {
+    margin-right: 0;
+}
+
+.score-version {
+    display: inline;
+    margin-left: 0;
+}
+
+.score-icon-container {
+    float: right;
+    margin-left: 2.5px;
+    margin-top: 1px;
+    font-size: 110%;
+}
+
+.score-pin-icon,
+.score-pinned-icon {
+    cursor: pointer;
+}
+
+.score-pin-icon {
+    color: #8684c9;
+}
+
+.score-pin-icon:hover {
+    color: #3843a6;
+}
+
+.score-pinned-icon {
+    color: #3843a6;
+}
+
+.score-pinned-icon:hover {
+    color: #8684c9;
+}
+
+.score-replay i {
+    color: #8684c9;
+}
+
+.score-replay i:hover {
+    color: #3843a6;
+}
+
+.show-more {
+    font-size: 90%;
+}
+
+.profile-beatmaps-container {
+    margin-bottom: 10px;
+}
+
+.profile-beatmap {
+    background-color: #e7e4fc;
+    border: 1px solid #dad7fb;
+    margin: 3px;
+    padding: 2.5px;
+    width: 49%;
+    transition: opacity 0.2s ease-in-out;
+    border-collapse: separate;
+    border-spacing: 1.5px 1.5px;
+    float: left;
+}
+
+.profile-beatmap img {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    float: right;
+}
+
+.achievement-category {
+    padding-bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, 150px);
+    justify-content: space-between;
+    text-align: center;
+}
+
+.achievement {
+    margin: 5px;
+    float: left;
+    text-align: center;
+    width: 135px;
+    height: 120px;
+    margin-bottom: 15px;
+    font-size: 95%;
+}
+
+#account {
+    display: flex;
+}
+
+#account div {
+    margin: 15px 0px 15px 0px;
+    text-align: center;
+}
+
+#account table {
+    width: 100%;
+}
+
+#account thead td {
+    font-weight: bold;
+    border-bottom: 1px solid #9492dc;
+    background-color: #e7e5fc;
+}
+
+#kudosu {
+    padding-bottom: 5px;
+}
+
+.moderation-header {
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.moderation-container {
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+    margin-top: 5px;
+    margin-bottom: 7.5px;
+    padding: 5px;
+    display: grid;
+    background-color: #e7e4fc;
+    border-radius: 5px;
+}
+
+.moderation-container:hover {
+    opacity: 1;
+}
+
+.moderation-container button {
+    margin-top: 2.5px;
+    background: #efeeff;
+    border: 1px solid #bab6e6;
+    border-radius: 5px;
+    margin-left: 5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.moderation-container button:hover {
+    background: #cfcafc;
+    cursor: pointer;
+}
+
+.moderation-container dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.moderation-container .confirm-button {
+    background: #5db8ef;
+    color: #fff;
+    border: none;
+}
+
+.moderation-container .confirm-button:hover {
+    background: #46a7e8;
+    cursor: pointer;
+}
+
+.moderation-container .grey-button {
+    background: #e6e2f8;
+    border: 1px solid #cfc9f6;
+}
+
+.moderation-container .grey-button:hover {
+    background: #d4cfff;
+    cursor: pointer;
+}
+
+.moderation-container h2 {
+    margin-bottom: 15px;
+    font-size: 125%;
+}
+
+.moderation-container .form-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.moderation-container .form-row label {
+    width: 100px;
+    flex: 0 0 100px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 6px;
+}
+
+.moderation-container .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    vertical-align: middle;
+    margin-top: 14px;
+    gap: 8px;
+}
+
+.moderation-container dialog input[type="text"],
+.moderation-container dialog input[type="email"],
+.moderation-container dialog textarea {
+    flex: 1 1 auto;
+    padding: 6px;
+    border: 1px solid #cfc9f6;
+    border-radius: 4px;
+    background: #ffff;
+}
+
+.moderation-container dialog textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.moderation-container dialog input[type="checkbox"] {
+    /* idk why but checkboxes are offset */
+    transform: translateY(4px);
+}
+
+.moderation-container dialog select {
+    max-width: 60%
+}
+
+#moderation-edit-profile {
+    width: 800px;
+    max-width: calc(100% - 40px);
+    padding: 18px;
+    background: #f0ecfa;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    color: #222;
+}
+
+#moderation-badges {
+    width: 1200px;
+    max-width: calc(100% - 40px);
+    padding: 14px;
+    background: #f7f5fd;
+    border-radius: 6px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    color: #222;
+}
+
+#moderation-badges h2 {
+    margin: 0 0 10px 0;
+    font-size: 115%;
+    color: #40347a;
+}
+
+#moderation-badges table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    background: transparent;
+}
+
+#moderation-badges th,
+#moderation-badges td {
+    padding: 8px;
+    border-bottom: 1px solid #efecff;
+    vertical-align: middle;
+}
+
+#moderation-badges input[type="text"],
+#moderation-badges textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cfc9f6;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 95%;
+    box-sizing: border-box;
+}
+
+#moderation-infringements {
+    width: 800px;
+    max-width: calc(100% - 40px);
+    padding: 14px;
+    background: #f7f5fd;
+    border-radius: 6px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    color: #222;
+}

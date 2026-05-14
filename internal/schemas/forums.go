@@ -1,6 +1,9 @@
 package schemas
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -17,10 +20,10 @@ type Forum struct {
 	AllowIcons  bool      `gorm:"column:allow_icons;default:true"`
 	Hidden      bool      `gorm:"column:hidden;default:false"`
 
-	Parent    *Forum       `gorm:"foreignKey:ParentId;references:Id"`
-	Subforums []Forum      `gorm:"foreignKey:ParentId;references:Id"`
-	Topics    []ForumTopic `gorm:"foreignKey:ForumId;references:Id"`
-	Posts     []ForumPost  `gorm:"foreignKey:ForumId;references:Id"`
+	Parent    *Forum        `gorm:"foreignKey:ParentId;references:Id"`
+	Subforums []*Forum      `gorm:"foreignKey:ParentId;references:Id"`
+	Topics    []*ForumTopic `gorm:"foreignKey:ForumId;references:Id"`
+	Posts     []*ForumPost  `gorm:"foreignKey:ForumId;references:Id"`
 }
 
 func (Forum) TableName() string {
@@ -45,13 +48,13 @@ type ForumTopic struct {
 	Hidden        bool                 `gorm:"column:hidden;default:false"`
 	Pinned        bool                 `gorm:"column:pinned;default:false"`
 
-	Forum       *Forum            `gorm:"foreignKey:ForumId;references:Id"`
-	Icon        *ForumIcon        `gorm:"foreignKey:IconId;references:Id"`
-	Posts       []ForumPost       `gorm:"foreignKey:TopicId;references:Id"`
-	Stars       []ForumStar       `gorm:"foreignKey:TopicId;references:Id"`
-	Creator     *User             `gorm:"foreignKey:CreatorId;references:Id"`
-	Bookmarks   []ForumBookmark   `gorm:"foreignKey:TopicId;references:Id"`
-	Subscribers []ForumSubscriber `gorm:"foreignKey:TopicId;references:Id"`
+	Forum       *Forum             `gorm:"foreignKey:ForumId;references:Id"`
+	Icon        *ForumIcon         `gorm:"foreignKey:IconId;references:Id"`
+	Posts       []ForumPost        `gorm:"foreignKey:TopicId;references:Id"`
+	Stars       []ForumStar        `gorm:"foreignKey:TopicId;references:Id"`
+	Creator     *User              `gorm:"foreignKey:CreatorId;references:Id"`
+	Bookmarks   []*ForumBookmark   `gorm:"foreignKey:TopicId;references:Id"`
+	Subscribers []*ForumSubscriber `gorm:"foreignKey:TopicId;references:Id"`
 }
 
 func (ForumTopic) TableName() string {
@@ -84,14 +87,39 @@ func (ForumPost) TableName() string {
 	return "forum_posts"
 }
 
+func (post *ForumPost) Link() string {
+	return fmt.Sprintf("/forum/%d/t/%d/", post.ForumId, post.TopicId)
+}
+
+func (post *ForumPost) Render() string {
+	// TODO: BBCode rendering
+	return post.Content
+}
+
+func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
+	for line := range strings.SplitSeq(post.Content, "\n") {
+		content := strings.TrimSpace(line)
+		for _, regex := range ignoreTags {
+			content = regex.ReplaceAllString(content, "")
+		}
+
+		// TODO: BBCode rendering
+		content = strings.TrimSpace(content)
+		if content != "" {
+			return content
+		}
+	}
+	return ""
+}
+
 type ForumIcon struct {
 	Id       constants.ForumIcon `gorm:"column:id;primaryKey;autoIncrement"`
 	Name     string              `gorm:"column:name"`
 	Location string              `gorm:"column:location"`
 	Order    int                 `gorm:"column:order;default:0"`
 
-	Topics []ForumTopic `gorm:"foreignKey:IconId;references:Id"`
-	Posts  []ForumPost  `gorm:"foreignKey:IconId;references:Id"`
+	Topics []*ForumTopic `gorm:"foreignKey:IconId;references:Id"`
+	Posts  []*ForumPost  `gorm:"foreignKey:IconId;references:Id"`
 }
 
 func (ForumIcon) TableName() string {

@@ -1,0 +1,97 @@
+.register-form, .reset-form, .login-form {
+    padding-left: 10px;
+}
+
+.login-form {
+    text-align: center;
+}
+
+.register-form > div, .reset-form > div {
+    -webkit-box-shadow: 0px 0px 50px #ffffff;
+    -moz-box-shadow: 0px 0px 50px #ffffff;
+    box-shadow: 0px 0px 50px #ffffff;
+    background-color: #efeafc;
+    display: inline-block;
+    border-radius: 5px;
+    line-height: 30px;
+    padding: 10px;
+    margin: 12px;
+    width: 775px;
+}
+
+.register-form input[type="submit"],
+.register-form input[type="text"],
+.register-form input[type="password"],
+.register-form input[type="email"] {
+    border: 1px solid #90ace7;
+    vertical-align: middle;
+    display: inline-block;
+    width: 300px;
+    height: 30px;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.reset-form input[type="submit"],
+.reset-form input[type="text"],
+.reset-form input[type="password"],
+.reset-form input[type="email"] {
+    border: 1px solid #90ace7;
+    vertical-align: middle;
+    width: 300px;
+    height: 30px;
+    float: left;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form input[type="email"] {
+    -webkit-border-radius: 3px;
+    border: 1px solid #90ace7;
+    border-radius: 3px;
+    width: 300px;
+}
+
+.input-description {
+    vertical-align: middle;
+    line-height: 18px;
+    font-size: 95%;
+    float: right;
+    width: 58%;
+}
+
+.register-submit {
+    text-align: center;
+}
+
+.register-button:hover, .reset-button:hover {
+    text-shadow: 0px 0px 5px #ffffff;
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+}
+
+.register-button, .reset-button {
+    background-color: rgb(138,138,138);
+    transition: all 200ms ease-in-out;
+    border-radius: 5px !important;
+    color: white;
+}
+
+.login-form h1 {
+    margin-bottom: 5px;
+}
+
+.login-form div input[type="submit"] {
+    line-height: 21px;
+    margin-top: 8px;
+    width: 90px;
+}
+
+.login-form .error {
+    color: red;
+    font-size: 90%;
+    margin-top: 14px;
+}
