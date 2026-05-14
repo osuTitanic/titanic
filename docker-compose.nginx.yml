@@ -7,7 +7,7 @@ services:
     environment:
       - DOLLAR=$$
     ports:
-      - "${NGINX_HOST}:${NGINX_PORT}:80"
+      - "${NGINX_HOST-0.0.0.0}:${NGINX_PORT-80}:80"
     networks:
       - titanic
     volumes:
