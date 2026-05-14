@@ -33,5 +33,6 @@ WORKDIR /app
 COPY --from=builder /out/jobs /app/jobs
 COPY ./services/jobs/schedule.example.json /app/schedule.json
 
+VOLUME ["/app/.data"]
 ENTRYPOINT ["/app/jobs"]
 CMD ["-file", "/app/schedule.json"]
