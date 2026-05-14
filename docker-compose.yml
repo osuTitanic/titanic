@@ -197,27 +197,6 @@ services:
       timeout: 5s
       retries: 10
 
-  nginx:
-    image: nginx:latest
-    restart: unless-stopped
-    env_file:
-      - ".env"
-    environment:
-      - DOLLAR=$$
-    ports:
-      - "${NGINX_HOST}:${NGINX_PORT}:80"
-    networks:
-      - titanic
-    links:
-      - anchor:anchor
-      - deck:deck
-      - stern:stern
-      - keel:keel
-    volumes:
-      - "./web/nginx/templates:/etc/nginx/templates"
-      - "./web/nginx/nginx.conf:/etc/nginx/nginx.conf"
-    command: /bin/bash -c "envsubst < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
-
   jobs:
     image: ghcr.io/osutitanic/jobs:latest
     restart: unless-stopped
