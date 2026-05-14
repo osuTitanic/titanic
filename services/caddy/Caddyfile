@@ -1,0 +1,333 @@
+{
+	auto_https disable_redirects
+}
+
+(proxy_headers) {
+	header_up X-Real-IP {remote_host}
+}
+
+(cors_get_options) {
+	@options method OPTIONS
+	header {
+		Access-Control-Allow-Origin "*"
+		Access-Control-Allow-Methods "GET, OPTIONS"
+	}
+	header @options {
+		Access-Control-Max-Age 86400
+		Content-Type text/plain
+	}
+	respond @options "" 204
+}
+
+(cors_bancho) {
+	@options method OPTIONS
+	header {
+		Access-Control-Allow-Origin "*"
+		Access-Control-Allow-Headers "*"
+		Access-Control-Expose-Headers "cho-token, x-mcosu-features"
+		Cross-Origin-Opener-Policy "same-origin"
+		Cross-Origin-Embedder-Policy "credentialless"
+	}
+	header @options {
+		Access-Control-Max-Age 86400
+		Content-Type text/plain
+	}
+	respond @options "" 204
+}
+
+http://api.{$DOMAIN_NAME},
+https://api.{$DOMAIN_NAME} {
+	request_body {
+		max_size 100MB
+	}
+
+	reverse_proxy keel {
+		import proxy_headers
+	}
+}
+
+http://assets.{$DOMAIN_NAME},
+https://assets.{$DOMAIN_NAME} {
+	handle /menu-content.json {
+		import cors_get_options
+		rewrite * /assets/menu-content.json
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /medals/client {
+		respond 404
+	}
+}
+
+http://a.{$DOMAIN_NAME},
+https://a.{$DOMAIN_NAME} {
+	import cors_get_options
+	rewrite * /a{uri}
+	reverse_proxy deck {
+		import proxy_headers
+	}
+}
+
+http://c.{$DOMAIN_NAME},
+https://c.{$DOMAIN_NAME},
+http://c1.{$DOMAIN_NAME},
+https://c1.{$DOMAIN_NAME},
+http://c2.{$DOMAIN_NAME},
+https://c2.{$DOMAIN_NAME},
+http://c3.{$DOMAIN_NAME},
+https://c3.{$DOMAIN_NAME},
+http://c4.{$DOMAIN_NAME},
+https://c4.{$DOMAIN_NAME},
+http://c5.{$DOMAIN_NAME},
+https://c5.{$DOMAIN_NAME},
+http://c6.{$DOMAIN_NAME},
+https://c6.{$DOMAIN_NAME},
+http://ce.{$DOMAIN_NAME},
+https://ce.{$DOMAIN_NAME},
+http://cho.{$DOMAIN_NAME},
+https://cho.{$DOMAIN_NAME},
+http://mahbahowc.{$DOMAIN_NAME},
+https://mahbahowc.{$DOMAIN_NAME} {
+	request_body {
+		max_size 20MB
+	}
+
+	handle /ws* {
+		reverse_proxy anchor:5001 {
+			import proxy_headers
+			transport http {
+				read_timeout 3600s
+				write_timeout 3600s
+			}
+		}
+	}
+
+	handle {
+		import cors_bancho
+		reverse_proxy anchor {
+			import proxy_headers
+		}
+	}
+}
+
+http://s.{$DOMAIN_NAME},
+https://s.{$DOMAIN_NAME} {
+	handle /images/map-thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /images/* {
+		reverse_proxy stern {
+			import proxy_headers
+		}
+	}
+
+	handle /a/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /mt/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /mp3/preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+}
+
+http://b.{$DOMAIN_NAME},
+https://b.{$DOMAIN_NAME} {
+	handle /mt/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /images/map-thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /mp3/preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /d/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+}
+
+http://d.{$DOMAIN_NAME},
+https://d.{$DOMAIN_NAME},
+http://d.osu.{$DOMAIN_NAME},
+https://d.osu.{$DOMAIN_NAME} {
+	handle /d/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+}
+
+http://osu.{$DOMAIN_NAME},
+https://osu.{$DOMAIN_NAME},
+http://ha.{$DOMAIN_NAME},
+https://ha.{$DOMAIN_NAME},
+http://{$DOMAIN_NAME},
+https://{$DOMAIN_NAME} {
+	request_body {
+		max_size 100MB
+	}
+
+	handle /api/* {
+		reverse_proxy keel {
+			import proxy_headers
+		}
+	}
+
+	handle /web/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /rating/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /release/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /osu/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /a/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /forum/download.php {
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /ss/* {
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /d/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /mt/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /images/map-thumb/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle /mp3/preview/* {
+		import cors_get_options
+		reverse_proxy deck {
+			import proxy_headers
+		}
+	}
+
+	handle {
+		reverse_proxy stern {
+			import proxy_headers
+		}
+	}
+}

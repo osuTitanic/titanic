@@ -1,5 +1,3 @@
-services/nginx/conf.d/
-services/nginx/*.pem
 .idea
 .data
 .env

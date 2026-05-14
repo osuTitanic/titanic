@@ -6,7 +6,7 @@ SHELL := /usr/bin/env bash
 
 COMPOSE ?= docker compose
 COMPOSE_FILE ?= docker-compose.yml
-COMPOSE_FILE_OVERRIDE ?= docker-compose.nginx.yml
+COMPOSE_FILE_OVERRIDE ?= docker-compose.caddy.yml
 
 DC = $(COMPOSE) -f $(COMPOSE_FILE) -f $(COMPOSE_FILE_OVERRIDE)
 
