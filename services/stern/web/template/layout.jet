@@ -58,6 +58,9 @@
     <!-- TODO: add the restricted account banner -->
     <!-- TODO: add the seasonal snow canvas -->
     <div class="main">
+        <a id="top_support" class="top_button" href="https://ko-fi.com/lekuru"></a>
+        <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
+        <a id="top_discord" class="top_button" href="https://discord.gg/qupv72e7YH"></a>
         <a href="/" aria-label="Home">
             <img src="/images/logo/main-vector.min.svg" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
             <!-- TODO: add IE-specific raster logo fallback -->

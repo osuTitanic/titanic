@@ -277,6 +277,39 @@ input[type="url"], input[type="search"] {
     border-radius: 5px 5px 0px 0px;
 }
 
+.top_button {
+	position: absolute;
+	background: url('/images/icons/social.png');
+	top: -80px;
+	width: 61px;
+	height: 62px;
+	z-index: 10;
+	background-position: 0px 0px;
+}
+
+#top_support {
+    background-position: -122px 0px;
+    right: 38px;
+}
+#top_support:hover {
+    background-position: -122px 62px;
+}
+
+#top_follow {
+    background-position: -61px 0px;
+    right: 100px;
+}
+#top_follow:hover {
+    background-position: -61px 62px;
+}
+
+#top_discord {
+	right: 162px;
+}
+#top_discord:hover {
+	background-position: 0px -62px;
+}
+
 .content {
     background-color: #f0ecfa;
     min-height: 500px;
