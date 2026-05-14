@@ -19,7 +19,7 @@ git clone --recurse-submodules --shallow-submodules https://github.com/osuTitani
 
 Rename the `.example.env` to `.env` and **edit it**.
 
-Start the server:
+Start the server without the bundled nginx reverse proxy:
 
 ```
 docker compose up -d
@@ -27,10 +27,24 @@ docker compose up -d
 
 ("-d" argument means detached, meaning that containers will run in background)
 
+This is the recommended option if you want to provide your own reverse proxy. If your proxy runs as a container on the `titanic` docker network, it can reach the internal services by using their service names, such as `anchor`, `deck`, `stern`, and `keel`. If your proxy runs on the host or somewhere else, expose the required http ports from those services in `docker-compose.yml` and proxy to those host ports instead.
+
+If you want to use the bundled nginx reverse proxy instead, include the optional nginx compose file whenever you run compose commands:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d
+```
+
 To turn off the server, from the titanic root folder, execute:
 
 ```
 docker compose stop
+```
+
+If you started the bundled nginx reverse proxy, include both compose files for stop/restart/build commands as well:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml stop
 ```
 
 If you experience issues on the first run, you may need to restart your containers:
@@ -72,6 +86,13 @@ Finally, rebuild and restart all of your containers:
 ```
 docker compose build
 docker compose up -d
+```
+
+If you use the bundled nginx reverse proxy, include the optional nginx compose file:
+
+```
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml build
+docker compose -f docker-compose.yml -f docker-compose.nginx.yml up -d
 ```
 
 ## Connecting with osu!
