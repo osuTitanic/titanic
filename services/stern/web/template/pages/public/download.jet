@@ -1,7 +1,7 @@
 {{ extends "/layout.jet" }}
 
 {{ block head() }}
-<title>Download - Titanic!</title>
+<title>Download</title>
 <meta property="og:title" content="Download">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/download">

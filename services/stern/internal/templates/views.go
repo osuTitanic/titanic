@@ -61,3 +61,10 @@ type BeatmapSearchView struct {
 	SearchOrder string
 	Pagination  PaginationView
 }
+
+type BeatmapPacksView struct {
+	DefaultView
+	BeatmapPacks     []*schemas.BeatmapPack
+	Categories       []string
+	CategorySelected string
+}
