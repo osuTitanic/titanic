@@ -7,7 +7,7 @@
     <meta name="theme-color" content="rgba(96, 60, 186, 1)">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/logo/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="/images/logo/icon-192.png">
-    <!-- TODO: add manifest -->
+    {* TODO: add manifest *}
 
     <link rel="dns-prefetch" href="{{ .Config.ApiBaseUrl() }}">
     <link rel="preconnect" href="{{ .Config.ApiBaseUrl() }}" crossorigin>
@@ -32,7 +32,7 @@
         var csrfToken = "{{ .CSRFToken }}";
     </script>
     <script src="/lib/instant.page.js" type="module" defer></script>
-    <!-- TODO: add modern-browser-only assets -->
+    {* TODO: add modern-browser-only assets *}
     <!-- CSS fixes for Internet Explorer -->
     <!--[if IE 6]>
     <style>
@@ -55,18 +55,18 @@
     <![endif]-->
 </head>
 <body id="titanic">
-    <!-- TODO: add the restricted account banner -->
-    <!-- TODO: add the seasonal snow canvas -->
+    {* TODO: add the restricted account banner *}
+    {* TODO: add the seasonal snow canvas *}
     <div class="main">
         <a id="top_support" class="top_button" href="https://ko-fi.com/lekuru"></a>
         <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
         <a id="top_discord" class="top_button" href="https://discord.gg/qupv72e7YH"></a>
         <a href="/" aria-label="Home">
             <img src="/images/logo/main-vector.min.svg" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
-            <!-- TODO: add IE-specific raster logo fallback -->
+            {* TODO: add IE-specific raster logo fallback *}
         </a>
         <div class="nav">
-            <!-- TODO: extract this navigation into partial -->
+            {* TODO: extract this navigation into partial *}
             <ul class="nav-list">
                 <li class="nav-element">
                     <a href="/">Home</a>
@@ -89,7 +89,7 @@
                     </ul>
                 </li>
                 <li class="nav-element nav-element-dropdown">
-                    <!-- TODO: use user preferred mode in rankings path -->
+                    {* TODO: use user preferred mode in rankings path *}
                     <a href="/rankings/osu/performance">
                         Rankings
                         <img class="dropdown-indicator" src="/images/arrow-white-highlight.png" alt="»">
@@ -151,7 +151,7 @@
                         <a href="/account#notifications">
                             <i class="icon-bell-alt" style="color: #808080;"></i>
                             No notifications
-                            <!-- TODO: Notifications -->
+                            {* TODO: Notifications *}
                         </a>
                         <a href="#" onclick="document.getElementById('logout-form').submit()" class="nav-login" id="logout-text">
                             <i class="icon-power-off" style="color: #808080;"></i> Logout
@@ -205,7 +205,7 @@
                     <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
                 </form>
             </div>
-            <!-- TODO: Add IE-only scripts -->
+            {* TODO: Add IE-only scripts *}
             <script src="/lib/jquery.min.js"></script>
             <script src="/lib/jquery.migrate.min.js" defer></script>
             <script src="/lib/jquery.timeago.js" defer></script>
@@ -217,7 +217,7 @@
             </div>
             <div class="gradient"></div>
             <script src="/js/editor.js" fetchpriority="low" defer></script>
-            <!-- TODO: Add the seasonal snow script -->
+            {* TODO: Add the seasonal snow script *}
         </div>
     </div>
 </body>
