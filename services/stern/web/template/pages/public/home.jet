@@ -30,8 +30,8 @@
         {{ yield homeNews() .News }}
 
         <div class="bottom-stats">
-            <!-- TODO: Re-enable once we have the graph working again -->
-            <!-- {{ yield homeOnlineUsers() }} -->
+            {* TODO: Re-enable once we have the graph working again *}
+            {* {{ yield homeOnlineUsers() }} *}
             {{ yield homeChat() .ChatMessages }}
         </div>
     </div>
