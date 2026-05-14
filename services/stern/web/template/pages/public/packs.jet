@@ -30,8 +30,7 @@
     {{ yield beatmapPackCategories(selected=.CategorySelected) .Categories }}
     {{ yield beatmapPackListing() .BeatmapPacks }}
 </div>
-<script>var currentCategory = "{{ .CategorySelected }}";</script>
-<script src="/js/packs.js"></script> {* TODO: Make less-to-none use of javascript *}
+{{ yield beatmapInfoLoader() }}
 {{ end }}
 
 {{ block beatmapPackCategories(selected) }}
@@ -116,4 +115,43 @@
         </div>
     </td>
 </tr>
+{{ end }}
+
+{{ block beatmapInfoLoader() }}
+<script>
+function expandBeatmapPack(id) {
+    if (id === null || id === undefined) return;
+
+    var element = $("#pack-" + id);
+    if (!element.length) return;
+
+    if (element.hasClass("expanded")) {
+        element.removeClass("expanded");
+        element.slideUp(500);
+        return;
+    }
+
+    if (element.hasClass("loaded")) {
+        element.addClass("expanded");
+        element.slideDown(500);
+        return;
+    }
+
+    element.html("<center>Loading...</center>");
+    element.addClass("expanded");
+    element.css("height", "");
+    element.hide().slideDown(100);
+
+    element.load("/partials/packs/" + id, function (_, status, xhr) {
+        if (status === "error") {
+            element.html("<center>Failed to load beatmap pack.</center>");
+            console.error("Failed to load beatmap pack info: " + xhr.responseText);
+            return;
+        }
+
+        element.addClass("loaded");
+        element.hide().slideDown(500);
+    });
+}
+</script>
 {{ end }}
