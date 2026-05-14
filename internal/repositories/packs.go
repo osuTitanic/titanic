@@ -25,7 +25,7 @@ func (r *BeatmapPackRepository) Update(updates *schemas.BeatmapPack, columns ...
 	return CommonUpdate(r.db, updates, columns...)
 }
 
-func (r *BeatmapPackRepository) FetchById(id uint, preload ...string) (*schemas.BeatmapPack, error) {
+func (r *BeatmapPackRepository) FetchById(id int, preload ...string) (*schemas.BeatmapPack, error) {
 	var pack *schemas.BeatmapPack
 	err := Preloaded(r.db, preload).
 		Where("id = ?", id).
