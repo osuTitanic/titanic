@@ -1,0 +1,92 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Download - Titanic!</title>
+<meta property="og:title" content="Download">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/download">
+<meta property="og:description" content="Let's get you started! Choose and download your preferred version of osu!.">
+<link rel="stylesheet" href="/css/download.css">
+{{ end }}
+
+{{ block body() }}
+<!-- CSS fixes for Internet Explorer -->
+<!--[if IE 6]>
+<style>
+    .client img {
+        height: 200px;
+    }
+</style>
+<![endif]-->
+<div class="heading">
+    <h1>Let's get you started</h1>
+    <p>Start by choosing a category below!</p>
+</div>
+{{ yield downloadCategories() .Categories }}
+{{ yield downloadClients() .Clients }}
+<div class="bottom-text">
+    <p>
+        Want to request a version you want to play? Feel free to ask inside the
+        <a href="https://discord.gg/qupv72e7YH">Discord</a>
+        or request one on the
+        <a href="/forum/6">Feature Requests forum</a> forum.<br>
+        Looking for modded clients? Check out the <a href="/forum/23">modding forum</a>.
+    </p>
+    <br>
+    <h2>Legal Disclaimer</h2>
+    <p>
+        <a href="https://osu.ppy.sh/">osu!</a> is a registered trademark of <a href="https://ppy.sh/">ppy Pty Ltd</a>. This site is not affiliated with or endorsed by ppy.
+        All provided clients are unofficial, unlicensed, and unsupported by ppy Pty Ltd, and are offered "as is." Use them at your own risk. <br>
+        ppy Pty Ltd shall direct any and all DMCA takedown notices concerning this distribution to <a href="mailto:dmca@titanic.sh">dmca@titanic.sh</a>.
+    </p>
+    <br>
+</div>
+{{ end }}
+
+{{ block downloadCategories() }}
+<div class="category-wrapper">
+    {{ range . }}
+    <a class="category{{ if .Selected }} selected{{ end }}" href="{{ .Url }}">
+        {{ .Name }}
+    </a>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block downloadClients() }}
+<div class="client-wrapper">
+    <div class="client-container">
+    {{ range . }}
+        {{ yield clientElement() . }}
+    {{ else }}
+        <div class="client-empty">No downloads are available right now.</div>
+    {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block clientElement() }}
+<div class="client">
+    {{ if .KnownBugs }}
+    {* TODO: Add a tooltip library, because `title` sucks *}
+    <div class="known-bugs" title="{{ .KnownBugs }}">
+        <i class="icon-warning-sign" style="color: rgb(196, 9, 0);"></i>
+    </div>
+    {{ end }}
+
+    <p class="version">{{ .Name }}</p>
+    {{ if .Description }}
+    <p class="description">{{ .Description }}</p>
+    {{ end }}
+
+    {{ if .Screenshots }}
+    <div style="text-align: center">
+        <img src="{{ .PrimaryScreenshotUrl() }}" alt="" loading="lazy">
+    </div>
+    {{ end }}
+
+    {{ if .Downloads }}
+    <a class="download-link" href="{{ .PrimaryDownloadUrl() }}">Download</a>
+    {{ end }}
+</div>
+{{ end }}

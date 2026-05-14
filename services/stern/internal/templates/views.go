@@ -37,6 +37,19 @@ type LoginView struct {
 	ErrorMessage string
 }
 
+type DownloadView struct {
+	DefaultView
+	SelectedCategory string
+	Categories       []*DownloadCategory
+	Clients          []*schemas.Release
+}
+
+type DownloadCategory struct {
+	Name     string
+	Url      string
+	Selected bool
+}
+
 type BeatmapSearchView struct {
 	DefaultView
 	Beatmapsets []*schemas.Beatmapset
