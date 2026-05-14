@@ -1,20 +1,20 @@
-[submodule "bancho"]
-	path = bancho
+[submodule "services/bancho"]
+	path = services/bancho
 	url = https://github.com/osuTitanic/anchor.git
 	branch = main
-[submodule "web/deck"]
-	path = web/deck
+[submodule "services/deck"]
+	path = services/deck
 	url = https://github.com/osuTitanic/deck.git
 	branch = main
-[submodule "bot"]
-	path = bot
+[submodule "services/bot"]
+	path = services/bot
 	url = https://github.com/osuTitanic/banchobot
-[submodule "web/stern"]
-	path = web/stern
+[submodule "services/stern"]
+	path = services/stern
 	url = https://github.com/osuTitanic/stern.git
-[submodule "jobs"]
-	path = jobs
+[submodule "services/jobs"]
+	path = services/jobs
 	url = https://github.com/osuTitanic/jobs.git
-[submodule "web/keel"]
-	path = web/keel
+[submodule "services/keel"]
+	path = services/keel
 	url = https://github.com/osuTitanic/keel.git

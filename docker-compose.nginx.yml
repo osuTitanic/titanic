@@ -11,6 +11,6 @@ services:
     networks:
       - titanic
     volumes:
-      - "./web/nginx/templates:/etc/nginx/templates"
-      - "./web/nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "./services/nginx/templates:/etc/nginx/templates"
+      - "./services/nginx/nginx.conf:/etc/nginx/nginx.conf"
     command: /bin/bash -c 'for template in /etc/nginx/templates/*.template; do envsubst < "$$template" > "/etc/nginx/conf.d/$$(basename "$$template" .template)"; done; nginx -g "daemon off;"'

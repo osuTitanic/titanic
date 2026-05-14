@@ -55,7 +55,7 @@ services:
       retries: 10
 
   anchor:
-    build: ./bancho
+    build: ./services/bancho
     restart: unless-stopped
     env_file:
       - ".env"
@@ -103,7 +103,7 @@ services:
       retries: 10
 
   deck:
-    build: ./web/deck
+    build: ./services/deck
     restart: unless-stopped
     env_file:
       - ".env"
@@ -137,7 +137,7 @@ services:
       retries: 10
 
   bot:
-    build: ./bot
+    build: ./services/bot
     restart: on-failure
     env_file:
       - ".env"
@@ -163,7 +163,7 @@ services:
         condition: service_completed_successfully
 
   stern:
-    build: ./web/stern
+    build: ./services/stern
     restart: unless-stopped
     env_file:
       - ".env"
@@ -181,7 +181,7 @@ services:
     # Uncomment to access stern from outside
     # - 127.0.0.1:7070:80
     volumes:
-      - "./web/stern/app/static:/stern/app/static"
+      - "./services/stern/app/static:/stern/app/static"
       - "./.data/logs/stern:/stern/logs"
       - "./.data:/stern/.data"
     depends_on:
@@ -223,7 +223,7 @@ services:
         condition: service_completed_successfully
 
   keel:
-    build: ./web/keel
+    build: ./services/keel
     restart: unless-stopped
     env_file:
       - ".env"

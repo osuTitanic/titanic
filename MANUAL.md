@@ -51,10 +51,10 @@ If you run this project on windows, you may need to enter the command manually:
 
 Here is a list of all projects you want to run:
 
-- `/bancho` (Bancho Server)
-- `/web/deck` (Score Server)
-- `/web/stern` (Website)
-- `/web/keel` (API)
+- `/services/bancho` (Bancho Server)
+- `/services/deck` (Score Server)
+- `/services/stern` (Website)
+- `/services/keel` (API)
 
 First, install the dependencies for each project with:
 
