@@ -17,12 +17,16 @@ func Download(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
+
 	selectedCategory := ctx.Request.URL.Query().Get("category")
+	if selectedCategory == "" {
+		selectedCategory = resolveDefaultCategory(releases)
+	}
 
 	view := &templates.DownloadView{
 		DefaultView: buildDefaultView(ctx),
-		Clients:     buildReleases(selectedCategory, releases),
 		Categories:  buildCategories(selectedCategory, releases),
+		Clients:     buildReleases(selectedCategory, releases),
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/download", view)
 }
@@ -35,7 +39,7 @@ func buildReleases(requestedCategory string, releases []*schemas.Release) []*sch
 			continue
 		}
 
-		if release.Category == requestedCategory || requestedCategory == "" {
+		if release.Category == requestedCategory {
 			filteredReleases = append(filteredReleases, release)
 		}
 	}
@@ -54,9 +58,6 @@ func buildCategories(requestedCategory string, releases []*schemas.Release) []*t
 		if seenCategories[release.Category] {
 			continue
 		}
-		if requestedCategory == "" {
-			requestedCategory = release.Category
-		}
 
 		categories = append(categories, &templates.DownloadCategory{
 			Name:     release.Category,
@@ -67,4 +68,17 @@ func buildCategories(requestedCategory string, releases []*schemas.Release) []*t
 	}
 
 	return categories
+}
+
+func resolveDefaultCategory(releases []*schemas.Release) string {
+	for _, release := range releases {
+		if !release.IsDisplayable() {
+			continue
+		}
+		if release.Category == "" {
+			continue
+		}
+		return release.Category
+	}
+	return ""
 }
