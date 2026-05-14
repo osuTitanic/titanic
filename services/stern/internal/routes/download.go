@@ -54,6 +54,9 @@ func buildCategories(requestedCategory string, releases []*schemas.Release) []*t
 		if seenCategories[release.Category] {
 			continue
 		}
+		if requestedCategory == "" {
+			requestedCategory = release.Category
+		}
 
 		categories = append(categories, &templates.DownloadCategory{
 			Name:     release.Category,
