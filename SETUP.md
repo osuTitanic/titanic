@@ -97,7 +97,7 @@ docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
 
 ## Connecting with osu!
 
-To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. The bundled Caddy reverse proxy automatically requests certificates for public domain names when ports 80 and 443 are reachable from the internet, and it keeps regular HTTP available at the same time. For local-only domains, use your own reverse proxy certificate setup or follow the guide from [PEACE](https://peace.osu.icu/docs/guide#2-generate-test-ssl-certificate).
+To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. The bundled Caddy reverse proxy will try to automatically request one.
 
 If you are using a local setup environment, the easiest way to get a connection working is by editing your hosts file.  
 Under Windows: `C:\Windows\System32\drivers\etc\hosts`
