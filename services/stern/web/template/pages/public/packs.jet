@@ -1,0 +1,157 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Beatmap Pack Listing</title>
+<meta property="og:title" content="Beatmap Pack Listing">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets/packs">
+<link rel="stylesheet" href="/css/packs.css">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    <h1>Beatmap Pack Listing</h1>
+</div>
+<div class="pack-container">
+    <div>
+        <h2>
+            Before Downloading
+        </h2>
+        <p>
+            Installation: Once a pack has been downloaded, extract the .zip into your osu! Songs directory.
+            All songs are still .zip'd and/or .osz'd inside the pack, so osu! will need to extract the beatmaps itself the next time you go into Play mode.
+            Do <b>NOT</b> extract the zip's/osz's yourself, or the beatmaps will display incorrectly in osu and will not function properly.
+        </p>
+        <br>
+        <p>
+            Also note that it is highly recommended to <b>download the packs from latest to earliest</b>, since the oldest maps are of much lower quality than most recent maps.
+        </p>
+    </div>
+    {{ yield beatmapPackCategories(selected=.CategorySelected) .Categories }}
+    {{ yield beatmapPackListing() .BeatmapPacks }}
+</div>
+{{ yield beatmapInfoLoader() }}
+{{ end }}
+
+{{ block beatmapPackCategories(selected) }}
+    <br>
+    {{ if . }}
+    <div class="pack-categories">
+        <ul>
+            {{ range . }}
+            <li class="category-item">
+                <a href="/beatmapsets/packs/?category={{ . }}" class="{{ if . == selected }}active{{ end }}" data-instant>
+                    {{ . }}
+                </a>
+            </li>
+            {{ end }}
+    </div>
+    {{ else }}
+    <b>
+        It seems like no beatmap packs currently exist. Please check back later!
+    </b>
+    {{ end }}
+{{ end }}
+
+{{ block beatmapPackListing() }}
+    {{ if . }}
+    <table class="pack-listing" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Pack</th>
+                <th>Date</th>
+                <th>Uploaded by</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{ range i, pack := . }}
+            {{ yield beatmapPackItem(index=i) pack }}
+        {{ end }}
+        </tbody>
+    </table>
+    {{ end }}
+{{ end }}
+
+{{ block beatmapPackItem(index) }}
+<tr class="{{ if index % 2 == 1 }}dark-row{{ else }}light-row{{ end }}" onclick="expandBeatmapPack({{ pack.Id }})">
+    <td style="width: 60%">
+        <a>{{ pack.Name }}</a>
+        {{ if pack.DownloadLink != "" }}
+        (<a href="{{ pack.DownloadLink }}" target="_blank">Download</a>)
+        {{ else }}
+        (Download not available)
+        {{ end }}
+    </td>
+    <td style="text-align: center">{{ pack.CreatedAt.Format("Jan 02, 2006 15:04:05") }}</td>
+    <td><a href="/u/{{ pack.CreatorId }}">{{ pack.Creator.Name }}</a></td>
+    <tr>
+        <td colspan="3">
+            <div id="pack-{{ pack.Id }}"></div>
+        </td>
+    </tr>
+</tr>
+{{ end }}
+
+{{ block beatmapPackInfo() }}
+<tr>
+    <td colspan="3">
+        <div id="pack-{{ .Id }}" class="loaded">
+            <h2 style="margin-top: 10px">{{ .Name }}</h2>
+            <p>
+                Created by <a href="/u/{{ .CreatorId }}">{{ .Creator.Name }}</a>
+                on <time datetime="{{ .CreatedAt.Format("Jan 02, 2006 15:04:05") }}">{{ .CreatedAt.Format("Jan 02, 2006 15:04:05") }}</time>
+            </p>
+            <p>{{ .Description }}</p>
+            <ul style="margin-top: 10px">
+                {{ range _, entry := .Entries }}
+                <li>
+                    <a href="/s/{{ entry.Beatmapset.Id }}">
+                        {{ entry.Beatmapset.Name() }} ({{ entry.Beatmapset.CreatorName() }})
+                    </a>
+                </li>
+                {{ end }}
+            </ul>
+            <br>
+        </div>
+    </td>
+</tr>
+{{ end }}
+
+{{ block beatmapInfoLoader() }}
+<script>
+function expandBeatmapPack(id) {
+    if (id === null || id === undefined) return;
+
+    var element = $("#pack-" + id);
+    if (!element.length) return;
+
+    if (element.hasClass("expanded")) {
+        element.removeClass("expanded");
+        element.slideUp(500);
+        return;
+    }
+
+    if (element.hasClass("loaded")) {
+        element.addClass("expanded");
+        element.slideDown(500);
+        return;
+    }
+
+    element.html("<center>Loading...</center>");
+    element.addClass("expanded");
+    element.css("height", "");
+    element.hide().slideDown(100);
+
+    element.load("/partials/packs/" + id, function (_, status, xhr) {
+        if (status === "error") {
+            element.html("<center>Failed to load beatmap pack.</center>");
+            console.error("Failed to load beatmap pack info: " + xhr.responseText);
+            return;
+        }
+
+        element.addClass("loaded");
+        element.hide().slideDown(500);
+    });
+}
+</script>
+{{ end }}

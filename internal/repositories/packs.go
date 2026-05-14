@@ -25,6 +25,33 @@ func (r *BeatmapPackRepository) Update(updates *schemas.BeatmapPack, columns ...
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *BeatmapPackRepository) FetchById(id int, preload ...string) (*schemas.BeatmapPack, error) {
+	var pack *schemas.BeatmapPack
+	err := Preloaded(r.db, preload).
+		Where("id = ?", id).
+		First(&pack).Error
+	return pack, err
+}
+
+func (r *BeatmapPackRepository) FetchByCategory(category string, preload ...string) ([]*schemas.BeatmapPack, error) {
+	var packs []*schemas.BeatmapPack
+	err := Preloaded(r.db, preload).
+		Where("category = ?", category).
+		Order("created_at DESC").
+		Order("id DESC").
+		Find(&packs).Error
+	return packs, err
+}
+
+func (r *BeatmapPackRepository) FetchCategories() ([]string, error) {
+	var categories []string
+	err := r.db.Model(&schemas.BeatmapPack{}).
+		Distinct().
+		Order("category ASC").
+		Pluck("category", &categories).Error
+	return categories, err
+}
+
 func (r *BeatmapPackRepository) CreateEntry(entry *schemas.BeatmapPackEntry) error {
 	return r.db.Create(entry).Error
 }
