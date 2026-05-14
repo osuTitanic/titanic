@@ -1,0 +1,52 @@
+package bbcode
+
+import "testing"
+
+func TestRenderHtml(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"simple", "[b]hello[/b]", "<b>hello</b>"},
+		{"code is raw", "[code][b]hello[/b][/code]", "[b]hello[/b]"},
+		{"url value", "[url=example.com]Example[/url]", `<a href="http://example.com" target="_blank">Example</a>`},
+		{"url body", "[url]https://example.com[/url]", `<a href="https://example.com" target="_blank">https://example.com</a>`},
+		{"email", "[email]test@example.com[/email]", `<a href="mailto:test@example.com">test@example.com</a>`},
+		{"invalid email", "[email]invalid[/email]", "invalid"},
+		{"image", "[img]https://example.com/a.png[/img]", `<img src="https://example.com/a.png" loading="lazy">`},
+		{"invalid image", "[img]not-a-url[/img]", ""},
+		{"size clamp", "[size=900]large[/size]", `<span style="font-size:800%;">large</span>`},
+		{"size named", "[size=small]small[/size]", `<span style="font-size:85%;">small</span>`},
+		{"quote", "[quote=Alice]hello[/quote]", "<blockquote><h4>Alice wrote:</h4><i>hello</i></blockquote>"},
+		{"list", "[list][*] one[*] two[/list]", "<ul><li> one</li><li> two</li></ul>"},
+		{"unknown line", "[Header]\ntext", `<div class="beatmap-header">Header</div><br />text`},
+		{"timecode", "01:23:456", `<a class="beatmap-timecode" href="osu://edit/01:23:456">01:23:456</a>`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := RenderHtml(tt.input)
+			if got != tt.want {
+				t.Fatalf("want %q, got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestRendererOptions(t *testing.T) {
+	renderer := New(Options{BaseUrl: "https://example.com"})
+	got := renderer.RenderHtml("[profile=1]Alice[/profile]")
+	want := `<a href="https://example.com/u/1">Alice</a>`
+	if got != want {
+		t.Fatalf("want %q, got %q", want, got)
+	}
+}
+
+func TestStrip(t *testing.T) {
+	got := Strip("[b]hello[/b]\n[i]world[/i]", false)
+	want := "hello\nworld"
+	if got != want {
+		t.Fatalf("want %q, got %q", want, got)
+	}
+}
