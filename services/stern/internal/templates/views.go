@@ -52,6 +52,7 @@ type VerificationView struct {
 	DefaultView
 	Verification *schemas.Verification
 	Success      bool
+	InfoMessage  string
 	ErrorMessage string
 }
 

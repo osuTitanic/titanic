@@ -40,6 +40,11 @@
         If you can't access your email or have forgotten what you used, please send an email to
         <a href="mailto:{{ .Config.EmailSender }}">{{ .Config.EmailSender }}</a> to recover your account.
     </div>
+    {{ if .InfoMessage }}
+    <div style="background-color: #e1f1fa;">
+        {{ .InfoMessage }}
+    </div>
+    {{ end }}
     {{ if .ErrorMessage }}
     <div style="background-color: #eab9d6;">
         {{ .ErrorMessage }}
