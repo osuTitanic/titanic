@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"strings"
+
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -37,6 +39,17 @@ func (r *NameRepository) ById(id int, preload ...string) (*schemas.Name, error) 
 func (r *NameRepository) ByName(value string, preload ...string) (*schemas.Name, error) {
 	var name schemas.Name
 	err := Preloaded(r.db, preload).Where("name = ?", value).First(&name).Error
+	if err != nil {
+		return nil, err
+	}
+	return &name, nil
+}
+
+func (r *NameRepository) ByReservedNameCaseInsensitive(value string, preload ...string) (*schemas.Name, error) {
+	var name schemas.Name
+	err := Preloaded(r.db, preload).
+		Where("LOWER(name) = ? AND reserved = ?", strings.ToLower(value), true).
+		First(&name).Error
 	if err != nil {
 		return nil, err
 	}
