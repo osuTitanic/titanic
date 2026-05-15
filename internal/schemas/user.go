@@ -193,11 +193,11 @@ func (Report) TableName() string {
 }
 
 type Verification struct {
-	Id     int       `gorm:"column:id;primaryKey;autoIncrement"`
-	Token  string    `gorm:"column:token"`
-	UserId int       `gorm:"column:user_id"`
-	SentAt time.Time `gorm:"column:sent_at;autoCreateTime"`
-	Type   int       `gorm:"column:type;default:0"`
+	Id     int                        `gorm:"column:id;primaryKey;autoIncrement"`
+	Token  string                     `gorm:"column:token"`
+	UserId int                        `gorm:"column:user_id"`
+	SentAt time.Time                  `gorm:"column:sent_at;autoCreateTime"`
+	Type   constants.VerificationType `gorm:"column:type;default:0"`
 
 	User *User `gorm:"foreignKey:UserId;references:Id"`
 }

@@ -3,6 +3,7 @@ package repositories
 import (
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,7 @@ func (r *VerificationRepository) Create(verification *schemas.Verification) erro
 	return r.db.Create(verification).Error
 }
 
-func (r *VerificationRepository) CreateForUser(userId int, verificationType int, token string, sentAt time.Time) (*schemas.Verification, error) {
+func (r *VerificationRepository) CreateForUser(userId int, verificationType constants.VerificationType, token string, sentAt time.Time) (*schemas.Verification, error) {
 	verification := &schemas.Verification{
 		Token:  token,
 		UserId: userId,
@@ -64,7 +65,7 @@ func (r *VerificationRepository) ManyByUserId(userId int, preload ...string) ([]
 	return verifications, err
 }
 
-func (r *VerificationRepository) ManyByUserIdAndType(userId int, verificationType int, preload ...string) ([]*schemas.Verification, error) {
+func (r *VerificationRepository) ManyByUserIdAndType(userId int, verificationType constants.VerificationType, preload ...string) ([]*schemas.Verification, error) {
 	var verifications []*schemas.Verification
 	err := Preloaded(r.db, preload).Where("user_id = ? AND type = ?", userId, verificationType).Find(&verifications).Error
 	return verifications, err
