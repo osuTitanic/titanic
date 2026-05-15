@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/authentication"
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
@@ -119,6 +120,44 @@ func AccountLoginPage(ctx *server.Context) {
 	RenderLoginPage(ctx, "", redirectTarget)
 }
 
+func AccountRegisterPage(ctx *server.Context) {
+	if ctx.IsAuthenticated() {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
+		return
+	}
+	RenderRegisterPage(ctx, "")
+}
+
+func AccountRegisterCheck(ctx *server.Context) {
+	fieldType := ctx.Request.URL.Query().Get("type")
+	value := ctx.Request.URL.Query().Get("value")
+	if fieldType == "" || value == "" {
+		writePlainText(ctx, http.StatusOK, "")
+		return
+	}
+
+	var (
+		validationError string
+		err             error
+	)
+	switch fieldType {
+	case "username":
+		validationError, err = validateRegistrationUsername(ctx, value)
+	case "email":
+		validationError, err = validateRegistrationEmail(ctx, value)
+	default:
+		writePlainText(ctx, http.StatusOK, "")
+		return
+	}
+	if err != nil {
+		ctx.Logger.Error("Failed to validate registration field", "type", fieldType, "error", err)
+		writePlainText(ctx, http.StatusInternalServerError, "Could not verify this field. Please try something else!")
+		return
+	}
+
+	writePlainText(ctx, http.StatusOK, validationError)
+}
+
 func AccountLogout(ctx *server.Context) {
 	if err := ctx.Request.ParseForm(); err != nil {
 		ctx.Logger.Warn("Failed to parse logout form", "error", err)
@@ -168,6 +207,16 @@ func RenderLoginPage(ctx *server.Context, errorMessage string, redirectTarget st
 	ctx.RenderTemplate(http.StatusOK, "pages/account/login", view)
 }
 
+func RenderRegisterPage(ctx *server.Context, errorMessage string) {
+	view := templates.RegisterView{
+		DefaultView:      buildDefaultView(ctx),
+		ErrorMessage:     errorMessage,
+		RecaptchaEnabled: ctx.State.Config.RecaptchaSiteKey != "",
+		RecaptchaSiteKey: ctx.State.Config.RecaptchaSiteKey,
+	}
+	ctx.RenderTemplate(http.StatusOK, "pages/account/register", view)
+}
+
 func resolveWebsiteSessionLifetime(remember bool) (time.Duration, bool) {
 	if remember {
 		return WebsiteSessionTTLRemembered, true
@@ -203,6 +252,101 @@ func resolveLoginUser(ctx *server.Context, identifier string) (*schemas.User, er
 	return nil, err
 }
 
+func validateRegistrationUsername(ctx *server.Context, username string) (string, error) {
+	username = strings.TrimSpace(username)
+	if len(username) < 3 {
+		return "Your username is too short.", nil
+	}
+	if len(username) > 15 {
+		return "Your username is too long.", nil
+	}
+	if !constants.Username.MatchString(username) {
+		return "Your username contains invalid characters.", nil
+	}
+
+	lowerUsername := strings.ToLower(username)
+	for _, word := range constants.DisallowedUsernameSubstrings {
+		if strings.Contains(lowerUsername, word) {
+			return "Your username contains offensive words.", nil
+		}
+	}
+	if strings.HasPrefix(lowerUsername, "deleteduser") {
+		return "This username is not allowed.", nil
+	}
+	if strings.HasSuffix(lowerUsername, "_old") {
+		return "This username is not allowed.", nil
+	}
+
+	if exists, err := registrationUserExists(ctx, username); err != nil {
+		return "", err
+	} else if exists {
+		return "This username is already in use!", nil
+	}
+
+	safeName := schemas.ResolveSafeName(username)
+	if exists, err := registrationSafeNameExists(ctx, safeName); err != nil {
+		return "", err
+	} else if exists {
+		return "This username is already in use!", nil
+	}
+
+	if exists, err := registrationReservedNameExists(ctx, username); err != nil {
+		return "", err
+	} else if exists {
+		return "This username is already in use!", nil
+	}
+
+	return "", nil
+}
+
+func validateRegistrationEmail(ctx *server.Context, email string) (string, error) {
+	if !constants.Email.MatchString(email) {
+		return "Please enter a valid email address!", nil
+	}
+
+	_, err := ctx.State.Users.ByEmail(strings.ToLower(email))
+	if err == nil {
+		return "This email address is already in use.", nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", nil
+	}
+	return "", err
+}
+
+func registrationUserExists(ctx *server.Context, username string) (bool, error) {
+	_, err := ctx.State.Users.ByNameCaseInsensitive(username)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return false, err
+}
+
+func registrationSafeNameExists(ctx *server.Context, safeName string) (bool, error) {
+	_, err := ctx.State.Users.BySafeName(safeName)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return false, err
+}
+
+func registrationReservedNameExists(ctx *server.Context, username string) (bool, error) {
+	_, err := ctx.State.Names.ByReservedNameCaseInsensitive(username)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return false, err
+}
+
 func hasTooManyLoginAttempts(ctx *server.Context) (bool, error) {
 	key := "logins:" + ctx.IP()
 	attempts, err := ctx.State.Redis.Get(ctx.Request.Context(), key).Int()
@@ -221,4 +365,15 @@ func recordLoginAttempt(ctx *server.Context) error {
 		return err
 	}
 	return ctx.State.Redis.Expire(ctx.Request.Context(), key, 30*time.Second).Err()
+}
+
+func writePlainText(ctx *server.Context, status int, body string) {
+	ctx.Response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	ctx.Response.WriteHeader(status)
+	if body == "" {
+		return
+	}
+	if _, err := ctx.Response.Write([]byte(body)); err != nil {
+		ctx.Logger.Error("Failed to write plain text response", "error", err)
+	}
 }

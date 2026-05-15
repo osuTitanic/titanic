@@ -20,6 +20,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /account/login", routes.AccountLoginPage)
 	server.Handle("POST /account/login", routes.AccountLogin)
 	server.Handle("POST /account/logout", routes.AccountLogout)
+	server.Handle("GET /account/register", routes.AccountRegisterPage)
+	server.Handle("GET /account/register/check", routes.AccountRegisterCheck)
 	server.Handle("GET /download", routes.Download)
 	server.Handle("GET /download/{$}", routes.Download)
 	server.Handle("GET /beatmapsets", routes.Search)
