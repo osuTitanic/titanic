@@ -83,9 +83,22 @@ func AccountLogin(ctx *server.Context) {
 		RenderLoginPage(ctx, "The specified username or password is incorrect.", redirectTarget)
 		return
 	}
+
 	if !user.Activated {
-		// TODO: Handle verification logic
-		RenderLoginPage(ctx, "This account is not activated yet.", redirectTarget)
+		// Ensure we have a valid activation & retrieve it
+		verification, shouldSendEmail, err := ensureActivationVerification(ctx, user)
+		if err != nil {
+			ctx.Logger.Error("Failed to prepare account verification", "user_id", user.Id, "error", err)
+			InternalServerError(ctx)
+			return
+		}
+		// If we created a new verification, send the email
+		if shouldSendEmail {
+			if err := sendWelcomeEmail(ctx, verification); err != nil {
+				ctx.Logger.Error("Failed to send account verification email", "user_id", user.Id, "verification_id", verification.Id, "error", err)
+			}
+		}
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/account/verification?id=%d", verification.Id))
 		return
 	}
 
