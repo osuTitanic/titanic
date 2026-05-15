@@ -206,6 +206,14 @@ func (Verification) TableName() string {
 	return "verifications"
 }
 
+func (v *Verification) Username() string {
+	// smol helper function to make code no messy
+	if v.User == nil {
+		return ""
+	}
+	return v.User.Name
+}
+
 type Group struct {
 	Id                int     `gorm:"column:id;primaryKey;autoIncrement"`
 	Name              string  `gorm:"column:name"`
