@@ -2,7 +2,7 @@
 
 {{ block head() }}
 <title>Create Account</title>
-<meta property="og:title" content="Register - Titanic!">
+<meta property="og:title" content="Create an Account - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/register">
 <meta property="og:description" content="Create your account and start playing today!">
