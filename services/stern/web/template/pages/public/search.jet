@@ -2,7 +2,7 @@
 
 {{ block head() }}
 <title>Beatmap Listing - Titanic!</title>
-<meta property="og:title" content="Beatmap Listing">
+<meta property="og:title" content="Beatmap Listing - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets">
 <meta property="og:description" content="Explore the vast collection of beatmaps to find songs which suit your tastes">
