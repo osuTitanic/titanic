@@ -1,0 +1,97 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Create Account</title>
+<meta property="og:title" content="Create an Account - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/register">
+<meta property="og:description" content="Create your account and start playing today!">
+<link rel="stylesheet" href="/css/account.css">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    <h1 style="font-size: 140%; margin-bottom: 5px;">Let's create a new account!</h1>
+    <p>Please fill in the details below to register your account on Titanic!</p>
+    <p>By registering, you agree to Titanic!'s <a href="/wiki/en/Rules">Rules</a> and <a href="/wiki/en/Legal/Privacy">Privacy Policy</a>.</p>
+</div>
+<form class="register-form" action="/account/register" method="post" onsubmit="return validateAll(event)">
+    {{ yield registerFormField(
+        id="username",
+        inputType="text",
+        name="username",
+        placeholder="Username",
+        description="Others will recognise you by this name. Make sure you are happy with it!"
+    ) }}
+    {{ yield registerFormField(
+        id="email",
+        inputType="email",
+        name="email",
+        placeholder="Email Address",
+        description="Will be used for account verification and in the case you forget your password. No spam, ever."
+    ) }}
+    {{ yield registerFormField(
+        id="password",
+        inputType="password",
+        name="password",
+        placeholder="Password",
+        description="At least 8 characters long. Choose something long but also something you will remember, like a line from your favourite song.",
+        validate=false
+    ) }}
+    {{ yield registerFormSubmit() }}
+
+    {{ if .ErrorMessage }}
+    <div style="background-color: #eab9d6;">
+        {{ .ErrorMessage }}
+    </div>
+    {{ end }}
+
+    <div style="text-align: center; display: grid; justify-items: center;">
+        <img src="/images/signup-multi.png" alt="" height="90px">
+        <div class="input-description" style="width: 100%; margin-top: 15px;">
+            Titanic! has a policy of <strong>one account per person</strong>!
+            Please be aware that creating more than one account per person may result in <strong>permanent deactivation of all accounts</strong>.
+        </div>
+    </div>
+    <div style="display: block; line-height: 18px; text-align: center">
+        We <b>strongly</b> recommend to choose a different password than the one you are using for <a href="https://osu.ppy.sh">osu.ppy.sh</a>, due to the
+        unencrypted traffic on older clients and our responsibility to protect your data in the event of a breach.
+        <br><br>
+        Need further assistance? Contact us on our <a href="https://discord.gg/qupv72e7YH">Discord</a> or via <a href="mailto:{{ .Config.EmailSender }}">Email</a>.
+    </div>
+    <input type="hidden" name="recaptcha_response" id="recaptcha-response">
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+</form>
+<script>$("#username").select();</script>
+<script src="/js/register.js"></script>
+{{ if .RecaptchaEnabled }}
+    {{ yield registerRecaptchaScript() }}
+{{ end }}
+{{ end }}
+
+{{ block registerFormField(id, inputType, name, placeholder, description, validate=true) }}
+<div>
+    <input id="{{ id }}" type="{{ inputType }}" name="{{ name }}" autocomplete="off" autocapitalize="none" placeholder="{{ placeholder }}" {{ if validate }}class="validate"{{ end }} required>
+    <div class="input-description">
+        {{ description }}
+    </div>
+</div>
+{{ end }}
+
+{{ block registerFormSubmit() }}
+<div class="register-submit" style="justify-content: center;">
+    <input class="register-button" type="submit" name="login" value="Register">
+</div>
+{{ end }}
+
+{{ block registerRecaptchaScript() }}
+<script src="https://www.google.com/recaptcha/api.js?render={{ .RecaptchaSiteKey }}"></script>
+<script>
+    grecaptcha.ready(function () {
+        grecaptcha.execute('{{ .RecaptchaSiteKey }}', { action: 'register' }).then(function (token) {
+            var recaptchaResponse = document.getElementById('recaptcha-response');
+            recaptchaResponse.value = token;
+        });
+    });
+</script>
+{{ end }}

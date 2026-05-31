@@ -1,6 +1,9 @@
 package repositories
 
 import (
+	"time"
+
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -15,6 +18,19 @@ func NewVerificationRepository(db *gorm.DB) *VerificationRepository {
 
 func (r *VerificationRepository) Create(verification *schemas.Verification) error {
 	return r.db.Create(verification).Error
+}
+
+func (r *VerificationRepository) CreateForUser(userId int, verificationType constants.VerificationType, token string, sentAt time.Time) (*schemas.Verification, error) {
+	verification := &schemas.Verification{
+		Token:  token,
+		UserId: userId,
+		SentAt: sentAt,
+		Type:   verificationType,
+	}
+	if err := r.Create(verification); err != nil {
+		return nil, err
+	}
+	return verification, nil
 }
 
 func (r *VerificationRepository) Delete(verification *schemas.Verification) error {
@@ -46,6 +62,12 @@ func (r *VerificationRepository) ByToken(token string, preload ...string) (*sche
 func (r *VerificationRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Verification, error) {
 	var verifications []*schemas.Verification
 	err := Preloaded(r.db, preload).Where("user_id = ?", userId).Find(&verifications).Error
+	return verifications, err
+}
+
+func (r *VerificationRepository) ManyByUserIdAndType(userId int, verificationType constants.VerificationType, preload ...string) ([]*schemas.Verification, error) {
+	var verifications []*schemas.Verification
+	err := Preloaded(r.db, preload).Where("user_id = ? AND type = ?", userId, verificationType).Find(&verifications).Error
 	return verifications, err
 }
 

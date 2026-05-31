@@ -2,7 +2,7 @@
 
 {{ block head() }}
 <title>Beatmap Pack Listing</title>
-<meta property="og:title" content="Beatmap Pack Listing">
+<meta property="og:title" content="Beatmap Pack Listing - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets/packs">
 <link rel="stylesheet" href="/css/packs.css">

@@ -41,6 +41,21 @@ type LoginView struct {
 	ErrorMessage string
 }
 
+type RegisterView struct {
+	DefaultView
+	ErrorMessage     string
+	RecaptchaEnabled bool
+	RecaptchaSiteKey string
+}
+
+type VerificationView struct {
+	DefaultView
+	Verification *schemas.Verification
+	Success      bool
+	InfoMessage  string
+	ErrorMessage string
+}
+
 type DownloadView struct {
 	DefaultView
 	SelectedCategory string

@@ -20,6 +20,24 @@ const (
 	WebsiteSessionTTLRemembered = 30 * 24 * time.Hour
 )
 
+func AccountLoginPage(ctx *server.Context) {
+	redirectTarget := sanitizeRedirectTarget(ctx.Request.URL.Query().Get("redirect"))
+	if ctx.IsAuthenticated() {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
+		return
+	}
+	RenderLoginPage(ctx, "", redirectTarget)
+}
+
+func RenderLoginPage(ctx *server.Context, errorMessage string, redirectTarget string) {
+	view := templates.LoginView{
+		DefaultView:  buildDefaultView(ctx),
+		Redirect:     sanitizeRedirectTarget(redirectTarget),
+		ErrorMessage: errorMessage,
+	}
+	ctx.RenderTemplate(http.StatusOK, "pages/account/login", view)
+}
+
 func AccountLogin(ctx *server.Context) {
 	if err := ctx.Request.ParseForm(); err != nil {
 		ctx.Logger.Warn("Failed to parse login form", "error", err)
@@ -65,9 +83,22 @@ func AccountLogin(ctx *server.Context) {
 		RenderLoginPage(ctx, "The specified username or password is incorrect.", redirectTarget)
 		return
 	}
+
 	if !user.Activated {
-		// TODO: Handle verification logic
-		RenderLoginPage(ctx, "This account is not activated yet.", redirectTarget)
+		// Ensure we have a valid activation & retrieve it
+		verification, shouldSendEmail, err := ensureActivationVerification(ctx, user)
+		if err != nil {
+			ctx.Logger.Error("Failed to prepare account verification", "user_id", user.Id, "error", err)
+			InternalServerError(ctx)
+			return
+		}
+		// If we created a new verification, send the email
+		if shouldSendEmail {
+			if err := sendWelcomeEmail(ctx, verification); err != nil {
+				ctx.Logger.Error("Failed to send account verification email", "user_id", user.Id, "verification_id", verification.Id, "error", err)
+			}
+		}
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/account/verification?id=%d", verification.Id))
 		return
 	}
 
@@ -107,65 +138,6 @@ func AccountLogin(ctx *server.Context) {
 
 	ctx.CSRFToken = token
 	ctx.Redirect(http.StatusSeeOther, redirectTarget)
-}
-
-func AccountLoginPage(ctx *server.Context) {
-	redirectTarget := sanitizeRedirectTarget(ctx.Request.URL.Query().Get("redirect"))
-	if ctx.IsAuthenticated() {
-		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
-		return
-	}
-
-	RenderLoginPage(ctx, "", redirectTarget)
-}
-
-func AccountLogout(ctx *server.Context) {
-	if err := ctx.Request.ParseForm(); err != nil {
-		ctx.Logger.Warn("Failed to parse logout form", "error", err)
-	}
-
-	redirectTarget := sanitizeRedirectTarget(ctx.Request.FormValue("redirect"))
-	if redirectTarget == "" {
-		redirectTarget = "/"
-	}
-
-	if !ctx.IsAuthenticated() {
-		ctx.ExpireSessionCookie()
-		ctx.Redirect(http.StatusSeeOther, redirectTarget)
-		return
-	}
-
-	ok, err := ctx.ValidateCSRF()
-	if err != nil {
-		ctx.Logger.Error("Failed to validate logout csrf token", "user_id", ctx.CurrentUser.Id, "error", err)
-		InternalServerError(ctx)
-		return
-	}
-	if !ok {
-		ctx.Logger.Warn("Invalid CSRF token on logout attempt", "user_id", ctx.CurrentUser.Id)
-		ctx.ExpireSessionCookie()
-		ctx.Redirect(http.StatusSeeOther, redirectTarget)
-		return
-	}
-
-	if err := ctx.DeleteCurrentSessionCookie(); err != nil {
-		ctx.Logger.Warn("Failed to delete website session", "user_id", ctx.CurrentUser.Id, "error", err)
-	}
-	if err := ctx.DeleteCurrentCSRFToken(); err != nil {
-		ctx.Logger.Warn("Failed to delete csrf token", "user_id", ctx.CurrentUser.Id, "error", err)
-	}
-
-	ctx.ExpireSessionCookie()
-	ctx.Redirect(http.StatusSeeOther, redirectTarget)
-}
-
-func RenderLoginPage(ctx *server.Context, errorMessage string, redirectTarget string) {
-	view := templates.LoginView{
-		DefaultView:  buildDefaultView(ctx),
-		Redirect:     sanitizeRedirectTarget(redirectTarget),
-		ErrorMessage: errorMessage,
-	}
-	ctx.RenderTemplate(http.StatusOK, "pages/account/login", view)
 }
 
 func resolveWebsiteSessionLifetime(remember bool) (time.Duration, bool) {

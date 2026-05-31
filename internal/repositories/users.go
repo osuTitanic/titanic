@@ -46,6 +46,15 @@ func (r *UserRepository) ByName(name string, preload ...string) (*schemas.User, 
 	return &user, nil
 }
 
+func (r *UserRepository) ByNameCaseInsensitive(name string, preload ...string) (*schemas.User, error) {
+	var user schemas.User
+	err := Preloaded(r.db, preload).Where("LOWER(name) = ?", strings.ToLower(name)).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *UserRepository) BySafeName(safeName string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("safe_name = ?", safeName).First(&user).Error

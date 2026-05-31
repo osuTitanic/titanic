@@ -12,6 +12,11 @@ const (
 	PlaystyleTouch        Playstyle = 1 << 3
 )
 
+const (
+	DefaultPlayerGroupId    = 999
+	DefaultSupporterGroupId = 1000
+)
+
 func (p Playstyle) Has(flag Playstyle) bool {
 	return p&flag != 0
 }
@@ -40,4 +45,37 @@ func (p Playstyle) String() string {
 	}
 
 	return strings.Join(parts, ",")
+}
+
+var DisallowedUsernameSubstrings = []string{
+	"blow job",
+	"blowjob",
+	"cockhead",
+	"cocksucker",
+	"cunt",
+	"cunts",
+	"dildo",
+	"fag1t",
+	"faget",
+	"fagg1t",
+	"faggit",
+	"faggot",
+	"fagit",
+	"fags",
+	"massterbait",
+	"masstrbait",
+	"masstrbate",
+	"masterbaiter",
+	"masterbate",
+	"masterbates",
+	"n1gr",
+	"nigger",
+	"nigur",
+	"niiger",
+	"niigr",
+	"penis",
+	"pussy",
+	"slut",
+	"whore",
+	"nigga",
 }
