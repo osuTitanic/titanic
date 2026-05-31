@@ -12,6 +12,11 @@ const (
 	PlaystyleTouch        Playstyle = 1 << 3
 )
 
+const (
+	DefaultPlayerGroupId    = 999
+	DefaultSupporterGroupId = 1000
+)
+
 func (p Playstyle) Has(flag Playstyle) bool {
 	return p&flag != 0
 }
