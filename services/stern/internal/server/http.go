@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/authentication"
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
@@ -72,6 +73,24 @@ type Context struct {
 
 func (ctx *Context) IP() string {
 	return GetRequestIP(ctx.Request)
+}
+
+func (ctx *Context) Country() string {
+	// TODO: Add geoip fallback lookup when a geolocation service exists
+	// 		 For now we only trust cloudflare headers & otherwise return XX
+	country := ctx.Request.Header.Get("CF-IPCountry")
+	country = strings.ToUpper(strings.TrimSpace(country))
+
+	if country == "" || country == "XX" || country == "T1" {
+		// "XX" -> Unknown country
+		// "T1" -> Most likely a tor exit node
+		return "XX"
+	}
+	if constants.GetCountryIndexFromCode(country) == 0 {
+		// This country does not exist in our country list
+		country = "XX"
+	}
+	return country
 }
 
 // PathValue is a helper function to get path variables from the request context.
