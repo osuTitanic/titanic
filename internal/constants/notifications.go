@@ -10,3 +10,8 @@ const (
 	NotificationTypeBeatmaps
 	NotificationTypeSecurity
 )
+
+const (
+	WelcomeNotificationHeader  = "Welcome!"
+	WelcomeNotificationContent = "Welcome aboard! Get started by downloading one of our game clients [here](%s/download). Enjoy your journey!"
+)
