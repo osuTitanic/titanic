@@ -15,7 +15,7 @@
     <p>Please fill in the details below to register your account on Titanic!</p>
     <p>By registering, you agree to Titanic!'s <a href="/wiki/en/Rules">Rules</a> and <a href="/wiki/en/Legal/Privacy">Privacy Policy</a>.</p>
 </div>
-<form class="register-form" method="post" onsubmit="return validateAll(event)">
+<form class="register-form" action="/account/register" method="post" onsubmit="return validateAll(event)">
     {{ yield registerFormField(
         id="username",
         inputType="text",
