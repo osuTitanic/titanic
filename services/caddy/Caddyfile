@@ -112,6 +112,30 @@ https://mahbahowc.{$DOMAIN_NAME} {
 	}
 }
 
+http://server.{$DOMAIN_NAME},
+https://server.{$DOMAIN_NAME} {
+    request_body {
+		max_size 20MB
+	}
+
+    handle /ws* {
+        reverse_proxy anchor:5001 {
+            import proxy_headers
+            transport http {
+                read_timeout 3600s
+                write_timeout 3600s
+            }
+        }
+    }
+
+    handle {
+		import cors_bancho
+		reverse_proxy anchor {
+			import proxy_headers
+		}
+	}
+}
+
 http://s.{$DOMAIN_NAME},
 https://s.{$DOMAIN_NAME} {
 	handle /images/map-thumb/* {
