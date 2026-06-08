@@ -85,9 +85,11 @@ func registerSimpleTags(parser *bbgo.BBGO) {
 }
 
 func registerRawTags(parser *bbgo.BBGO) {
+	// yeah
+	codeBlockTemplate := `<b>Code:</b><br><div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">%s</div>`
 	options := rawOptions()
-	parser.AddSimpleFormatter("code", "%s", options)
-	parser.AddSimpleFormatter("c", "%s", options)
+	parser.AddSimpleFormatter("code", codeBlockTemplate, options)
+	parser.AddSimpleFormatter("c", codeBlockTemplate, options)
 }
 
 func registerContainerTags(parser *bbgo.BBGO) {

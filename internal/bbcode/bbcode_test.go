@@ -9,7 +9,7 @@ func TestRenderHtml(t *testing.T) {
 		want  string
 	}{
 		{"simple", "[b]hello[/b]", "<b>hello</b>"},
-		{"code is raw", "[code][b]hello[/b][/code]", "[b]hello[/b]"},
+		{"code is raw", "[code][b]hello[/b][/code]", `<b>Code:</b><br><div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">[b]hello[/b]</div>`},
 		{"url value", "[url=example.com]Example[/url]", `<a href="http://example.com" target="_blank">Example</a>`},
 		{"url body", "[url]https://example.com[/url]", `<a href="https://example.com" target="_blank">https://example.com</a>`},
 		{"email", "[email]test@example.com[/email]", `<a href="mailto:test@example.com">test@example.com</a>`},
