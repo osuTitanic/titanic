@@ -82,6 +82,7 @@ func registerSimpleTags(parser *bbgo.BBGO) {
 	parser.AddSimpleFormatter("strike", "<strike>%s</strike>", options)
 	parser.AddSimpleFormatter("centre", "<center>%s</center>", options)
 	parser.AddSimpleFormatter("spoiler", `<span style="background-color: black;">%s</span>`, options)
+	parser.AddSimpleFormatter("notice", `<div style="background: none repeat scroll 0%% 0%% rgb(249, 247, 254); border: 1px solid rgb(225, 223, 231); margin: 6px; padding: 5px;">%s</div>`, options)
 }
 
 func registerRawTags(parser *bbgo.BBGO) {
