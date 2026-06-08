@@ -14,6 +14,7 @@ func TestRenderHtml(t *testing.T) {
 		{"url body", "[url]https://example.com[/url]", `<a href="https://example.com" target="_blank">https://example.com</a>`},
 		{"email", "[email]test@example.com[/email]", `<a href="mailto:test@example.com">test@example.com</a>`},
 		{"invalid email", "[email]invalid[/email]", "invalid"},
+		{"spoiler", "[spoiler]spoiler content[/spoiler]", `<span style="background-color: black;">spoiler content</span>`},
 		{"image", "[img]https://example.com/a.png[/img]", `<img src="https://example.com/a.png" loading="lazy">`},
 		{"invalid image", "[img]not-a-url[/img]", ""},
 		{"size clamp", "[size=900]large[/size]", `<span style="font-size:800%;">large</span>`},
