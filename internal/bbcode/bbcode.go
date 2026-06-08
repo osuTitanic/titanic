@@ -95,9 +95,9 @@ func registerContainerTags(parser *bbgo.BBGO) {
 
 	parser.AddFormatter("box", renderBox, embeddedOptions())
 	parser.AddFormatter("color", renderColor, embeddedOptions())
-	parser.AddFormatter("quote", renderQuote, embeddedOptions())
 	parser.AddFormatter("size", renderSize, embeddedOptions())
 	parser.AddFormatter("list", renderList, embeddedOptions())
+	parser.AddFormatter("quote", renderQuote(parser), quoteOptions())
 }
 
 func registerLinkTags(parser *bbgo.BBGO, options Options) {
@@ -144,6 +144,13 @@ func urlOptions() bbgo.TagOptions {
 	return options
 }
 
+func quoteOptions() bbgo.TagOptions {
+	options := embeddedOptions()
+	options.RenderEmbedded = false
+	options.ReplaceLinks = false
+	return options
+}
+
 func renderUnknownLine(tagText string, context bbgo.Context) (string, bool) {
 	return fmt.Sprintf(`<div class="beatmap-header">%s</div>`, sanitizeInput(tagText)), true
 }
@@ -158,12 +165,15 @@ func renderColor(ctx bbgo.RenderContext) string {
 	return fmt.Sprintf(`<span style="color:%s;">%s</span>`, color, ctx.Value)
 }
 
-func renderQuote(ctx bbgo.RenderContext) string {
-	author := ctx.Options.Get("quote")
-	if author == "" {
-		return fmt.Sprintf("<blockquote>%s</blockquote>", ctx.Value)
+func renderQuote(parser *bbgo.BBGO) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		body := parser.Strip(ctx.Value, false)
+		author := ctx.Options.Get("quote")
+		if author == "" {
+			return fmt.Sprintf(`<div class="quotecontent">%s</div>`, body)
+		}
+		return fmt.Sprintf(`<div class="quotetitle">%s wrote:</div><div class="quotecontent">%s</div>`, sanitizeInput(author), body)
 	}
-	return fmt.Sprintf("<blockquote><h4>%s wrote:</h4><i>%s</i></blockquote>", sanitizeInput(author), ctx.Value)
 }
 
 func renderSize(ctx bbgo.RenderContext) string {

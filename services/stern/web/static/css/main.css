@@ -540,6 +540,19 @@ input[type="url"], input[type="search"] {
     font-weight: bold;
 }
 
+.quotetitle {
+    font-weight: bold;
+}
+
+.quotecontent {
+    margin: 1px 0 0 0;
+    background: #fbfbfb;
+    padding: 3px 5px;
+    border-style: solid;
+    border-color: #ececec;
+    border-width: 1px 5px;
+}
+
 .bbcode-editor {
     white-space: pre-line;
     height: auto;
