@@ -18,7 +18,6 @@ import (
 var (
 	defaultRenderer = New(Options{})
 	timecodeRegex   = regexp.MustCompile(`\b(?:osu://edit/)?(\d{2,}):([0-5]\d)[:.](\d{3})(?:\s(\((?:\d+[,|])*\d+\)))?`)
-	bbcodeTagRegex  = regexp.MustCompile(`(?i)\[/?(?:b|i|u|heading|strike|centre|code|c|\*|spoilerbox|box|color|quote|size|list|url|google|email|profile|img|video|youtube)(?:=[^\]\r\n]*)?\]`)
 )
 
 // Options contains bbcode rendering settings
@@ -96,9 +95,9 @@ func registerContainerTags(parser *bbgo.BBGO) {
 
 	parser.AddFormatter("box", renderBox, embeddedOptions())
 	parser.AddFormatter("color", renderColor, embeddedOptions())
-	parser.AddFormatter("quote", renderQuote, quoteOptions())
 	parser.AddFormatter("size", renderSize, embeddedOptions())
 	parser.AddFormatter("list", renderList, embeddedOptions())
+	parser.AddFormatter("quote", renderQuote(parser), quoteOptions())
 }
 
 func registerLinkTags(parser *bbgo.BBGO, options Options) {
@@ -166,18 +165,15 @@ func renderColor(ctx bbgo.RenderContext) string {
 	return fmt.Sprintf(`<span style="color:%s;">%s</span>`, color, ctx.Value)
 }
 
-func renderQuote(ctx bbgo.RenderContext) string {
-	body := stripBBCodeTags(ctx.Value)
-	author := ctx.Options.Get("quote")
-	if author == "" {
-		return fmt.Sprintf(`<div class="quotecontent">%s</div>`, body)
+func renderQuote(parser *bbgo.BBGO) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		body := parser.Strip(ctx.Value, false)
+		author := ctx.Options.Get("quote")
+		if author == "" {
+			return fmt.Sprintf(`<div class="quotecontent">%s</div>`, body)
+		}
+		return fmt.Sprintf(`<div class="quotetitle">%s wrote:</div><div class="quotecontent">%s</div>`, sanitizeInput(author), body)
 	}
-	return fmt.Sprintf(`<div class="quotetitle">%s wrote:</div><div class="quotecontent">%s</div>`, sanitizeInput(author), body)
-}
-
-func stripBBCodeTags(input string) string {
-	// TODO: consider using Strip(...)?
-	return bbcodeTagRegex.ReplaceAllString(input, "")
 }
 
 func renderSize(ctx bbgo.RenderContext) string {
