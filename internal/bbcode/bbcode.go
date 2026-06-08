@@ -18,6 +18,7 @@ import (
 var (
 	defaultRenderer = New(Options{})
 	timecodeRegex   = regexp.MustCompile(`\b(?:osu://edit/)?(\d{2,}):([0-5]\d)[:.](\d{3})(?:\s(\((?:\d+[,|])*\d+\)))?`)
+	bbcodeTagRegex  = regexp.MustCompile(`(?i)\[/?(?:b|i|u|heading|strike|centre|code|c|\*|spoilerbox|box|color|quote|size|list|url|google|email|profile|img|video|youtube)(?:=[^\]\r\n]*)?\]`)
 )
 
 // Options contains bbcode rendering settings
@@ -95,7 +96,7 @@ func registerContainerTags(parser *bbgo.BBGO) {
 
 	parser.AddFormatter("box", renderBox, embeddedOptions())
 	parser.AddFormatter("color", renderColor, embeddedOptions())
-	parser.AddFormatter("quote", renderQuote, embeddedOptions())
+	parser.AddFormatter("quote", renderQuote, quoteOptions())
 	parser.AddFormatter("size", renderSize, embeddedOptions())
 	parser.AddFormatter("list", renderList, embeddedOptions())
 }
@@ -144,6 +145,13 @@ func urlOptions() bbgo.TagOptions {
 	return options
 }
 
+func quoteOptions() bbgo.TagOptions {
+	options := embeddedOptions()
+	options.RenderEmbedded = false
+	options.ReplaceLinks = false
+	return options
+}
+
 func renderUnknownLine(tagText string, context bbgo.Context) (string, bool) {
 	return fmt.Sprintf(`<div class="beatmap-header">%s</div>`, sanitizeInput(tagText)), true
 }
@@ -159,11 +167,17 @@ func renderColor(ctx bbgo.RenderContext) string {
 }
 
 func renderQuote(ctx bbgo.RenderContext) string {
+	body := stripBBCodeTags(ctx.Value)
 	author := ctx.Options.Get("quote")
 	if author == "" {
-		return fmt.Sprintf("<blockquote>%s</blockquote>", ctx.Value)
+		return fmt.Sprintf(`<div class="quotecontent">%s</div>`, body)
 	}
-	return fmt.Sprintf("<blockquote><h4>%s wrote:</h4><i>%s</i></blockquote>", sanitizeInput(author), ctx.Value)
+	return fmt.Sprintf(`<div class="quotetitle">%s wrote:</div><div class="quotecontent">%s</div>`, sanitizeInput(author), body)
+}
+
+func stripBBCodeTags(input string) string {
+	// TODO: consider using Strip(...)?
+	return bbcodeTagRegex.ReplaceAllString(input, "")
 }
 
 func renderSize(ctx bbgo.RenderContext) string {
