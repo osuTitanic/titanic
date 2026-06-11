@@ -236,7 +236,7 @@ html.ie6 .chat-wrapper {
 }
 
 .chat-message {
-    max-width: 400px;
+    width: 400px;
     display: inline-block;
     white-space: nowrap;
     overflow: hidden;
