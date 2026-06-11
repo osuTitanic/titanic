@@ -1,3 +1,7 @@
+html.ie6 .client img {
+    height: 200px;
+}
+
 .category {
     text-shadow: #f3c8e0 0px 0px 10px;
     color: #e15fac;

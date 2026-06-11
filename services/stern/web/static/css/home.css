@@ -1,3 +1,15 @@
+html.ie6 .right-side {
+    margin-right: -60px;
+}
+
+html.ie6 .most-played {
+    width: 81.8%;
+}
+
+html.ie6 .chat-wrapper {
+    width: 182%;
+}
+
 .page h2 {
     color: #e15fac;
     font-weight: normal;
