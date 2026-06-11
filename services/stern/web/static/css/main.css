@@ -391,6 +391,7 @@ input[type="url"], input[type="search"] {
     margin-right: 5px;
     width: 100px;
     height: 13px;
+    border: 1px solid rgb(185, 197, 236);
 }
 
 .login-container {
@@ -771,6 +772,10 @@ input[type="url"], input[type="search"] {
     background-color: #e0d6fb;
     display: inline-block; /* Use this as backup */
     display: flex;
+}
+
+.ie .tab-link {
+    line-height: 25px;
 }
 
 .tab-link:hover,

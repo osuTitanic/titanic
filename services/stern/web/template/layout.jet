@@ -134,8 +134,8 @@
                         <a href="/account/profile#avatar" style="height: 25px">
                             <img class="small-avatar" src="{{ .CurrentUser.AvatarUrl() }}" alt="">
                         </a>
-                        <a href="/account"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
-                        <a href="/account#notifications">
+                        <a href="/account/"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
+                        <a href="/account/#notifications">
                             <i class="icon-bell-alt" style="color: #808080;"></i>
                             No notifications
                             {* TODO: Notifications *}
