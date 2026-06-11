@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--[if IE 6]><html class="ie ie6" lang="en"><![endif]-->
+<!--[if IE 7]><html class="ie ie7" lang="en"><![endif]-->
+<!--[if IE 8]><html class="ie ie8" lang="en"><![endif]-->
+<!--[if IE 9]><html class="ie ie9" lang="en"><![endif]-->
+<!--[if gt IE 9]><!--><html lang="en"><!--<![endif]-->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, user-scalable=yes">
@@ -33,23 +37,6 @@
     </script>
     <script src="/lib/instant.page.js" type="module" defer></script>
     {* TODO: add modern-browser-only assets *}
-    <!-- CSS fixes for Internet Explorer -->
-    <!--[if IE 6]>
-    <style>
-        .nav-element a,
-        .nav-element a:visited {
-            width: 35px;
-        }
-        .nav-list {
-            margin-left: 85px;
-        }
-        .bancho-stats {
-            width: 220px;
-            top: -17px;
-            right: -1px;
-        }
-    </style>
-    <![endif]-->
     <!--[if IE 7]>
     <link rel="stylesheet" href="/lib/font-awesome-ie7.min.css">
     <![endif]-->
@@ -147,8 +134,8 @@
                         <a href="/account/profile#avatar" style="height: 25px">
                             <img class="small-avatar" src="{{ .CurrentUser.AvatarUrl() }}" alt="">
                         </a>
-                        <a href="/account"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
-                        <a href="/account#notifications">
+                        <a href="/account/"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
+                        <a href="/account/#notifications">
                             <i class="icon-bell-alt" style="color: #808080;"></i>
                             No notifications
                             {* TODO: Notifications *}

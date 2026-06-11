@@ -95,6 +95,23 @@ html[data-darkreader-mode="dynamic"] {
     background: linear-gradient(#2a314d, #000000 180px) !important;
 }
 
+/* ie is not a browser */
+
+html.ie6 .nav-element a,
+html.ie6 .nav-element a:visited {
+    width: 35px;
+}
+
+html.ie6 .nav-list {
+    margin-left: 85px;
+}
+
+html.ie6 .bancho-stats {
+    width: 220px;
+    top: -17px;
+    right: -1px;
+}
+
 input:focus {
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, .05), 0 0 8px rgba(82, 168, 236, .6);
     border-color: #56b4ef;
@@ -374,6 +391,7 @@ input[type="url"], input[type="search"] {
     margin-right: 5px;
     width: 100px;
     height: 13px;
+    border: 1px solid rgb(185, 197, 236);
 }
 
 .login-container {
@@ -754,6 +772,10 @@ input[type="url"], input[type="search"] {
     background-color: #e0d6fb;
     display: inline-block; /* Use this as backup */
     display: flex;
+}
+
+.ie .tab-link {
+    line-height: 25px;
 }
 
 .tab-link:hover,

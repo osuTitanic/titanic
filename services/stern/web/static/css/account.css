@@ -1,4 +1,4 @@
-.register-form, .reset-form, .login-form {
+.account-form, .reset-form, .login-form {
     padding-left: 10px;
 }
 
@@ -6,7 +6,7 @@
     text-align: center;
 }
 
-.register-form > div, .reset-form > div {
+.account-form-section {
     -webkit-box-shadow: 0px 0px 50px #ffffff;
     -moz-box-shadow: 0px 0px 50px #ffffff;
     box-shadow: 0px 0px 50px #ffffff;
@@ -19,10 +19,8 @@
     width: 775px;
 }
 
-.register-form input[type="submit"],
-.register-form input[type="text"],
-.register-form input[type="password"],
-.register-form input[type="email"] {
+.account-form-control,
+.account-form-button {
     border: 1px solid #90ace7;
     vertical-align: middle;
     display: inline-block;
@@ -32,17 +30,8 @@
     -webkit-border-radius: 3px;
 }
 
-.reset-form input[type="submit"],
-.reset-form input[type="text"],
-.reset-form input[type="password"],
-.reset-form input[type="email"] {
-    border: 1px solid #90ace7;
-    vertical-align: middle;
-    width: 300px;
-    height: 30px;
+.ie .account-form-control {
     float: left;
-    border-radius: 3px;
-    -webkit-border-radius: 3px;
 }
 
 .login-form input[type="text"],
@@ -62,10 +51,35 @@
     width: 58%;
 }
 
-.register-submit {
+.account-form-actions,
+.register-submit,
+.reset-submit {
     text-align: center;
 }
 
+.account-form-error {
+    background-color: #eab9d6;
+}
+
+.account-form-panel {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+}
+
+.account-form-panel .input-description {
+    float: none;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.account-form-info {
+    display: block;
+    line-height: 18px;
+    text-align: center;
+}
+
+.account-form-button:hover,
 .register-button:hover, .reset-button:hover {
     text-shadow: 0px 0px 5px #ffffff;
     text-decoration: none;
@@ -73,7 +87,7 @@
     cursor: pointer;
 }
 
-.register-button, .reset-button {
+.account-form-button {
     background-color: rgb(138,138,138);
     transition: all 200ms ease-in-out;
     border-radius: 5px !important;

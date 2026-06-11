@@ -372,6 +372,7 @@
 }
 
 .score-button.primary {
+    background-color: #5b5399;
     background: -webkit-linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
     background-image: linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
 }
@@ -384,6 +385,7 @@
 }
 
 .score-button.secondary {
+    background-color: #666;
     background: -webkit-linear-gradient(rgb(170, 170, 170) 0%, rgb(100, 100, 100) 100%);
     background-image: linear-gradient(rgb(170, 170, 170) 0%, rgb(100, 100, 100) 100%);
 }
@@ -394,4 +396,131 @@
     background-image: linear-gradient(rgb(190, 190, 190) 0%, rgb(120, 120, 120) 100%);
     text-decoration: none;
     color: rgb(236, 236, 236);
+}
+
+/* ie fixes for the grid / flex layout */
+
+.ie .top-section,
+.ie .bottom-section,
+.ie .stat-row,
+.ie .score-metadata,
+.ie .stat-item {
+    overflow: hidden;
+}
+
+.ie .player-card {
+    float: left;
+    width: 47%;
+    height: 85px;
+    overflow: hidden;
+}
+
+.ie .beatmap-card {
+    float: right;
+    width: 47%;
+    height: 85px;
+    overflow: hidden;
+}
+
+.ie .player-avatar {
+    float: left;
+    margin-right: 12px;
+}
+
+.ie .player-info {
+    margin-left: 94px;
+}
+
+.ie .player-label,
+.ie .player-stats {
+    display: block;
+}
+
+.ie .player-name {
+    display: inline;
+    max-width: none;
+    white-space: normal;
+}
+
+.ie .beatmap-info {
+    width: 68%;
+    float: left;
+}
+
+.ie .beatmap-stars {
+    display: inline;
+}
+
+.ie .beatmap-thumbnail {
+    float: right;
+    text-align: right;
+    width: 122px;
+    margin-left: 12px;
+}
+
+.ie .beatmap-thumbnail img {
+    width: 120px;
+    height: 80px;
+}
+
+.ie .stats-panel {
+    float: left;
+    width: 68%;
+}
+
+.ie .grade-section {
+    float: right;
+    width: 188px;
+    min-height: 254px;
+    text-align: center;
+}
+
+.ie .grade-wrapper {
+    margin: 24px auto 0 auto;
+}
+
+.ie .grade-image {
+    width: 120px;
+    height: auto;
+}
+
+.ie .stat-item {
+    display: block;
+    float: left;
+    width: 44%;
+    min-height: 26px;
+}
+
+.ie .hit-100,
+.ie .hit-miss,
+.ie .hit-katu {
+    float: right;
+}
+
+.ie .hit-label {
+    float: left;
+}
+
+.ie .hit-count {
+    float: right;
+}
+
+.ie .metadata-item {
+    float: left;
+    width: 29%;
+    min-height: 45px;
+    margin-right: 2%;
+}
+
+.ie .has-mods .metadata-item {
+    width: 20%;
+}
+
+.ie .score-buttons {
+    width: 170px;
+    margin: 12px auto 0 auto;
+}
+
+.ie .score-button {
+    width: 170px;
 }

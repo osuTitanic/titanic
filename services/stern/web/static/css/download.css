@@ -60,6 +60,10 @@
     text-align: left;
 }
 
+.ie6 .client img {
+    height: 200px;
+}
+
 .client p {
     white-space: pre-wrap;
 }
