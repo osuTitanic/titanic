@@ -15,7 +15,7 @@
     <p>Please fill in the details below to register your account on Titanic!</p>
     <p>By registering, you agree to Titanic!'s <a href="/wiki/en/Rules">Rules</a> and <a href="/wiki/en/Legal/Privacy">Privacy Policy</a>.</p>
 </div>
-<form class="register-form" action="/account/register" method="post" onsubmit="return validateAll(event)">
+<form class="account-form register-form" action="/account/register" method="post" onsubmit="return validateAll(event)">
     {{ yield registerFormField(
         id="username",
         inputType="text",
@@ -41,19 +41,19 @@
     {{ yield registerFormSubmit() }}
 
     {{ if .ErrorMessage }}
-    <div style="background-color: #eab9d6;">
+    <div class="account-form-section account-form-error">
         {{ .ErrorMessage }}
     </div>
     {{ end }}
 
-    <div style="text-align: center; display: grid; justify-items: center;">
+    <div class="account-form-section account-form-panel">
         <img src="/images/signup-multi.png" alt="" height="90px">
-        <div class="input-description" style="width: 100%; margin-top: 15px;">
+        <div class="input-description">
             Titanic! has a policy of <strong>one account per person</strong>!
             Please be aware that creating more than one account per person may result in <strong>permanent deactivation of all accounts</strong>.
         </div>
     </div>
-    <div style="display: block; line-height: 18px; text-align: center">
+    <div class="account-form-section account-form-info">
         We <b>strongly</b> recommend to choose a different password than the one you are using for <a href="https://osu.ppy.sh">osu.ppy.sh</a>, due to the
         unencrypted traffic on older clients and our responsibility to protect your data in the event of a breach.
         <br><br>
@@ -70,8 +70,8 @@
 {{ end }}
 
 {{ block registerFormField(id, inputType, name, placeholder, description, validate=true) }}
-<div>
-    <input id="{{ id }}" type="{{ inputType }}" name="{{ name }}" autocomplete="off" autocapitalize="none" placeholder="{{ placeholder }}" {{ if validate }}class="validate"{{ end }} required>
+<div class="account-form-section account-form-field">
+    <input id="{{ id }}" class="account-form-control{{ if validate }} validate{{ end }}" type="{{ inputType }}" name="{{ name }}" autocomplete="off" autocapitalize="none" placeholder="{{ placeholder }}" required>
     <div class="input-description">
         {{ description }}
     </div>
@@ -79,8 +79,8 @@
 {{ end }}
 
 {{ block registerFormSubmit() }}
-<div class="register-submit" style="justify-content: center;">
-    <input class="register-button" type="submit" name="login" value="Register">
+<div class="account-form-section account-form-actions register-submit">
+    <input class="account-form-button register-button" type="submit" name="login" value="Register">
 </div>
 {{ end }}
 

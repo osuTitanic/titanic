@@ -1,7 +1,3 @@
-html.ie6 .client img {
-    height: 200px;
-}
-
 .category {
     text-shadow: #f3c8e0 0px 0px 10px;
     color: #e15fac;
@@ -62,6 +58,10 @@ html.ie6 .client img {
     filter: drop-shadow(1px 2px 1px #c6c6ca);
     min-width: 300px;
     text-align: left;
+}
+
+.ie6 .client img {
+    height: 200px;
 }
 
 .client p {
