@@ -113,11 +113,29 @@
 {{ end }}
 
 {{ block homeFeaturedVideo() }}
-<div class="featured">
+<div class="featured" id="featured-video">
     <h2 class="headers">Featured Video</h2>
+    <div class="featured-video-placeholder" id="featured-video-placeholder">
+        <div class="featured-video-info">
+            This browser may not be able to play the embedded video.
+        </div>
+        <a href="https://www.youtube.com/@osuTitanic" target="_blank" rel="noopener">
+            Open on YouTube
+        </a>
+    </div>
+    <!--[if !IE]><!-->
     <script defer>
         function loadYoutubeIframe() {
-            var featuredVideo = document.querySelector('.featured');
+            var featuredVideo = document.getElementById('featured-video');
+            var placeholder = document.getElementById('featured-video-placeholder');
+
+            if (!featuredVideo) {
+                return;
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
             var iframe = document.createElement('iframe');
             iframe.title = "Featured";
             iframe.width = "356";
@@ -132,10 +150,9 @@
             featuredVideo.appendChild(iframe);
         }
 
-        $(document).on('DOMContentLoaded', window, function(e) {
-            loadYoutubeIframe();
-        });
+        $(function() { loadYoutubeIframe() });
     </script>
+    <!--<![endif]-->
 </div>
 {{ end }}
 

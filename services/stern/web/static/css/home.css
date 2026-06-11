@@ -37,6 +37,38 @@ html.ie6 .chat-wrapper {
     overflow: hidden;
 }
 
+.featured iframe {
+    display: block;
+    width: 356px;
+    height: 278px;
+}
+
+.featured-video-placeholder {
+    display: block;
+    width: 354px;
+    height: 276px;
+    border: solid 1px #d2d4fa;
+    background: #fff;
+    text-align: center;
+    overflow: hidden;
+}
+
+.featured-video-info {
+    margin: 100px auto 10px auto;
+    width: 280px;
+    font-size: 9pt;
+}
+
+.featured-video-placeholder a {
+    color: #3843a6;
+    font-size: 9pt;
+    text-decoration: none;
+}
+
+.featured-video-placeholder a:hover {
+    text-decoration: underline;
+}
+
 .headers {
     margin-bottom: 10px;
     margin-top: 10px;
