@@ -25,6 +25,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /account/register/check", routes.AccountRegisterCheck)
 	server.Handle("GET /account/verification", routes.AccountVerification)
 	server.Handle("GET /account/verification/resend", routes.AccountVerificationResend)
+	server.Handle("GET /account/reset", routes.AccountPasswordReset)
 	server.Handle("GET /download", routes.Download)
 	server.Handle("GET /download/{$}", routes.Download)
 	server.Handle("GET /beatmapsets", routes.Search)
