@@ -123,9 +123,9 @@ func AccountVerificationResend(ctx *server.Context) {
 		return
 	}
 
-	newVerification, err := replaceActivationVerification(ctx, previousVerification)
+	newVerification, err := replaceVerification(ctx, previousVerification, previousVerification.Type)
 	if err != nil {
-		ctx.Logger.Error("Failed to replace account verification", "verification_id", previousVerification.Id, "user_id", previousVerification.UserId, "error", err)
+		ctx.Logger.Error("Failed to replace verification", "verification_id", previousVerification.Id, "user_id", previousVerification.UserId, "error", err)
 		InternalServerError(ctx)
 		return
 	}
@@ -179,7 +179,7 @@ func ensureActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 		return verification, false, nil
 	}
 
-	verification, err = replaceActivationVerification(ctx, verification)
+	verification, err = replaceVerification(ctx, verification, constants.VerificationTypeActivation)
 	if err != nil {
 		return nil, false, err
 	}
@@ -214,7 +214,7 @@ func createActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 	return verification, nil
 }
 
-func replaceActivationVerification(ctx *server.Context, previousVerification *schemas.Verification) (*schemas.Verification, error) {
+func replaceVerification(ctx *server.Context, previousVerification *schemas.Verification, verificationType constants.VerificationType) (*schemas.Verification, error) {
 	var verification *schemas.Verification
 
 	// Use transaction such that there are no cases where the user has no verification or multiple verifications
@@ -230,7 +230,7 @@ func replaceActivationVerification(ctx *server.Context, previousVerification *sc
 
 		verification, err = repos.Verifications.CreateForUser(
 			previousVerification.UserId,
-			constants.VerificationTypeActivation,
+			verificationType,
 			token,
 			time.Now(),
 		)
