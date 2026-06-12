@@ -214,6 +214,14 @@ func (v *Verification) Username() string {
 	return v.User.Name
 }
 
+func (v *Verification) IsActivation() bool {
+	return v.Type == constants.VerificationTypeActivation
+}
+
+func (v *Verification) IsPassword() bool {
+	return v.Type == constants.VerificationTypePassword
+}
+
 type Group struct {
 	Id                int     `gorm:"column:id;primaryKey;autoIncrement"`
 	Name              string  `gorm:"column:name"`
