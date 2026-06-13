@@ -11,7 +11,8 @@ import (
 // CreateSession opens a postgres connection using values from `config.Config`
 func CreateSession(cfg *config.Config) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(cfg.PostgresDSN()), &gorm.Config{
-		Logger: NewGormLogger(),
+		Logger:      NewGormLogger(),
+		PrepareStmt: true, // TODO: Benchmark this change to see if it actually improves performance
 	})
 	if err != nil {
 		return nil, err
