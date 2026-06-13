@@ -661,6 +661,19 @@ function renderTimeagoElements() {
     }
 }
 
+function jumpToPlayer() {
+    var player = prompt("Enter the player name to jump to:");
+
+    if (player === null || player === "") {
+        return;
+    }
+
+    var query = new URLSearchParams(location.search);
+    query.set("jumpto", player);
+    location.hash = "jumpto";
+    location.search = query.toString();
+}
+
 $(document).ready(function (e) {
     pageLoaded = true;
     renderTimeagoElements();

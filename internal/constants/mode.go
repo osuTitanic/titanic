@@ -46,3 +46,20 @@ func (m Mode) Alias() string {
 		return fmt.Sprintf("%d", m)
 	}
 }
+
+func NewModeFromAlias(alias string) (Mode, bool) {
+	switch alias {
+	case "osu":
+		return ModeOsu, true
+	case "taiko":
+		return ModeTaiko, true
+	case "catch":
+		return ModeCatch, true
+	case "fruits":
+		return ModeCatch, true
+	case "mania":
+		return ModeMania, true
+	default:
+		return 0, false
+	}
+}

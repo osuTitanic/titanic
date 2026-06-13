@@ -136,6 +136,8 @@ type KudosuProvider interface {
 	TotalKudosuByUser(userId int) (int, error)
 }
 
+// TODO: Deprecate cached kudosu rankings and use db queries instead
+
 func (service *RankingsService) UpdateKudosu(userId int, country string, moddingRepo KudosuProvider) error {
 	if service == nil || service.client == nil {
 		return ErrRedisClientNotInitialized

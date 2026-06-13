@@ -27,7 +27,10 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 		jet.DevelopmentMode(cfg.Reload),
 	)
 	set.AddGlobalFunc("formatNumber", formatNumber)
+	set.AddGlobalFunc("formatFloat", formatFloat)
 	set.AddGlobalFunc("formatDateShort", formatDateShort)
+	set.AddGlobalFunc("round", round)
+	set.AddGlobalFunc("countryName", countryName)
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
 	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
 	set.AddGlobalFunc("beatmapDifficultySort", beatmapDifficultySort)

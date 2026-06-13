@@ -1,5 +1,7 @@
 package constants
 
+import "strings"
+
 var CountryNames []string = []string{
 	"Unknown",
 	"Oceania",
@@ -512,7 +514,17 @@ var CountryCodes []string = []string{
 	"MF",
 }
 
+var CountryMapping = func() map[string]string {
+	mapping := make(map[string]string, len(CountryCodes))
+	for i, code := range CountryCodes {
+		mapping[code] = CountryNames[i]
+	}
+	return mapping
+}()
+
 func GetCountryIndexFromCode(code string) int8 {
+	code = strings.ToUpper(code)
+
 	for i, c := range CountryCodes {
 		if c == code {
 			return int8(i)
@@ -528,4 +540,9 @@ func GetCountryIndexFromName(name string) int8 {
 		}
 	}
 	return 0
+}
+
+func GetCountryNameFromCode(code string) string {
+	code = strings.ToUpper(code)
+	return CountryMapping[code]
 }

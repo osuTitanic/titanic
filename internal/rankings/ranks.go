@@ -69,3 +69,7 @@ func (service *RankingsService) TotalScoreRankCountry(userId int, mode constants
 func (service *RankingsService) Rank(userId int, mode constants.Mode, rankType string, country *string) (int, error) {
 	return service.RankByKey(service.RankingKey(mode, rankType, country), userId)
 }
+
+func (service *RankingsService) RankKudosu(userId int) (int, error) {
+	return service.RankByKey(service.RankingKeyNoMode("kudosu", nil), userId)
+}

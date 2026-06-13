@@ -4,6 +4,8 @@ import (
 	"net/url"
 
 	"github.com/osuTitanic/titanic-go/internal/config"
+	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/rankings"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 )
 
@@ -82,4 +84,48 @@ type BeatmapPacksView struct {
 	BeatmapPacks     []*schemas.BeatmapPack
 	Categories       []string
 	CategorySelected string
+}
+
+type RankingsView struct {
+	DefaultView
+	Pagination    PaginationView
+	Country       string
+	CountryName   string
+	Location      string
+	Mode          constants.Mode
+	Type          constants.RankingType
+	Entries       []*RankingEntry
+	TopCountries  []string
+	JumpTo        string
+	TotalBeatmaps int
+}
+
+type RankingEntry struct {
+	User     *schemas.User
+	Score    int
+	Rank     int
+	IsFriend bool
+}
+
+type CountryRankingsView struct {
+	DefaultView
+	Pagination PaginationView
+	Country    string
+	Mode       constants.Mode
+	Type       constants.RankingType
+	Entries    []*rankings.CountryRanking
+}
+
+type KudosuView struct {
+	DefaultView
+	Pagination PaginationView
+	Entries    []*KudosuEntry
+	JumpTo     string
+}
+
+type KudosuEntry struct {
+	User     *schemas.User
+	Kudosu   int64
+	Rank     int
+	IsFriend bool
 }

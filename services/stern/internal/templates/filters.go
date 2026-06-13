@@ -2,10 +2,12 @@ package templates
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -30,6 +32,21 @@ func formatNumber(a jet.Arguments) reflect.Value {
 	return reflect.ValueOf(result)
 }
 
+func round(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("round", 1, 1)
+
+	rounded := math.Round(reflectFloat(a.Get(0)))
+	return reflect.ValueOf(int64(rounded))
+}
+
+func formatFloat(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("formatFloat", 2, 2)
+
+	value := reflectFloat(a.Get(0))
+	places := reflectFloat(a.Get(1))
+	return reflect.ValueOf(printer.Sprintf("%.*f", int(places), value))
+}
+
 func formatDateShort(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("formatDateShort", 1, 1)
 
@@ -44,5 +61,29 @@ func formatDateShort(a jet.Arguments) reflect.Value {
 		return reflect.ValueOf(value.Format("Jan 2, 2006"))
 	default:
 		return reflect.ValueOf("")
+	}
+}
+
+func countryName(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("countryName", 1, 1)
+
+	value := a.Get(0).Interface()
+	if code, ok := value.(string); ok {
+		return reflect.ValueOf(constants.GetCountryNameFromCode(code))
+	}
+
+	return reflect.ValueOf("")
+}
+
+func reflectFloat(value reflect.Value) float64 {
+	switch value.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return float64(value.Int())
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return float64(value.Uint())
+	case reflect.Float32, reflect.Float64:
+		return value.Float()
+	default:
+		return 0
 	}
 }

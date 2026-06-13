@@ -7,11 +7,16 @@
     padding-right: 6px;
 }
 
+.rankings-info {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 80%;
+}
+
 .centered {
     margin: 0 auto;
     text-align: center;
     font-size: 80%;
-    margin-top: 15px;
     margin-bottom: 15px;
 }
 
@@ -65,4 +70,27 @@
 .ranking-flag-link:active {
     text-decoration: none;
     vertical-align: text-bottom;
+}
+
+.country-listing {
+    margin: auto;
+    width: 100%;
+    border-spacing: 0;
+    font-size: 73%;
+    margin-bottom: 5px;
+    border-collapse: separate;
+}
+
+.country-listing th {
+    background-color: #d7d2fb;
+    border-bottom: 1px solid #a79ef3;
+    vertical-align: middle;
+    height: 15px;
+}
+
+.country-listing td {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding: 2px 5px 2px 5px;
+    vertical-align: middle;
 }

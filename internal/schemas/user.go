@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -69,6 +70,12 @@ func (user *User) AgeDays() int {
 	return int(user.Age().Hours() / 24)
 }
 
+func (user *User) SortStats() {
+	sort.Slice(user.Stats, func(i, j int) bool {
+		return user.Stats[i].Mode < user.Stats[j].Mode
+	})
+}
+
 func (user *User) AvatarUrl() string {
 	if user.AvatarHash == nil {
 		return fmt.Sprintf("/a/%d", user.Id)
@@ -107,6 +114,10 @@ func (Stats) TableName() string {
 	return "stats"
 }
 
+func (stats *Stats) Level() int {
+	return int(constants.GetLevel(stats.Tscore))
+}
+
 func (stats *Stats) Clears() int {
 	return stats.CountXH +
 		stats.CountX +
@@ -121,7 +132,7 @@ func (stats *Stats) Clears() int {
 type Relationship struct {
 	UserId   int `gorm:"column:user_id;primaryKey"`
 	TargetId int `gorm:"column:target_id;primaryKey"`
-	Status   int `gorm:"column:status"`
+	Status   int `gorm:"column:status"` // TODO: Add enum for this (0 = friend, 1 = blocked)
 
 	User   *User `gorm:"foreignKey:UserId;references:Id"`
 	Target *User `gorm:"foreignKey:TargetId;references:Id"`
