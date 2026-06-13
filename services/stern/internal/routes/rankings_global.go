@@ -31,6 +31,9 @@ func RankingsGlobal(ctx *server.Context) {
 
 	query := ctx.Request.URL.Query()
 	page, _ := parseInt(query.Get("page"))
+	if page <= 0 {
+		page = 1
+	}
 
 	country := query.Get("country")
 	countryName := ""
