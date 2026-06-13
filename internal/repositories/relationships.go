@@ -61,3 +61,12 @@ func (r *RelationshipRepository) CountByTargetId(targetId int) (int, error) {
 	err := r.db.Model(&schemas.Relationship{}).Where("target_id = ?", targetId).Count(&count).Error
 	return int(count), err
 }
+
+func (r *RelationshipRepository) TargetIdsByStatus(userId int, status int) ([]int, error) {
+	var targetIds []int
+	err := r.db.Model(&schemas.Relationship{}).
+		Where("user_id = ? AND status = ?", userId, status).
+		Pluck("target_id", &targetIds).
+		Error
+	return targetIds, err
+}
