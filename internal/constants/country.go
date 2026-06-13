@@ -1,5 +1,7 @@
 package constants
 
+import "strings"
+
 var CountryNames []string = []string{
 	"Unknown",
 	"Oceania",
@@ -513,6 +515,8 @@ var CountryCodes []string = []string{
 }
 
 func GetCountryIndexFromCode(code string) int8 {
+	code = strings.ToUpper(code)
+
 	for i, c := range CountryCodes {
 		if c == code {
 			return int8(i)
