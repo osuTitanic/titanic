@@ -22,17 +22,22 @@ func CreateSession(cfg *config.Config) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if cfg.PostgresPoolEnabled {
-		// Use configured pool values
-		sqlDB.SetMaxOpenConns(cfg.PostgresPoolSizeOverflow)
-		sqlDB.SetMaxIdleConns(cfg.PostgresPoolSize)
-		sqlDB.SetConnMaxLifetime(time.Duration(cfg.PostgresPoolRecycle) * time.Second)
-		sqlDB.SetConnMaxIdleTime(time.Duration(cfg.PostgresPoolTimeout) * time.Second)
+	if !cfg.PostgresPoolEnabled {
+		return db, nil
 	}
 
+	// Use configured pool values
+	sqlDB.SetMaxOpenConns(cfg.PostgresPoolSizeOverflow)
+	sqlDB.SetMaxIdleConns(cfg.PostgresPoolSize)
+	sqlDB.SetConnMaxLifetime(time.Duration(cfg.PostgresPoolRecycle) * time.Second)
+	sqlDB.SetConnMaxIdleTime(time.Duration(cfg.PostgresPoolTimeout) * time.Second)
+
+	// Warm the pool, if enabled
 	if cfg.PostgresPoolPrePing {
-		if err := sqlDB.Ping(); err != nil {
-			return nil, err
+		for i := 0; i < cfg.PostgresPoolSize; i++ {
+			if err := sqlDB.Ping(); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return db, nil
