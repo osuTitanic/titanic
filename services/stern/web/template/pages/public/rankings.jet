@@ -1,20 +1,24 @@
 {{ extends "/layout.jet" }}
 
 {{ block head() }}
-<title>{{ .Type }} Rankings</title>
-<meta property="og:title" content="{{ .Type }} Rankings for {{ .Location }} - Titanic!">
-<meta property="og:description" content="View Titanic! {{ .Type }} rankings for {{ .Location }}.">
+{{ if .Type != "country" }}
+    <title>{{ .Type }} Rankings</title>
+    <meta property="og:title" content="{{ .Type }} Rankings for {{ .Location }} - Titanic!">
+    <meta property="og:description" content="View Titanic! {{ .Type }} rankings for {{ .Location }}.">
+{{ else }}
+    <title>Country Rankings</title>
+    <meta property="og:title" content="Country Rankings - Titanic!">
+    <meta property="og:description" content="Compare Titanic! player rankings by country.">
+{{ end }}
+
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
-<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets/packs">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/rankings/{{ .Mode.Alias() }}/{{ .Type.Alias() }}">
 <link rel="stylesheet" href="/css/rankings.css">
 {{ end }}
 
 {{ block body() }}
 <div class="heading">
-    <h1>
-        {{ .Type }} Rankings for {{ .Location }}
-        ({{ .Mode }})
-    </h1>
+    {{ yield rankingsHeader() }}
     {{ yield rankingsInfoText() }}
 </div>
 
@@ -37,6 +41,20 @@
 
 {{ include "/components/pagination.jet" .Pagination }}
 <br>
+{{ end }}
+
+{{ block rankingsHeader() }}
+    {{ if .Type != "country" }}
+    <h1>
+        {{ .Type }} Rankings for {{ .Location }}
+        ({{ .Mode }})
+    </h1>
+    {{ else }}
+    <h1>
+        Country Ranking
+        ({{ .Mode }})
+    </h1>
+    {{ end }}
 {{ end }}
 
 {{ block rankingsInfoText() }}
@@ -210,5 +228,59 @@
 {{ end }}
 
 {{ block countryListing() }}
-    {* TODO: ... *}
+<table class="country-listing">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Country</th>
+            <th>Active Users</th>
+            <th>Ranked Score</th>
+            <th>Total Score</th>
+            <th>Performance Points</th>
+            <th>Average Performance</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{ modeAlias := .Mode.Alias() }}
+
+    {{ range i, entry := .Entries }}
+        {* Switch between dark/light rows *}
+        <tr class="{{ i % 2 == 1 ? "row-dark" : "row-light" }}">
+            {* Rank *}
+            <td>
+                {* hacky but works *}
+                {{ rank := i + (.Pagination.PageSize * (.Pagination.CurrentPage - 1)) }}
+                <b>#{{ rank+1 | formatNumber }}</b>
+            </td>
+            {* Country *}
+            <td>
+                <img src="/images/flags/{{ entry.Name | lower }}.gif" class="flag" alt="{{ entry.Name | countryName }} Flag">
+                <a href="/rankings/{{ modeAlias }}/performance?country={{ entry.Name | lower }}">
+                    {{ entry.Name | countryName }}
+                </a>
+            </td>
+            {* Active Users *}
+            <td>
+                {{ entry.TotalUsers | formatNumber }}
+            </td>
+            {* Ranked Score *}
+            <td>
+                {{ entry.TotalRscore | round | formatNumber }}
+            </td>
+            {* Total Score *}
+            <td>
+                {{ entry.TotalTscore | round | formatNumber }}
+            </td>
+            {* Performance Points *}
+            <td>
+                <b>{{ entry.TotalPerformance | round | formatNumber }}pp</b>
+            </td>
+            {* Average Performance *}
+            <td>
+                {{ entry.AveragePP | round | formatNumber }}pp
+            </td>
+        </tr>
+    {{ end }}
+    </tbody>
+</table>
 {{ end }}
