@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -61,6 +62,17 @@ func formatDateShort(a jet.Arguments) reflect.Value {
 	default:
 		return reflect.ValueOf("")
 	}
+}
+
+func countryName(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("countryName", 1, 1)
+
+	value := a.Get(0).Interface()
+	if code, ok := value.(string); ok {
+		return reflect.ValueOf(constants.GetCountryNameFromCode(code))
+	}
+
+	return reflect.ValueOf("")
 }
 
 func reflectFloat(value reflect.Value) float64 {
