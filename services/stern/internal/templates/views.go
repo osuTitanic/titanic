@@ -115,3 +115,17 @@ type CountryRankingsView struct {
 	Type       constants.RankingType
 	Entries    []*rankings.CountryRanking
 }
+
+type KudosuView struct {
+	DefaultView
+	Pagination PaginationView
+	Entries    []*KudosuEntry
+	JumpTo     string
+}
+
+type KudosuEntry struct {
+	User     *schemas.User
+	Kudosu   int64
+	Rank     int
+	IsFriend bool
+}
