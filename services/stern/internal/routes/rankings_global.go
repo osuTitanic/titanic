@@ -103,7 +103,7 @@ func resolveRankingEntries(ctx *server.Context, mode constants.Mode, rankingType
 		userIds[i] = entry.UserId
 	}
 
-	users, err := ctx.State.Repositories.Users.ManyById(userIds)
+	users, err := ctx.State.Repositories.Users.ManyById(userIds, "Stats")
 	if err != nil {
 		return nil, 0, err
 	}
@@ -120,13 +120,13 @@ func resolveRankingEntries(ctx *server.Context, mode constants.Mode, rankingType
 
 	rankingEntries := make([]*templates.RankingEntry, len(entries))
 	for i, entry := range entries {
-		user := userMapping[entry.UserId]
 		rankingEntries[i] = &templates.RankingEntry{
-			User:     user,
+			User:     userMapping[entry.UserId],
 			Rank:     offset + i + 1,
 			Score:    int(entry.Score),
 			IsFriend: slices.Contains(friendIds, entry.UserId),
 		}
+		rankingEntries[i].User.SortStats()
 	}
 
 	return rankingEntries, int(totalPlayers), nil

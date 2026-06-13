@@ -69,6 +69,12 @@ func (user *User) AgeDays() int {
 	return int(user.Age().Hours() / 24)
 }
 
+func (user *User) SortStats() {
+	sort.Slice(user.Stats, func(i, j int) bool {
+		return user.Stats[i].Mode < user.Stats[j].Mode
+	})
+}
+
 func (user *User) AvatarUrl() string {
 	if user.AvatarHash == nil {
 		return fmt.Sprintf("/a/%d", user.Id)
