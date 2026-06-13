@@ -119,7 +119,7 @@ func AccountVerificationResend(ctx *server.Context) {
 		return
 	}
 
-	if time.Since(previousVerification.SentAt) <= 2*time.Minute {
+	if previousVerification.IsRecent() {
 		RenderVerificationPage(ctx, previousVerification, false, false, "Please wait a few minutes, until you resend the email!")
 		return
 	}

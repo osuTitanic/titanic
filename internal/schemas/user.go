@@ -206,6 +206,10 @@ func (Verification) TableName() string {
 	return "verifications"
 }
 
+func (v *Verification) IsRecent() bool {
+	return time.Since(v.SentAt) < 2*time.Minute
+}
+
 func (v *Verification) Username() string {
 	// smol helper function to make code no messy
 	if v.User == nil {
