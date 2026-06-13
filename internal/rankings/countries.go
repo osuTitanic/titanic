@@ -17,6 +17,11 @@ type CountryRanking struct {
 	AveragePP        float64
 }
 
+type CountryRankingSingle struct {
+	Name  string
+	Score float64
+}
+
 func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRanking, error) {
 	if service == nil || service.client == nil {
 		return nil, ErrRedisClientNotInitialized
@@ -70,6 +75,39 @@ func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRan
 
 	sort.Slice(rankings, func(i, j int) bool {
 		return rankings[i].TotalPerformance > rankings[j].TotalPerformance
+	})
+	return rankings, nil
+}
+
+func (service *RankingsService) TopCountriesForType(mode constants.Mode, rankType string) ([]*CountryRankingSingle, error) {
+	if service == nil || service.client == nil {
+		return nil, ErrRedisClientNotInitialized
+	}
+	rankings := make([]*CountryRankingSingle, 0, len(constants.CountryCodes))
+
+	for _, code := range constants.CountryCodes {
+		if code == "XX" {
+			continue
+		}
+		country := strings.ToLower(code)
+
+		scores, err := service.countryLeaderboardScores(mode, country, rankType)
+		if err != nil {
+			return nil, err
+		}
+		if len(scores) == 0 {
+			continue
+		}
+
+		totalScore := sumRedisScores(scores)
+		rankings = append(rankings, &CountryRankingSingle{
+			Name:  country,
+			Score: totalScore,
+		})
+	}
+
+	sort.Slice(rankings, func(i, j int) bool {
+		return rankings[i].Score > rankings[j].Score
 	})
 	return rankings, nil
 }
