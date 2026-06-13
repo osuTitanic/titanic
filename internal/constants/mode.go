@@ -55,6 +55,8 @@ func NewModeFromAlias(alias string) (Mode, bool) {
 		return ModeTaiko, true
 	case "catch":
 		return ModeCatch, true
+	case "fruits":
+		return ModeCatch, true
 	case "mania":
 		return ModeMania, true
 	default:
