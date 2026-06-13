@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -111,6 +112,10 @@ type Stats struct {
 
 func (Stats) TableName() string {
 	return "stats"
+}
+
+func (stats *Stats) Level() int {
+	return int(constants.GetLevel(stats.Tscore))
 }
 
 func (stats *Stats) Clears() int {
