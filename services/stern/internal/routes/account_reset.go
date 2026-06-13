@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/email"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
@@ -42,6 +43,13 @@ func PasswordReset(ctx *server.Context) {
 	if err := ctx.Request.ParseForm(); err != nil {
 		ctx.Logger.Warn("Failed to parse password reset form", "error", err)
 		RenderResetPage(ctx, "Failed to process your request. Please try again!")
+		return
+	}
+
+	// If a verification token is present, the user has submitted a new
+	// password from the verification page
+	if token := ctx.Request.FormValue("token"); token != "" {
+		completePasswordReset(ctx, token)
 		return
 	}
 
@@ -104,6 +112,62 @@ func PasswordReset(ctx *server.Context) {
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/account/verification?id=%d", verification.Id))
 }
 
+// completePasswordReset handles the new password submitted from the verification page
+func completePasswordReset(ctx *server.Context, token string) {
+	verification, err := ctx.State.Verifications.ByToken(token, "User")
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			NotFound(ctx)
+			return
+		}
+		ctx.Logger.Error("Failed to fetch verification for password reset", "error", err)
+		InternalServerError(ctx)
+		return
+	}
+	if verification.Type != constants.VerificationTypePassword {
+		NotFound(ctx)
+		return
+	}
+
+	password := ctx.Request.FormValue("password")
+	passwordMatch := ctx.Request.FormValue("password_match")
+
+	if password != passwordMatch {
+		RenderVerificationPage(ctx, verification, false, true, "The passwords don't match. Please try again!")
+		return
+	}
+	if len(password) < 8 {
+		RenderVerificationPage(ctx, verification, false, true, "Please enter a password with at least 8 characters!")
+		return
+	}
+
+	hashedPassword, err := authentication.CreatePasswordHash(password)
+	if err != nil {
+		ctx.Logger.Error("Failed to hash new password", "user_id", verification.UserId, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	err = ctx.State.DatabaseTransaction(func(repos *state.Repositories) error {
+		_, err := repos.Users.Update(
+			&schemas.User{Id: verification.UserId, Bcrypt: hashedPassword},
+			"bcrypt",
+		)
+		if err != nil {
+			return err
+		}
+		return repos.Verifications.DeleteByToken(verification.Token)
+	})
+	if err != nil {
+		ctx.Logger.Error("Failed to reset password", "user_id", verification.UserId, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	ctx.Logger.Info("User successfully reset their password", "user_id", verification.UserId, "username", verification.Username())
+	RenderVerificationPage(ctx, verification, true, false, "")
+}
+
 func createPasswordResetVerification(ctx *server.Context, user *schemas.User) (*schemas.Verification, error) {
 	var verification *schemas.Verification
 
@@ -163,5 +227,9 @@ func hasPasswordResetLock(ctx *server.Context, userId int) (bool, error) {
 }
 
 func setPasswordResetLock(ctx *server.Context, userId int) error {
-	return ctx.State.Redis.Set(ctx.Request.Context(), fmt.Sprintf("reset_lock:%d", userId), 1, 12*time.Hour).Err()
+	return ctx.State.Redis.Set(
+		ctx.Request.Context(),
+		fmt.Sprintf("reset_lock:%d", userId), 1,
+		12*time.Hour,
+	).Err()
 }
