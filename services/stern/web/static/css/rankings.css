@@ -7,6 +7,12 @@
     padding-right: 6px;
 }
 
+.rankings-info {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 80%;
+}
+
 .centered {
     margin: 0 auto;
     text-align: center;

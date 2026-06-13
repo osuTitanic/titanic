@@ -15,25 +15,36 @@
         {{ .Type }} Rankings for {{ .Location }}
         ({{ .Mode }})
     </h1>
+    {{ yield rankingsInfoText() }}
 </div>
 
-{{ yield rankingsInfoText() }}
 {{ include "/components/pagination.jet" .Pagination }}
 
+{{ if .Type != "country" }}
 <div class="centered">
     {{ yield countryFlag() }}
     {{ yield countrySelect() }}
 </div>
+{{ end }}
+
 {{ yield modeSelection() }}
-{* TODO: Player listing *}
+{{ yield playerListing() }}
+
+{{ include "/components/pagination.jet" .Pagination }}
 {{ end }}
 
 {{ block rankingsInfoText() }}
 {{ if .Type == "ppv1" }}
-<p style="margin: 6px; font-size: 80%;">
+<p class="rankings-info">
     This is an attempt at recreating the original ppv1 system from back in the day.
     You can find an explanation of the old system <a href="https://osu.ppy.sh/wiki/en/Performance_points/ppv1">here</a>.
     Expect inaccuracies to the original system. This is not a perfect recreation.
+</p>
+{{ end }}
+{{ if .Type == "country" }}
+<p class="rankings-info">
+    Country rankings combine the score of all players in each country group.
+    Click a specific country's name to get a breakdown of all players from that location.
 </p>
 {{ end }}
 {{ end }}
@@ -88,4 +99,34 @@
         </li>
     </ul>
 </div>
+{{ end }}
+
+{{ block playerListing() }}
+<table class="player-listing">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Player Name</th>
+            <th>Accuracy</th>
+            <th>Play Count</th>
+            <th>
+                {{ .Type }}
+            </th>
+            <th>
+                <img src="/images/grades/X_small.png" alt="">
+                <img src="/images/grades/XH_small.png" alt="">
+            </th>
+            <th>
+                <img src="/images/grades/S_small.png" alt="">
+                <img src="/images/grades/SH_small.png" alt="">
+            </th>
+            <th>
+                <img src="/images/grades/A_small.png" alt="">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {* TODO *}
+    </tbody>
+</table>
 {{ end }}
