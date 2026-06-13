@@ -85,6 +85,7 @@ func (service *RankingsService) LeaderScores(userId int, mode constants.Mode) (i
 }
 
 func (service *RankingsService) Kudosu(userId int, country *string) (int64, error) {
+	// TODO: Deprecate cached kudosu rankings and use db queries instead
 	value, err := service.ScoreByKey(service.RankingKeyNoMode("kudosu", country), userId)
 	if err != nil {
 		return 0, err
@@ -93,14 +94,30 @@ func (service *RankingsService) Kudosu(userId int, country *string) (int64, erro
 }
 
 func (service *RankingsService) PlayerCount(mode constants.Mode, rankType string, country *string) (int64, error) {
+	return service.playerCountByKey(service.RankingKey(mode, rankType, country))
+}
+
+func (service *RankingsService) PlayerCountKudosu() (int64, error) {
+	return service.playerCountByKey(service.RankingKeyNoMode("kudosu", nil))
+}
+
+func (service *RankingsService) playerCountByKey(key string) (int64, error) {
 	if service == nil || service.client == nil {
 		return 0, ErrRedisClientNotInitialized
 	}
-	key := service.RankingKey(mode, rankType, country)
 	return service.client.ZCount(service.ctx, key, "1", "+inf").Result()
 }
 
 func (service *RankingsService) TopPlayers(mode constants.Mode, offset int64, count int64, rankType string, country *string) ([]*PlayerScore, error) {
+	return service.topPlayersByKey(service.RankingKey(mode, rankType, country), offset, count)
+}
+
+func (service *RankingsService) TopKudosu(offset int64, count int64) ([]*PlayerScore, error) {
+	// TODO: Deprecate cached kudosu rankings and use db queries instead
+	return service.topPlayersByKey(service.RankingKeyNoMode("kudosu", nil), offset, count)
+}
+
+func (service *RankingsService) topPlayersByKey(key string, offset int64, count int64) ([]*PlayerScore, error) {
 	if service == nil || service.client == nil {
 		return nil, ErrRedisClientNotInitialized
 	}
@@ -111,7 +128,6 @@ func (service *RankingsService) TopPlayers(mode constants.Mode, offset int64, co
 		Offset: offset,
 		Count:  count,
 	}
-	key := service.RankingKey(mode, rankType, country)
 
 	response := service.client.ZRevRangeByScoreWithScores(service.ctx, key, query)
 	players, err := response.Result()
