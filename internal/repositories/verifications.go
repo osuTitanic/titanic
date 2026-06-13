@@ -24,7 +24,7 @@ func (r *VerificationRepository) CreateForUser(userId int, verificationType cons
 	verification := &schemas.Verification{
 		Token:  token,
 		UserId: userId,
-		SentAt: sentAt,
+		SentAt: sentAt.UTC(),
 		Type:   verificationType,
 	}
 	if err := r.Create(verification); err != nil {

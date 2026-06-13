@@ -50,10 +50,17 @@ type RegisterView struct {
 	RecaptchaSiteKey string
 }
 
+type ResetView struct {
+	DefaultView
+	Redirect     string
+	ErrorMessage string
+}
+
 type VerificationView struct {
 	DefaultView
 	Verification *schemas.Verification
 	Success      bool
+	Reset        bool
 	InfoMessage  string
 	ErrorMessage string
 }

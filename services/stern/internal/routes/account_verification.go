@@ -19,11 +19,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func RenderVerificationPage(ctx *server.Context, verification *schemas.Verification, success bool, errorMessage string) {
+func RenderVerificationPage(ctx *server.Context, verification *schemas.Verification, success bool, reset bool, errorMessage string) {
 	view := templates.VerificationView{
 		DefaultView:  buildDefaultView(ctx),
 		Verification: verification,
 		Success:      success,
+		Reset:        reset,
 		ErrorMessage: errorMessage,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/account/verification", view)
@@ -38,11 +39,6 @@ func AccountVerification(ctx *server.Context) {
 
 	verificationType, ok := parseVerificationType(query.Get("type"))
 	if !ok {
-		NotFound(ctx)
-		return
-	}
-	if verificationType == constants.VerificationTypePassword {
-		// TODO: Handle password reset verification when the reset page & backend is implemented
 		NotFound(ctx)
 		return
 	}
@@ -63,31 +59,41 @@ func AccountVerification(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-	if verification.Type != constants.VerificationTypeActivation {
-		// TODO: Handle password reset verification when the reset page & backend is implemented
-		NotFound(ctx)
-		return
-	}
 
 	token := query.Get("token")
 	if token == "" {
-		RenderVerificationPage(ctx, verification, false, "")
+		// Let the user know that they have received an email
+		RenderVerificationPage(ctx, verification, false, false, "")
 		return
 	}
 	if token != verification.Token {
+		ctx.Logger.Warn("Received invalid verification token", "verification_id", verification.Id)
 		NotFound(ctx)
 		return
 	}
-	// Now that we have received a valid token, we can activate the user & delete the verification
-
-	if err := activateUserFromVerification(ctx, verification); err != nil {
-		ctx.Logger.Error("Failed to activate verification", "verification_id", verification.Id, "user_id", verification.UserId, "error", err)
-		InternalServerError(ctx)
+	if verificationType != verification.Type {
+		NotFound(ctx)
 		return
 	}
+	// Now that we have received a valid token, we can resolve the verification
 
-	ctx.Logger.Info("Account successfully verified", "user_id", verification.UserId, "username", verification.Username())
-	RenderVerificationPage(ctx, verification, true, "")
+	switch verification.Type {
+	case constants.VerificationTypeActivation:
+		if err := activateUserFromVerification(ctx, verification); err != nil {
+			ctx.Logger.Error("Failed to activate verification", "verification_id", verification.Id, "user_id", verification.UserId, "error", err)
+			InternalServerError(ctx)
+			return
+		}
+		ctx.Logger.Info("Account successfully verified", "user_id", verification.UserId, "username", verification.Username())
+		RenderVerificationPage(ctx, verification, true, false, "")
+
+	case constants.VerificationTypePassword:
+		// Let the user choose a new password by displaying the reset form
+		RenderVerificationPage(ctx, verification, false, true, "")
+
+	default:
+		NotFound(ctx)
+	}
 }
 
 func AccountVerificationResend(ctx *server.Context) {
@@ -112,33 +118,38 @@ func AccountVerificationResend(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-	if previousVerification.Type != constants.VerificationTypeActivation {
-		// TODO: Handle password reset verification when the reset page & backend is implemented
-		NotFound(ctx)
+
+	if previousVerification.IsRecent() {
+		RenderVerificationPage(ctx, previousVerification, false, false, "Please wait a few minutes, until you resend the email!")
 		return
 	}
 
-	if time.Since(previousVerification.SentAt) <= 2*time.Minute {
-		RenderVerificationPage(ctx, previousVerification, false, "Please wait a few minutes, until you resend the email!")
-		return
-	}
-
-	newVerification, err := replaceActivationVerification(ctx, previousVerification)
+	newVerification, err := replaceVerification(ctx, previousVerification, previousVerification.Type)
 	if err != nil {
-		ctx.Logger.Error("Failed to replace account verification", "verification_id", previousVerification.Id, "user_id", previousVerification.UserId, "error", err)
+		ctx.Logger.Error("Failed to replace verification", "verification_id", previousVerification.Id, "user_id", previousVerification.UserId, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 	newVerification.User = previousVerification.User
 
-	if err := sendWelcomeEmail(ctx, newVerification); err != nil {
-		ctx.Logger.Error("Failed to send account verification email", "user_id", newVerification.UserId, "verification_id", newVerification.Id, "error", err)
-		RenderVerificationPage(ctx, newVerification, false, "Failed to send verification email. Please try again later!")
+	if err := sendVerificationEmail(ctx, newVerification); err != nil {
+		ctx.Logger.Error("Failed to send verification email", "user_id", newVerification.UserId, "verification_id", newVerification.Id, "error", err)
+		RenderVerificationPage(ctx, newVerification, false, false, "Failed to send verification email. Please try again later!")
 		return
 	}
 
-	ctx.Logger.Info("Resent account verification email", "user_id", newVerification.UserId, "username", newVerification.Username())
+	ctx.Logger.Info("Resent verification email", "user_id", newVerification.UserId, "username", newVerification.Username())
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/account/verification?id=%d", newVerification.Id))
+}
+
+// sendVerificationEmail dispatches the correct email for the given verification type
+func sendVerificationEmail(ctx *server.Context, verification *schemas.Verification) error {
+	switch verification.Type {
+	case constants.VerificationTypePassword:
+		return sendPasswordResetEmail(ctx, verification)
+	default:
+		return sendWelcomeEmail(ctx, verification)
+	}
 }
 
 func activateUserFromVerification(ctx *server.Context, verification *schemas.Verification) error {
@@ -179,7 +190,7 @@ func ensureActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 		return verification, false, nil
 	}
 
-	verification, err = replaceActivationVerification(ctx, verification)
+	verification, err = replaceVerification(ctx, verification, constants.VerificationTypeActivation)
 	if err != nil {
 		return nil, false, err
 	}
@@ -214,7 +225,7 @@ func createActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 	return verification, nil
 }
 
-func replaceActivationVerification(ctx *server.Context, previousVerification *schemas.Verification) (*schemas.Verification, error) {
+func replaceVerification(ctx *server.Context, previousVerification *schemas.Verification, verificationType constants.VerificationType) (*schemas.Verification, error) {
 	var verification *schemas.Verification
 
 	// Use transaction such that there are no cases where the user has no verification or multiple verifications
@@ -230,7 +241,7 @@ func replaceActivationVerification(ctx *server.Context, previousVerification *sc
 
 		verification, err = repos.Verifications.CreateForUser(
 			previousVerification.UserId,
-			constants.VerificationTypeActivation,
+			verificationType,
 			token,
 			time.Now(),
 		)

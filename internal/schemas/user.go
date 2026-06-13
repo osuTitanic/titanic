@@ -217,12 +217,24 @@ func (Verification) TableName() string {
 	return "verifications"
 }
 
+func (v *Verification) IsRecent() bool {
+	return time.Since(v.SentAt) < 2*time.Minute
+}
+
 func (v *Verification) Username() string {
 	// smol helper function to make code no messy
 	if v.User == nil {
 		return ""
 	}
 	return v.User.Name
+}
+
+func (v *Verification) IsActivation() bool {
+	return v.Type == constants.VerificationTypeActivation
+}
+
+func (v *Verification) IsPassword() bool {
+	return v.Type == constants.VerificationTypePassword
 }
 
 type Group struct {
