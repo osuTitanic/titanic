@@ -14,6 +14,10 @@ const (
 	RankingTypeLeader      RankingType = "leader"
 )
 
+func (rankingType RankingType) Alias() string {
+	return string(rankingType)
+}
+
 func (rankingType RankingType) String() string {
 	switch rankingType {
 	case RankingTypePerformance:
