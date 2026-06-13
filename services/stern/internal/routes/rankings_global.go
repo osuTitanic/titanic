@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -44,6 +45,20 @@ func RankingsGlobal(ctx *server.Context) {
 		location = countryName
 	}
 
+	countryPointer := &country
+	if country == "" {
+		countryPointer = nil
+	}
+
+	jumpTo, page, err := resolveJumpTo(ctx, query, page, func(userId int) (int, error) {
+		return ctx.State.Rankings.Rank(userId, mode, string(rankingType), countryPointer)
+	})
+	if err != nil {
+		ctx.Logger.Error("Failed to resolve jumpto target", "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
 	entries, total, err := resolveRankingEntries(ctx, mode, rankingType, country, page)
 	if err != nil {
 		ctx.Logger.Error("Failed to resolve ranking entries", "error", err)
@@ -60,7 +75,7 @@ func RankingsGlobal(ctx *server.Context) {
 
 	pagination := templates.NewPagination(templates.PaginationOptions{
 		Path:        fmt.Sprintf("/rankings/%s/%s", mode.Alias(), rankingTypeString),
-		Query:       query,
+		Query:       filterQuery(query, "jumpto", "jumpto_id"),
 		CurrentPage: page,
 		Total:       total,
 		PageSize:    RankingsEntriesPerPage,
@@ -75,6 +90,7 @@ func RankingsGlobal(ctx *server.Context) {
 		Mode:         mode,
 		TopCountries: topCountries,
 		Entries:      entries,
+		JumpTo:       jumpTo,
 	}
 	ctx.RenderTemplate(200, "pages/public/rankings", view)
 }
@@ -159,4 +175,52 @@ func resolveFriendIds(ctx *server.Context) ([]int, error) {
 	}
 
 	return targetIds, nil
+}
+
+func resolveJumpTo(ctx *server.Context, query url.Values, page int, rankFor func(userId int) (int, error)) (string, int, error) {
+	jumpTo := query.Get("jumpto")
+	jumpToId := query.Get("jumpto_id")
+	userId, _ := parseInt(jumpToId)
+
+	// Attempt to resolve by username
+	if jumpTo != "" {
+		userIdByName, _ := ctx.State.Repositories.Users.GetUserIdCaseInsensitive(jumpTo)
+		if userIdByName != 0 {
+			userId = userIdByName
+		}
+	}
+
+	// Attempt to resolve by user ID
+	if userId != 0 {
+		page, err := resolveJumpPage(rankFor, userId, page)
+		if err != nil {
+			return jumpTo, page, err
+		}
+		jumpTo, _ = ctx.State.Users.GetUsername(userId)
+		return jumpTo, page, nil
+	}
+
+	return "", page, nil
+}
+
+func resolveJumpPage(rankFor func(userId int) (int, error), userId int, fallbackPage int) (int, error) {
+	rank, err := rankFor(userId)
+	if err != nil {
+		return fallbackPage, err
+	}
+	if rank <= 0 {
+		return fallbackPage, nil
+	}
+	return (rank-1)/RankingsEntriesPerPage + 1, nil
+}
+
+func filterQuery(query url.Values, exclude ...string) url.Values {
+	clone := make(url.Values, len(query))
+	for key, values := range query {
+		if slices.Contains(exclude, key) {
+			continue
+		}
+		clone[key] = values
+	}
+	return clone
 }

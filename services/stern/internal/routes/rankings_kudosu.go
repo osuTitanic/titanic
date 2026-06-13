@@ -15,6 +15,13 @@ func RankingsKudosu(ctx *server.Context) {
 		page = 1
 	}
 
+	jumpTo, page, err := resolveJumpTo(ctx, query, page, ctx.State.Rankings.RankKudosu)
+	if err != nil {
+		ctx.Logger.Error("Failed to resolve jumpto target", "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
 	entries, total, err := resolveKudosuEntries(ctx, page)
 	if err != nil {
 		ctx.Logger.Error("Failed to resolve kudosu rankings", "error", err)
@@ -24,7 +31,7 @@ func RankingsKudosu(ctx *server.Context) {
 
 	pagination := templates.NewPagination(templates.PaginationOptions{
 		Path:        "/rankings/kudosu",
-		Query:       query,
+		Query:       filterQuery(query, "jumpto", "jumpto_id"),
 		CurrentPage: page,
 		Total:       total,
 		PageSize:    RankingsEntriesPerPage,
@@ -33,7 +40,7 @@ func RankingsKudosu(ctx *server.Context) {
 		DefaultView: buildDefaultView(ctx),
 		Pagination:  pagination,
 		Entries:     entries,
-		JumpTo:      query.Get("jumpto"),
+		JumpTo:      jumpTo,
 	}
 	ctx.RenderTemplate(200, "pages/public/kudosu", view)
 }

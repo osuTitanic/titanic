@@ -33,3 +33,10 @@ func LookupResult[T any](schema *T, err error) (*T, error) {
 	}
 	return schema, err
 }
+
+func LookupResults[T any](schemas *[]T, err error) (*[]T, error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	return schemas, err
+}

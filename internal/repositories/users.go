@@ -194,6 +194,15 @@ func (r *UserRepository) GetUserId(name string) (int, error) {
 	return userId, err
 }
 
+func (r *UserRepository) GetUserIdCaseInsensitive(name string) (int, error) {
+	var userId int
+	err := r.db.Model(&schemas.User{}).
+		Where("LOWER(name) = ?", strings.ToLower(name)).
+		Select("id").
+		Scan(&userId).Error
+	return userId, err
+}
+
 func (r *UserRepository) GetAvatarChecksum(id int) (string, error) {
 	var checksum *string
 	err := r.db.Model(&schemas.User{}).
