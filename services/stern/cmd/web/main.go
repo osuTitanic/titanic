@@ -31,6 +31,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /beatmapsets/", routes.Search)
 	server.Handle("GET /beatmapsets/packs", routes.Search)
 	server.Handle("GET /beatmapsets/packs/", routes.BeatmapPacks)
+	server.Handle("GET /rankings/{mode}/{rankingType}", routes.RankingsGlobal)
 	server.Handle("GET /", routes.NotFound)
 }
 

@@ -1,0 +1,91 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Type }} Rankings</title>
+<meta property="og:title" content="{{ .Type }} Rankings for {{ .Location }} - Titanic!">
+<meta property="og:description" content="View Titanic! {{ .Type }} rankings for {{ .Location }}.">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets/packs">
+<link rel="stylesheet" href="/css/rankings.css">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    <h1>
+        {{ .Type }} Rankings for {{ .Location }}
+        ({{ .Mode }})
+    </h1>
+</div>
+
+{{ yield rankingsInfoText() }}
+{{ include "/components/pagination.jet" .Pagination }}
+
+<div class="centered">
+    {{ yield countryFlag() }}
+    {{ yield countrySelect() }}
+</div>
+{{ yield modeSelection() }}
+{* TODO: Player listing *}
+{{ end }}
+
+{{ block rankingsInfoText() }}
+{{ if .Type == "ppv1" }}
+<p style="margin: 6px; font-size: 80%;">
+    This is an attempt at recreating the original ppv1 system from back in the day.
+    You can find an explanation of the old system <a href="https://osu.ppy.sh/wiki/en/Performance_points/ppv1">here</a>.
+    Expect inaccuracies to the original system. This is not a perfect recreation.
+</p>
+{{ end }}
+{{ end }}
+
+{{ block countryFlag() }}
+{{ if .Country }}
+<div class="country">
+    <img class="flag-large" src="/images/flags/large/{{ .Country }}.png" alt="" height="80px">
+    <a href="?">Reset country filter</a>
+</div>
+{{ end }}
+{{ end }}
+
+{{ block countrySelect() }}
+<div class="country-select">
+    {{ range .TopCountries[:20] }}
+    <a href="?country={{ . }}">
+        <img src="/images/flags/{{ . }}.gif" alt="" loading="eager">
+    </a>
+    {{ end }}
+    <a href="./country">...</a>
+</div>
+{{ end }}
+
+{{ block modeSelection() }}
+<div class="tab-list">
+    {{ rankingTypeAlias := .Type.Alias() }}
+    {{ countryString := "" }}
+    {{ if .Country }}
+        {{ countryString = "?country=" + .Country }}
+    {{ end }}
+    <ul>
+        <li class="tab-item">
+            <a href="/rankings/osu/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 0 }}active{{ end }}">
+                osu! Standard
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/taiko/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 1 }}active{{ end }}">
+                Taiko
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/fruits/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 2 }}active{{ end }}">
+                Catch The Beat
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/mania/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 3 }}active{{ end }}">
+                osu!mania
+            </a>
+        </li>
+    </ul>
+</div>
+{{ end }}
