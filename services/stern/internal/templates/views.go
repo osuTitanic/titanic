@@ -5,6 +5,7 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/rankings"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 )
 
@@ -104,4 +105,13 @@ type RankingEntry struct {
 	Score    int
 	Rank     int
 	IsFriend bool
+}
+
+type CountryRankingsView struct {
+	DefaultView
+	Pagination PaginationView
+	Country    string
+	Mode       constants.Mode
+	Type       constants.RankingType
+	Entries    []*rankings.CountryRanking
 }
