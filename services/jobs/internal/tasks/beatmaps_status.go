@@ -96,9 +96,13 @@ func handleQualifiedSet(app *state.State, logger *slog.Logger, beatmapset *schem
 		SetId:  beatmapset.Id,
 		Status: status,
 	}
+	beatmapUpdateCriteria := map[string]any{
+		"set_id": beatmapset.Id,
+		"status": constants.BeatmapStatusQualified,
+	}
 
 	app.Repositories.Beatmapsets.Update(beatmapsetUpdate, "submission_status", "approved_date")
-	app.Repositories.Beatmaps.UpdateBySetId(beatmapUpdate, "status")
+	app.Repositories.Beatmaps.UpdateByCriteria(beatmapUpdateCriteria, beatmapUpdate, "status")
 
 	logger.Info("Beatmapset was approved.", "id", beatmapset.Id, "name", beatmapset.Name(), "status", status)
 }
