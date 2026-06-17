@@ -36,6 +36,14 @@ func (r *BeatmapRepository) UpdateBySetId(updates *schemas.Beatmap, columns ...s
 	return result.RowsAffected, result.Error
 }
 
+func (r *BeatmapRepository) UpdateByCriteria(criteria map[string]any, updates *schemas.Beatmap, columns ...string) (int64, error) {
+	if len(columns) == 0 {
+		return 0, errors.New("at least one column must be specified")
+	}
+	result := r.db.Model(&schemas.Beatmap{}).Where(criteria).Select(columns).Updates(updates)
+	return result.RowsAffected, result.Error
+}
+
 func (r *BeatmapRepository) ById(id int, preload ...string) (*schemas.Beatmap, error) {
 	var beatmap schemas.Beatmap
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmap).Error
