@@ -107,6 +107,40 @@ var modsNamesReverse = map[string]Mods{
 	"MR": Mirror,
 }
 
+var modsOrder = []Mods{
+	NoFail,
+	Easy,
+	NoVideo,
+	Hidden,
+	HardRock,
+	SuddenDeath,
+	DoubleTime,
+	Relax,
+	HalfTime,
+	Nightcore,
+	Flashlight,
+	Autoplay,
+	SpunOut,
+	Autopilot,
+	Perfect,
+	Key4,
+	Key5,
+	Key6,
+	Key7,
+	Key8,
+	FadeIn,
+	Random,
+	Cinema,
+	Target,
+	Key9,
+	KeyCoop,
+	Key1,
+	Key3,
+	Key2,
+	ScoreV2,
+	Mirror,
+}
+
 // Has returns true if the given mod flag is enabled in mods.
 func (m Mods) Has(flag Mods) bool {
 	return m&flag != 0
@@ -116,9 +150,9 @@ func (m Mods) Has(flag Mods) bool {
 // bit order, e.g. "HDDT". Returns "NM" when no mods are set.
 func (m Mods) String() string {
 	var result strings.Builder
-	for mod, name := range modsNames {
+	for _, mod := range modsOrder {
 		if m.Has(mod) {
-			result.WriteString(name)
+			result.WriteString(modsNames[mod])
 		}
 	}
 	if result.Len() <= 0 {
