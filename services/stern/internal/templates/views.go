@@ -5,6 +5,7 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/permissions"
 	"github.com/osuTitanic/titanic-go/internal/rankings"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 )
@@ -24,6 +25,7 @@ type DefaultView struct {
 	Query       url.Values
 	Config      *config.Config
 	CurrentUser *schemas.User
+	Permissions *permissions.Set
 	Stats       *Statistics
 	CSRFToken   string
 	CurrentPath string
