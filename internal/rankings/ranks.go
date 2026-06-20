@@ -22,6 +22,40 @@ func (service *RankingsService) RankByKey(key string, userId int) (int, error) {
 	return 0, err
 }
 
+func (service *RankingsService) RanksByKeys(keys []string, userId int) ([]int, error) {
+	if service == nil || service.client == nil {
+		return nil, ErrRedisClientNotInitialized
+	}
+
+	// Queue the rank lookups for every key onto a single pipeline
+	pipe := service.client.Pipeline()
+	member := strconv.Itoa(userId)
+
+	commands := make([]*redis.IntCmd, len(keys))
+	for i, key := range keys {
+		commands[i] = pipe.ZRevRank(service.ctx, key, member)
+	}
+
+	// A missing member results in redis.Nil on Exec, which we handle per
+	// command.Result() below, so it isn't a failure of the pipeline itself.
+	if _, err := pipe.Exec(service.ctx); err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	ranks := make([]int, len(keys))
+	for i, command := range commands {
+		rank, err := command.Result()
+		if err == redis.Nil {
+			continue
+		}
+		if err != nil {
+			return nil, err
+		}
+		ranks[i] = int(rank + 1)
+	}
+	return ranks, nil
+}
+
 func (service *RankingsService) GlobalRank(userId int, mode constants.Mode) (int, error) {
 	return service.RankByKey(service.RankingKey(mode, "performance", nil), userId)
 }
