@@ -86,6 +86,23 @@ type BeatmapSearchView struct {
 	Pagination  PaginationView
 }
 
+type BeatmapView struct {
+	DefaultView
+	Beatmap          *schemas.Beatmap
+	Beatmapset       *schemas.Beatmapset
+	Mode             constants.Mode
+	Mods             string
+	Scores           []*schemas.Score
+	PersonalBest     *schemas.Score
+	PersonalBestRank int
+	Favourites       []*schemas.BeatmapFavourite
+	FavouritesCount  int
+	Favourited       bool
+	Collaborations   []*schemas.BeatmapCollaboration
+	Nominations      []*schemas.BeatmapNomination
+	Friends          map[int]bool
+}
+
 type BeatmapPacksView struct {
 	DefaultView
 	BeatmapPacks     []*schemas.BeatmapPack
