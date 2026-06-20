@@ -1,6 +1,6 @@
 module github.com/osuTitanic/titanic-go
 
-go 1.24.6
+go 1.25.0
 
 require (
 	github.com/CloudyKit/jet/v6 v6.3.2
@@ -10,12 +10,15 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.18.0
 	golang.org/x/crypto v0.31.0
-	golang.org/x/text v0.21.0
+	golang.org/x/text v0.38.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
 )
 
-require github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+require (
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	golang.org/x/image v0.43.0 // indirect
+)
 
 require (
 	github.com/CloudyKit/fastprinter v0.0.0-20200109182630-33d98a066a53 // indirect
@@ -29,5 +32,5 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/lib/pq v1.12.3
 	go.uber.org/atomic v1.11.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
 )
