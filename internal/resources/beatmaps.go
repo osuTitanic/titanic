@@ -1,8 +1,12 @@
 package resources
 
 import (
+	"bytes"
+	"context"
+	"fmt"
 	"io"
 	"log/slog"
+	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -11,8 +15,16 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// Cache durations for the different resource types
+const (
+	cacheTTLBeatmap    = 4 * time.Hour
+	cacheTTLPreview    = 6 * time.Hour
+	cacheTTLBackground = 12 * time.Hour
+)
+
 type BeatmapProvider struct {
 	logger      *slog.Logger
+	cache       *redis.Client
 	beatmapsets *repositories.BeatmapsetRepository
 	resolvers   map[constants.BeatmapServer]BeatmapResourceProvider
 	fallback    BeatmapResourceProvider
@@ -32,6 +44,7 @@ func NewBeatmapProvider(
 
 	return &BeatmapProvider{
 		logger:      slog.Default().With("component", "BeatmapProvider"),
+		cache:       cache,
 		beatmapsets: beatmapsets,
 		fallback:    mirrorResolver,
 		resolvers: map[constants.BeatmapServer]BeatmapResourceProvider{
@@ -55,18 +68,27 @@ func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, er
 }
 
 func (provider *BeatmapProvider) Osu(beatmapId int) (io.ReadCloser, error) {
-	// TODO: redis caching
-	return provider.ResolverForBeatmap(beatmapId).Osu(beatmapId)
+	key := fmt.Sprintf("osu:%d", beatmapId)
+	return provider.Cached(key, cacheTTLBeatmap, func() (io.ReadCloser, error) {
+		return provider.ResolverForBeatmap(beatmapId).Osu(beatmapId)
+	})
 }
 
 func (provider *BeatmapProvider) Preview(setId int) (io.ReadCloser, error) {
-	// TODO: redis caching
-	return provider.ResolverForSet(setId).Preview(setId)
+	key := fmt.Sprintf("mp3:%d", setId)
+	return provider.Cached(key, cacheTTLPreview, func() (io.ReadCloser, error) {
+		return provider.ResolverForSet(setId).Preview(setId)
+	})
 }
 
 func (provider *BeatmapProvider) Background(setId int, large bool) (io.ReadCloser, error) {
-	// TODO: redis caching
-	return provider.ResolverForSet(setId).Background(setId, large)
+	key := fmt.Sprintf("mt:%d", setId)
+	if large {
+		key += "l"
+	}
+	return provider.Cached(key, cacheTTLBackground, func() (io.ReadCloser, error) {
+		return provider.ResolverForSet(setId).Background(setId, large)
+	})
 }
 
 func (provider *BeatmapProvider) ResolverForServer(server constants.BeatmapServer) BeatmapResourceProvider {
@@ -100,4 +122,33 @@ func (provider *BeatmapProvider) ResolverForBeatmap(beatmapId int) BeatmapResour
 		return provider.fallback
 	}
 	return provider.ResolverForServer(server)
+}
+
+// Cached returns a stream for the given key, serving it from redis when available.
+// On a cache miss it calls `fetch`, caches the result under the key with the
+// provided ttl & returns a stream over the fetched bytes.
+func (provider *BeatmapProvider) Cached(key string, ttl time.Duration, fetch func() (io.ReadCloser, error)) (io.ReadCloser, error) {
+	ctx := context.Background()
+
+	if data, err := provider.cache.Get(ctx, key).Bytes(); err == nil && len(data) > 0 {
+		provider.logger.Debug("Serving resource from cache", "key", key)
+		return io.NopCloser(bytes.NewReader(data)), nil
+	}
+
+	stream, err := fetch()
+	if err != nil {
+		return nil, err
+	}
+	defer stream.Close()
+
+	data, err := io.ReadAll(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := provider.cache.Set(ctx, key, data, ttl).Err(); err != nil {
+		provider.logger.Warn("Failed to cache resource", "key", key, "error", err.Error())
+	}
+
+	return io.NopCloser(bytes.NewReader(data)), nil
 }
