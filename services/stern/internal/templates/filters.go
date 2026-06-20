@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/osuTitanic/titanic-go/internal/bbcode"
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -73,6 +74,16 @@ func countryName(a jet.Arguments) reflect.Value {
 	}
 
 	return reflect.ValueOf("")
+}
+
+func renderBBCode(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("bbcode", 1, 1)
+
+	input, ok := a.Get(0).Interface().(string)
+	if !ok {
+		return reflect.ValueOf("")
+	}
+	return reflect.ValueOf(bbcode.RenderHtml(input))
 }
 
 func reflectFloat(value reflect.Value) float64 {
