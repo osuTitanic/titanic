@@ -146,23 +146,73 @@ func Beatmap(ctx *server.Context) {
 		return
 	}
 
+	collaborationRequests, err := fetchCollaborationRequests(ctx, beatmap)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch collaboration requests", "beatmap", beatmap.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
 	view := templates.BeatmapView{
-		DefaultView:      buildDefaultView(ctx),
-		Beatmap:          beatmap,
-		Beatmapset:       beatmap.Beatmapset,
-		Mode:             mode,
-		Mods:             modsString,
-		Scores:           scores,
-		PersonalBest:     personalBest,
-		PersonalBestRank: personalBestRank,
-		Favourites:       favourites,
-		FavouritesCount:  beatmap.Beatmapset.FavouriteCount,
-		Favourited:       favourited,
-		Collaborations:   collaborations,
-		Nominations:      nominations,
-		Friends:          friends,
+		DefaultView:           buildDefaultViewWithPermissions(ctx),
+		Beatmap:               beatmap,
+		Beatmapset:            beatmap.Beatmapset,
+		Mode:                  mode,
+		Mods:                  modsString,
+		Scores:                scores,
+		PersonalBest:          personalBest,
+		PersonalBestRank:      personalBestRank,
+		Favourites:            favourites,
+		FavouritesCount:       beatmap.Beatmapset.FavouriteCount,
+		Favourited:            favourited,
+		Collaborations:        collaborations,
+		Nominations:           nominations,
+		Friends:               friends,
+		CollaborationRequests: collaborationRequests,
+		IsBeatmapAuthor:       isBeatmapAuthor(ctx, beatmap.Beatmapset),
+		Invite:                findInvite(ctx, collaborationRequests),
+		BatNominated:          hasNominated(ctx, nominations),
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/beatmap", view)
+}
+
+func fetchCollaborationRequests(ctx *server.Context, beatmap *schemas.Beatmap) ([]*schemas.BeatmapCollaborationRequest, error) {
+	if ctx.CurrentUser == nil || beatmap.Status > constants.BeatmapStatusPending {
+		return nil, nil
+	}
+	return ctx.State.Repositories.Collaborations.FetchRequestsByBeatmap(beatmap.Id, "User", "Target")
+}
+
+func findInvite(ctx *server.Context, requests []*schemas.BeatmapCollaborationRequest) *schemas.BeatmapCollaborationRequest {
+	if ctx.CurrentUser == nil {
+		return nil
+	}
+	for _, request := range requests {
+		if request.TargetId == ctx.CurrentUser.Id {
+			return request
+		}
+	}
+	return nil
+}
+
+func hasNominated(ctx *server.Context, nominations []*schemas.BeatmapNomination) bool {
+	if ctx.CurrentUser == nil {
+		return false
+	}
+	for _, nomination := range nominations {
+		if nomination.UserId == ctx.CurrentUser.Id {
+			return true
+		}
+	}
+	return false
+}
+
+func isBeatmapAuthor(ctx *server.Context, beatmapset *schemas.Beatmapset) bool {
+	if ctx.CurrentUser == nil || beatmapset.CreatorId == nil {
+		return false
+	}
+	return beatmapset.Server != constants.BeatmapServerBancho &&
+		*beatmapset.CreatorId == ctx.CurrentUser.Id
 }
 
 func fetchBeatmapScores(ctx *server.Context, beatmapId int, mode constants.Mode, mods *constants.Mods) ([]*schemas.Score, error) {

@@ -90,19 +90,23 @@ type BeatmapSearchView struct {
 
 type BeatmapView struct {
 	DefaultView
-	Beatmap          *schemas.Beatmap
-	Beatmapset       *schemas.Beatmapset
-	Mode             constants.Mode
-	Mods             string
-	Scores           []*schemas.Score
-	PersonalBest     *schemas.Score
-	PersonalBestRank int
-	Favourites       []*schemas.BeatmapFavourite
-	FavouritesCount  int
-	Favourited       bool
-	Collaborations   []*schemas.BeatmapCollaboration
-	Nominations      []*schemas.BeatmapNomination
-	Friends          map[int]bool
+	Beatmap               *schemas.Beatmap
+	Beatmapset            *schemas.Beatmapset
+	Mode                  constants.Mode
+	Mods                  string
+	Scores                []*schemas.Score
+	PersonalBest          *schemas.Score
+	PersonalBestRank      int
+	Favourites            []*schemas.BeatmapFavourite
+	FavouritesCount       int
+	Favourited            bool
+	Collaborations        []*schemas.BeatmapCollaboration
+	Nominations           []*schemas.BeatmapNomination
+	Friends               map[int]bool
+	CollaborationRequests []*schemas.BeatmapCollaborationRequest
+	Invite                *schemas.BeatmapCollaborationRequest
+	IsBeatmapAuthor       bool
+	BatNominated          bool
 }
 
 type BeatmapPacksView struct {
