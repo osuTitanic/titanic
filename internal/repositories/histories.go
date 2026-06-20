@@ -92,25 +92,18 @@ func (r *HistoryRepository) UpdateReplayViews(userId int, mode constants.Mode) e
 }
 
 func (r *HistoryRepository) UpdateRank(stats *schemas.Stats, country string, rankingsService *rankings.RankingsService) (bool, error) {
-	globalRank, err := rankingsService.GlobalRank(stats.UserId, stats.Mode)
-	if err != nil {
-		return false, fmt.Errorf("failed to fetch global rank: %w", err)
+	// Use a single pipeline to improve performance when fetching multiple ranks
+	keys := []string{
+		rankingsService.RankingKey(stats.Mode, "performance", nil),
+		rankingsService.RankingKey(stats.Mode, "performance", &country),
+		rankingsService.RankingKey(stats.Mode, "rscore", nil),
+		rankingsService.RankingKey(stats.Mode, "ppv1", nil),
 	}
-
-	countryRank, err := rankingsService.CountryRank(stats.UserId, stats.Mode, country)
+	ranks, err := rankingsService.RanksByKeys(keys, stats.UserId)
 	if err != nil {
-		return false, fmt.Errorf("failed to fetch country rank: %w", err)
+		return false, fmt.Errorf("failed to fetch ranks: %w", err)
 	}
-
-	scoreRank, err := rankingsService.ScoreRank(stats.UserId, stats.Mode)
-	if err != nil {
-		return false, fmt.Errorf("failed to fetch score rank: %w", err)
-	}
-
-	ppv1Rank, err := rankingsService.PPv1Rank(stats.UserId, stats.Mode)
-	if err != nil {
-		return false, fmt.Errorf("failed to fetch ppv1 rank: %w", err)
-	}
+	globalRank, countryRank, scoreRank, ppv1Rank := ranks[0], ranks[1], ranks[2], ranks[3]
 
 	if globalRank <= 0 || countryRank <= 0 || scoreRank <= 0 || ppv1Rank <= 0 {
 		return false, nil
