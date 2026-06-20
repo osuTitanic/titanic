@@ -152,6 +152,41 @@ func (b *Beatmapset) DescriptionText() string {
 	return ""
 }
 
+func (b *Beatmapset) DisplayTitleText() string {
+	if b.DisplayTitle != nil {
+		return *b.DisplayTitle
+	}
+	return ""
+}
+
+func (b *Beatmapset) TagsText() string {
+	if b.Tags != nil {
+		return *b.Tags
+	}
+	return ""
+}
+
+// RequiredNominations returns the amount of nominations a beatmapset needs to
+// be qualified: 2, plus one extra for every additional game mode it contains.
+func (b *Beatmapset) RequiredNominations() int {
+	modes := make(map[constants.Mode]struct{}, len(b.Beatmaps))
+	for _, beatmap := range b.Beatmaps {
+		modes[beatmap.Mode] = struct{}{}
+	}
+	// i wish go had sets ... :(
+
+	return 2 + max(len(modes)-1, 0)
+}
+
+// RankDate returns the date a qualified beatmapset is expected to be ranked,
+// i.e. seven days after it was approved.
+func (b *Beatmapset) RankDate() time.Time {
+	if b.ApprovedAt != nil {
+		return b.ApprovedAt.Add(7 * 24 * time.Hour)
+	}
+	return b.LastUpdate.Add(7 * 24 * time.Hour)
+}
+
 func (b *Beatmapset) DisplayDate() time.Time {
 	if b.ApprovedAt != nil {
 		return *b.ApprovedAt
