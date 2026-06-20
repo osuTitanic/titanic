@@ -144,6 +144,49 @@ func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, excludeAppr
 	return scores, err
 }
 
+func (r *ScoreRepository) FetchRangeScores(beatmapId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("status_score = ?", constants.ScoreStatusBest).
+		Where("hidden = ?", false).
+		Order("total_score DESC").
+		Order("id ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&scores).Error
+	return scores, err
+}
+
+func (r *ScoreRepository) FetchRangeScoresMods(beatmapId int, mode constants.Mode, mods constants.Mods, limit, offset int, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
+		Where("hidden = ?", false).
+		Where("mods = ?", mods).
+		Order("total_score DESC").
+		Order("id ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&scores).Error
+	return scores, err
+}
+
+func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constants.Mode, preload ...string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id = ?", beatmapId).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status_score = ?", constants.ScoreStatusBest).
+		Where("hidden = ?", false).
+		First(&score).Error
+	return LookupResult(&score, err)
+}
+
 func (r *ScoreRepository) FetchLeaderCount(userId int, mode constants.Mode) (int, error) {
 	leaderCountQuery := `
 		SELECT COUNT(*)
