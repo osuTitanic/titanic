@@ -34,6 +34,8 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
 	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
 	set.AddGlobalFunc("beatmapDifficultySort", beatmapDifficultySort)
+	set.AddGlobalFunc("shortMods", shortMods)
+	set.AddGlobalFunc("bbcode", renderBBCode)
 	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)
 	set.AddGlobalFunc("searchParamUrl", searchParamUrl)
 	set.AddGlobalFunc("searchFlagUrl", searchFlagUrl)

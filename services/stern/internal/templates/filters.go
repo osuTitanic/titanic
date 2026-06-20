@@ -86,6 +86,19 @@ func renderBBCode(a jet.Arguments) reflect.Value {
 	return reflect.ValueOf(bbcode.RenderHtml(input))
 }
 
+func shortMods(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("shortMods", 1, 1)
+
+	mods, ok := a.Get(0).Interface().(constants.Mods)
+	if !ok {
+		return reflect.ValueOf("None")
+	}
+	if short := mods.Short(); short != "" {
+		return reflect.ValueOf(short)
+	}
+	return reflect.ValueOf("None")
+}
+
 func reflectFloat(value reflect.Value) float64 {
 	switch value.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
