@@ -93,18 +93,36 @@ func BeatmapDownload(ctx *server.Context) {
 	defer oszStream.Close()
 
 	oszFilename := fmt.Sprintf("%d %s.osz", beatmapset.Id, beatmapset.Name())
-	oszSizeEstimated := beatmapset.OszFilesize
-
 	if noVideo {
 		oszFilename = fmt.Sprintf("%d %s (no video).osz", beatmapset.Id, beatmapset.Name())
-		oszSizeEstimated -= beatmapset.OszFilesizeNovideo
 	}
-	// TODO: Populate osz sizes
 
 	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
-	ctx.Response.Header().Set("Content-Length", strconv.Itoa(oszSizeEstimated))
 	ctx.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", oszFilename))
 	ctx.Response.Header().Set("Last-Modified", beatmapset.LastUpdate.Format("Mon, 02 Jan 2006 15:04:05 GMT"))
+
+	if contentLength := resolveContentLength(oszStream); contentLength != "" {
+		// Set content length if we can determine it, otherwise we'll use chunked transfer encoding
+		ctx.Response.Header().Set("Content-Length", contentLength)
+	}
+
 	ctx.Response.WriteHeader(200)
 	io.Copy(ctx.Response, oszStream)
+}
+
+func resolveContentLength(stream io.ReadCloser) string {
+	seeker, ok := stream.(io.Seeker)
+	if !ok {
+		return ""
+	}
+
+	size, err := seeker.Seek(0, io.SeekEnd)
+	if err != nil {
+		return ""
+	}
+	if _, err := seeker.Seek(0, io.SeekStart); err != nil {
+		return ""
+	}
+
+	return strconv.FormatInt(size, 10)
 }
