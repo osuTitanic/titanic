@@ -14,8 +14,8 @@ import (
 type BeatmapProvider struct {
 	logger      *slog.Logger
 	beatmapsets *repositories.BeatmapsetRepository
-	resolvers   map[constants.BeatmapServer]BeatmapResourceResolver
-	fallback    BeatmapResourceResolver
+	resolvers   map[constants.BeatmapServer]BeatmapResourceProvider
+	fallback    BeatmapResourceProvider
 }
 
 func NewBeatmapProvider(
@@ -34,7 +34,7 @@ func NewBeatmapProvider(
 		logger:      slog.Default().With("component", "BeatmapProvider"),
 		beatmapsets: beatmapsets,
 		fallback:    mirrorResolver,
-		resolvers: map[constants.BeatmapServer]BeatmapResourceResolver{
+		resolvers: map[constants.BeatmapServer]BeatmapResourceProvider{
 			constants.BeatmapServerBancho:  mirrorResolver,
 			constants.BeatmapServerTitanic: storageResolver,
 		},
@@ -69,7 +69,7 @@ func (provider *BeatmapProvider) Background(setId int, large bool) (io.ReadClose
 	return provider.ResolverForSet(setId).Background(setId, large)
 }
 
-func (provider *BeatmapProvider) ResolverForServer(server constants.BeatmapServer) BeatmapResourceResolver {
+func (provider *BeatmapProvider) ResolverForServer(server constants.BeatmapServer) BeatmapResourceProvider {
 	if resolver, ok := provider.resolvers[server]; ok {
 		return resolver
 	}
@@ -77,7 +77,7 @@ func (provider *BeatmapProvider) ResolverForServer(server constants.BeatmapServe
 }
 
 // ResolverForSet picks the resolver responsible for a beatmap set.
-func (provider *BeatmapProvider) ResolverForSet(setId int) BeatmapResourceResolver {
+func (provider *BeatmapProvider) ResolverForSet(setId int) BeatmapResourceProvider {
 	server, err := provider.beatmapsets.FetchDownloadServer(setId)
 	if err != nil {
 		provider.logger.Warn(
@@ -90,7 +90,7 @@ func (provider *BeatmapProvider) ResolverForSet(setId int) BeatmapResourceResolv
 }
 
 // ResolverForBeatmap picks the resolver responsible for the set a beatmap belongs to.
-func (provider *BeatmapProvider) ResolverForBeatmap(beatmapId int) BeatmapResourceResolver {
+func (provider *BeatmapProvider) ResolverForBeatmap(beatmapId int) BeatmapResourceProvider {
 	server, err := provider.beatmapsets.FetchDownloadServerByBeatmap(beatmapId)
 	if err != nil {
 		provider.logger.Warn(

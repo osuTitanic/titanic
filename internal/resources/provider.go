@@ -4,7 +4,7 @@ import "io"
 
 // BeatmapResourceProvider provides access to beatmap resources
 type BeatmapResourceProvider interface {
-	// Setup prepares the provider & all of its resolvers
+	// Setup prepares the provider for use.
 	Setup() error
 
 	// Osz returns a stream to the osz archive for the given beatmapset.
