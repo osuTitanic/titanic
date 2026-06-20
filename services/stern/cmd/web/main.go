@@ -21,6 +21,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /mp3/preview/{filename}", routes.BeatmapAudioPreview)
 	server.Handle("GET /d/{filename}", routes.BeatmapDownload)
 	server.Handle("GET /beatmapsets/{filename}/download", routes.BeatmapDownload)
+	server.Handle("GET /ss/{id}", routes.ScreenshotRedirect)
+	server.Handle("GET /ss/{id}/{checksum}", routes.Screenshot)
 
 	server.Handle("GET /{$}", routes.Home)
 	server.Handle("GET /partials/home/news", routes.HomeNewsPartial)
