@@ -145,6 +145,13 @@ func (b *Beatmapset) AudioPreviewUrl() string {
 	return fmt.Sprintf("/mp3/preview/%d?c=%d", b.Id, lastModified)
 }
 
+func (b *Beatmapset) DescriptionText() string {
+	if b.Description != nil {
+		return *b.Description
+	}
+	return ""
+}
+
 func (b *Beatmapset) DisplayDate() time.Time {
 	if b.ApprovedAt != nil {
 		return *b.ApprovedAt
