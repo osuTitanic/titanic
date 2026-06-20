@@ -1,11 +1,21 @@
 package resources
 
 import (
+	"bytes"
 	"io"
 	"log/slog"
 	"strconv"
 
+	"github.com/osuTitanic/titanic-go/internal/media"
 	"github.com/osuTitanic/titanic-go/internal/storage"
+)
+
+// Dimensions for the beatmap thumbnails
+const (
+	thumbnailSmallWidth  = 80
+	thumbnailSmallHeight = 60
+	thumbnailLargeWidth  = 160
+	thumbnailLargeHeight = 120
 )
 
 // StorageResolver receives beatmap resources directly from our own storage backend.
@@ -43,11 +53,39 @@ func (resolver *StorageResolver) Preview(setId int) (io.ReadCloser, error) {
 }
 
 func (resolver *StorageResolver) Background(setId int, large bool) (io.ReadCloser, error) {
-	resolver.logger.Debug("Reading background from storage...", "set_id", setId)
-	// TODO: We only keep a single thumbnail per set, regardless of size.
-	// 		 We'd have to implement a solution to resize them here.
-	//       It could be a shared logic between avatars & thumbnails, since they both require resizing.
-	return resolver.ReadStream(strconv.Itoa(setId), "thumbnails")
+	resolver.logger.Debug(
+		"Reading background from storage...",
+		"set_id", setId,
+		"large", large,
+	)
+
+	stream, err := resolver.ReadStream(strconv.Itoa(setId), "thumbnails")
+	if err != nil {
+		return nil, err
+	}
+
+	// We only keep a single (large) thumbnail per set in storage
+	if large {
+		return stream, nil
+	}
+
+	defer stream.Close()
+	data, err := io.ReadAll(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	resized, err := media.ResizeImage(data, thumbnailSmallWidth, thumbnailSmallHeight)
+	if err != nil {
+		resolver.logger.Warn(
+			"Failed to resize thumbnail, serving original anyway",
+			"set_id", setId, "error", err.Error(),
+		)
+		return io.NopCloser(bytes.NewReader(data)), nil
+	}
+
+	// We have successfully resized the thumbnail
+	return io.NopCloser(bytes.NewReader(resized)), nil
 }
 
 func (resolver *StorageResolver) ReadStream(key string, bucket string) (io.ReadCloser, error) {
