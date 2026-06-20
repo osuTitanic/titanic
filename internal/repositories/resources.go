@@ -52,7 +52,7 @@ func (r *ResourceMirrorRepository) FetchByTypeAll(resourceType constants.Beatmap
 	var mirrors []*schemas.BeatmapMirror
 	err := r.db.
 		Where("type = ?", resourceType).
-		Order("priority asc").
+		Order("server desc, priority asc").
 		Group("url, server").
 		Find(&mirrors).Error
 	return mirrors, err
