@@ -11,37 +11,57 @@ import (
 
 func BeatmapThumbnail(ctx *server.Context) {
 	filename := ctx.PathValue("filename")
-	key := strings.SplitN(filename, ".", 2)[0]
 
-	avatar, err := ctx.State.Storage.ReadStream(key, "thumbnails")
+	// Handle filenames such as "1.jpg" (small) and "1l.jpg" (large)
+	key := strings.SplitN(filename, ".", 2)[0]
+	large := strings.Contains(key, "l")
+
+	setId, err := strconv.Atoi(strings.ReplaceAll(key, "l", ""))
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}
 
+	stream, err := ctx.State.Resources.Background(setId, large)
+	if err != nil {
+		ctx.Response.WriteHeader(404)
+		return
+	}
+	defer stream.Close()
+
 	ctx.Response.Header().Set("Content-Type", "image/jpeg")
 	ctx.Response.WriteHeader(200)
-	io.Copy(ctx.Response, avatar)
+	io.Copy(ctx.Response, stream)
 }
 
 func BeatmapAudioPreview(ctx *server.Context) {
 	filename := ctx.PathValue("filename")
+
+	// Handle filenames such as "1.mp3"
 	key := strings.SplitN(filename, ".", 2)[0]
 
-	avatar, err := ctx.State.Storage.ReadStream(key, "audio")
+	setId, err := strconv.Atoi(key)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}
 
+	stream, err := ctx.State.Resources.Preview(setId)
+	if err != nil {
+		ctx.Response.WriteHeader(404)
+		return
+	}
+	defer stream.Close()
+
 	ctx.Response.Header().Set("Content-Type", "audio/mpeg")
 	ctx.Response.WriteHeader(200)
-	io.Copy(ctx.Response, avatar)
+	io.Copy(ctx.Response, stream)
 }
 
 func BeatmapDownload(ctx *server.Context) {
-	// Handle filenames such as "1 Kenji Ninuma - DISCO PRINCE.osz"
 	filename := ctx.PathValue("filename")
+
+	// Handle filenames such as "1 Kenji Ninuma - DISCO PRINCE.osz"
 	filename = strings.SplitN(filename, " ", 2)[0]
 	noVideo := strings.Contains(filename, "n")
 
@@ -62,15 +82,15 @@ func BeatmapDownload(ctx *server.Context) {
 		return
 	}
 
-	// TODO: Retrieve osz from beatmap resource api
-	oszStream, err := ctx.State.Storage.ReadStream(filename, "osz")
+	// noVideo can only be true if the beatmapset has videos
+	noVideo = noVideo && beatmapset.HasVideo
+
+	oszStream, err := ctx.State.Resources.Osz(setId, noVideo)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}
-
-	// noVideo can only be true if the beatmapset has videos
-	noVideo = noVideo && beatmapset.HasVideo
+	defer oszStream.Close()
 
 	oszFilename := fmt.Sprintf("%d %s.osz", beatmapset.Id, beatmapset.Name())
 	oszSizeEstimated := beatmapset.OszFilesize
