@@ -55,7 +55,7 @@
 
 {{ block beatmapPackListing() }}
     {{ if . }}
-    <table class="pack-listing" cellspacing="0">
+    <table class="listing pack-listing" cellspacing="0">
         <thead>
             <tr>
                 <th>Pack</th>
