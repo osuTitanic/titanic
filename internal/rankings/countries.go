@@ -26,15 +26,33 @@ func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRan
 	if service == nil || service.client == nil {
 		return nil, ErrRedisClientNotInitialized
 	}
-	rankings := make([]*CountryRanking, 0, len(constants.CountryCodes))
+
+	// Queue every country's leaderboards onto a single pipeline, so the
+	// whole listing only costs one round-trip instead of one per country.
+	pipe := service.client.Pipeline()
+	countries := make([]string, 0, len(constants.CountryCodes))
+	performanceCmds := make([]*redis.ZSliceCmd, 0, len(constants.CountryCodes))
+	rscoreCmds := make([]*redis.ZSliceCmd, 0, len(constants.CountryCodes))
+	tscoreCmds := make([]*redis.ZSliceCmd, 0, len(constants.CountryCodes))
 
 	for _, code := range constants.CountryCodes {
 		if code == "XX" {
 			continue
 		}
 		country := strings.ToLower(code)
+		countries = append(countries, country)
+		performanceCmds = append(performanceCmds, service.queueCountryLeaderboardScores(pipe, mode, country, "performance"))
+		rscoreCmds = append(rscoreCmds, service.queueCountryLeaderboardScores(pipe, mode, country, "rscore"))
+		tscoreCmds = append(tscoreCmds, service.queueCountryLeaderboardScores(pipe, mode, country, "tscore"))
+	}
 
-		performance, err := service.countryLeaderboardScores(mode, country, "performance")
+	if _, err := pipe.Exec(service.ctx); err != nil {
+		return nil, err
+	}
+
+	rankings := make([]*CountryRanking, 0, len(countries))
+	for i, country := range countries {
+		performance, err := performanceCmds[i].Result()
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +60,7 @@ func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRan
 			continue
 		}
 
-		rscore, err := service.countryLeaderboardScores(mode, country, "rscore")
+		rscore, err := rscoreCmds[i].Result()
 		if err != nil {
 			return nil, err
 		}
@@ -50,7 +68,7 @@ func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRan
 			continue
 		}
 
-		tscore, err := service.countryLeaderboardScores(mode, country, "tscore")
+		tscore, err := tscoreCmds[i].Result()
 		if err != nil {
 			return nil, err
 		}
@@ -83,15 +101,29 @@ func (service *RankingsService) TopCountriesForType(mode constants.Mode, rankTyp
 	if service == nil || service.client == nil {
 		return nil, ErrRedisClientNotInitialized
 	}
-	rankings := make([]*CountryRankingSingle, 0, len(constants.CountryCodes))
+
+	// Queue every country's leaderboard onto a single pipeline, so the
+	// whole listing only costs one round-trip
+	pipe := service.client.Pipeline()
+	countries := make([]string, 0, len(constants.CountryCodes))
+	commands := make([]*redis.ZSliceCmd, 0, len(constants.CountryCodes))
 
 	for _, code := range constants.CountryCodes {
 		if code == "XX" {
 			continue
 		}
 		country := strings.ToLower(code)
+		countries = append(countries, country)
+		commands = append(commands, service.queueCountryLeaderboardScores(pipe, mode, country, rankType))
+	}
 
-		scores, err := service.countryLeaderboardScores(mode, country, rankType)
+	if _, err := pipe.Exec(service.ctx); err != nil {
+		return nil, err
+	}
+
+	rankings := make([]*CountryRankingSingle, 0, len(countries))
+	for i, country := range countries {
+		scores, err := commands[i].Result()
 		if err != nil {
 			return nil, err
 		}
@@ -99,10 +131,9 @@ func (service *RankingsService) TopCountriesForType(mode constants.Mode, rankTyp
 			continue
 		}
 
-		totalScore := sumRedisScores(scores)
 		rankings = append(rankings, &CountryRankingSingle{
 			Name:  country,
-			Score: totalScore,
+			Score: sumRedisScores(scores),
 		})
 	}
 
@@ -112,10 +143,10 @@ func (service *RankingsService) TopCountriesForType(mode constants.Mode, rankTyp
 	return rankings, nil
 }
 
-func (service *RankingsService) countryLeaderboardScores(mode constants.Mode, country string, rankType string) ([]redis.Z, error) {
+func (service *RankingsService) queueCountryLeaderboardScores(pipe redis.Pipeliner, mode constants.Mode, country string, rankType string) *redis.ZSliceCmd {
 	key := service.RankingKey(mode, rankType, &country)
 	query := &redis.ZRangeBy{Max: "+inf", Min: "1"}
-	return service.client.ZRevRangeByScoreWithScores(service.ctx, key, query).Result()
+	return pipe.ZRevRangeByScoreWithScores(service.ctx, key, query)
 }
 
 func sumRedisScores(entries []redis.Z) float64 {
