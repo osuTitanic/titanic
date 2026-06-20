@@ -5,6 +5,7 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/permissions"
 	"github.com/osuTitanic/titanic-go/internal/rankings"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 )
@@ -24,6 +25,7 @@ type DefaultView struct {
 	Query       url.Values
 	Config      *config.Config
 	CurrentUser *schemas.User
+	Permissions *permissions.Set
 	Stats       *Statistics
 	CSRFToken   string
 	CurrentPath string
@@ -84,6 +86,27 @@ type BeatmapSearchView struct {
 	SearchSort  string
 	SearchOrder string
 	Pagination  PaginationView
+}
+
+type BeatmapView struct {
+	DefaultView
+	Beatmap               *schemas.Beatmap
+	Beatmapset            *schemas.Beatmapset
+	Mode                  constants.Mode
+	Mods                  string
+	Scores                []*schemas.Score
+	PersonalBest          *schemas.Score
+	PersonalBestRank      int
+	Favourites            []*schemas.BeatmapFavourite
+	FavouritesCount       int
+	Favourited            bool
+	Collaborations        []*schemas.BeatmapCollaboration
+	Nominations           []*schemas.BeatmapNomination
+	Friends               map[int]bool
+	CollaborationRequests []*schemas.BeatmapCollaborationRequest
+	Invite                *schemas.BeatmapCollaborationRequest
+	IsBeatmapAuthor       bool
+	BatNominated          bool
 }
 
 type BeatmapPacksView struct {

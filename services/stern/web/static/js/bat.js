@@ -98,6 +98,46 @@ function resetNominations(beatmapsetId) {
     );
 }
 
+function addForceNomination(beatmapsetId) {
+    var userId = prompt("Enter the user ID of the nominator:");
+    if (!userId || isNaN(userId)) return;
+
+    var url = "/beatmapsets/" + beatmapsetId + "/nominations/" + userId;
+
+    performApiRequest(
+        "POST",
+        url,
+        null,
+        function (xhr) {
+            reloadPageSoon();
+        },
+        function (xhr) {
+            var response = JSON.parse(xhr.responseText);
+            alert(response.details);
+        }
+    );
+}
+
+function removeForceNomination(beatmapsetId) {
+    var userId = prompt("Enter the user ID of the nominator:");
+    if (!userId || isNaN(userId)) return;
+
+    var url = "/beatmapsets/" + beatmapsetId + "/nominations/" + userId;
+
+    performApiRequest(
+        "DELETE",
+        url,
+        null,
+        function (xhr) {
+            reloadPageSoon();
+        },
+        function (xhr) {
+            var response = JSON.parse(xhr.responseText);
+            alert(response.details);
+        }
+    );
+}
+
 function uploadResource(endpoint, key, filetypes, promptText) {
     var fileInput = document.createElement("input");
     fileInput.type = "file";

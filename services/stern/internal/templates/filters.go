@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/osuTitanic/titanic-go/internal/bbcode"
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -37,6 +38,13 @@ func round(a jet.Arguments) reflect.Value {
 
 	rounded := math.Round(reflectFloat(a.Get(0)))
 	return reflect.ValueOf(int64(rounded))
+}
+
+func floor(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("floor", 1, 1)
+
+	floored := math.Floor(reflectFloat(a.Get(0)))
+	return reflect.ValueOf(int64(floored))
 }
 
 func formatFloat(a jet.Arguments) reflect.Value {
@@ -73,6 +81,29 @@ func countryName(a jet.Arguments) reflect.Value {
 	}
 
 	return reflect.ValueOf("")
+}
+
+func renderBBCode(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("bbcode", 1, 1)
+
+	input, ok := a.Get(0).Interface().(string)
+	if !ok {
+		return reflect.ValueOf("")
+	}
+	return reflect.ValueOf(bbcode.RenderHtml(input))
+}
+
+func shortMods(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("shortMods", 1, 1)
+
+	mods, ok := a.Get(0).Interface().(constants.Mods)
+	if !ok {
+		return reflect.ValueOf("None")
+	}
+	if short := mods.String(); short != "NM" {
+		return reflect.ValueOf(short)
+	}
+	return reflect.ValueOf("None")
 }
 
 func reflectFloat(value reflect.Value) float64 {

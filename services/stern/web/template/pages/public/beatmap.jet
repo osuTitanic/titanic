@@ -1,0 +1,865 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Beatmap.Name() }} - Beatmap Info</title>
+<meta property="og:title" content="{{ .Beatmap.Name() }} - Beatmap Info - Titanic!">
+<meta property="og:description" content="Titanic » Beatmaps » {{ .Beatmap.Name() }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .Beatmapset.LargeThumbnailUrl() }}">
+<link rel="stylesheet" href="/css/beatmap.css">
+{{ end }}
+
+{{ block body() }}
+{{ yield beatmapHeader() }}
+<div class="beatmap">
+    {{ yield difficultyTabs() }}
+    {{ yield beatmapStats() }} {* <-- Contains BAT Controls & Beatmap Settings as well *}
+    {{ yield beatmapPreview() }}
+    {{ if .Beatmap.Status > 0 }}
+        {{ yield modeTabs() }}
+        {{ yield leaderboard() }}
+        {{ yield scoreboard() }}
+    {{ end }}
+</div>
+{* TODO: Implement a first-party comments section, or just embed disqus once again *}
+{{ yield beatmapScripts() }}
+{{ end }}
+
+{{ block beatmapHeader() }}
+<h1 class="header-text">
+    <a href="/beatmapsets">Beatmap Listing</a> » {{ .Beatmapset.Name() }}
+    {{ if .Beatmapset.Server == 0 }}
+        <p>
+            View on <a href="https://osu.ppy.sh/b/{{ .Beatmap.Id }}">osu.ppy.sh</a>
+            {{ if .Beatmapset.TopicId }}
+            / <a href="/forum/t/{{ .Beatmapset.TopicId }}">forums</a>
+            {{ end }}
+        </p>
+    {{ else }}
+        {{ if .Beatmapset.TopicId }}
+        <p>View on <a href="/forum/t/{{ .Beatmapset.TopicId }}">forums</a></p>
+        {{ end }}
+    {{ end }}
+</h1>
+{{ end }}
+
+{{ block difficultyTabs() }}
+<div class="tab-list">
+    <ul>
+        {{ range _, diff := beatmapDifficultySort(.Beatmapset.Beatmaps) }}
+        <li class="tab-item difficulty-icon">
+            <a href="/b/{{ diff.Id }}" class="tab-link {{ if diff.Id == .Beatmap.Id }}active{{ end }}">
+                <img
+                    src="/images/beatmap/difficulties/{{ diff.DifficultyAlias() }}-{{ diff.Mode.Value() }}.png"
+                    alt=""
+                    width="16" height="16"
+                    loading="lazy"
+                >
+                <span>{{ diff.Version }}</span>
+            </a>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}
+
+{{ block beatmapStats() }}
+<div class="beatmap-stats">
+    <table>
+        <tr>
+            <td>Artist:</td>
+            <td class="beatmap-stats-info">
+                <a href="/beatmapsets?query={{ .Beatmapset.ArtistName() }}">{{ .Beatmapset.ArtistName() }}</a>
+            </td>
+            <td>Circle Size:</td>
+            <td class="beatmap-stats-info">
+                <div class="starfield" style="width: 140px">
+                    <div class="starfield-selected" style="width: {{ 14.0 * .Beatmap.CS }}px"></div>
+                </div>
+            </td>
+            <td>Approach Rate</td>
+            <td class="beatmap-stats-info">
+                <div class="starfield" style="width: 140px">
+                    <div class="starfield-selected" style="width: {{ 14.0 * .Beatmap.AR }}px"></div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>Title:</td>
+            <td class="beatmap-stats-info">
+                <a href="/beatmapsets?query={{ .Beatmapset.TitleName() }}">{{ .Beatmapset.TitleName() }}</a>
+            </td>
+            <td>HP Drain:</td>
+            <td class="beatmap-stats-info">
+                <div class="starfield" style="width: 140px">
+                    <div class="starfield-selected" style="width: {{ 14.0 * .Beatmap.HP }}px"></div>
+                </div>
+            </td>
+            <td><b>Star Difficulty:</b></td>
+            <td class="beatmap-stats-info">
+                <div class="starfield" style="width: 140px">
+                    <div class="starfield-selected" style="width: {{ 14.0 * .Beatmap.Diff }}px"></div>
+                </div>
+                ({{ formatFloat(.Beatmap.Diff, 2) }})
+            </td>
+        </tr>
+        <tr>
+            <td>Creator:</td>
+            <td class="beatmap-stats-info">
+                <a href="{{ .Beatmapset.CreatorLink() }}">{{ .Beatmapset.CreatorName() }}</a>
+            </td>
+            <td>Accuracy:</td>
+            <td class="beatmap-stats-info">
+                <div class="starfield" style="width: 140px">
+                    <div class="starfield-selected" style="width: {{ 14.0 * .Beatmap.OD }}px"></div>
+                </div>
+            </td>
+            <td>Length:</td>
+            <td class="beatmap-stats-info">
+                {{ minutes := .Beatmap.TotalLength / 60 }}
+                {{ seconds := .Beatmap.TotalLength % 60 }}
+                {{ minutes|floor }}:{{ if seconds < 10 }}0{{ end }}{{ seconds }}
+            </td>
+        </tr>
+        <tr>
+            <td>Source:</td>
+            <td class="beatmap-stats-info">
+                {{ if .Beatmapset.SourceName() != "" }}
+                <a href="/beatmapsets?query={{ .Beatmapset.SourceName() }}">{{ .Beatmapset.SourceName() }}</a>
+                {{ end }}
+            </td>
+            <td>Genre:</td>
+            <td class="beatmap-stats-info">
+                <a href="/beatmapsets?genre={{ .Beatmapset.GenreId.Value() }}">{{ .Beatmapset.GenreId.String() }}</a>
+                {{ if .Beatmapset.LanguageId > 1 }}
+                <a href="/beatmapsets?language={{ .Beatmapset.LanguageId.Value() }}">({{ .Beatmapset.LanguageId.String() }})</a>
+                {{ end }}
+            </td>
+            <td>BPM:</td>
+            <td class="beatmap-stats-info">{{ .Beatmap.BPM|round }}</td>
+        </tr>
+        <tr>
+            <td>
+                Submitted:
+                {{ if .Beatmapset.Status > 0 }}
+                <br>{{ .Beatmapset.Status.String() }}:
+                {{ else }}
+                <br>Last Updated:
+                {{ end }}
+            </td>
+            <td class="beatmap-stats-info">
+                {{ formatDateShort(.Beatmapset.CreatedAt) }}
+                {{ if .Beatmapset.Status > 0 && .Beatmapset.ApprovedAt }}
+                <br>{{ formatDateShort(.Beatmapset.ApprovedAt) }}
+                {{ else }}
+                <br>{{ formatDateShort(.Beatmapset.LastUpdate) }}
+                {{ end }}
+            </td>
+            <td>Average Rating:</td>
+            <td class="beatmap-stats-info">
+                {* TODO: Render a rating distribution graph, like the original osu! website *}
+                {{ if .Beatmapset.RatingCount > 0 }}
+                {{ formatFloat(.Beatmapset.RatingAverage, 4) }}
+                {{ else }}
+                Nobody has rated this map yet... ):
+                {{ end }}
+            </td>
+            <td>
+                <b>Favourited {{ .FavouritesCount|formatNumber }} time{{ if .FavouritesCount != 1 }}s{{ end }}</b> in total
+                {{ if .CurrentUser }}
+                    <br>
+                    {{ if .Favourited }}
+                    <a onclick="removeFavorite({{ .Beatmapset.Id }})" style="color: red" id="favourites-button">
+                        (Remove Favourite)
+                    </a>
+                    {{ else }}
+                    <a onclick="addFavorite({{ .Beatmapset.Id }})" style="color: green" id="favourites-button">
+                        (Add Favourite)
+                    </a>
+                    {{ end }}
+                {{ end }}
+            </td>
+            <td id="favourites" class="beatmap-stats-info">
+                {{ if .FavouritesCount > 0 }}
+                    Users that love this map:<br>
+                    {{ range i, favourite := .Favourites }}
+                    <a href="/u/{{ favourite.UserId }}">
+                        {{ favourite.User.Name }}{{ if i < len(.Favourites) - 1 }}, {{ end }}
+                    </a>
+                    {{ end }}
+                    {{ if .FavouritesCount > 5 }}
+                    <b>and many more!</b>
+                    {{ end }}
+                {{ end }}
+            </td>
+        </tr>
+        {{ yield beatmapStatsExtra() }}
+    </table>
+    {{ yield beatmapSettings() }}
+    {{ yield batControls() }}
+</div>
+{{ end }}
+
+{{ block beatmapStatsExtra() }}
+<tr>
+    {{ hasCollaborator := len(.Collaborations) > 0 }}
+    {{ displayCollaborations := len(.Collaborations) > 0 && !.Collaborations[0].IsBeatmapAuthor }}
+    {{ displayNominations := len(.Nominations) > 0 || .Beatmapset.Status <= 0 }}
+
+    {{ if displayCollaborations }}
+    <td>Collaborators:</td>
+    <td colspan="{{ if displayNominations }}1{{ else }}3{{ end }}">
+        {{ range i, collaboration := .Collaborations }}
+        <a href="/u/{{ collaboration.User.Id }}">
+            {{ collaboration.User.Name }}{{ if i < len(.Collaborations) - 1 }}, {{ end }}
+        </a>
+        {{ end }}
+    </td>
+    {{ else if hasCollaborator }}
+    <td>Mapped by:</td>
+    <td>
+        <a href="/u/{{ .Collaborations[0].User.Id }}">{{ .Collaborations[0].User.Name }}</a>
+    </td>
+    {{ end }}
+
+    {{ if displayNominations }}
+    <td>Nominators:</td>
+    <td colspan="{{ if len(.Collaborations) > 0 }}1{{ else }}3{{ end }}">
+        {{ if len(.Nominations) == 0 }}
+        <p>No one has nominated this map yet.</p>
+        {{ else }}
+        <div>
+            {{ range i, nomination := .Nominations }}
+            <a href="/u/{{ nomination.UserId }}">{{ nomination.User.Name }}</a>{{ if i < len(.Nominations) - 1 }},{{ end }}
+            {{ end }}
+        </div>
+        {{ end }}
+    </td>
+    {{ end }}
+
+    <td>Options:</td>
+    <td {{ if !displayNominations }}colspan="5"{{ end }}>
+        {{ if .Beatmapset.Server == 0 }}
+            <p><a href="https://osu.ppy.sh/beatmapsets/{{ .Beatmapset.Id }}/discussion">Modding / Discussion</a></p>
+        {{ else }}
+            {{ if .Beatmapset.TopicId }}
+            <p><a href="/forum/t/{{ .Beatmapset.TopicId }}">Modding / Discussion</a></p>
+            {{ end }}
+        {{ end }}
+        <p><a setid="{{ .Beatmapset.Id }}" onclick="copySetId(this)">Copy Beatmapset ID</a></p>
+        <p><a href="/web/maps/{{ .Beatmap.Filename }}">Grab latest .osu file</a></p>
+        {{ if .Permissions.Has("beatmaps.moderation.owner") }}
+        <p><a href="#" onclick="updateBeatmapsetOwner({{ .Beatmapset.Id }})">Change Owner</a></p>
+        {{ end }}
+    </td>
+</tr>
+{{ end }}
+
+{{ block beatmapPreview() }}
+<div class="padding">
+    <div class="beatmap-download">
+        {{ if .Beatmapset.Available }}
+            {{ if .CurrentUser }}
+                <a href="/d/{{ .Beatmapset.Id }}" target="_blank">
+                    <img src="/images/beatmap/osu-download-beatmap.png" alt="Download">
+                </a>
+                {{ if .Beatmapset.HasVideo }}
+                    <a href="/d/{{ .Beatmapset.Id }}n" target="_blank">
+                        <img src="/images/beatmap/osu-download-beatmap-novid.png" alt="Download without Video">
+                    </a>
+                {{ end }}
+            {{ else }}
+                <a href="#" onclick='return showLoginForm();'>
+                    <img src="/images/beatmap/osu-download-login.png" alt="Login to download Beatmaps"/>
+                </a>
+            {{ end }}
+        {{ end }}
+    </div>
+    <div class="beatmap-description">
+        <div title="Play Song">
+            <a onclick="resetOrPlayAudio('beatmap-preview')" class="beatmap-preview-link" href="javascript:void(0);">
+                <img src="/mt/{{ .Beatmapset.Id }}l" alt="">
+                <audio id="beatmap-preview"
+                       src="/mp3/preview/{{ .Beatmapset.Id }}"
+                       preload="auto">
+                </audio>
+            </a>
+        </div>
+        {{ if .Beatmapset.DescriptionText() != "" }}
+            {{ if .Beatmapset.Server != 0 }}
+            <div class="bbcode">
+            {{ .Beatmapset.DescriptionText() | bbcode | raw }}
+            </div>
+            {{ else }}
+            {{ .Beatmapset.DescriptionText() | raw }}
+            {{ end }}
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block modeTabs() }}
+<div class="tab-list">
+    <ul>
+        <li class="tab-item">
+            <a href="/b/{{ .Beatmap.Id }}?mode=0" class="tab-link {{ if .Mode == 0 }}active{{ end }}">
+                osu! Standard
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/b/{{ .Beatmap.Id }}?mode=1" class="tab-link {{ if .Mode == 1 }}active{{ end }}">
+                Taiko
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/b/{{ .Beatmap.Id }}?mode=2" class="tab-link {{ if .Mode == 2 }}active{{ end }}">
+                Catch The Beat
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/b/{{ .Beatmap.Id }}?mode=3" class="tab-link {{ if .Mode == 3 }}active{{ end }}">
+                osu!mania
+            </a>
+        </li>
+    </ul>
+</div>
+{{ end }}
+
+{{ block leaderboard() }}
+<div class="score-header">
+{{ if len(.Scores) == 0 }}
+    {{ if .Mods != "" }}
+    <b class="no-records">No records have been set for this game mode and mod combination yet!</b>
+    {{ else }}
+    <b class="no-records">No records have been set for this game mode yet!</b>
+    {{ end }}
+{{ else }}
+    {{ leader := .Scores[0] }}
+    {{ yield scoreCard(score=leader, mode=.Mode, rank=0) }}
+    {{ if .PersonalBest }}
+    {{ yield scoreCard(score=.PersonalBest, mode=.Mode, rank=.PersonalBestRank) }}
+    {{ end }}
+{{ end }}
+</div>
+{{ end }}
+
+{{ block scoreCard(score, mode, rank) }}
+<table class="leader">
+    <tbody>
+        <tr>
+            <td class="row-title" colspan="3">
+                {{ if rank == 0 }}
+                <a href="/rankings/{{ .Beatmap.Mode.Alias() }}/performance?country={{ score.User.Country }}">
+                    <img src="/images/flags/{{ score.User.Country|lower }}.gif" alt="{{ score.User.Country }}" loading="lazy" class="flag">
+                </a>
+                <a href="/u/{{ score.User.Id }}">{{ score.User.Name }}</a> is in the lead!
+                (<span class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>)
+                {{ else }}
+                Personal Best (#{{ rank }} achieved <span class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>)
+                {{ end }}
+            </td>
+        </tr>
+        <tr class="row-light">
+            <td><b>Score</b></td>
+            <td>{{ score.TotalScore|formatNumber }} ({{ formatFloat(score.Acc * 100, 2) }}%)</td>
+            <td class="row-grade" colspan="1" rowspan="13">
+                <img src="/images/grades/{{ score.Grade }}.png" loading="lazy" alt="Grade {{ score.Grade }}">
+            </td>
+        </tr>
+        <tr class="row-dark">
+            <td><b>Max Combo</b></td>
+            <td>{{ score.MaxCombo }}</td>
+        </tr>
+        {{ if mode != 3 }}
+        <tr class="row-light">
+            <td><b>300 / 100 / 50</b></td>
+            <td>{{ score.Count300 }} / {{ score.Count100 }} / {{ score.Count50 }}</td>
+        </tr>
+        <tr class="row-dark">
+            <td><b>Misses</b></td>
+            <td>{{ score.CountMiss }}</td>
+        </tr>
+        <tr class="row-light">
+            <td><b>Geki (Elite Beat!)</b></td>
+            <td>{{ score.CountGeki }}</td>
+        </tr>
+        <tr class="row-dark">
+            <td><b>{{ if mode == 2 }}Droplet misses{{ else }}Katu (Beat!){{ end }}</b></td>
+            <td>{{ score.CountKatu }}</td>
+        </tr>
+        {{ else }}
+        <tr class="row-light">
+            <td><b>MAX / 300 / 200</b></td>
+            <td>{{ score.CountGeki }} / {{ score.Count300 }} / {{ score.CountKatu }}</td>
+        </tr>
+        <tr class="row-dark">
+            <td><b>100 / 50 / Misses</b></td>
+            <td>{{ score.Count100 }} / {{ score.Count50 }} / {{ score.CountMiss }}</td>
+        </tr>
+        {{ end }}
+        <tr class="row-light">
+            <td><b>Mods</b></td>
+            <td>{{ score.Mods|shortMods }}</td>
+        </tr>
+    </tbody>
+</table>
+{{ end }}
+
+{{ block scoreboard() }}
+{{ if len(.Scores) > 0 }}
+{{ if .Mods != "" }}
+<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Scores[0].Mods }})</h2>
+{{ else }}
+<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
+{{ end }}
+<table class="scores">
+    <thead class="scores-header">
+        <tr>
+            <th></th>
+            <th><b>Rank</b></th>
+            <th><b>Score</b></th>
+            <th><b>Accuracy</b></th>
+            <th><b>Player</b></th>
+            <th><b>Max Combo</b></th>
+            <th><b>PP</b></th>
+            {{ if .Mode != 3 }}
+            <th><b>300 / 100 / 50</b></th>
+            <th><b>Geki</b></th>
+            <th><b>{{ if .Mode != 2 }}Katu{{ else }}Droplet Miss{{ end }}</b></th>
+            {{ else }}
+            <th><b>MAX</b></th>
+            <th><b>300</b></th>
+            <th><b>200</b></th>
+            <th><b>100</b></th>
+            <th><b>50</b></th>
+            {{ end }}
+            <th><b>Misses</b></th>
+            <th><b>Mods</b></th>
+            {{ if .CurrentUser }}
+            {* TODO: Add a report button *}
+            <th></th>
+            {{ end }}
+        </tr>
+    </thead>
+    <tbody>
+    {{ range i, score := .Scores }}
+        {{ if .CurrentUser && .CurrentUser.Id == score.User.Id }}
+        <tr class="row-self" id="{{ score.Id }}">
+        {{ else if .Friends[score.UserId] }}
+        <tr class="row-friend" id="{{ score.Id }}">
+        {{ else if i % 2 == 1 }}
+        <tr class="row-dark" id="{{ score.Id }}">
+        {{ else }}
+        <tr class="row-light" id="{{ score.Id }}">
+        {{ end }}
+            <td><a href="#{{ i + 1 }}">#{{ i + 1 }}</a></td>
+            <td><img src="/images/grades/{{ score.Grade }}_small.png" loading="lazy" alt="Grade {{ score.Grade }}"></td>
+            <td>
+                {{ if i == 0 }}
+                <b>{{ score.TotalScore|formatNumber }}</b>
+                {{ else }}
+                {{ score.TotalScore|formatNumber }}
+                {{ end }}
+            </td>
+            <td>
+                {{ if score.Acc == 1 }}
+                <b>{{ formatFloat(score.Acc * 100, 2) }}%</b>
+                {{ else }}
+                {{ formatFloat(score.Acc * 100, 2) }}%
+                {{ end }}
+            </td>
+            <td>
+                <a class="score-flag-link" href="/rankings/{{ .Beatmap.Mode.Alias() }}/performance?country={{ score.User.Country | lower }}">
+                    <img src="/images/flags/{{ score.User.Country|lower }}.gif" alt="{{ score.User.Country }}" loading="lazy" class="flag">
+                </a>
+                <a href="/u/{{ score.User.Id }}">{{ score.User.Name }}</a>
+            </td>
+            <td>
+                {{ if score.MaxCombo == .Beatmap.MaxCombo }}
+                <b>{{ score.MaxCombo }}</b>
+                {{ else }}
+                {{ score.MaxCombo }}
+                {{ end }}
+            </td>
+            <td>
+                {{ if !score.Relaxing() }}
+                {{ score.PP|round|formatNumber }}
+                {{ else }}
+                -
+                {{ end }}
+            </td>
+            {{ if .Mode != 3 }}
+            <td>{{ score.Count300 }} / {{ score.Count100 }} / {{ score.Count50 }}</td>
+            <td>{{ score.CountGeki }}</td>
+            <td>{{ score.CountKatu }}</td>
+            {{ else }}
+            <td>{{ score.CountGeki }}</td>
+            <td>{{ score.Count300 }}</td>
+            <td>{{ score.CountKatu }}</td>
+            <td>{{ score.Count100 }}</td>
+            <td>{{ score.Count50 }}</td>
+            {{ end }}
+            <td>{{ score.CountMiss }}</td>
+            <td>{{ score.Mods|shortMods }}</td>
+            {{ if .CurrentUser }}
+            <td style="text-align: center;">
+                <a href="/scores/{{ score.Id }}/download" target="_blank">Replay</a>
+            </td>
+            {{ end }}
+        </tr>
+    {{ end }}
+    </tbody>
+</table>
+{{ end }}
+{{ end }}
+
+{{ block beatmapScripts() }}
+<script>
+    var beatmapsetId = {{ .Beatmapset.Id }};
+    var isBeatmapsetOwner = {{ .IsBeatmapAuthor }};
+    var bbcodeDescription = `{{ .Beatmapset.DescriptionText() }}`;
+</script>
+<script src="/js/beatmap.js" defer></script>
+{{ if .Permissions.IsBat() }}
+<script src="/js/bat.js" defer></script>
+{{ end }}
+{{ end }}
+
+{*
+    Settings panel for titanic-uploaded beatmaps:
+    the author can manage metadata & collaborators, while an invited
+    user instead may see a prompt to accept / decline their invite.
+*}
+{{ block beatmapSettings() }}
+{{ if .Beatmapset.Server != 0 && .Beatmapset.Status <= 0 }}
+    {{ if .IsBeatmapAuthor }}
+    <div class="beatmap-settings">
+        <details>
+            <summary>Settings</summary>
+            <table>
+                <thead>
+                    <th><h2>Metadata</h2></th>
+                    <th><h2>Collaborators for "{{ .Beatmap.Version }}"</h2></th>
+                    <th><h2>Pending Collaboration Invites</h2></th>
+                </thead>
+                <tbody>
+                    {* Metadata *}
+                    <td style="min-width: 28%">
+                        <form method="post" onsubmit="updateBeatmapsetMetadata(event)">
+                            <dl>
+                                <dt>Genre:</dt>
+                                <dd>
+                                    <select name="genre">
+                                        {{ range _, genre := beatmapGenres() }}
+                                        {{ if genre.Value() != 0 }}
+                                        <option value="{{ genre.Value() }}" {{ if .Beatmapset.GenreId == genre }}selected{{ end }}>{{ genre.String() }}</option>
+                                        {{ end }}
+                                        {{ end }}
+                                    </select>
+                                </dd>
+                                <dt>Language:</dt>
+                                <dd>
+                                    <select name="language">
+                                        {{ range _, language := beatmapLanguages() }}
+                                        {{ if language.Value() != 0 }}
+                                        <option value="{{ language.Value() }}" {{ if .Beatmapset.LanguageId == language }}selected{{ end }}>{{ language.String() }}</option>
+                                        {{ end }}
+                                        {{ end }}
+                                    </select>
+                                </dd>
+                            </dl>
+                            <input type="submit" value="Save">
+                            <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
+                        </form>
+                    </td>
+
+                    {* Collaborators *}
+                    <td>
+                        {{ if len(.Collaborations) == 0 }}
+                        <p>
+                            No collaborators yet.
+                            {{ if len(.CollaborationRequests) == 0 }}
+                            Why not invite one?
+                            {{ else }}
+                            Please wait for an invite to be accepted.
+                            {{ end }}
+                        </p>
+                        {{ end }}
+
+                        <table>
+                        {{ range _, collaboration := .Collaborations }}
+                        <tr>
+                            <td>
+                                <a href="/u/{{ collaboration.User.Id }}">{{ collaboration.User.Name }}</a>
+                                {{ if collaboration.IsBeatmapAuthor }} (Author) {{ end }}
+                            </td>
+                            <td class="collaborator" id="collaborator-{{ collaboration.UserId }}">
+                                <button onclick="removeCollaboration({{ .Beatmap.Id }}, {{ collaboration.UserId }})" style="color: red">Remove</button>
+                                {{ if len(.Collaborations) == 1 }}
+                                    {{ if !collaboration.IsBeatmapAuthor }}
+                                    <button onclick="collaborationMakeAuthor({{ .Beatmap.Id }}, {{ collaboration.UserId }})" title="This will make the user show up as the creator of the beatmap">
+                                        Make Author
+                                    </button>
+                                    {{ else }}
+                                    <button onclick="collaborationRemoveAuthor({{ .Beatmap.Id }}, {{ collaboration.UserId }})">
+                                        Remove Author Status
+                                    </button>
+                                    {{ end }}
+                                {{ end }}
+                                {{ if !collaboration.AllowResourceUpdates }}
+                                <button onclick="collaborationAllowResourceUpdates({{ .Beatmap.Id }}, {{ collaboration.UserId }})" title="This will allow the user to upload images, storyboards, and other resources to your beatmapset">
+                                    Allow Resource Updates
+                                </button>
+                                {{ else }}
+                                <button onclick="collaborationDisallowResourceUpdates({{ .Beatmap.Id }}, {{ collaboration.UserId }})">
+                                    Disallow Resource Updates
+                                </button>
+                                {{ end }}
+                            </td>
+                        </tr>
+                        {{ end }}
+                        </table>
+                    </td>
+
+                    {* Collaboration Requests *}
+                    <td style="min-width: 28%">
+                        {{ if len(.CollaborationRequests) == 0 }}
+                        <p>
+                            No pending invites.
+                            <a href="#" onclick="createCollaborationRequest({{ .Beatmap.Id }})">Invite someone!</a>
+                        </p>
+                        {{ else }}
+                        <div class="invite-container">
+                            {{ range _, invite := .CollaborationRequests }}
+                            <div class="invite">
+                                <a href="/u/{{ invite.Target.Id }}">{{ invite.Target.Name }}</a>
+                                <button onclick="removeCollaborationRequest({{ .Beatmap.Id }}, {{ invite.Id }})" style="color: red">Remove</button>
+                            </div>
+                            {{ end }}
+                        </div><br>
+                        <button class="invite-button" onclick="createCollaborationRequest({{ .Beatmap.Id }})">
+                            Invite
+                        </button>
+                        {{ end }}
+                    </td>
+                </tbody>
+            </table>
+        </details>
+    </div>
+    {{ else if .Invite }}
+    <div class="collaboration-request">
+        <a href="/u/{{ .Invite.User.Id }}">{{ .Invite.User.Name }}</a> invited you to collaborate on this beatmap! &nbsp;
+        <button style="color: green" onclick="acceptCollaborationRequest({{ .Beatmap.Id }}, {{ .Invite.Id }})">Accept</button>
+        <button style="color: red" onclick="rejectCollaborationRequest({{ .Beatmap.Id }}, {{ .Invite.Id }})">Decline</button>
+    </div>
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{*
+    BAT controls:
+    metadata overrides, nominations, status changes, per-difficulty
+    statuses, force-nomination and resource uploads.
+*}
+{{ block batControls() }}
+{{ if .Permissions.IsBat() }}
+<div class="beatmap-settings">
+    <details>
+        <summary>BAT Controls</summary>
+        <table>
+            <thead>
+                <th><h2>General</h2></th>
+                <th><h2>Ranking</h2></th>
+                {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
+                <th><h2>Files</h2></th>
+                {{ end }}
+            </thead>
+            <tbody>
+                <td style="min-width: 38%">
+                    <form method="post" onsubmit="updateBeatmapsetMetadata(event)">
+                        <dl>
+                            <dt>Offset:</dt>
+                            <dd>
+                                <input type="text" name="offset" value="{{ .Beatmapset.Offset }}" size="6">
+                            </dd>
+                            <dt>Explicit:</dt>
+                            <dd>
+                                <input type="checkbox" name="explicit" {{ if .Beatmapset.Explicit }}checked{{ end }}>
+                            </dd>
+                            {{ if .Beatmapset.Server == 0 }}
+                            <dt>Enhanced:</dt>
+                            <dd>
+                                <input type="checkbox" name="enhanced" {{ if .Beatmapset.Enhanced }}checked{{ end }}>
+                            </dd>
+                            <dt>Download Server:</dt>
+                            <dd>
+                                <select name="download_server">
+                                    <option value="0" {{ if .Beatmapset.DownloadServer == 0 }}selected{{ end }}>Bancho</option>
+                                    <option value="1" {{ if .Beatmapset.DownloadServer == 1 }}selected{{ end }}>Titanic</option>
+                                </select>
+                            </dd>
+                            {{ end }}
+                            <dt>Display Title:</dt>
+                            <dd>
+                                <textarea name="display_title">{{ .Beatmapset.DisplayTitleText() }}</textarea>
+                            </dd>
+                            <dt>Genre:</dt>
+                            <dd>
+                                <select name="genre">
+                                    {{ range _, genre := beatmapGenres() }}
+                                    <option value="{{ genre.Value() }}" {{ if .Beatmapset.GenreId == genre }}selected{{ end }}>{{ genre.String() }}</option>
+                                    {{ end }}
+                                </select>
+                            </dd>
+                            <dt>Language:</dt>
+                            <dd>
+                                <select name="language">
+                                    {{ range _, language := beatmapLanguages() }}
+                                    <option value="{{ language.Value() }}" {{ if .Beatmapset.LanguageId == language }}selected{{ end }}>{{ language.String() }}</option>
+                                    {{ end }}
+                                </select>
+                            </dd>
+                            <dt>Tags:</dt>
+                            <dd>
+                                <textarea name="tags">{{ .Beatmapset.TagsText() }}</textarea>
+                            </dd>
+                        </dl>
+                        <input type="submit" value="Save">
+                        <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
+                    </form>
+                </td>
+                <td style="min-width: 30%">
+                    <p>
+                        The current status of this beatmap is "{{ .Beatmapset.Status.String() }}".
+                        {{ if len(.Nominations) >= .Beatmapset.RequiredNominations() && .Beatmapset.Status <= 0 }}
+                        This beatmap has enough nominations to be qualified!
+                        {{ else if .Beatmapset.Status == 3 }}
+                        This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.
+                        {{ end }}
+                    </p><br>
+
+                    {{ if .Beatmapset.Status <= 0 }}
+                    {* Beatmap is not ranked *}
+                    <div>
+                        {{ if !.BatNominated }}
+                        <a href="#" onclick="addNomination({{ .Beatmapset.Id }})" style="color: green;">
+                            Nominate this beatmap
+                            (Bubble)
+                        </a><br>
+                        {{ else }}
+                        <p style="color: green;">
+                            You have nominated this beatmap
+                            (Bubbled)
+                        </p>
+                        {{ end }}
+                        <a href="#" onclick="resetNominations({{ .Beatmapset.Id }})" style="color: red;">
+                            Remove all nominations from this beatmap
+                            (Pop Bubble)
+                        </a>
+                    </div><br>
+
+                    <div>
+                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 3, 'Are you sure you want to update the status to Qualified?')">
+                            Update status to "Qualified"
+                        </a><br>
+                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 4, 'Are you sure you want to update the status to Loved?')">
+                            Update status to "Loved"
+                        </a><br>
+                        {{ if .Beatmapset.Server != 0 }}
+                        <a onclick="nukeBeatmapset({{ .Beatmapset.Id }})" style="color: red">
+                            Nuke this beatmap
+                        </a><br>
+                        {{ end }}
+                    </div><br>
+
+                    {{ else if .Beatmapset.Status == 1 || .Beatmapset.Status == 2 }}
+                    {* Beatmap is ranked or approved *}
+                    <div>
+                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                            Unrank this beatmap
+                        </a>
+                    </div>
+
+                    {{ else if .Beatmapset.Status == 3 }}
+                    {* Beatmap is qualified *}
+                    <div>
+                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                            Disqualify this beatmap
+                        </a>
+                    </div>
+
+                    {{ else if .Beatmapset.Status == 4 }}
+                    {* Beatmap is loved *}
+                    <div>
+                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                            Remove from "Loved" category
+                        </a>
+                    </div>
+                    {{ end }}
+
+                    <details>
+                        <summary>Difficulty Status Updates</summary><br>
+                        <form method="post" onsubmit="updateBeatmapStatuses(event)">
+                            <div class="bat-diffs">
+                                {{ range _, difficulty := .Beatmapset.Beatmaps }}
+                                <div>
+                                    <dt>{{ difficulty.Version }}</dt>
+                                    <dd>
+                                        <select name="{{ difficulty.Id }}">
+                                            {{ range _, status := beatmapStatuses() }}
+                                            <option value="{{ status.Value() }}" {{ if difficulty.Status == status }}selected{{ end }}>{{ status.String() }}</option>
+                                            {{ end }}
+                                        </select>
+                                    </dd>
+                                </div>
+                                {{ end }}
+                            </div>
+                            <input type="submit" value="Update">
+                            <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
+                        </form>
+                    </details>
+
+                    {{ if .Permissions.Has("beatmaps.moderation.force_nominate") }}
+                    <br>
+                    <div>
+                        <a href="#" onclick="addForceNomination({{ .Beatmapset.Id }})" style="color: green;">
+                            Add nominator
+                        </a>
+                        <br>
+                        <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
+                            Remove nominator
+                        </a>
+                    </div>
+                    {{ end }}
+                </td>
+
+                {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
+                <td>
+                    <p>
+                        Please make sure you know what you are doing before replacing any files! <br><br>
+                    </p>
+                    {{ if .Beatmapset.DownloadServer == 0 }}
+                    <p>
+                        If the download server is set to "Titanic", your changes will take effect. <br>
+                        Once you change the download server, make sure all resources have been uploaded.
+                    </p><br>
+                    {{ end }}
+                    <a href="#" onclick="uploadResource('/resources/osz/{{ .Beatmapset.Id }}', 'osz', '.osz,.zip');">
+                        Replace osz file
+                    </a><br>
+                    <a href="#" onclick="uploadResource('/resources/osu/{{ .Beatmap.Id }}', 'osu', '.osu,.txt', 'This will replace the beatmap file for this difficulty. Are you sure?');">
+                        Replace beatmap file
+                    </a><br>
+                    <a href="#" onclick="uploadResource('/resources/mt/{{ .Beatmapset.Id }}', 'mt', '.jpeg,.jpg', 'Please make sure this image is 160x120 pixels large! Are you sure you want to upload?');">
+                        Replace background file (large)
+                    </a><br>
+                    <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3');">
+                        Replace audio preview file
+                    </a>
+                </td>
+                {{ end }}
+            </tbody>
+        </table>
+    </details>
+</div>
+{{ end }}
+{{ end }}

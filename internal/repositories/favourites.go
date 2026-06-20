@@ -44,6 +44,12 @@ func (r *BeatmapFavouriteRepository) ManyByUserId(userId int, preload ...string)
 	return favourites, err
 }
 
+func (r *BeatmapFavouriteRepository) ManyBySetId(setId, limit int, preload ...string) ([]*schemas.BeatmapFavourite, error) {
+	var favourites []*schemas.BeatmapFavourite
+	err := Preloaded(r.db, preload).Where("set_id = ?", setId).Limit(limit).Find(&favourites).Error
+	return favourites, err
+}
+
 func (r *BeatmapFavouriteRepository) CountByUserId(userId int) (int, error) {
 	var count int64
 	err := r.db.Model(&schemas.BeatmapFavourite{}).Where("user_id = ?", userId).Count(&count).Error
@@ -54,4 +60,10 @@ func (r *BeatmapFavouriteRepository) CountBySetId(setId int) (int, error) {
 	var count int64
 	err := r.db.Model(&schemas.BeatmapFavourite{}).Where("set_id = ?", setId).Count(&count).Error
 	return int(count), err
+}
+
+func (r *BeatmapFavouriteRepository) ExistsForUser(userId int, setId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.BeatmapFavourite{}).Where("user_id = ? AND set_id = ?", userId, setId).Count(&count).Error
+	return count > 0, err
 }

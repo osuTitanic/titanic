@@ -59,6 +59,12 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	}
 }
 
+func buildDefaultViewWithPermissions(ctx *server.Context) templates.DefaultView {
+	view := buildDefaultView(ctx)
+	view.Permissions = ctx.Permissions()
+	return view
+}
+
 func buildStatistics(state *state.State) (stats *templates.Statistics) {
 	stats = &templates.Statistics{
 		TotalUsers:     0,
