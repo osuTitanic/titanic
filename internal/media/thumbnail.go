@@ -1,4 +1,4 @@
-// MIT License: https://github.com/prplecake/go-thumbnail
+// BSD 3-Clause License: https://github.com/prplecake/go-thumbnail
 // Package thumbnail provides a method to create thumbnails from images.
 package media
 
