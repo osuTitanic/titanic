@@ -40,6 +40,13 @@ func round(a jet.Arguments) reflect.Value {
 	return reflect.ValueOf(int64(rounded))
 }
 
+func floor(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("floor", 1, 1)
+
+	floored := math.Floor(reflectFloat(a.Get(0)))
+	return reflect.ValueOf(int64(floored))
+}
+
 func formatFloat(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("formatFloat", 2, 2)
 

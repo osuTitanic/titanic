@@ -30,6 +30,7 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("formatFloat", formatFloat)
 	set.AddGlobalFunc("formatDateShort", formatDateShort)
 	set.AddGlobalFunc("round", round)
+	set.AddGlobalFunc("floor", floor)
 	set.AddGlobalFunc("countryName", countryName)
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
 	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
