@@ -24,3 +24,12 @@ func (r *ScreenshotRepository) Delete(screenshot *schemas.Screenshot) error {
 func (r *ScreenshotRepository) Update(updates *schemas.Screenshot, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }
+
+func (r *ScreenshotRepository) ById(id int, preload ...string) (*schemas.Screenshot, error) {
+	var screenshot schemas.Screenshot
+	err := Preloaded(r.db, preload).Where("id = ?", id).First(&screenshot).Error
+	if err != nil {
+		return nil, err
+	}
+	return &screenshot, nil
+}

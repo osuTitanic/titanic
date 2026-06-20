@@ -38,6 +38,7 @@ func (resolver *StorageResolver) Setup() error {
 }
 
 func (resolver *StorageResolver) Osz(setId int, noVideo bool) (io.ReadCloser, error) {
+	// TODO: Filter out video dynamically, if noVideo is set
 	resolver.logger.Debug("Reading osz from storage...", "set_id", setId)
 	return resolver.ReadStream(strconv.Itoa(setId), "osz")
 }

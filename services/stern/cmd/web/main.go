@@ -12,6 +12,18 @@ import (
 )
 
 func InitializeWebRoutes(server *server.Server) {
+	server.Handle("GET /a/", routes.DefaultAvatar)
+	server.Handle("GET /a/{filename}", routes.Avatar)
+	server.Handle("GET /mt/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /thumb/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /images/map-thumb/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /preview/{filename}", routes.BeatmapAudioPreview)
+	server.Handle("GET /mp3/preview/{filename}", routes.BeatmapAudioPreview)
+	server.Handle("GET /d/{filename}", routes.BeatmapDownload)
+	server.Handle("GET /beatmapsets/{filename}/download", routes.BeatmapDownload)
+	server.Handle("GET /ss/{id}", routes.ScreenshotRedirect)
+	server.Handle("GET /ss/{id}/{checksum}", routes.Screenshot)
+
 	server.Handle("GET /{$}", routes.Home)
 	server.Handle("GET /partials/home/news", routes.HomeNewsPartial)
 	server.Handle("GET /partials/home/chat", routes.HomeChatPartial)
@@ -32,7 +44,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /beatmapsets", routes.Search)
 	server.Handle("GET /beatmapsets/", routes.Search)
 	server.Handle("GET /beatmapsets/packs", routes.Search)
-	server.Handle("GET /beatmapsets/packs/", routes.BeatmapPacks)
+	server.Handle("GET /beatmapsets/packs/{$}", routes.BeatmapPacks)
 	server.Handle("GET /rankings/kudosu", routes.RankingsKudosu)
 	server.Handle("GET /rankings/{mode}/country", routes.RankingsCountry)
 	server.Handle("GET /rankings/{mode}/{rankingType}", routes.RankingsGlobal)

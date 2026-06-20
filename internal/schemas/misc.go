@@ -1,6 +1,8 @@
 package schemas
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"time"
 )
@@ -16,6 +18,12 @@ type Screenshot struct {
 
 func (Screenshot) TableName() string {
 	return "screenshots"
+}
+
+func (s *Screenshot) Checksum() string {
+	dateString := s.CreatedAt.Format("2006-01-02 15:04:05")
+	checksum := md5.Sum([]byte(dateString))
+	return hex.EncodeToString(checksum[:])
 }
 
 type Benchmark struct {
