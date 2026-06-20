@@ -137,6 +137,23 @@ type ImageGenerator struct {
 	Scaler string
 }
 
+// ResizeImage resizes the given image data to the provided
+// dimensions and returns the encoded result.
+func ResizeImage(data []byte, width int, height int) ([]byte, error) {
+	generator := &ImageGenerator{
+		Width:  width,
+		Height: height,
+		Scaler: "CatmullRom",
+	}
+
+	image, err := generator.NewImageFromByteArray(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return generator.CreateThumbnail(image)
+}
+
 // CreateThumbnail generates a thumbnail.
 func (gen *ImageGenerator) CreateThumbnail(i *Image) ([]byte, error) {
 	if i.ContentType == "application/octet-stream" {
