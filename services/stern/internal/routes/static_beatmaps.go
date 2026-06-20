@@ -29,6 +29,11 @@ func BeatmapThumbnail(ctx *server.Context) {
 	}
 	defer stream.Close()
 
+	// If a cache key is provided, the thumbnail may be cached by the client
+	if ctx.Request.URL.Query().Get("c") != "" {
+		ctx.Response.Header().Set("Cache-Control", "public, max-age=86400")
+	}
+
 	ctx.Response.Header().Set("Content-Type", "image/jpeg")
 	ctx.Response.WriteHeader(200)
 	io.Copy(ctx.Response, stream)
@@ -52,6 +57,11 @@ func BeatmapAudioPreview(ctx *server.Context) {
 		return
 	}
 	defer stream.Close()
+
+	// If a cache key is provided, the preview may be cached by the client
+	if ctx.Request.URL.Query().Get("c") != "" {
+		ctx.Response.Header().Set("Cache-Control", "public, max-age=86400")
+	}
 
 	ctx.Response.Header().Set("Content-Type", "audio/mpeg")
 	ctx.Response.WriteHeader(200)
