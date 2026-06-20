@@ -1,5 +1,7 @@
 package constants
 
+import "strings"
+
 type Mods uint32
 
 const (
@@ -71,19 +73,72 @@ var modsNames = map[Mods]string{
 	Mirror:      "MR",
 }
 
+var modsNamesReverse = map[string]Mods{
+	"NF": NoFail,
+	"EZ": Easy,
+	"NV": NoVideo,
+	"HD": Hidden,
+	"HR": HardRock,
+	"SD": SuddenDeath,
+	"DT": DoubleTime,
+	"RX": Relax,
+	"HT": HalfTime,
+	"NC": Nightcore,
+	"FL": Flashlight,
+	"AP": Autoplay,
+	"SO": SpunOut,
+	"AT": Autopilot,
+	"PF": Perfect,
+	"4K": Key4,
+	"5K": Key5,
+	"6K": Key6,
+	"7K": Key7,
+	"8K": Key8,
+	"FI": FadeIn,
+	"RD": Random,
+	"CN": Cinema,
+	"TP": Target,
+	"9K": Key9,
+	"CP": KeyCoop,
+	"1K": Key1,
+	"3K": Key3,
+	"2K": Key2,
+	"V2": ScoreV2,
+	"MR": Mirror,
+}
+
+// Has returns true if the given mod flag is enabled in mods.
 func (m Mods) Has(flag Mods) bool {
 	return m&flag != 0
 }
 
+// String returns the concatenated short representation of the enabled mods, in
+// bit order, e.g. "HDDT". Returns "NM" when no mods are set.
 func (m Mods) String() string {
-	var result string
+	var result strings.Builder
 	for mod, name := range modsNames {
 		if m.Has(mod) {
-			result += name
+			result.WriteString(name)
 		}
 	}
-	if result == "" {
+	if result.Len() <= 0 {
 		return "NM"
 	}
-	return result
+	return result.String()
+}
+
+// ModsFromString parses a mod string such as "HDDT" into a Mods bitfield.
+func ModsFromString(s string) Mods {
+	// Sanitize the input string
+	s = strings.NewReplacer(",", "", " ", "").Replace(s)
+	s = strings.ToUpper(s)
+	mods := NoMod
+
+	for idx := 0; idx+2 <= len(s); idx += 2 {
+		// Try to parse 2 characters, e.g. "HD", "DT", "NC"
+		if mod, ok := modsNamesReverse[s[idx:idx+2]]; ok {
+			mods |= mod
+		}
+	}
+	return mods
 }
