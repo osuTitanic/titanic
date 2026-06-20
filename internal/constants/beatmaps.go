@@ -13,6 +13,29 @@ const (
 	BeatmapStatusLoved     BeatmapStatus = 4
 )
 
+func (status BeatmapStatus) String() string {
+	switch status {
+	case BeatmapStatusInactive:
+		return "Inactive"
+	case BeatmapStatusGraveyard:
+		return "Graveyard"
+	case BeatmapStatusWIP:
+		return "WIP"
+	case BeatmapStatusPending:
+		return "Pending"
+	case BeatmapStatusRanked:
+		return "Ranked"
+	case BeatmapStatusApproved:
+		return "Approved"
+	case BeatmapStatusQualified:
+		return "Qualified"
+	case BeatmapStatusLoved:
+		return "Loved"
+	default:
+		return "Unknown"
+	}
+}
+
 type BeatmapServer int
 
 const (
@@ -49,6 +72,10 @@ const (
 	BeatmapGenreFolk        BeatmapGenre = 13
 	BeatmapGenreJazz        BeatmapGenre = 14
 )
+
+func (genre BeatmapGenre) Value() int {
+	return int(genre)
+}
 
 func (genre BeatmapGenre) String() string {
 	switch genre {
@@ -104,6 +131,10 @@ const (
 	BeatmapLanguagePolish       BeatmapLanguage = 13
 	BeatmapLanguageOther        BeatmapLanguage = 14
 )
+
+func (language BeatmapLanguage) Value() int {
+	return int(language)
+}
 
 func (language BeatmapLanguage) String() string {
 	switch language {
