@@ -17,7 +17,7 @@ type StorageResolver struct {
 
 func NewStorageResolver(store storage.Storage) *StorageResolver {
 	return &StorageResolver{
-		logger:  slog.Default(),
+		logger:  slog.Default().With("component", "BeatmapStorage"),
 		storage: store,
 	}
 }
