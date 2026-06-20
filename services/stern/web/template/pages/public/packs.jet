@@ -36,11 +36,11 @@
 {{ block beatmapPackCategories(selected) }}
     <br>
     {{ if . }}
-    <div class="pack-categories">
+    <div class="tab-list">
         <ul>
             {{ range . }}
-            <li class="category-item">
-                <a href="/beatmapsets/packs/?category={{ . }}" class="{{ if . == selected }}active{{ end }}" data-instant>
+            <li class="tab-item">
+                <a href="/beatmapsets/packs/?category={{ . }}" class="tab-link {{ if . == selected }}active{{ end }}" data-instant>
                     {{ . }}
                 </a>
             </li>
@@ -73,7 +73,7 @@
 {{ end }}
 
 {{ block beatmapPackItem(index) }}
-<tr class="{{ if index % 2 == 1 }}dark-row{{ else }}light-row{{ end }}" onclick="expandBeatmapPack({{ pack.Id }})">
+<tr class="{{ if index % 2 == 1 }}row-dark row-soft{{ else }}row-light row-soft{{ end }}" onclick="expandBeatmapPack({{ pack.Id }})">
     <td style="width: 60%">
         <a>{{ pack.Name }}</a>
         {{ if pack.DownloadLink != "" }}

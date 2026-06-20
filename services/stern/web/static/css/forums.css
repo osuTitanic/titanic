@@ -297,62 +297,9 @@
     width: 98.6%;
 }
 
-.post-buttons {
-    text-align: right;
-    min-height: 15px;
-    font-size: 108%;
-    display: flex;
-    justify-content: flex-end;
-    padding: 5px;
-}
-
-.post-buttons-large {
-    text-align: right;
-    min-height: 15px;
-    font-size: 125%;
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 2px;
-    margin-left: 6px;
-    padding-bottom: 10px;
-}
-
 .hover-button {
     opacity: 0;
     transition: opacity 0.1s;
-}
-
-.post-buttons a,
-.post-buttons a:visited,
-.post-buttons input,
-.post-buttons button {
-    display: inline-block;
-    border-radius: 5px;
-    margin-right: 5px;
-    color: rgb(236, 236, 236);
-    padding: 3px;
-    padding-right: 18px;
-    padding-left: 18px;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.post-buttons-large a,
-.post-buttons-large a:visited {
-    display: inline-block;
-    border-radius: 5px;
-    margin-right: 5px;
-    color: rgb(236, 236, 236);
-    padding: 4.5px;
-    padding-right: 32px;
-    padding-left: 32px;
-    text-decoration: none;
-    transition: all 0.2s;
-}
-
-.post-buttons a:hover {
-    text-shadow: 1px 1px 8px #afb7ff;
-    color: white;
 }
 
 .button-blue {

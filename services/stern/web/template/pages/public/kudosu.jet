@@ -27,7 +27,7 @@
 {{ end }}
 
 {{ block kudosuListing() }}
-<table class="player-listing">
+<table class="listing player-listing">
     <thead>
         <tr>
             <th>Rank</th>

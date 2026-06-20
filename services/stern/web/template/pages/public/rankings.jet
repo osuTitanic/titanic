@@ -125,7 +125,7 @@
 {{ end }}
 
 {{ block playerListing() }}
-<table class="player-listing">
+<table class="listing player-listing">
     <thead>
         <tr>
             <th>Rank</th>
@@ -228,7 +228,7 @@
 {{ end }}
 
 {{ block countryListing() }}
-<table class="country-listing">
+<table class="listing country-listing">
     <thead>
         <tr>
             <th>Rank</th>
