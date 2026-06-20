@@ -16,7 +16,9 @@ require (
 )
 
 require (
+	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/u2takey/go-utils v0.3.1 // indirect
 	golang.org/x/image v0.43.0 // indirect
 )
 
