@@ -35,6 +35,15 @@ func (r *BeatmapCollaborationRepository) FetchByBeatmap(beatmapId int, preload .
 	return collaborations, err
 }
 
+func (r *BeatmapCollaborationRepository) FetchRequestsByBeatmap(beatmapId int, preload ...string) ([]*schemas.BeatmapCollaborationRequest, error) {
+	var requests []*schemas.BeatmapCollaborationRequest
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id = ?", beatmapId).
+		Order("created_at DESC").
+		Find(&requests).Error
+	return requests, err
+}
+
 func (r *BeatmapCollaborationRepository) CreateRequest(request *schemas.BeatmapCollaborationRequest) error {
 	return r.db.Create(request).Error
 }
