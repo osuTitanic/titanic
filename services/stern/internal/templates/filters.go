@@ -93,7 +93,7 @@ func shortMods(a jet.Arguments) reflect.Value {
 	if !ok {
 		return reflect.ValueOf("None")
 	}
-	if short := mods.Short(); short != "" {
+	if short := mods.String(); short != "NM" {
 		return reflect.ValueOf(short)
 	}
 	return reflect.ValueOf("None")
