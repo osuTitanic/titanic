@@ -61,3 +61,9 @@ func (r *BeatmapFavouriteRepository) CountBySetId(setId int) (int, error) {
 	err := r.db.Model(&schemas.BeatmapFavourite{}).Where("set_id = ?", setId).Count(&count).Error
 	return int(count), err
 }
+
+func (r *BeatmapFavouriteRepository) ExistsForUser(userId int, setId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.BeatmapFavourite{}).Where("user_id = ? AND set_id = ?", userId, setId).Count(&count).Error
+	return count > 0, err
+}
