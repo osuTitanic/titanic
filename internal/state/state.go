@@ -12,6 +12,7 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/logging"
 	"github.com/osuTitanic/titanic-go/internal/performance"
 	"github.com/osuTitanic/titanic-go/internal/rankings"
+	"github.com/osuTitanic/titanic-go/internal/resources"
 	"github.com/osuTitanic/titanic-go/internal/storage"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -31,8 +32,9 @@ type State struct {
 	Email    email.Email
 
 	// Services
-	Rankings *rankings.RankingsService
-	PPv1     *performance.PPv1Service
+	Resources resources.BeatmapResourceProvider
+	Rankings  *rankings.RankingsService
+	PPv1      *performance.PPv1Service
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -89,6 +91,16 @@ func NewState(environmentFiles ...string) (*State, error) {
 
 	repos := NewRepositories(db)
 
+	beatmapResources := resources.NewBeatmapProvider(
+		cfg, redisClient, fs,
+		repos.ResourceMirrors,
+		repos.Beatmapsets,
+	)
+	if err := beatmapResources.Setup(); err != nil {
+		database.CloseSession(db)
+		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)
+	}
+
 	return &State{
 		Config:          cfg,
 		Database:        db,
@@ -97,6 +109,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Email:           mailer,
 		Redis:           redisClient,
 		Repositories:    repos,
+		Resources:       beatmapResources,
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
