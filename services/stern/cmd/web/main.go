@@ -12,6 +12,9 @@ import (
 )
 
 func InitializeWebRoutes(server *server.Server) {
+	server.Handle("GET /a/", routes.DefaultAvatar)
+	server.Handle("GET /a/{filename}", routes.Avatar)
+
 	server.Handle("GET /{$}", routes.Home)
 	server.Handle("GET /partials/home/news", routes.HomeNewsPartial)
 	server.Handle("GET /partials/home/chat", routes.HomeChatPartial)
