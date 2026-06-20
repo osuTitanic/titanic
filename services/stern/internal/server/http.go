@@ -13,6 +13,7 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/permissions"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
@@ -69,6 +70,8 @@ type Context struct {
 	CurrentUser    *schemas.User
 	CurrentSession *authentication.WebsiteSession
 	CSRFToken      string
+
+	resolvedPermissions *permissions.Set
 }
 
 func (ctx *Context) IP() string {
@@ -91,6 +94,31 @@ func (ctx *Context) Country() string {
 		country = "XX"
 	}
 	return country
+}
+
+func (ctx *Context) HasPermission(permission string) bool {
+	return ctx.Permissions().Has(permission)
+}
+
+// Permissions resolves & memoizes the current user's permission set for this request
+func (ctx *Context) Permissions() *permissions.Set {
+	if ctx.resolvedPermissions != nil {
+		return ctx.resolvedPermissions
+	}
+
+	ctx.resolvedPermissions = &permissions.Set{}
+	if ctx.CurrentUser == nil {
+		return ctx.resolvedPermissions
+	}
+
+	set, err := ctx.State.Permissions.Resolve(ctx.CurrentUser.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to resolve permissions", "user", ctx.CurrentUser.Id, "error", err)
+		return ctx.resolvedPermissions
+	}
+
+	ctx.resolvedPermissions = set
+	return ctx.resolvedPermissions
 }
 
 // PathValue is a helper function to get path variables from the request context.
