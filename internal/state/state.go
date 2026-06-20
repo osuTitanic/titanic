@@ -11,6 +11,7 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/email"
 	"github.com/osuTitanic/titanic-go/internal/logging"
 	"github.com/osuTitanic/titanic-go/internal/performance"
+	"github.com/osuTitanic/titanic-go/internal/permissions"
 	"github.com/osuTitanic/titanic-go/internal/rankings"
 	"github.com/osuTitanic/titanic-go/internal/resources"
 	"github.com/osuTitanic/titanic-go/internal/storage"
@@ -32,9 +33,10 @@ type State struct {
 	Email    email.Email
 
 	// Services
-	Resources resources.BeatmapResourceProvider
-	Rankings  *rankings.RankingsService
-	PPv1      *performance.PPv1Service
+	Permissions permissions.Resolver
+	Resources   resources.BeatmapResourceProvider
+	Rankings    *rankings.RankingsService
+	PPv1        *performance.PPv1Service
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -112,6 +114,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Resources:       beatmapResources,
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
+		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),
 		SessionStoreApi: authentication.NewSessionStore(redisClient),
