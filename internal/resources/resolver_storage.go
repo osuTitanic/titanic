@@ -28,22 +28,22 @@ func (resolver *StorageResolver) Setup() error {
 }
 
 func (resolver *StorageResolver) Osz(setId int, noVideo bool) (io.ReadCloser, error) {
-	resolver.logger.Debug("Reading osz from storage...", slog.Int("set_id", setId))
+	resolver.logger.Debug("Reading osz from storage...", "set_id", setId)
 	return resolver.ReadStream(strconv.Itoa(setId), "osz")
 }
 
 func (resolver *StorageResolver) Osu(beatmapId int) (io.ReadCloser, error) {
-	resolver.logger.Debug("Reading beatmap from storage...", slog.Int("beatmap_id", beatmapId))
+	resolver.logger.Debug("Reading beatmap from storage...", "beatmap_id", beatmapId)
 	return resolver.ReadStream(strconv.Itoa(beatmapId), "beatmaps")
 }
 
 func (resolver *StorageResolver) Preview(setId int) (io.ReadCloser, error) {
-	resolver.logger.Debug("Reading preview from storage...", slog.Int("set_id", setId))
+	resolver.logger.Debug("Reading preview from storage...", "set_id", setId)
 	return resolver.ReadStream(strconv.Itoa(setId), "audio")
 }
 
 func (resolver *StorageResolver) Background(setId int, large bool) (io.ReadCloser, error) {
-	resolver.logger.Debug("Reading background from storage...", slog.Int("set_id", setId))
+	resolver.logger.Debug("Reading background from storage...", "set_id", setId)
 	// TODO: We only keep a single thumbnail per set, regardless of size.
 	// 		 We'd have to implement a solution to resize them here.
 	//       It could be a shared logic between avatars & thumbnails, since they both require resizing.
