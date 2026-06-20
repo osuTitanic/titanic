@@ -2,6 +2,7 @@ package permissions
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
 )
@@ -13,6 +14,20 @@ type Set struct {
 	GroupIds []int
 	Granted  []string
 	Rejected []string
+}
+
+// add appends a permission string to the granted / rejected list
+func (s *Set) add(permission string, rejected bool) {
+	if permission == "" {
+		return
+	}
+
+	permission = strings.ToLower(permission)
+	if rejected {
+		s.Rejected = append(s.Rejected, permission)
+	} else {
+		s.Granted = append(s.Granted, permission)
+	}
 }
 
 // Has reports whether the user is allowed to perform the given permission.
