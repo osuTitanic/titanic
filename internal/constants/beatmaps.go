@@ -13,6 +13,10 @@ const (
 	BeatmapStatusLoved     BeatmapStatus = 4
 )
 
+func (status BeatmapStatus) Value() int {
+	return int(status)
+}
+
 func (status BeatmapStatus) String() string {
 	switch status {
 	case BeatmapStatusInactive:
@@ -54,6 +58,18 @@ const (
 	BeatmapResourceTypeAudio      BeatmapResourceType = 5
 )
 
+// BeatmapStatuses lists every status in display order, for status listings / dropdowns.
+var BeatmapStatuses = []BeatmapStatus{
+	BeatmapStatusInactive,
+	BeatmapStatusGraveyard,
+	BeatmapStatusWIP,
+	BeatmapStatusPending,
+	BeatmapStatusRanked,
+	BeatmapStatusApproved,
+	BeatmapStatusQualified,
+	BeatmapStatusLoved,
+}
+
 type BeatmapGenre int
 
 const (
@@ -72,6 +88,24 @@ const (
 	BeatmapGenreFolk        BeatmapGenre = 13
 	BeatmapGenreJazz        BeatmapGenre = 14
 )
+
+// BeatmapGenres lists every genre in display order, for genre listings / dropdowns.
+var BeatmapGenres = []BeatmapGenre{
+	BeatmapGenreAny,
+	BeatmapGenreUnspecified,
+	BeatmapGenreVideoGame,
+	BeatmapGenreAnime,
+	BeatmapGenreRock,
+	BeatmapGenrePop,
+	BeatmapGenreOther,
+	BeatmapGenreNovelty,
+	BeatmapGenreHipHop,
+	BeatmapGenreElectronic,
+	BeatmapGenreMetal,
+	BeatmapGenreClassical,
+	BeatmapGenreFolk,
+	BeatmapGenreJazz,
+}
 
 func (genre BeatmapGenre) Value() int {
 	return int(genre)
@@ -131,6 +165,25 @@ const (
 	BeatmapLanguagePolish       BeatmapLanguage = 13
 	BeatmapLanguageOther        BeatmapLanguage = 14
 )
+
+// BeatmapLanguages lists every language in display order, for language listings / dropdowns.
+var BeatmapLanguages = []BeatmapLanguage{
+	BeatmapLanguageAny,
+	BeatmapLanguageUnspecified,
+	BeatmapLanguageEnglish,
+	BeatmapLanguageJapanese,
+	BeatmapLanguageChinese,
+	BeatmapLanguageInstrumental,
+	BeatmapLanguageKorean,
+	BeatmapLanguageFrench,
+	BeatmapLanguageGerman,
+	BeatmapLanguageSwedish,
+	BeatmapLanguageSpanish,
+	BeatmapLanguageItalian,
+	BeatmapLanguageRussian,
+	BeatmapLanguagePolish,
+	BeatmapLanguageOther,
+}
 
 func (language BeatmapLanguage) Value() int {
 	return int(language)
