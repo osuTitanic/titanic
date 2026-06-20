@@ -14,6 +14,11 @@ import (
 func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /a/", routes.DefaultAvatar)
 	server.Handle("GET /a/{filename}", routes.Avatar)
+	server.Handle("GET /mt/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /thumb/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /images/map-thumb/{filename}", routes.BeatmapThumbnail)
+	server.Handle("GET /preview/{filename}", routes.BeatmapAudioPreview)
+	server.Handle("GET /mp3/preview/{filename}", routes.BeatmapAudioPreview)
 
 	server.Handle("GET /{$}", routes.Home)
 	server.Handle("GET /partials/home/news", routes.HomeNewsPartial)
