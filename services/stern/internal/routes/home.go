@@ -75,6 +75,12 @@ func fetchHomeChatMessages(ctx *server.Context) []*schemas.Message {
 		ctx.Logger.Error("Failed to fetch home chat messages", "error", err)
 		return []*schemas.Message{}
 	}
+
+	// Reverse so the latest message is displayed at the bottom
+	// Idk if there's a better way of doing this
+	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
+		messages[i], messages[j] = messages[j], messages[i]
+	}
 	return messages
 }
 
