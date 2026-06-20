@@ -56,3 +56,22 @@ func (r *BeatmapsetRepository) FetchByStatus(status constants.BeatmapStatus, pre
 	err := Preloaded(r.db, preload).Where("submission_status = ?", status).Find(&beatmapsets).Error
 	return beatmapsets, err
 }
+
+func (r *BeatmapsetRepository) FetchDownloadServer(id int) (constants.BeatmapServer, error) {
+	var server constants.BeatmapServer
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Select("download_server").
+		Where("id = ?", id).
+		Scan(&server).Error
+	return server, err
+}
+
+func (r *BeatmapsetRepository) FetchDownloadServerByBeatmap(beatmapId int) (constants.BeatmapServer, error) {
+	var server constants.BeatmapServer
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Select("beatmapsets.download_server").
+		Joins("JOIN beatmaps ON beatmaps.set_id = beatmapsets.id").
+		Where("beatmaps.id = ?", beatmapId).
+		Scan(&server).Error
+	return server, err
+}
