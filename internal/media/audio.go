@@ -1,4 +1,4 @@
-package thumbnail
+package media
 
 import (
 	"io"

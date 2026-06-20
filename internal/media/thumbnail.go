@@ -1,6 +1,6 @@
 // MIT License: https://github.com/prplecake/go-thumbnail
 // Package thumbnail provides a method to create thumbnails from images.
-package thumbnail
+package media
 
 import (
 	"bytes"
