@@ -16,8 +16,7 @@
         {{ yield homeNews() .News }}
 
         <div class="bottom-stats">
-            {* TODO: Re-enable once we have the graph working again *}
-            {* {{ yield homeOnlineUsers() }} *}
+            {{ yield homeOnlineUsers() }}
             {{ yield homeChat() .ChatMessages }}
         </div>
     </div>
@@ -78,7 +77,7 @@
 {{ block homeOnlineUsers() }}
 <div class="stats-wrapper">
     <h2 class="headers">Online Users<span>Over the last 24 hours</span></h2>
-    <img src="/activity/image" alt="Activity" loading="lazy" height="70" width="459">
+    <img src="/charts/activity" alt="Activity" loading="lazy" height="70">
 </div>
 {{ end }}
 

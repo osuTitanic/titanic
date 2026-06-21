@@ -31,3 +31,12 @@ func (r *BanchoActivityRepository) DeleteOlderThan(cutoff time.Time) (int64, err
 func (r *BanchoActivityRepository) Update(updates *schemas.BanchoActivity, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }
+
+func (r *BanchoActivityRepository) FetchRange(start time.Time, end time.Time) ([]*schemas.BanchoActivity, error) {
+	var entries []*schemas.BanchoActivity
+	err := r.db.
+		Where("time >= ? AND time <= ?", start, end).
+		Order("time DESC").
+		Find(&entries).Error
+	return entries, err
+}
