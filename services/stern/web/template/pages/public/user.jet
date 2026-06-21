@@ -1,0 +1,339 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .User.Name }} - Player Info</title>
+<meta property="og:title" content="{{ .User.Name }} - Player Info - Titanic!">
+<meta property="og:description" content="Rank ({{ .Mode.String() }}): Global: #{{ .PPRank > 0 ? .PPRank : "-" }} | Country: #{{ .PPRankCountry > 0 ? .PPRankCountry : "-" }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .User.AvatarUrl() }}">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/u/{{ .User.Id }}">
+<link rel="canonical" href="/u/{{ .User.Id }}">
+<link rel="stylesheet" href="/css/user.css">
+{{ end }}
+
+{{ block body() }}
+<div class="profile-left">
+    {{ yield profileUserCard() . }}
+    {{ yield profileFriendStatus() . }}
+    {{ yield profileDetails() . }}
+    {{ yield profilePlaystyles() . }}
+    {* TODO: Port the moderation panel *}
+</div>
+<div class="profile-right">
+    {{ yield profileUserpage() . }}
+    {{ yield profileGamemodes() . }}
+    {{ yield profileTabs() . }}
+</div>
+<script>
+    var userId = {{ .User.Id }};
+    var mode = {{ .Mode.Value() }};
+    var modeName = '{{ .Mode.Alias() }}';
+</script>
+{{ end }}
+
+{{ block profileUserCard() }}
+<div class="profile-user-card">
+    {{ if .User.AvatarHash }}
+        {{ if .IsOwnProfile() }}
+            <a href="/account/profile#edit">
+                <div class="avatar avatar-frame">
+                    <img src="{{ .User.AvatarUrl() }}" alt="" width="128" height="128" fetchpriority="high" />
+                </div>
+            </a>
+        {{ else }}
+            <div class="avatar avatar-frame">
+                <img src="{{ .User.AvatarUrl() }}" alt="" width="128" height="128" fetchpriority="high" />
+            </div>
+        {{ end }}
+    {{ end }}
+
+    <div class="profile-username-container">
+        {* Difference from osu!: All past names are shown, instead of only the most recent change *}
+        {{ names := .User.PreviousNames() }}
+        <div
+            class="profile-username"
+            style="color: {{ .User.DisplayColor() != "" ? .User.DisplayColor() : "#000" }};"
+            {{ if len(names) > 0 }}title="Previously known as {{ range i, name := names }}{{ if i > 0 }}, {{ end }}{{ name }}{{ end }}"{{ end }}
+        >
+            {{ .User.Name }}
+        </div>
+    </div>
+
+    {{ if .User.Title }}
+        <div>
+            <b>{{ .User.Title }}</b>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Added group icons. The Donator group is hidden here and shown as an icon below. *}
+    {{ visibleGroups := .User.VisibleGroups() }}
+    {{ if len(visibleGroups) > 0 }}
+        <div class="groups">
+            {{ range _, group := visibleGroups }}
+                <a class="group" href="/g/{{ group.Id }}" style="color: {{ group.Color }}; border: 1px solid {{ group.Color }};">
+                    {{ group.ShortName | upper }}
+                </a>
+            {{ end }}
+        </div>
+    {{ end }}
+
+    {{ range _, badge := .User.Badges }}
+        <div class="badge" {{ if badge.Description }}title="{{ badge.Description }}"{{ end }}>
+            {* Difference from osu!: Added optional links on badges *}
+            {{ if badge.Url }}
+                <a href="{{ badge.Url }}">
+                    <img src="{{ badge.Icon }}" alt="" />
+                </a>
+            {{ else }}
+                <img src="{{ badge.Icon }}" alt="" />
+            {{ end }}
+        </div>
+    {{ end }}
+
+    <div style="padding: 3px;">
+        <center>
+            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country | lower }}&jumpto_id={{ .User.Id }}#jumpto">
+                <img
+                    class="flag"
+                    title="{{ countryName(.User.Country) }}"
+                    src="/images/flags/{{ .User.Country | lower }}.gif"
+                    alt="{{ .User.Country | upper }}"
+                />
+            </a>
+
+            {{ if .IsOtherProfile() }}
+                <a href="/account/chat?target={{ .User.Id }}">
+                    <img src="/images/icons/user/contact.png" title="Send private message" alt="DM" />
+                </a>
+            {{ end }}
+
+            {{ if .User.IsDonator() }}
+                <a href="/g/6" class="donator"></a>
+            {{ end }}
+        </center>
+    </div>
+
+    {{ if .User.Restricted && .Permissions.IsModerator() }}
+        <div class="banned-container">
+            <img src="/images/banned-new.png" alt="Banned" />
+        </div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block profileFriendStatus() }}
+{{ if .IsOtherProfile() }}
+    {{ if !.IsBlocked }}
+        <div id="friend-status" class="friend-current-{{ .CurrentAdded }}-target-{{ .TargetAdded }}">
+            <a href="#" onclick="return removeFriend()">
+                <i class="icon-heart"></i> Mutual Friend
+            </a>
+            <a href="#" onclick="return removeFriend()">
+                <i class="icon-star"></i> Friend
+            </a>
+            {* Difference from osu!: Added "Add as Mutual Friend" state *}
+            <a href="#" onclick="return addFriend()">
+                <i class="icon-plus-sign"></i> Add as Mutual Friend
+            </a>
+            <a href="#" onclick="return addFriend()">
+                <i class="icon-plus-sign"></i> Add as Friend
+            </a>
+        </div>
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block profileDetails() }}
+<div class="profile-details">
+    {{ if .User.Location }}
+        <div title="Location">
+            <i class="icon-map-marker"></i>
+            <div>{{ .User.Location }}</div>
+        </div>
+    {{ end }}
+
+    {{ if .User.Interests }}
+        <div title="Interests">
+            <i class="icon-heart-empty"></i>
+            <div>{{ .User.Interests }}</div>
+        </div>
+    {{ end }}
+
+    {* Separator *}
+    <div></div>
+
+    {{ if .User.Website }}
+        <div title="Website">
+            <i class="icon-globe"></i>
+            <div>
+                <a href="{{ .User.Website }}">{{ .User.Website }}</a>
+            </div>
+        </div>
+    {{ end }}
+
+    {{ if .User.Twitter }}
+        <div title="Twitter">
+            <i class="icon-twitter"></i>
+            <div>
+                <a href="{{ .User.Twitter }}">{{ .User.Twitter }}</a>
+            </div>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Added Discord *}
+    {{ if .User.Discord }}
+        <div title="Discord">
+            <i class="icon-discord"></i>
+            <div>{{ .User.Discord }}</div>
+        </div>
+    {{ end }}
+
+    {* Separator *}
+    <div></div>
+
+    <div title="Arrived">
+        <i class="icon-signin"></i>
+        <div>
+            <time class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></time>
+        </div>
+    </div>
+
+    <div title="Last Active">
+        {* Difference from osu!: Special online variant *}
+        {{ if .IsOnline }}
+            <i class="icon-signout online"></i>
+            <div>Online</div>
+        {{ else }}
+            <i class="icon-signout"></i>
+            <div>
+                <time class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></time>
+            </div>
+        {{ end }}
+    </div>
+
+    {* Difference from osu!: Added follower count *}
+    {{ if .Followers > 0 }}
+        <div title="Followers">
+            <i class="icon-star"></i>
+            <div>{{ .Followers|formatNumber }} follower{{ .Followers != 1 ? "s" : "" }}</div>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Doesn't link to user's post history *}
+    {{ if .TotalPosts > 0 }}
+        <div title="Posts">
+            <i class="icon-edit"></i>
+            <div>{{ .TotalPosts|formatNumber }} post{{ .TotalPosts != 1 ? "s" : "" }}</div>
+        </div>
+    {{ end }}
+
+    {{ if .IsOwnProfile() }}
+        <a class="edit-profile" href="/account/profile#edit">Edit</a>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block profilePlaystyles() }}
+<div class="playstyle-container">
+    {* long boi, i'm sorry *}
+    <div id="Mouse" class="playstyle playstyle-mouse{{ if .User.PlaysWithMouse() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Keyboard" class="playstyle playstyle-keyboard{{ if .User.PlaysWithKeyboard() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Tablet" class="playstyle playstyle-tablet{{ if .User.PlaysWithTablet() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Touch" class="playstyle playstyle-touch{{ if .User.PlaysWithTouch() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+</div>
+{{ end }}
+
+{{ block profileUserpage() }}
+{{ if .IsOwnProfile() }}
+    {{ if .User.Userpage }}
+        <a class="edit-button" href="/account/profile#userpage">Edit</a>
+        <br>
+        <div class="userpage">
+            <div class="bbcode">
+            {{ .User.UserpageText() | bbcode | raw }}
+            </div>
+        </div>
+    {{ else }}
+        <a href="/account/profile#userpage">Click to make your user page!</a>
+        <br>
+    {{ end }}
+{{ else }}
+    {{ if .User.Userpage }}
+        <div class="userpage">
+            <div class="bbcode">
+            {{ .User.UserpageText() | bbcode | raw }}
+            </div>
+        </div>
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block profileGamemodes() }}
+<div class="gamemode-container">
+    <a id="gm-0" class="gamemode-button {{ .Mode == 0 ? "active-mode" : "" }}" href="?mode=0">osu!</a>
+    <a id="gm-1" class="gamemode-button {{ .Mode == 1 ? "active-mode" : "" }}" href="?mode=1">Taiko</a>
+    <a id="gm-2" class="gamemode-button {{ .Mode == 2 ? "active-mode" : "" }}" href="?mode=2">CatchTheBeat</a>
+    <a id="gm-3" class="gamemode-button {{ .Mode == 3 ? "active-mode" : "" }}" href="?mode=3">osu!mania</a>
+</div>
+{{ end }}
+
+{{ block profileTabs() }}
+{*
+    Tab contents are left empty for now. They will later be loaded through
+    server-side HTML partials on interaction with the tab, similar to how
+    I did it with the homepage chat partial.
+*}
+<table class="profile-table">
+    <tbody>
+        <tr>
+            <td style="padding: 0;">
+                <table class="profile-tabs">
+                    <tbody>
+                        <td onclick="expandProfileTab('general', true)">General</td>
+                        <td onclick="expandProfileTab('leader', true)">Top Plays</td>
+                        <td onclick="expandProfileTab('history', true)">Historical</td>
+                        <td onclick="expandProfileTab('beatmaps', true)">Beatmaps</td>
+                        <td onclick="expandProfileTab('kudosu', true)">Kudosu!</td>
+                        <td onclick="expandProfileTab('achievements', true)">Achievements</td>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr onclick="expandProfileTab('general')">
+            <td id="tab-general" class="tab-heading">General</td>
+        </tr>
+        <td>
+            <div id="general" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+        <tr onclick="expandProfileTab('leader')">
+            <td id="tab-leader" class="tab-heading">Top Plays</td>
+        </tr>
+        <td>
+            <div id="leader" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+        <tr onclick="expandProfileTab('history')">
+            <td id="tab-history" class="tab-heading">Historical</td>
+        </tr>
+        <td>
+            <div id="history" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+        <tr onclick="expandProfileTab('beatmaps')">
+            <td id="tab-beatmaps" class="tab-heading">Beatmaps</td>
+        </tr>
+        <td>
+            <div id="beatmaps" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+        <tr onclick="expandProfileTab('kudosu')">
+            <td id="tab-kudosu" class="tab-heading">Kudosu!</td>
+        </tr>
+        <td>
+            <div id="kudosu" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+        <tr onclick="expandProfileTab('achievements')">
+            <td id="tab-achievements" class="tab-heading">Achievements</td>
+        </tr>
+        <td>
+            <div id="achievements" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+    </tbody>
+</table>
+{{ end }}

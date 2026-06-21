@@ -32,6 +32,10 @@ type DefaultView struct {
 	CurrentURI  string
 }
 
+func (v DefaultView) IsAuthenticated() bool {
+	return v.CurrentUser != nil
+}
+
 type HomeView struct {
 	DefaultView
 	News               []*schemas.ForumPost
@@ -107,6 +111,28 @@ type BeatmapView struct {
 	Invite                *schemas.BeatmapCollaborationRequest
 	IsBeatmapAuthor       bool
 	BatNominated          bool
+}
+
+type UserProfileView struct {
+	DefaultView
+	User          *schemas.User
+	Mode          constants.Mode
+	IsOnline      bool
+	Followers     int
+	TotalPosts    int
+	PPRank        int
+	PPRankCountry int
+	CurrentAdded  bool // current user friended this profile
+	TargetAdded   bool // profile friended current user
+	IsBlocked     bool
+}
+
+func (v UserProfileView) IsOwnProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id == v.User.Id
+}
+
+func (v UserProfileView) IsOtherProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id != v.User.Id
 }
 
 type BeatmapPacksView struct {
