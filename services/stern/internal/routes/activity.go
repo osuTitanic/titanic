@@ -31,6 +31,7 @@ func ActivityChart(ctx *server.Context) {
 	}
 
 	ctx.Response.Header().Set("Content-Type", "image/png")
+	ctx.Response.Header().Set("Cache-Control", "public, max-age=60")
 	ctx.Response.WriteHeader(http.StatusOK)
 	ctx.Response.Write(chart)
 }
