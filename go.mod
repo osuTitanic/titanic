@@ -10,6 +10,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/joho/godotenv v1.5.1
 	github.com/redis/go-redis/v9 v9.18.0
+	github.com/wcharczuk/go-chart/v2 v2.1.2
 	golang.org/x/crypto v0.31.0
 	golang.org/x/image v0.43.0
 	golang.org/x/text v0.38.0
@@ -18,6 +19,7 @@ require (
 )
 
 require (
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
 )
