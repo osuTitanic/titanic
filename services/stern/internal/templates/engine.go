@@ -40,6 +40,7 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("beatmapStatuses", beatmapStatuses)
 	set.AddGlobalFunc("shortMods", shortMods)
 	set.AddGlobalFunc("bbcode", renderBBCode)
+	set.AddGlobalFunc("formatActivity", formatActivity)
 	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)
 	set.AddGlobalFunc("searchParamUrl", searchParamUrl)
 	set.AddGlobalFunc("searchFlagUrl", searchFlagUrl)
