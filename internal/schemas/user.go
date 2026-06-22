@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -196,8 +197,27 @@ func (Stats) TableName() string {
 	return "stats"
 }
 
+func (stats *Stats) Accuracy() float64 {
+	return stats.Acc * 100
+}
+
+func (stats *Stats) PlaytimeHours() float64 {
+	return float64(stats.Playtime) / 60 / 60
+}
+
 func (stats *Stats) Level() int {
 	return int(constants.GetLevel(stats.Tscore))
+}
+
+// LevelProgress returns the percentage of progress towards the next level
+func (stats *Stats) LevelProgress() int {
+	precise := constants.GetLevel(stats.Tscore)
+	return int(math.Round((precise - math.Floor(precise)) * 100))
+}
+
+// LevelBarWidth returns the width (in pixels) of the level progress bar
+func (stats *Stats) LevelBarWidth() int {
+	return min(stats.LevelProgress(), 100) * 3
 }
 
 func (stats *Stats) Clears() int {
