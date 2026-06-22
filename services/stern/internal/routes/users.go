@@ -157,15 +157,20 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		activity = &templates.UserActivityPage{UserId: user.Id, Mode: mode}
 	}
 
+	ppRank, ppCountryRank, scoreRank, totalScoreRank, ppv1Rank := fetchUserRanks(
+		ctx, user.Id,
+		mode, country,
+	)
+
 	return &templates.UserGeneralTab{
 		User:           user,
 		Mode:           mode,
 		Stats:          stats,
-		PPRank:         fetchRankOrDefault(ctx, user.Id, mode, "performance", nil),
-		PPRankCountry:  fetchRankOrDefault(ctx, user.Id, mode, "performance", &country),
-		ScoreRank:      fetchRankOrDefault(ctx, user.Id, mode, "rscore", nil),
-		TotalScoreRank: fetchRankOrDefault(ctx, user.Id, mode, "tscore", nil),
-		PPv1Rank:       fetchRankOrDefault(ctx, user.Id, mode, "ppv1", nil),
+		PPRank:         ppRank,
+		PPRankCountry:  ppCountryRank,
+		ScoreRank:      scoreRank,
+		TotalScoreRank: totalScoreRank,
+		PPv1Rank:       ppv1Rank,
 		TotalKudosu:    totalKudosu,
 		Activity:       activity,
 	}
@@ -215,13 +220,23 @@ func fetchProfileUser(ctx *server.Context) (*schemas.User, bool) {
 	return user, true
 }
 
-func fetchRankOrDefault(ctx *server.Context, userId int, mode constants.Mode, rankType string, country *string) int {
-	rank, err := ctx.State.Rankings.Rank(userId, mode, rankType, country)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch rank", "user", userId, "type", rankType, "error", err)
-		return 0
+// fetchUserRanks resolves all relevant ranks for the selected user & mode
+func fetchUserRanks(ctx *server.Context, userId int, mode constants.Mode, country string) (int, int, int, int, int) {
+	keys := []string{
+		ctx.State.Rankings.RankingKey(mode, "performance", nil),
+		ctx.State.Rankings.RankingKey(mode, "performance", &country),
+		ctx.State.Rankings.RankingKey(mode, "rscore", nil),
+		ctx.State.Rankings.RankingKey(mode, "tscore", nil),
+		ctx.State.Rankings.RankingKey(mode, "ppv1", nil),
 	}
-	return rank
+
+	values, err := ctx.State.Rankings.RanksByKeys(keys, userId)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch ranks", "user", userId, "error", err)
+		return 0, 0, 0, 0, 0
+	}
+
+	return values[0], values[1], values[2], values[3], values[4]
 }
 
 func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, targetAdded bool, isBlocked bool, err error) {
