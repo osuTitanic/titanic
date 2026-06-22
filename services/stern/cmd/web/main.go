@@ -29,6 +29,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /partials/home/chat", routes.HomeChatPartial)
 	server.Handle("GET /partials/home/plays", routes.HomePlaysPartial)
 	server.Handle("GET /partials/packs/{id}", routes.BeatmapPackInfo)
+	server.Handle("GET /partials/users/{id}/general", routes.UserGeneralPartial)
+	server.Handle("GET /partials/users/{id}/activity", routes.UserActivityPartial)
 	server.Handle("GET /charts/activity", routes.ActivityChart)
 	server.Handle("GET /account/login", routes.AccountLoginPage)
 	server.Handle("POST /account/login", routes.AccountLogin)

@@ -125,6 +125,39 @@ type UserProfileView struct {
 	CurrentAdded  bool // current user friended this profile
 	TargetAdded   bool // profile friended current user
 	IsBlocked     bool
+	SuperFriendly bool
+	General       *UserGeneralTab
+}
+
+type UserGeneralTab struct {
+	User           *schemas.User
+	Mode           constants.Mode
+	Stats          *schemas.Stats
+	PPRank         int
+	PPRankCountry  int
+	ScoreRank      int
+	TotalScoreRank int
+	TotalKudosu    int
+	Activity       *UserActivityPage
+}
+
+// HasStats checks if the user has stats worth rendering
+// in the general tab for the selected mode.
+func (t *UserGeneralTab) HasStats() bool {
+	return t.Stats != nil && t.Stats.Playcount > 0 && !t.User.Restricted
+}
+
+type UserActivityPage struct {
+	UserId     int
+	Mode       constants.Mode
+	Rows       []*schemas.Activity
+	Offset     int
+	NextOffset int
+	HasMore    bool
+}
+
+func (p *UserActivityPage) IsFirstPage() bool {
+	return p.Offset == 0
 }
 
 func (v UserProfileView) IsOwnProfile() bool {

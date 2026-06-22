@@ -3,7 +3,7 @@
 {{ block head() }}
 <title>{{ .User.Name }} - Player Info</title>
 <meta property="og:title" content="{{ .User.Name }} - Player Info - Titanic!">
-<meta property="og:description" content="Rank ({{ .Mode.String() }}): Global: #{{ .PPRank > 0 ? .PPRank : "-" }} | Country: #{{ .PPRankCountry > 0 ? .PPRankCountry : "-" }}">
+<meta property="og:description" content="Rank ({{ .Mode }}): Global: #{{ .PPRank > 0 ? .PPRank : "-" }} | Country: #{{ .PPRankCountry > 0 ? .PPRankCountry : "-" }}">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .User.AvatarUrl() }}">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/u/{{ .User.Id }}">
 <link rel="canonical" href="/u/{{ .User.Id }}">
@@ -27,7 +27,9 @@
     var userId = {{ .User.Id }};
     var mode = {{ .Mode.Value() }};
     var modeName = '{{ .Mode.Alias() }}';
+    var superFriendly = {{ .SuperFriendly }};
 </script>
+<script src="/js/user.js" defer></script>
 {{ end }}
 
 {{ block profileUserCard() }}
@@ -302,7 +304,10 @@
             <td id="tab-general" class="tab-heading">General</td>
         </tr>
         <td>
-            <div id="general" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            {* The general tab is always pre-loaded server-side *}
+            <div id="general" class="tab-content" data-loaded="true" style="opacity: 1; filter: none; display: none; height: 0px;">
+                {{ yield userGeneralTab() .General }}
+            </div>
         </td>
         <tr onclick="expandProfileTab('leader')">
             <td id="tab-leader" class="tab-heading">Top Plays</td>
@@ -336,4 +341,145 @@
         </td>
     </tbody>
 </table>
+{{ end }}
+
+{{ block userGeneralTab() }}
+<div class="tab-spacing">
+{{ if .HasStats() }}
+    <div class="profile-performance">
+        <h2>
+            <strong {{ if .Stats.PeakRank > 0 }}title="Peaked at #{{ .Stats.PeakRank|formatNumber }}"{{ end }}>
+                <a href="https://osu.ppy.sh/help/wiki/Performance_Points">Performance</a>:
+                <span>{{ .Stats.PP|round|formatNumber }}pp</span>
+                {{ if .Stats.PP > 0 }}(#{{ .PPRank }}){{ else }}(#-){{ end }}
+            </strong>
+        </h2>
+        {{ if .PPRankCountry > 0 }}
+            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country|upper }}">
+                <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country|upper }}">
+            </a>
+            {{ if .Stats.PP > 0 }}#{{ .PPRankCountry }}{{ else }}#-{{ end }}
+        {{ end }}
+    </div>
+
+    {* TODO: Port the rank history graph *}
+    <svg></svg>
+
+    <div class="profile-recent">
+        <h3 class="profile-stats-header">Recent Activity</h3>
+        <table>
+            <tbody id="profile-recent-rows">
+                {{ yield userActivityRows() .Activity }}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="profile-detailed-stats">
+        <h3 class="profile-stats-header">Detailed Stats</h3>
+        <h4 class="profile-stats-element {{ if .ScoreRank > 0 && .ScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Ranked Score consists of all your highest passing scores you have achieved. If you beat a score, only the difference between them will be added.">
+            <b>Ranked Score</b>: {{ .Stats.Rscore|formatNumber }} {{ if .ScoreRank > 0 }} (#{{ .ScoreRank|formatNumber }}) {{ end }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Accuracy is calculated as a pp-weighted average of every beatmap you have achieved a passing score in, with each difficulty counting separately.">
+            <b>Hit Accuracy</b>: {{ formatFloat(.Stats.Accuracy(), 2) }}%
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Total number of ranked beatmap plays. This includes both passes and fails.">
+            <b>Play Count</b>: {{ .Stats.Playcount|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Total time spent playing.">
+            <b>Play Time</b>: {{ formatFloat(.Stats.PlaytimeHours(), 1) }} hours
+        </h4>
+        <br>
+        <h4 class="profile-stats-element {{ if .TotalScoreRank > 0 && .TotalScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Total points scored in all ranked beatmap plays. This includes both passes and fails.">
+            <b>Total Score</b>: {{ .Stats.Tscore|formatNumber }} {{ if .TotalScoreRank > 0 }} (#{{ .TotalScoreRank|formatNumber }}) {{ end }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Your level is based on your total accumulated score. You will gradually increase your level just by playing the game!">
+            <b>Current Level</b>: {{ .Stats.Level() }}
+        </h4>
+        <br>
+        <table class="level-bar">
+            <tbody>
+                <tr>
+                    <td class="level-bar-percent" style="width: {{ .Stats.LevelBarWidth() }}px;">{{ .Stats.LevelProgress() }}%</td>
+                    <td style="background-color: white;"></td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <h4 class="profile-stats-element" title="Total notes hit.">
+            <b>Total Hits</b>: {{ .Stats.TotalHits|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Highest combo achieved (hits in a row without a miss).">
+            <b>Maximum Combo</b>: {{ .Stats.MaxCombo|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Based on how much of a contribution the user has made to beatmap moderation.">
+            <b>Total Kudosu Earned</b>: {{ .TotalKudosu|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="The total number of times this user's replays have been watched.">
+            <b>Replays Watched by Others</b>: {{ .Stats.ReplayViews|formatNumber }} time{{ .Stats.ReplayViews != 1 ? "s" : "" }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element"><b>Ranks</b></h4>
+        <table class="profile-centered-space">
+            <tbody>
+                <tr>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/XH.png" height="42" alt="XH"></td>
+                    <td style="width: 50px;">{{ .Stats.CountXH }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/X.png" height="42" alt="X"></td>
+                    <td style="width: 50px;">{{ .Stats.CountX }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/SH.png" height="42" alt="SH"></td>
+                    <td style="width: 50px;">{{ .Stats.CountSH }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/S.png" height="42" alt="S"></td>
+                    <td style="width: 50px;">{{ .Stats.CountS }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/A.png" height="42" alt="A"></td>
+                    <td style="width: 50px;">{{ .Stats.CountA }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/B.png" height="42" alt="B"></td>
+                    <td style="width: 50px;">{{ .Stats.CountB }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/C.png" height="42" alt="C"></td>
+                    <td style="width: 50px;">{{ .Stats.CountC }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/D.png" height="50" alt="D"></td>
+                    <td style="width: 50px;">{{ .Stats.CountD }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{ else }}
+    <h3 class="profile-stats-header">No information recorded</h3>
+    This user has not yet played any ranked maps in {{ .Mode }} mode.
+{{ end }}
+</div>
+{{ end }}
+
+{*
+    Renders one page of recent activity rows, plus a "Show me more"
+    link that loads the next page & replaces itself.
+*}
+{{ block userActivityRows() }}
+{{ range _, item := .Rows }}
+    <tr>
+        <td style="width: 20%;"><span class="timeago" datetime="{{ item.Time.Format("2006-01-02T15:04:05Z07:00") }}"></span></td>
+        <td>{{ item | formatActivity | raw }}</td>
+    </tr>
+{{ else }}
+    {{ if .IsFirstPage() }}
+    <tr>
+        <td>This user hasn't done anything notable recently!</td>
+    </tr>
+    {{ end }}
+{{ end }}
+{{ if .HasMore }}
+    <tr class="activity-more-row">
+        <td colspan="2">
+            <a href="javascript:void(0);" onclick="return loadMoreActivity(this, {{ .NextOffset }})">Show me more...</a>
+        </td>
+    </tr>
+{{ end }}
 {{ end }}
