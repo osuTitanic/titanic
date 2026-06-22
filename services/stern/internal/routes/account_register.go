@@ -217,8 +217,8 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 			return err
 		}
 
-		playerGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.DefaultPlayerGroupId}
-		supporterGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.DefaultSupporterGroupId}
+		playerGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.GroupPlayers}
+		supporterGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.GroupSupporter}
 
 		if err := repositories.Groups.CreateEntry(playerGroup); err != nil {
 			return err
