@@ -39,9 +39,6 @@ body {
 
 .avatar {
     display: inline-block;
-    background: #fff;
-    border: 1px solid #ddd;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     max-width: 128px;
     max-height: 128px;
     text-align: center;
@@ -502,11 +499,29 @@ body {
     text-align: right;
 }
 
-.profile-ranks {
+.profile-centered-space {
     text-align: center;
     margin: 0 auto;
     width: 60%;
     margin-top: 15px;
+}
+
+.stamp {
+    animation: stamp-glow 3s infinite ease-in-out;
+    transition: transform 0.1s ease-in-out;
+}
+
+.stamp:hover {
+    filter: drop-shadow(0 0 22px rgba(255, 245, 190, 0.7));
+    transform: scale(0.9);
+    cursor: pointer;
+    animation: none;
+}
+
+@keyframes stamp-glow {
+    0% { filter: drop-shadow(0 0 7px rgba(150, 150, 150, 0.25)); }
+    50% { filter: drop-shadow(0 0 7px rgba(150, 170, 150, 0.5)); }
+    100% { filter: drop-shadow(0 0 7px rgba(150, 150, 150, 0.25)); }
 }
 
 #top-scores, #leader-scores, #pinned-scores {
@@ -520,7 +535,6 @@ body {
 }
 
 #leader h2 {
-    text-shadow: #efcfe1 0px 0px 10px;
     font-weight: normal;
     font-size: 130%;
     color: #cc2e8a;
@@ -704,173 +718,270 @@ body {
 
 .moderation-header {
     text-align: center;
-    margin-bottom: 5px;
+    margin: 2px 0 5px 0;
+    color: #5a539a;
+    font-size: 120%;
+    font-weight: normal;
 }
 
 .moderation-container {
-    opacity: 0;
+    opacity: 0.35;
     transition: opacity 0.25s ease-in-out;
     margin-top: 5px;
     margin-bottom: 7.5px;
     padding: 5px;
     display: grid;
-    background-color: #e7e4fc;
+    row-gap: 3px;
+    background-color: #e1ddfc;
+    border: 1px solid #dad7fb;
     border-radius: 5px;
 }
 
-.moderation-container:hover {
+.moderation-container:hover,
+.moderation-container:focus-within {
     opacity: 1;
 }
 
 .moderation-container button {
-    margin-top: 2.5px;
-    background: #efeeff;
+    margin-top: 2px;
+    background: #f8f7ff;
     border: 1px solid #bab6e6;
-    border-radius: 5px;
-    margin-left: 5px;
-    padding: 4px 8px;
-    border-radius: 4px;
+    border-radius: 3px;
+    color: #3843a6;
+    padding: 3px 6px;
+    line-height: 1.25;
 }
 
 .moderation-container button:hover {
-    background: #cfcafc;
+    background: #dedbfd;
     cursor: pointer;
+    text-decoration: none;
+}
+
+.moderation-container button i {
+    color: inherit;
+    margin-right: 4px;
 }
 
 .moderation-container dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(47, 47, 101, 0.45);
+}
+
+.moderation-container dialog.popup.moderation-dialog {
+    padding: 0;
+    background: #f0ecfa;
+    border: 2px solid #5c559c;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.18);
+    color: #222;
+    overflow: hidden;
+    max-height: calc(100vh - 40px);
+}
+
+.moderation-dialog-title {
+    margin: 0;
+    padding: 5px 9px;
+    background: #5b5399;
+    border-bottom: 1px solid #423d7a;
+    color: #fff;
+    font-size: 115%;
+    font-weight: bold;
+    line-height: 1.35;
+    text-shadow: none;
+}
+
+.moderation-dialog-title i {
+    margin-right: 5px;
+}
+
+.moderation-dialog-content {
+    max-height: calc(100vh - 100px);
+    overflow: auto;
+    padding: 10px;
+    background: linear-gradient(#f7f5ff, #f0ecfa 90px);
+}
+
+.moderation-container .moderation-dialog button {
+    width: auto;
+    text-align: center;
 }
 
 .moderation-container .confirm-button {
-    background: #5db8ef;
+    background: #776cc0;
     color: #fff;
-    border: none;
+    border-color: #4b4589;
+    font-weight: bold;
 }
 
 .moderation-container .confirm-button:hover {
-    background: #46a7e8;
+    background: #5b5399;
     cursor: pointer;
 }
 
 .moderation-container .grey-button {
-    background: #e6e2f8;
-    border: 1px solid #cfc9f6;
+    background: #fff;
+    border-color: #8f8f9d;
+    color: #333;
 }
 
 .moderation-container .grey-button:hover {
-    background: #d4cfff;
+    background: rgb(205, 205, 240);
     cursor: pointer;
 }
 
-.moderation-container h2 {
-    margin-bottom: 15px;
-    font-size: 125%;
+.moderation-container .danger-button {
+    background: #fff4f6;
+    border-color: #e4a0aa;
+    color: #b00000;
+}
+
+.moderation-container .danger-button:hover {
+    background: #ffe4e8;
+}
+
+.moderation-container .warning-button {
+    background: #fff8e8;
+    border-color: #e8ca7d;
+    color: #9c5d00;
+}
+
+.moderation-container .warning-button:hover {
+    background: #ffefc4;
+}
+
+.moderation-container .restore-button {
+    background: #f0fff0;
+    border-color: #a2d09e;
+    color: #216b22;
+}
+
+.moderation-container .restore-button:hover {
+    background: #ddf8dd;
 }
 
 .moderation-container .form-row {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: flex-start;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .moderation-container .form-row label {
-    width: 100px;
-    flex: 0 0 100px;
+    width: 108px;
+    flex: 0 0 108px;
     font-weight: bold;
-    color: #333;
-    margin-top: 6px;
+    color: #5a539a;
+    line-height: 22px;
+    margin-top: 1px;
+    text-align: right;
 }
 
 .moderation-container .form-actions {
     display: flex;
     justify-content: flex-end;
-    vertical-align: middle;
-    margin-top: 14px;
-    gap: 8px;
+    align-items: center;
+    padding-top: 8px;
+    gap: 5px;
+    border-top: 1px solid #dad7fb;
+}
+
+.moderation-container .form-actions-left {
+    justify-content: flex-start;
 }
 
 .moderation-container dialog input[type="text"],
 .moderation-container dialog input[type="email"],
-.moderation-container dialog textarea {
+.moderation-container dialog input[type="number"],
+.moderation-container dialog textarea,
+.moderation-container dialog select {
     flex: 1 1 auto;
-    padding: 6px;
-    border: 1px solid #cfc9f6;
-    border-radius: 4px;
-    background: #ffff;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 2px 4px;
+    border: 1px solid #90ace7;
+    border-radius: 3px;
+    background: #fff;
+    color: #222;
 }
 
 .moderation-container dialog textarea {
-    min-height: 60px;
+    min-height: 72px;
+    line-height: 1.35;
     resize: vertical;
 }
 
 .moderation-container dialog input[type="checkbox"] {
-    /* idk why but checkboxes are offset */
-    transform: translateY(4px);
+    margin-top: 4px;
 }
 
-.moderation-container dialog select {
-    max-width: 60%
+.moderation-table-wrap {
+    overflow-x: auto;
+    background: #fff;
+    border: 1px solid #dad7fb;
+    box-shadow: inset 0 1px 0 #fff;
 }
 
-#moderation-edit-profile {
-    width: 800px;
-    max-width: calc(100% - 40px);
-    padding: 18px;
-    background: #f0ecfa;
-    border-radius: 6px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-    color: #222;
-}
-
-#moderation-badges {
-    width: 1200px;
-    max-width: calc(100% - 40px);
-    padding: 14px;
-    background: #f7f5fd;
-    border-radius: 6px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
-    color: #222;
-}
-
-#moderation-badges h2 {
-    margin: 0 0 10px 0;
-    font-size: 115%;
-    color: #40347a;
-}
-
-#moderation-badges table {
+.moderation-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 8px;
-    background: transparent;
+    min-width: 760px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
 }
 
-#moderation-badges th,
-#moderation-badges td {
-    padding: 8px;
-    border-bottom: 1px solid #efecff;
+.moderation-table th,
+.moderation-table td {
+    padding: 5px;
     vertical-align: middle;
 }
 
-#moderation-badges input[type="text"],
-#moderation-badges textarea {
-    width: 100%;
-    padding: 6px 8px;
-    border: 1px solid #cfc9f6;
-    border-radius: 4px;
-    background: #fff;
-    font-size: 95%;
-    box-sizing: border-box;
+.moderation-table th {
+    text-align: left;
+    background: #e7e4fc;
+    border-bottom: 1px solid #a9a9ff;
+    color: #5a539a;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
-#moderation-infringements {
-    width: 800px;
+.moderation-table td {
+    border-bottom: 1px solid #efecff;
+}
+
+.moderation-table tbody tr:nth-child(even) {
+    background: #f8f6ff;
+}
+
+.moderation-table tbody tr:hover {
+    background: #f5f2fe;
+}
+
+.moderation-table .moderation-new-row td {
+    background: #f0ecfa;
+    border-top: 1px solid #dad7fb;
+}
+
+.moderation-actions-cell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.moderation-actions-cell button {
+    margin-left: 4px;
+}
+
+.moderation-checkbox-cell {
+    text-align: center;
+}
+
+#moderation-edit-profile {
+    width: 720px;
     max-width: calc(100% - 40px);
-    padding: 14px;
-    background: #f7f5fd;
-    border-radius: 6px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.18);
-    color: #222;
+}
+
+#moderation-badges,
+#moderation-stamps,
+#moderation-infringements {
+    width: 860px;
+    max-width: calc(100% - 40px);
 }
