@@ -47,10 +47,7 @@ func (r *BeatmapRepository) UpdateByCriteria(criteria map[string]any, updates *s
 func (r *BeatmapRepository) ById(id int, preload ...string) (*schemas.Beatmap, error) {
 	var beatmap schemas.Beatmap
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmap).Error
-	if err != nil {
-		return nil, err
-	}
-	return &beatmap, nil
+	return LookupResult(&beatmap, err)
 }
 
 func (r *BeatmapRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmap, error) {

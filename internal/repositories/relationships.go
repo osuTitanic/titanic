@@ -32,10 +32,7 @@ func (r *RelationshipRepository) Update(updates *schemas.Relationship, columns .
 func (r *RelationshipRepository) ByUserAndTarget(userId int, targetId int, preload ...string) (*schemas.Relationship, error) {
 	var relationship schemas.Relationship
 	err := Preloaded(r.db, preload).Where("user_id = ? AND target_id = ?", userId, targetId).First(&relationship).Error
-	if err != nil {
-		return nil, err
-	}
-	return &relationship, nil
+	return LookupResult(&relationship, err)
 }
 
 func (r *RelationshipRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Relationship, error) {

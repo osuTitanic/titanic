@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,7 +11,6 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 const (
@@ -156,23 +154,16 @@ func resolveLoginUser(ctx *server.Context, identifier string) (*schemas.User, er
 	// Try to resolve by email
 	if strings.Contains(identifier, "@") {
 		user, err := ctx.State.Users.ByEmail(identifier)
-		if err == nil {
-			return user, nil
-		}
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err != nil {
 			return nil, err
+		}
+		if user != nil {
+			return user, nil
 		}
 	}
 
 	// Try to resolve by username
-	user, err := ctx.State.Users.BySafeName(schemas.ResolveSafeName(identifier))
-	if err == nil {
-		return user, nil
-	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
-	return nil, err
+	return ctx.State.Users.BySafeName(schemas.ResolveSafeName(identifier))
 }
 
 func hasTooManyLoginAttempts(ctx *server.Context) (bool, error) {

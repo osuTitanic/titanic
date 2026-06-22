@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"slices"
@@ -13,7 +12,6 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
-	"gorm.io/gorm"
 )
 
 const (
@@ -45,17 +43,12 @@ func UserProfile(ctx *server.Context) {
 
 	user, err := ctx.State.Repositories.Users.ById(id, "Groups.Group", "Badges", "Names")
 	if err != nil {
-		// TODO: make use of LookupResult helper to reduce ErrRecordNotFound checks across the codebase
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch user", "id", id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	if !user.Activated {
+	if user == nil || !user.Activated {
 		NotFound(ctx)
 		return
 	}
@@ -149,7 +142,7 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 	country := strings.ToUpper(user.Country)
 
 	stats, err := ctx.State.Repositories.Stats.ByMode(user.Id, mode.Value())
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil {
 		ctx.Logger.Error("Failed to fetch stats", "user", user.Id, "mode", mode, "error", err)
 	}
 
@@ -209,17 +202,12 @@ func fetchProfileUser(ctx *server.Context) (*schemas.User, bool) {
 
 	user, err := ctx.State.Repositories.Users.ById(id)
 	if err != nil {
-		// TODO: make use of LookupResult helper to reduce ErrRecordNotFound checks across the codebase
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return nil, false
-		}
 		ctx.Logger.Error("Failed to fetch user", "id", id, "error", err)
 		InternalServerError(ctx)
 		return nil, false
 	}
 
-	if !user.Activated {
+	if user == nil || !user.Activated {
 		NotFound(ctx)
 		return nil, false
 	}
@@ -241,12 +229,11 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 	}
 
 	// The profile owner has blocked the current user
-	if blocked, err := ctx.State.Repositories.Relationships.ByUserAndTarget(targetId, ctx.CurrentUser.Id); err != nil {
-		// TODO: make use of LookupResult helper to reduce ErrRecordNotFound checks across the codebase
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, false, false, err
-		}
-	} else if blocked.Status == 1 {
+	blocked, err := ctx.State.Repositories.Relationships.ByUserAndTarget(targetId, ctx.CurrentUser.Id)
+	if err != nil {
+		return false, false, false, err
+	}
+	if blocked != nil && blocked.Status == 1 {
 		return false, false, true, nil
 	}
 
@@ -267,13 +254,13 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 
 func resolveUserByName(ctx *server.Context, query string) {
 	// Try to find the user by their current name first
-	if user, err := ctx.State.Repositories.Users.ByNameCaseInsensitive(query); err == nil {
+	if user, err := ctx.State.Repositories.Users.ByNameCaseInsensitive(query); err == nil && user != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", user.Id))
 		return
 	}
 
 	// Search the name history as a backup
-	if name, err := ctx.State.Repositories.Names.ByName(query); err == nil {
+	if name, err := ctx.State.Repositories.Names.ByName(query); err == nil && name != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", name.UserId))
 		return
 	}

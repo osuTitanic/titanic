@@ -83,7 +83,7 @@ func BeatmapDownload(ctx *server.Context) {
 	}
 
 	beatmapset, err := ctx.State.Beatmapsets.ById(setId)
-	if err != nil {
+	if err != nil || beatmapset == nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}

@@ -15,7 +15,6 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 func PasswordResetPage(ctx *server.Context) {
@@ -68,12 +67,12 @@ func PasswordReset(ctx *server.Context) {
 
 	user, err := ctx.State.Users.ByEmail(emailAddressLower)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			RenderResetPage(ctx, "We could not find any user with that email address.")
-			return
-		}
 		ctx.Logger.Error("Failed to fetch user for password reset", "email", emailAddress, "error", err)
 		InternalServerError(ctx)
+		return
+	}
+	if user == nil {
+		RenderResetPage(ctx, "We could not find any user with that email address.")
 		return
 	}
 
@@ -116,12 +115,12 @@ func PasswordReset(ctx *server.Context) {
 func completePasswordReset(ctx *server.Context, token string) {
 	verification, err := ctx.State.Verifications.ByToken(token, "User")
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch verification for password reset", "error", err)
 		InternalServerError(ctx)
+		return
+	}
+	if verification == nil {
+		NotFound(ctx)
 		return
 	}
 	if verification.Type != constants.VerificationTypePassword {

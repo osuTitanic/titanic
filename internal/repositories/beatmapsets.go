@@ -29,10 +29,7 @@ func (r *BeatmapsetRepository) Update(updates *schemas.Beatmapset, columns ...st
 func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmapset, error) {
 	var beatmapset schemas.Beatmapset
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmapset).Error
-	if err != nil {
-		return nil, err
-	}
-	return &beatmapset, nil
+	return LookupResult(&beatmapset, err)
 }
 
 func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
