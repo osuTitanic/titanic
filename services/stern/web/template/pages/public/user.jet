@@ -8,6 +8,7 @@
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/u/{{ .User.Id }}">
 <link rel="canonical" href="/u/{{ .User.Id }}">
 <link rel="stylesheet" href="/css/user.css">
+<link rel="stylesheet" href="/lib/nv.d3.min.css">
 {{ end }}
 
 {{ block body() }}
@@ -28,8 +29,16 @@
     var mode = {{ .Mode.Value() }};
     var modeName = '{{ .Mode.Alias() }}';
     var superFriendly = {{ .SuperFriendly }};
+
+    // Current ranks, used as the "now" data for the rank history graph
+    var globalRank = {{ .General.PPRank }};
+    var countryRank = {{ .General.PPRankCountry }};
+    var scoreRank = {{ .General.ScoreRank }};
+    var ppv1Rank = {{ .General.PPv1Rank }};
 </script>
 <script src="/js/user.js" defer></script>
+<script src="/lib/d3.v3.min.js" defer></script>
+<script src="/lib/nv.d3.min.js" defer></script>
 {{ end }}
 
 {{ block profileUserCard() }}
@@ -362,8 +371,9 @@
         {{ end }}
     </div>
 
-    {* TODO: Port the rank history graph *}
-    <svg></svg>
+    <div class="profile-graph" id="rank-graph">
+        <svg></svg>
+    </div>
 
     <div class="profile-recent">
         <h3 class="profile-stats-header">Recent Activity</h3>

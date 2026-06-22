@@ -227,6 +227,13 @@ function formatDateTimeForTitle(value) {
     return month + "/" + day + "/" + year + " " + hour + ":" + minute + ":" + second;
 }
 
+function getDaysAgo(date) {
+    var currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return Math.ceil((currentDate.valueOf() - date.valueOf()) / 86400 / 1000);
+}
+
 function getScrollTop() {
     return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
 }

@@ -137,6 +137,7 @@ type UserGeneralTab struct {
 	PPRankCountry  int
 	ScoreRank      int
 	TotalScoreRank int
+	PPv1Rank       int
 	TotalKudosu    int
 	Activity       *UserActivityPage
 }

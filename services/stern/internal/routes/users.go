@@ -165,6 +165,7 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		PPRankCountry:  fetchRankOrDefault(ctx, user.Id, mode, "performance", &country),
 		ScoreRank:      fetchRankOrDefault(ctx, user.Id, mode, "rscore", nil),
 		TotalScoreRank: fetchRankOrDefault(ctx, user.Id, mode, "tscore", nil),
+		PPv1Rank:       fetchRankOrDefault(ctx, user.Id, mode, "ppv1", nil),
 		TotalKudosu:    totalKudosu,
 		Activity:       activity,
 	}
