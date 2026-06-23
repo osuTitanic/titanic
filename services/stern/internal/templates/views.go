@@ -129,6 +129,14 @@ type UserProfileView struct {
 	General       *UserGeneralTab
 }
 
+func (v UserProfileView) IsOwnProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id == v.User.Id
+}
+
+func (v UserProfileView) IsOtherProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id != v.User.Id
+}
+
 type UserGeneralTab struct {
 	User           *schemas.User
 	Mode           constants.Mode
@@ -161,12 +169,35 @@ func (p *UserActivityPage) IsFirstPage() bool {
 	return p.Offset == 0
 }
 
-func (v UserProfileView) IsOwnProfile() bool {
-	return v.CurrentUser != nil && v.CurrentUser.Id == v.User.Id
+type UserTopPlaysTab struct {
+	UserId     int
+	Mode       constants.Mode
+	IsOwner    bool
+	FirstsRank int
+	Pinned     *UserScorePage
+	Best       *UserScorePage
+	First      *UserScorePage
 }
 
-func (v UserProfileView) IsOtherProfile() bool {
-	return v.CurrentUser != nil && v.CurrentUser.Id != v.User.Id
+type UserScorePage struct {
+	UserId          int
+	Mode            constants.Mode
+	Section         string // "pinned" | "best" | "first"
+	Scores          []*schemas.Score
+	Offset          int
+	NextOffset      int
+	HasMore         bool
+	Total           int
+	IsOwner         bool
+	ApprovedRewards bool
+}
+
+func (p *UserScorePage) IsFirstPage() bool {
+	return p.Offset == 0
+}
+
+func (p *UserScorePage) ShowWeight() bool {
+	return p.Section == "best"
 }
 
 type BeatmapPacksView struct {

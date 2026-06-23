@@ -318,30 +318,35 @@
                 {{ yield userGeneralTab() .General }}
             </div>
         </td>
+
         <tr onclick="expandProfileTab('leader')">
             <td id="tab-leader" class="tab-heading">Top Plays</td>
         </tr>
         <td>
-            <div id="leader" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            <div id="leader" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/leader" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
+
         <tr onclick="expandProfileTab('history')">
             <td id="tab-history" class="tab-heading">Historical</td>
         </tr>
         <td>
             <div id="history" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
+
         <tr onclick="expandProfileTab('beatmaps')">
             <td id="tab-beatmaps" class="tab-heading">Beatmaps</td>
         </tr>
         <td>
             <div id="beatmaps" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
+
         <tr onclick="expandProfileTab('kudosu')">
             <td id="tab-kudosu" class="tab-heading">Kudosu!</td>
         </tr>
         <td>
             <div id="kudosu" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
+
         <tr onclick="expandProfileTab('achievements')">
             <td id="tab-achievements" class="tab-heading">Achievements</td>
         </tr>
@@ -491,5 +496,91 @@
             <a href="javascript:void(0);" onclick="return loadMoreActivity(this, {{ .NextOffset }})">Show me more...</a>
         </td>
     </tr>
+{{ end }}
+{{ end }}
+
+{*
+    Renders the three sections of the Top Plays tab:
+    pinned scores, the best pp scores & the user's first place ranks
+*}
+{{ block userTopPlaysTab() }}
+<div class="tab-spacing">
+    <div id="pinned-scores">
+        <h2>Pinned Scores{{ if .Pinned.Total > 0 }} ({{ .Pinned.Total|formatNumber }}){{ end }}</h2>
+        {{ yield userScoreList() .Pinned }}
+    </div>
+    <div id="top-scores">
+        <h2>Best Performance{{ if .Best.Total > 0 }} ({{ .Best.Total|formatNumber }}){{ end }}</h2>
+        {{ yield userScoreList() .Best }}
+    </div>
+    <div id="leader-scores">
+        <h2>First Place Ranks{{ if .First.Total > 0 }} ({{ .First.Total|formatNumber }}){{ if .FirstsRank > 0 }} - #{{ .FirstsRank|formatNumber }}{{ end }}{{ end }}</h2>
+        {{ yield userScoreList() .First }}
+    </div>
+</div>
+{{ end }}
+
+{*
+    Renders a list of score entries, plus a "Show me more"
+    link that loads the next page & replaces itself.
+*}
+{{ block userScoreList() }}
+{{ page := . }}
+{{ range index, score := page.Scores }}
+    {{ loved := !page.ApprovedRewards && score.Beatmap.Status > 2 }}
+    <div class="score" id="score-{{ page.Section }}-{{ page.Offset + index }}" onclick="return scoreClicked(event, {{ score.Id }})">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="score-left">
+                        <div>
+                            <img loading="lazy" src="/images/grades/{{ score.Grade }}_small.png" alt="{{ score.Grade }}">
+                            <b>
+                                <a href="/b/{{ score.BeatmapId }}?mode={{ score.Mode.Value() }}">{{ score.Beatmap.Name() }}</a>
+                                {{ modString := score.Mods.String() }}
+                                {{ if modString != "NM" }}<b>+{{ modString }}</b>{{ end }}
+                            </b>
+                            ({{ formatFloat(score.Acc * 100, 2) }}%)
+                        </div>
+                        <div class="score-bottom">
+                            <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                            {{ if score.ClientString }}<div class="score-version"> &mdash; on <span class="score-version-number">{{ score.ClientString }}</span></div>{{ end }}
+                        </div>
+                    </td>
+                    <td class="score-right">
+                        <div class="pp-display">
+                            {{ if loved }}
+                                <i class="icon-heart" title="{{ score.PP|round|formatNumber }}pp (if ranked)"></i>
+                            {{ else }}
+                                <b>{{ score.PP|round|formatNumber }}pp</b>
+                            {{ end }}
+                        </div>
+                        <div class="pp-display-weight">
+                            {{ if page.ShowWeight() }}weighted <b>{{ loved ? 0 : round(scoreWeight(page.Offset + index) * 100) }}%</b> ({{ loved ? 0 : round(score.PP * scoreWeight(page.Offset + index)) }}pp){{ end }}
+                            <div class="score-icon-container">
+                                <a href="/scores/{{ score.Id }}/download" class="score-replay" title="Download Replay" target="_blank"><i class="icon-download-alt"></i></a>
+                                {{ if page.IsOwner }}<i class="icon-star score-pin-{{ score.Id }} {{ score.Pinned ? "score-pinned-icon" : "score-pin-icon" }}" title="{{ score.Pinned ? "Unpin Score" : "Pin Score" }}" onclick="return togglePin(this, {{ score.Id }}, {{ score.Pinned }})"></i>{{ end }}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{ else }}
+    {{ if page.IsFirstPage() }}
+        {{ if page.Section == "pinned" }}
+            <p>This player has not pinned any scores yet :(</p>
+        {{ else if page.Section == "best" }}
+            <p>No awesome performance records yet :(</p>
+        {{ else }}
+            <p>No first place records currently :(</p>
+        {{ end }}
+    {{ end }}
+{{ end }}
+{{ if page.HasMore }}
+    <div class="score show-more">
+        <a href="javascript:void(0);" onclick="return loadMoreScores(this, '{{ page.Section }}', {{ page.NextOffset }})"><b>Show me more!</b></a>
+    </div>
 {{ end }}
 {{ end }}

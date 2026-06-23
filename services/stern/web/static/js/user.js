@@ -4,23 +4,29 @@
 var activeTab = window.location.hash !== "" ? window.location.hash.replace("#", "") : "general";
 var rankGraphLoaded = false;
 
-function loadTab(id) {
+function loadTab(id, onReady) {
     var content = document.getElementById(id);
-
-    if (!content) return;
-    if (content.getAttribute("data-loaded") === "true") return;
+    if (!content) {
+        if (onReady) onReady();
+        return;
+    }
 
     var partial = content.getAttribute("data-partial");
-    if (!partial) return;
+    if (content.getAttribute("data-loaded") === "true" || !partial) {
+        if (onReady) onReady();
+        return;
+    }
 
     // Mark the tab as loaded before the request, to prevent duplicate requests
     content.setAttribute("data-loaded", "true");
-    $(content).load(partial + "?mode=" + mode);
+    $(content).load(partial + "?mode=" + mode, function () {
+        renderTimeagoElements();
+        if (onReady) onReady();
+    });
 }
 
 function expandProfileTab(id, forceExpand) {
     var tab = document.getElementById(id);
-
     if (!tab) {
         expandProfileTab("general", forceExpand);
         return;
@@ -37,18 +43,21 @@ function expandProfileTab(id, forceExpand) {
     }
 
     // Otherwise, expand it
-    loadTab(id);
-
     if (id === "general") {
         loadPerformanceGraph(userId, modeName);
     }
 
-    if ($(tab).is(":hidden") || tab.style.height === "0px") {
+    // Slide the tab open once its content is loaded
+    loadTab(id, function () {
+        if (!$(tab).is(":hidden") && tab.style.height !== "0px") {
+            // already expanded the tab
+            return;
+        }
         slideDown(tab);
         setTimeout(function () {
             tab.className += " expanded";
         }, 500);
-    }
+    });
 
     if (forceExpand) {
         window.location.hash = "#" + activeTab;
@@ -61,6 +70,51 @@ function loadMoreActivity(link, offset) {
     $.get("/partials/users/" + userId + "/activity?mode=" + mode + "&offset=" + offset, function (html) {
         row.replaceWith(html);
         renderTimeagoElements();
+    });
+
+    return false;
+}
+
+function loadMoreScores(link, section, offset) {
+    var row = $(link).closest(".show-more");
+    row.closest("b").innerText = "Loading...";
+
+    $.get(
+        "/partials/users/" + userId + "/scores?section=" + section + "&offset=" + offset + "&mode=" + mode,
+        function (html) {
+            row.replaceWith(html);
+            renderTimeagoElements();
+        }
+    );
+
+    return false;
+}
+
+function scoreClicked(event, scoreId) {
+    event = event || window.event;
+    var target = event.target || event.srcElement;
+
+    // Ignore clicks on the inner links, replay button and pin icons
+    if ($(target).closest("a")[0]) return false;
+    if ($(target).closest(".score-replay")[0]) return false;
+    if ($(target).closest(".score-pin-icon")[0]) return false;
+    if ($(target).closest(".score-pinned-icon")[0]) return false;
+
+    window.location.href = "/scores/" + scoreId;
+    return false;
+}
+
+function togglePin(icon, scoreId, pinned) {
+    if (!isLoggedIn()) return false;
+
+    var method = pinned ? "DELETE" : "POST";
+
+    performApiRequest(method, "/users/" + userId + "/pinned", { score_id: scoreId }, function () {
+        // Reload the whole tab so the pinned section reflects the change
+        var content = document.getElementById("leader");
+        $(content).load("/partials/users/" + userId + "/leader?mode=" + mode, function () {
+            renderTimeagoElements();
+        });
     });
 
     return false;

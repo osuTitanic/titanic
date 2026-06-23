@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	activityPageSize     = 10
-	activityRecentWindow = 30 * 24 * time.Hour
+	activityPageSize       = 10
+	activityRecentWindow   = 30 * 24 * time.Hour
+	topPlaysPageSize       = 5
+	topPlaysPageSizeExpand = 15
 )
 
 func UserProfileRedirect(ctx *server.Context) {
@@ -138,6 +140,81 @@ func UserActivityPartial(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "partials/user_activity", page)
 }
 
+func UserTopPlaysPartial(ctx *server.Context) {
+	user, ok := fetchProfileUser(ctx)
+	if !ok {
+		return
+	}
+
+	mode := resolveMode(ctx, user.PreferredMode)
+	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
+
+	firstsRank, err := ctx.State.Rankings.LeaderScoresRank(user.Id, mode)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch firsts rank", "user", user.Id, "error", err)
+	}
+
+	pinned, err := buildScorePage(ctx, user.Id, mode, "pinned", 0, isOwner)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch pinned scores", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	best, err := buildScorePage(ctx, user.Id, mode, "best", 0, isOwner)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch best scores", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	first, err := buildScorePage(ctx, user.Id, mode, "first", 0, isOwner)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch first place scores", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	tab := &templates.UserTopPlaysTab{
+		UserId:     user.Id,
+		Mode:       mode,
+		IsOwner:    isOwner,
+		FirstsRank: firstsRank,
+		Pinned:     pinned,
+		Best:       best,
+		First:      first,
+	}
+	ctx.RenderTemplate(http.StatusOK, "partials/user_leader", tab)
+}
+
+func UserScoresPartial(ctx *server.Context) {
+	user, ok := fetchProfileUser(ctx)
+	if !ok {
+		return
+	}
+
+	section := ctx.Request.URL.Query().Get("section")
+	if section != "pinned" && section != "best" && section != "first" {
+		NotFound(ctx)
+		return
+	}
+	mode := resolveMode(ctx, user.PreferredMode)
+	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
+
+	offset := 0
+	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("offset")); err == nil && parsed > 0 {
+		offset = parsed
+	}
+
+	page, err := buildScorePage(ctx, user.Id, mode, section, offset, isOwner)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch scores", "user", user.Id, "section", section, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+	ctx.RenderTemplate(http.StatusOK, "partials/user_scores", page)
+}
+
 func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants.Mode) *templates.UserGeneralTab {
 	country := strings.ToUpper(user.Country)
 
@@ -196,6 +273,62 @@ func buildActivityPage(ctx *server.Context, userId int, mode constants.Mode, off
 		Offset:     offset,
 		NextOffset: offset + activityPageSize,
 		HasMore:    hasMore,
+	}, nil
+}
+
+func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, section string, offset int, isOwner bool) (*templates.UserScorePage, error) {
+	approvedRewards := ctx.State.Config.ApprovedMapRewards
+	preload := "Beatmap.Beatmapset"
+
+	// Show fewer scores on the initial page load, then load a
+	// larger amount with "Show me more".
+	pageSize := topPlaysPageSize
+	if offset > 0 {
+		pageSize = topPlaysPageSizeExpand
+	}
+
+	var scores []*schemas.Score
+	var total int
+	var err error
+
+	switch section {
+	case "pinned":
+		scores, err = ctx.State.Repositories.Scores.FetchPinned(userId, mode, pageSize+1, offset, preload)
+		if err == nil {
+			total, err = ctx.State.Repositories.Scores.FetchPinnedCount(userId, mode)
+		}
+	case "best":
+		scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, !approvedRewards, pageSize+1, offset, preload)
+		if err == nil {
+			total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode, !approvedRewards)
+		}
+	case "first":
+		scores, err = ctx.State.Repositories.Scores.FetchLeaderScores(userId, mode, pageSize+1, offset, preload)
+		if err == nil {
+			total, err = ctx.State.Repositories.Scores.FetchLeaderCount(userId, mode)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	hasMore := len(scores) > pageSize
+	if hasMore {
+		scores = scores[:pageSize]
+	}
+
+	return &templates.UserScorePage{
+		UserId:          userId,
+		Mode:            mode,
+		Section:         section,
+		Scores:          scores,
+		Offset:          offset,
+		NextOffset:      offset + pageSize,
+		HasMore:         hasMore,
+		Total:           total,
+		IsOwner:         isOwner,
+		ApprovedRewards: approvedRewards,
 	}, nil
 }
 
