@@ -1,6 +1,10 @@
 package storage
 
-import "io"
+import (
+	"io"
+
+	_ "github.com/osuTitanic/titanic-go/internal/logging"
+)
 
 // Storage defines the interface for a storage backend
 type Storage interface {
