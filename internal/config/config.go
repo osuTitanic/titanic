@@ -2,11 +2,13 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
+	"github.com/osuTitanic/titanic-go/internal/storage"
 )
 
 // Config holds all application configurations
@@ -31,6 +33,14 @@ type Config struct {
 
 	// Path to store application data locally
 	DataPath string `env:"DATA_PATH" envDefault:".data"`
+
+	// S3 configuration (optional)
+	S3Enabled   bool   `env:"S3_ENABLED" envDefault:"false"`
+	S3BaseUrl   string `env:"S3_BASEURL"`
+	S3AccessKey string `env:"S3_ACCESS_KEY"`
+	S3SecretKey string `env:"S3_SECRET_KEY"`
+	S3Bucket    string `env:"S3_BUCKET" envDefault:"osutitanic"`
+	S3Region    string `env:"S3_REGION" envDefault:""`
 
 	// Menu icon configuration (optional)
 	MenuIconImage string `env:"MENUICON_IMAGE"`
@@ -192,6 +202,22 @@ func (c *Config) PostgresDSN() string {
 		"postgresql://%s:%s@%s:%d/%s",
 		c.PostgresUser, c.PostgresPassword, c.PostgresHost, c.PostgresPort, database,
 	)
+}
+
+func (c *Config) S3Config() *storage.S3Config {
+	baseUrl, err := url.Parse(c.S3BaseUrl)
+	if err != nil {
+		return nil
+	}
+
+	return &storage.S3Config{
+		Endpoint:        baseUrl.Host,
+		UseSSL:          baseUrl.Scheme == "https",
+		Region:          c.S3Region,
+		BucketName:      c.S3Bucket,
+		AccessKeyID:     c.S3AccessKey,
+		SecretAccessKey: c.S3SecretKey,
+	}
 }
 
 func (c *Config) EmailsEnabled() bool {

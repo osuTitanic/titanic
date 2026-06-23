@@ -1,16 +1,22 @@
 package storage
 
-import "io"
+import (
+	"io"
+
+	_ "github.com/osuTitanic/titanic-go/internal/logging"
+)
 
 // Storage defines the interface for a storage backend
 type Storage interface {
 	Setup() error
-	Save(key string, bucket string, data []byte) error
-	SaveStream(key string, bucket string, stream io.Reader) error
-	Read(key string, bucket string) ([]byte, error)
-	ReadStream(key string, bucket string) (io.ReadSeekCloser, error)
-	Remove(key string, bucket string) error
-	Exists(key string, bucket string) bool
+	Save(key string, directory string, data []byte) error
+	SaveStream(key string, directory string, stream io.Reader) error
+	Read(key string, directory string) ([]byte, error)
+	ReadStream(key string, directory string) (io.ReadSeekCloser, error)
+	Remove(key string, directory string) error
+	Exists(key string, directory string) bool
+
+	// TODO: Add context.Context to all methods
 }
 
 var RequiredDirectories = []string{
@@ -23,5 +29,4 @@ var RequiredDirectories = []string{
 	"replays",
 	"screenshots",
 	"thumbnails",
-	"logs",
 }

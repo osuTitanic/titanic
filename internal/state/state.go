@@ -57,8 +57,20 @@ func NewState(environmentFiles ...string) (*State, error) {
 	logging.SetDefault("titanic", logLevel)
 	logger := slog.Default()
 
-	fs := storage.NewFileStorage(cfg.DataPath)
-	if err := fs.Setup(); err != nil {
+	var storageProvider storage.Storage = storage.NewFileStorage(cfg.DataPath)
+	var s3Config = cfg.S3Config()
+
+	if cfg.S3Enabled && s3Config == nil {
+		return nil, fmt.Errorf("state: S3 is enabled but S3 config is missing")
+	}
+	if cfg.S3Enabled {
+		storageProvider, err = storage.NewS3Storage(*s3Config)
+		if err != nil {
+			return nil, fmt.Errorf("state: failed to create S3 storage: %w", err)
+		}
+	}
+
+	if err := storageProvider.Setup(); err != nil {
 		return nil, fmt.Errorf("state: failed to setup storage: %w", err)
 	}
 
@@ -94,7 +106,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 	repos := NewRepositories(db)
 
 	beatmapResources := resources.NewBeatmapProvider(
-		cfg, redisClient, fs,
+		cfg, redisClient, storageProvider,
 		repos.ResourceMirrors,
 		repos.Beatmapsets,
 	)
@@ -106,7 +118,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 	return &State{
 		Config:          cfg,
 		Database:        db,
-		Storage:         fs,
+		Storage:         storageProvider,
 		Logger:          logger,
 		Email:           mailer,
 		Redis:           redisClient,
