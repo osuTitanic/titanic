@@ -15,6 +15,8 @@ type Storage interface {
 	ReadStream(key string, directory string) (io.ReadSeekCloser, error)
 	Remove(key string, directory string) error
 	Exists(key string, directory string) bool
+
+	// TODO: Add context.Context to all methods
 }
 
 var RequiredDirectories = []string{
