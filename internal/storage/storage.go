@@ -29,5 +29,4 @@ var RequiredDirectories = []string{
 	"replays",
 	"screenshots",
 	"thumbnails",
-	"logs",
 }
