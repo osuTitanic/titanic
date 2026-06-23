@@ -39,6 +39,7 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("beatmapLanguages", beatmapLanguages)
 	set.AddGlobalFunc("beatmapStatuses", beatmapStatuses)
 	set.AddGlobalFunc("shortMods", shortMods)
+	set.AddGlobalFunc("scoreWeight", scoreWeight)
 	set.AddGlobalFunc("bbcode", renderBBCode)
 	set.AddGlobalFunc("formatActivity", formatActivity)
 	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)

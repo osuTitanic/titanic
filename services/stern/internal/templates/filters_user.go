@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"math"
 	"reflect"
 
 	"github.com/CloudyKit/jet/v6"
@@ -17,4 +18,11 @@ func formatActivity(a jet.Arguments) reflect.Value {
 	}
 
 	return reflect.ValueOf(activity.RenderHtml(entry))
+}
+
+func scoreWeight(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("scoreWeight", 1, 1)
+
+	index := reflectFloat(a.Get(0))
+	return reflect.ValueOf(math.Pow(0.95, index))
 }
