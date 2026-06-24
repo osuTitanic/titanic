@@ -251,6 +251,55 @@ func UserHistoryPartial(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "partials/user_history", tab)
 }
 
+func UserBeatmapsPartial(ctx *server.Context) {
+	user, ok := fetchProfileUser(ctx)
+	if !ok {
+		return
+	}
+	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
+
+	favourites, err := ctx.State.Repositories.Favourites.ManyByUserId(user.Id, "Beatmapset")
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch favourites", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+	slices.SortFunc(favourites, func(a, b *schemas.BeatmapFavourite) int {
+		return a.CreatedAt.Compare(b.CreatedAt)
+	})
+
+	created, err := ctx.State.Repositories.Beatmapsets.FetchByCreator(user.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch created beatmapsets", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	collaborations, err := ctx.State.Repositories.Collaborations.FetchByUser(user.Id, "Beatmap.Beatmapset")
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch collaborations", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	nominations, err := ctx.State.Repositories.Nominations.FetchByUser(user.Id, "Beatmapset")
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch nominations", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	tab := &templates.UserBeatmapsTab{
+		UserId:         user.Id,
+		IsOwner:        isOwner,
+		Favourites:     favourites,
+		Nominations:    nominations,
+		Collaborations: collaborations,
+		Created:        buildCreatedBeatmapGroups(created, isOwner),
+	}
+	ctx.RenderTemplate(http.StatusOK, "partials/user_beatmaps", tab)
+}
+
 func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants.Mode) *templates.UserGeneralTab {
 	country := strings.ToUpper(user.Country)
 
@@ -366,6 +415,50 @@ func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, sectio
 		IsOwner:         isOwner,
 		ApprovedRewards: approvedRewards,
 	}, nil
+}
+
+func buildCreatedBeatmapGroups(sets []*schemas.Beatmapset, isOwner bool) []*templates.UserBeatmapGroup {
+	groups := []*templates.UserBeatmapGroup{
+		{Name: "Ranked", Key: "ranked"},
+		{Name: "Loved", Key: "loved"},
+		{Name: "Qualified", Key: "qualified"},
+		{Name: "Pending", Key: "pending", CanEdit: isOwner},
+		{Name: "WIP", Key: "wip", CanEdit: isOwner},
+		{Name: "Graveyarded", Key: "graveyarded", CanEdit: isOwner, Revivable: isOwner},
+	}
+
+	groupIndex := func(status constants.BeatmapStatus) int {
+		switch status {
+		case constants.BeatmapStatusRanked, constants.BeatmapStatusApproved:
+			return 0
+		case constants.BeatmapStatusLoved:
+			return 1
+		case constants.BeatmapStatusQualified:
+			return 2
+		case constants.BeatmapStatusPending:
+			return 3
+		case constants.BeatmapStatusWIP:
+			return 4
+		default:
+			return 5 // Graveyard & anything else
+		}
+	}
+
+	for _, set := range sets {
+		if set.Status == constants.BeatmapStatusInactive {
+			continue
+		}
+		index := groupIndex(set.Status)
+		groups[index].Beatmapsets = append(groups[index].Beatmapsets, set)
+	}
+
+	result := make([]*templates.UserBeatmapGroup, 0, len(groups))
+	for _, group := range groups {
+		if len(group.Beatmapsets) > 0 {
+			result = append(result, group)
+		}
+	}
+	return result
 }
 
 func fetchProfileUser(ctx *server.Context) (*schemas.User, bool) {

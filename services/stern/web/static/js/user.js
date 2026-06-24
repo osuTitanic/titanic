@@ -128,6 +128,71 @@ function togglePin(icon, scoreId, pinned) {
     return false;
 }
 
+function toggleBeatmapContainer(section) {
+    var container = $(section).find(".profile-beatmaps-container").first()[0];
+    var beatmapsSection = document.getElementById("beatmaps");
+
+    if (!container) return;
+
+    if (container.style.display === "none") {
+        container.style.display = "block";
+        $(beatmapsSection).slideDown(500);
+    } else {
+        container.style.display = "none";
+        $(beatmapsSection).css("height", "auto");
+    }
+}
+
+function reloadBeatmapsTab() {
+    var content = document.getElementById("beatmaps");
+    if (!content) return;
+    $(content).load("/partials/users/" + userId + "/beatmaps", function () {
+        renderTimeagoElements();
+    });
+}
+
+function removeFavourite(setId) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest("DELETE", "/users/" + userId + "/favourites/" + setId, null, reloadBeatmapsTab);
+    return false;
+}
+
+function deleteBeatmap(setId) {
+    if (!isLoggedIn()) return false;
+    if (!confirm("Are you sure you want to delete this beatmap?")) return false;
+
+    performApiRequest(
+        "DELETE",
+        "/users/" + userId + "/beatmapsets/" + setId,
+        null,
+        reloadBeatmapsTab,
+        beatmapActionError
+    );
+    return false;
+}
+
+function reviveBeatmap(setId) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "POST",
+        "/users/" + userId + "/beatmapsets/" + setId + "/revive",
+        null,
+        reloadBeatmapsTab,
+        beatmapActionError
+    );
+    return false;
+}
+
+function beatmapActionError(xhr) {
+    try {
+        alert(JSON.parse(xhr.responseText).details);
+    } catch (e) {
+        alert("The requested action could not be completed.");
+    }
+}
+
 function updatePlaystyleElement(element) {
     var nowUsing = $(element).toggleClass("playstyle-using").hasClass("playstyle-using");
     performApiRequest(nowUsing ? "POST" : "DELETE", "/users/" + userId + "/playstyle", { playstyle: element.id });

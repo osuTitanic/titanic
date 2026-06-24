@@ -207,6 +207,23 @@ type UserHistoryTab struct {
 	Recent     []*schemas.Score
 }
 
+type UserBeatmapsTab struct {
+	UserId         int
+	IsOwner        bool
+	Favourites     []*schemas.BeatmapFavourite
+	Created        []*UserBeatmapGroup
+	Collaborations []*schemas.BeatmapCollaboration
+	Nominations    []*schemas.BeatmapNomination
+}
+
+type UserBeatmapGroup struct {
+	Name        string // e.g. "Ranked", "Graveyarded"
+	Key         string // e.g. "ranked", "graveyarded"
+	CanEdit     bool
+	Revivable   bool
+	Beatmapsets []*schemas.Beatmapset
+}
+
 type BeatmapPacksView struct {
 	DefaultView
 	BeatmapPacks     []*schemas.BeatmapPack

@@ -54,6 +54,15 @@ func (r *BeatmapsetRepository) FetchByStatus(status constants.BeatmapStatus, pre
 	return beatmapsets, err
 }
 
+func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("creator_id = ?", creatorId).
+		Order("submission_date DESC").
+		Find(&beatmapsets).Error
+	return beatmapsets, err
+}
+
 func (r *BeatmapsetRepository) FetchDownloadServer(id int) (constants.BeatmapServer, error) {
 	var server constants.BeatmapServer
 	err := r.db.Model(&schemas.Beatmapset{}).

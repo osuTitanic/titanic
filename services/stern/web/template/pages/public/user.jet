@@ -337,7 +337,7 @@
             <td id="tab-beatmaps" class="tab-heading">Beatmaps</td>
         </tr>
         <td>
-            <div id="beatmaps" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            <div id="beatmaps" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/beatmaps" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
 
         <tr onclick="expandProfileTab('kudosu')">
@@ -640,4 +640,170 @@
         </div>
     </div>
 </div>
+{{ end }}
+
+{*
+    The Beatmaps tab includes the user's favourite beatmaps,
+    created beatmap groups, collaborations & nominations
+*}
+{{ block userBeatmapsTab() }}
+<div class="tab-spacing">
+    <p>Click any of the following categories to expand them.</p>
+    {{ yield beatmapFavourites() . }}
+    {{ yield beatmapCreatedGroups() . }}
+    {{ yield beatmapCollaborations() . }}
+    {{ yield beatmapNominations() . }}
+</div>
+{{ end }}
+
+{{ block beatmapFavourites() }}
+{{ tab := . }}
+<div class="favourites">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Favourite Beatmaps (<span class="beatmaps-count">{{ tab.Favourites|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, fav := tab.Favourites }}
+            {{ if fav.Beatmapset }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="{{ fav.Beatmapset.Link() }}" class="profile-beatmap-description"><b>{{ fav.Beatmapset.Name() }}</b></a>
+                            <br>
+                            <a href="{{ fav.Beatmapset.CreatorLink() }}">mapped by {{ fav.Beatmapset.CreatorName() }}</a>
+                            {{ if tab.IsOwner }}
+                            <br>
+                            <div style="float: right; text-align: right; padding-right: 2.5px;">
+                                <a onclick="return removeFavourite({{ fav.SetId }})">delete</a>
+                            </div>
+                            {{ end }}
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="{{ fav.Beatmapset.ThumbnailUrl() }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ else }}
+            <p style="margin: 5px;">This player has no favourite beatmaps :(</p>
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+
+{{ block beatmapCreatedGroups() }}
+{{ range _, group := .Created }}
+<div class="created-beatmaps">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            {{ group.Name }} Beatmaps (<span class="beatmaps-count">{{ group.Beatmapsets|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" id="user-beatmaps-{{ group.Key }}" style="display: none;">
+        {{ range _, set := group.Beatmapsets }}
+        <table class="profile-beatmap">
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="{{ set.Link() }}" class="profile-beatmap-description"><b>{{ set.Name() }}</b></a>
+                        <br>
+                        <a href="{{ set.CreatorLink() }}">mapped by {{ set.CreatorName() }}</a>
+                        {{ if group.CanEdit }}
+                        <br>
+                        <div>
+                            <div style="float: right; text-align: right; padding-right: 2.5px;">
+                                <a onclick="return deleteBeatmap({{ set.Id }})">delete</a>
+                            </div>
+                            {{ if group.Revivable }}
+                            <div style="float: right; text-align: right; margin-right: 5px;">
+                                <a onclick="return reviveBeatmap({{ set.Id }})">revive</a>
+                            </div>
+                            {{ end }}
+                        </div>
+                        {{ end }}
+                    </td>
+                    <td style="width: 80px; height: 60px;">
+                        <img src="{{ set.ThumbnailUrl() }}" alt="" loading="lazy">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+{{ end }}
+
+{{ block beatmapCollaborations() }}
+{{ if len(.Collaborations) > 0 }}
+<div class="collaborations">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Guest Participation Beatmaps (<span class="beatmaps-count">{{ .Collaborations|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, collab := .Collaborations }}
+            {{ if collab.Beatmap }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="/b/{{ collab.Beatmap.Id }}" class="profile-beatmap-description"><b>{{ collab.Beatmap.Name() }}</b></a>
+                            {{ if collab.Beatmap.Beatmapset }}
+                            <br>
+                            <a href="{{ collab.Beatmap.Beatmapset.CreatorLink() }}">created by {{ collab.Beatmap.Beatmapset.CreatorName() }}</a>
+                            {{ end }}
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="/mt/{{ collab.Beatmap.SetId }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+{{ end }}
+
+{{ block beatmapNominations() }}
+{{ if len(.Nominations) > 0 }}
+<div class="nominations">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Nominated Beatmaps (<span class="beatmaps-count">{{ .Nominations|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, nom := .Nominations }}
+            {{ if nom.Beatmapset }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="{{ nom.Beatmapset.Link() }}" class="profile-beatmap-description"><b>{{ nom.Beatmapset.Name() }}</b></a>
+                            <br>
+                            <a href="{{ nom.Beatmapset.CreatorLink() }}">mapped by {{ nom.Beatmapset.CreatorName() }}</a>
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="{{ nom.Beatmapset.ThumbnailUrl() }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
 {{ end }}
