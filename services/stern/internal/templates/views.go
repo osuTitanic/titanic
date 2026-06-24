@@ -200,6 +200,13 @@ func (p *UserScorePage) ShowWeight() bool {
 	return p.Section == "best"
 }
 
+type UserHistoryTab struct {
+	UserId     int
+	Mode       constants.Mode
+	MostPlayed []*schemas.BeatmapPlays
+	Recent     []*schemas.Score
+}
+
 type BeatmapPacksView struct {
 	DefaultView
 	BeatmapPacks     []*schemas.BeatmapPack

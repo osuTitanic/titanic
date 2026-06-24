@@ -19,6 +19,8 @@ const (
 	activityRecentWindow   = 30 * 24 * time.Hour
 	topPlaysPageSize       = 5
 	topPlaysPageSizeExpand = 15
+	historyRecentLimit     = 5
+	historyMostPlayedLimit = 15
 )
 
 func UserProfileRedirect(ctx *server.Context) {
@@ -213,6 +215,40 @@ func UserScoresPartial(ctx *server.Context) {
 		return
 	}
 	ctx.RenderTemplate(http.StatusOK, "partials/user_scores", page)
+}
+
+func UserHistoryPartial(ctx *server.Context) {
+	user, ok := fetchProfileUser(ctx)
+	if !ok {
+		return
+	}
+	mode := resolveMode(ctx, user.PreferredMode)
+
+	mostPlayed, err := ctx.State.Repositories.Plays.FetchMostPlayedByUser(
+		user.Id, historyMostPlayedLimit, 0, "Beatmap.Beatmapset",
+	)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch most played", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	recent, err := ctx.State.Repositories.Scores.FetchRecentByUser(
+		user.Id, mode, historyRecentLimit, constants.ScoreStatusFailed, "Beatmap.Beatmapset",
+	)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch recent plays", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	tab := &templates.UserHistoryTab{
+		UserId:     user.Id,
+		Mode:       mode,
+		MostPlayed: mostPlayed,
+		Recent:     recent,
+	}
+	ctx.RenderTemplate(http.StatusOK, "partials/user_history", tab)
 }
 
 func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants.Mode) *templates.UserGeneralTab {

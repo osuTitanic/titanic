@@ -3,6 +3,8 @@
 
 var activeTab = window.location.hash !== "" ? window.location.hash.replace("#", "") : "general";
 var rankGraphLoaded = false;
+var playsGraphLoaded = false;
+var viewsGraphLoaded = false;
 
 function loadTab(id, onReady) {
     var content = document.getElementById(id);
@@ -42,13 +44,10 @@ function expandProfileTab(id, forceExpand) {
         return;
     }
 
-    // Otherwise, expand it
-    if (id === "general") {
-        loadPerformanceGraph(userId, modeName);
-    }
-
-    // Slide the tab open once its content is loaded
+    // Slide the tab open once its content is loaded, then render its graphs
     loadTab(id, function () {
+        loadTabGraphs(id);
+
         if (!$(tab).is(":hidden") && tab.style.height !== "0px") {
             // already expanded the tab
             return;
@@ -61,6 +60,15 @@ function expandProfileTab(id, forceExpand) {
 
     if (forceExpand) {
         window.location.hash = "#" + activeTab;
+    }
+}
+
+function loadTabGraphs(id) {
+    if (id === "general") {
+        loadPerformanceGraph(userId, modeName);
+    } else if (id === "history") {
+        loadPlaysGraph(userId, modeName);
+        loadViewsGraph(userId, modeName);
     }
 }
 
@@ -364,6 +372,159 @@ function loadPerformanceGraph(userId, mode) {
             return chart;
         });
     });
+}
+
+function processPlayHistory(entries) {
+    var currentDate = new Date();
+    var currentYear = currentDate.getFullYear();
+    var currentMonth = currentDate.getMonth();
+
+    var values = $.map(entries, function (entry, i) {
+        var elapsedMonths = (currentYear - entry.year) * 12 + (currentMonth - (entry.month - 1));
+        return { x: -elapsedMonths, y: entry.plays };
+    });
+
+    values.sort(function (a, b) {
+        return a.x - b.x;
+    });
+
+    return [{ values: values, key: "Plays", color: "#f5f242", area: true }];
+}
+
+function loadPlaysGraph(userId, mode) {
+    if (typeof nv === "undefined" || !nv.addGraph) return;
+    if (playsGraphLoaded) return;
+    playsGraphLoaded = true;
+
+    var url = "/users/" + userId + "/history/plays/" + mode;
+
+    performApiRequest("GET", url, null, function (xhr) {
+        var entries = JSON.parse(xhr.responseText);
+        var playData = processPlayHistory(entries);
+
+        nv.addGraph(function () {
+            var chart = nv.models
+                .lineChart()
+                .margin({ left: 80, bottom: 20, right: 50 })
+                .useInteractiveGuideline(true)
+                .transitionDuration(250)
+                .interpolate("linear")
+                .showLegend(false)
+                .showYAxis(true)
+                .showXAxis(true);
+
+            chart.xAxis.axisLabel("Months").tickFormat(monthTickFormat);
+
+            chart.yAxis.axisLabel("Plays").tickFormat(integerTickFormat);
+
+            // Force Y-axis to start at 0 and use nice round numbers
+            chart.forceY([0, graphYAxisMax(playData)]);
+
+            d3.select("#play-graph svg").datum(playData).call(chart);
+
+            nv.utils.windowResize(function () {
+                chart.update();
+            });
+
+            resetNoDataOffset();
+            return chart;
+        });
+    });
+}
+
+function processViewsHistory(entries) {
+    var currentDate = new Date();
+    var currentYear = currentDate.getFullYear();
+    var currentMonth = currentDate.getMonth();
+
+    var values = $.map(entries, function (entry, i) {
+        var elapsedMonths = (currentYear - entry.year) * 12 + (currentMonth - (entry.month - 1));
+        return { x: -elapsedMonths, y: entry.replay_views };
+    });
+
+    values.sort(function (a, b) {
+        return a.x - b.x;
+    });
+
+    return [{ values: values, key: "Replay Views", color: "#f78e25", area: true }];
+}
+
+function loadViewsGraph(userId, mode) {
+    if (typeof nv === "undefined" || !nv.addGraph) return;
+    if (viewsGraphLoaded) return;
+    viewsGraphLoaded = true;
+
+    var url = "/users/" + userId + "/history/views/" + mode;
+
+    performApiRequest("GET", url, null, function (xhr) {
+        var entries = JSON.parse(xhr.responseText);
+        var viewsData = processViewsHistory(entries);
+
+        nv.addGraph(function () {
+            var chart = nv.models
+                .lineChart()
+                .margin({ left: 80, bottom: 20, right: 50 })
+                .useInteractiveGuideline(true)
+                .transitionDuration(250)
+                .interpolate("linear")
+                .showLegend(false)
+                .showYAxis(true)
+                .showXAxis(true);
+
+            chart.xAxis.axisLabel("Months").tickFormat(monthTickFormat);
+
+            chart.yAxis.axisLabel("Views").tickFormat(integerTickFormat);
+
+            // Force Y-axis to start at 0 and use nice round numbers
+            chart.forceY([0, graphYAxisMax(viewsData)]);
+
+            d3.select("#replay-graph svg").datum(viewsData).call(chart);
+
+            nv.utils.windowResize(function () {
+                chart.update();
+            });
+
+            resetNoDataOffset();
+            return chart;
+        });
+    });
+}
+
+function monthTickFormat(month) {
+    if (month % 1 !== 0) return "";
+    if (month == 0) return "This Month";
+    if (month > 0) return month != 1 ? "In " + month + " months" : "In " + month + " month";
+    return month != -1 ? -month + " months ago" : -month + " month ago";
+}
+
+function integerTickFormat(value) {
+    var rounded = Math.round(value);
+    if (value !== rounded) return "";
+    return rounded.toString();
+}
+
+function graphYAxisMax(data) {
+    var max = 0;
+    var multiplier = 2;
+
+    if (data[0] && data[0].values) {
+        for (var i = 0; i < data[0].values.length; i++) {
+            if (data[0].values[i].y > max) {
+                max = data[0].values[i].y;
+            }
+        }
+        // Makes the graph look better if the user has a single entry
+        multiplier = 2 / data[0].values.length;
+    }
+
+    return max > 0 ? max * multiplier : 10;
+}
+
+function resetNoDataOffset() {
+    var noDataElements = document.querySelectorAll(".nv-noData");
+    for (var i = 0; i < noDataElements.length; i++) {
+        noDataElements[i].setAttribute("dy", 0);
+    }
 }
 
 $(document).ready(function () {

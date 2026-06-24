@@ -233,6 +233,19 @@ func (r *ScoreRepository) FetchLeaderCount(userId int, mode constants.Mode) (int
 	return count, err
 }
 
+func (r *ScoreRepository) FetchRecentByUser(userId int, mode constants.Mode, limit int, minStatus constants.ScoreStatus, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status >= ?", minStatus).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		Limit(limit).
+		Find(&scores).Error
+	return scores, err
+}
+
 func (r *ScoreRepository) FetchPinned(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
 	err := pinnedQuery(userId, mode, Preloaded(r.db, preload)).

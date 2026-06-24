@@ -33,6 +33,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /partials/users/{id}/activity", routes.UserActivityPartial)
 	server.Handle("GET /partials/users/{id}/leader", routes.UserTopPlaysPartial)
 	server.Handle("GET /partials/users/{id}/scores", routes.UserScoresPartial)
+	server.Handle("GET /partials/users/{id}/history", routes.UserHistoryPartial)
 	server.Handle("GET /charts/activity", routes.ActivityChart)
 	server.Handle("GET /account/login", routes.AccountLoginPage)
 	server.Handle("POST /account/login", routes.AccountLogin)

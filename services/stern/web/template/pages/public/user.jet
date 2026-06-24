@@ -330,7 +330,7 @@
             <td id="tab-history" class="tab-heading">Historical</td>
         </tr>
         <td>
-            <div id="history" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            <div id="history" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/history" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
 
         <tr onclick="expandProfileTab('beatmaps')">
@@ -583,4 +583,61 @@
         <a href="javascript:void(0);" onclick="return loadMoreScores(this, '{{ page.Section }}', {{ page.NextOffset }})"><b>Show me more!</b></a>
     </div>
 {{ end }}
+{{ end }}
+
+{*
+    The Historical tab includes play history,
+    most played beatmaps & recent plays
+*}
+{{ block userHistoryTab() }}
+<div class="tab-spacing">
+    <div class="play-history">
+        <h2 class="profile-stats-header">Play History</h2>
+        {* Loaded client-side from the api *}
+        <div class="profile-graph" id="play-graph">
+            <svg></svg>
+        </div>
+    </div>
+
+    <div class="most-played">
+        <h2 class="profile-stats-header">Most Played Beatmaps</h2>
+        <div id="plays-container">
+            {{ range index, item := .MostPlayed }}
+                {{ if item.Beatmap }}
+                <div style="font-size: {{ round(180 * scoreWeight(index + 1)) }}%; margin: 2.5px;">
+                    {{ item.Count|formatNumber }} plays - <a href="/b/{{ item.BeatmapId }}">{{ item.Beatmap.Name() }}</a>
+                </div>
+                {{ end }}
+            {{ else }}
+            <p>This player has not played anything yet :(</p>
+            {{ end }}
+        </div>
+    </div>
+
+    <div class="recent-plays">
+        <h2 class="profile-stats-header">Recent Plays</h2>
+        <div id="recent-container">
+            {{ range _, score := .Recent }}
+                {{ if score.Beatmap }}
+                <div style="margin: 2.5px;">
+                    <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                    - <a href="/b/{{ score.BeatmapId }}">{{ score.Beatmap.Name() }}</a>
+                    {{ score.PP|round|formatNumber }}pp ({{ score.Grade }})
+                    {{ modString := score.Mods.String() }}{{ if modString != "NM" }}+{{ modString }}{{ end }}
+                </div>
+                {{ end }}
+            {{ else }}
+            <p>No recent scores set by this player :(</p>
+            {{ end }}
+        </div>
+    </div>
+
+    <div class="replays-watched">
+        <h2 class="profile-stats-header">Replays Watched History</h2>
+        {* Loaded client-side from the api *}
+        <div class="profile-graph" id="replay-graph">
+            <svg></svg>
+        </div>
+    </div>
+</div>
 {{ end }}
