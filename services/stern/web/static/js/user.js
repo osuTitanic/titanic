@@ -85,7 +85,7 @@ function loadMoreActivity(link, offset) {
 
 function loadMoreScores(link, section, offset) {
     var row = $(link).closest(".show-more");
-    row.closest("b").innerText = "Loading...";
+    row.find("b").text("Loading...");
 
     $.get(
         "/partials/users/" + userId + "/scores?section=" + section + "&offset=" + offset + "&mode=" + mode,
