@@ -33,3 +33,14 @@ func (r *BeatmapModdingRepository) TotalKudosuByUser(userId int) (int, error) {
 		Scan(&total).Error
 	return total, err
 }
+
+func (r *BeatmapModdingRepository) FetchRangeByUser(userId int, limit, offset int, preload ...string) ([]*schemas.BeatmapModding, error) {
+	var entries []*schemas.BeatmapModding
+	err := Preloaded(r.db, preload).
+		Where("target_id = ? OR sender_id = ?", userId, userId).
+		Order("id DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&entries).Error
+	return entries, err
+}

@@ -2,6 +2,7 @@ package templates
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -205,6 +206,25 @@ type UserHistoryTab struct {
 	Mode       constants.Mode
 	MostPlayed []*schemas.BeatmapPlays
 	Recent     []*schemas.Score
+}
+
+type UserKudosuTab struct {
+	UserId      int
+	TotalKudosu int
+	Entries     []*UserKudosuEntry
+}
+
+type UserKudosuEntry struct {
+	Time        time.Time
+	Status      string // "received" | "gave" | "revoked"
+	Preposition string // "from" | "to"
+	Amount      int
+	ActorId     int
+	ActorName   string
+	OtherId     int
+	OtherName   string
+	PostId      int
+	TopicTitle  string
 }
 
 type UserBeatmapsTab struct {

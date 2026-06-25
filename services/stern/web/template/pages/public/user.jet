@@ -344,7 +344,7 @@
             <td id="tab-kudosu" class="tab-heading">Kudosu!</td>
         </tr>
         <td>
-            <div id="kudosu" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            <div id="kudosu" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/kudosu" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
 
         <tr onclick="expandProfileTab('achievements')">
@@ -806,4 +806,26 @@
     </div>
 </div>
 {{ end }}
+{{ end }}
+
+{*
+    Kudosu! Tab ... idk what to add to this
+*}
+{{ block userKudosuTab() }}
+<div class="tab-spacing">
+{{ if len(.Entries) == 0 }}
+    <p>This user has not earned any kudosu yet.</p>
+{{ else }}
+    <h4 class="profile-stats-element"><b>Total Kudosu Earned</b>: {{ .TotalKudosu|formatNumber }}</h4>
+    <h3 class="profile-stats-header">Recent Kudosu History</h3>
+    {{ range _, entry := .Entries }}
+        <time class="timeago" datetime="{{ entry.Time.Format("2006-01-02T15:04:05Z07:00") }}"></time> -
+        <a href="/u/{{ entry.ActorId }}">{{ entry.ActorName }}</a>
+        {{ entry.Status }}
+        <b>{{ entry.Amount }} kudos</b> {{ entry.Preposition }} a post by
+        <a href="/u/{{ entry.OtherId }}">{{ entry.OtherName }}</a>
+        in <a href="/forum/p/{{ entry.PostId }}">{{ entry.TopicTitle }}</a><br>
+    {{ end }}
+{{ end }}
+</div>
 {{ end }}
