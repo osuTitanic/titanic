@@ -213,23 +213,36 @@ func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, lim
 }
 
 func (r *ScoreRepository) FetchLeaderCount(userId int, mode constants.Mode) (int, error) {
-	leaderCountQuery := `
-		SELECT COUNT(*)
-		FROM (
-			SELECT
-				user_id,
-				RANK() OVER (PARTITION BY beatmap_id ORDER BY total_score DESC) AS rank
-			FROM scores
-			WHERE mode = ?
-				AND hidden = FALSE
-				AND status_score = ?
-		) AS ranked
-		WHERE ranked.user_id = ?
-			AND ranked.rank = 1
+	// We want to base off the user's own scores instead of ranking all scores
+	// in the mode, which is what I was doing previously.
+	// For each score, check that no visible best score on the same beatmap/mode
+	// has a higher total_score.
+	query := `
+		SELECT COUNT(DISTINCT s.beatmap_id)
+		FROM scores s
+		WHERE s.user_id = ?
+			AND s.mode = ?
+			AND s.hidden = FALSE
+			AND s.status_score = ?
+			AND NOT EXISTS (
+				SELECT 1
+				FROM scores better
+				WHERE better.beatmap_id = s.beatmap_id
+					AND better.mode = s.mode
+					AND better.hidden = FALSE
+					AND better.status_score = ?
+					AND better.total_score > s.total_score
+			)
 	`
 
 	var count int
-	err := r.db.Raw(leaderCountQuery, mode, constants.ScoreStatusBest, userId).Scan(&count).Error
+	err := r.db.Raw(
+		query,
+		userId,
+		mode,
+		constants.ScoreStatusBest,
+		constants.ScoreStatusBest,
+	).Scan(&count).Error
 	return count, err
 }
 
