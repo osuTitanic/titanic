@@ -69,6 +69,23 @@ func (storage *FileStorage) SaveStream(key string, folder string, stream io.Read
 	return err
 }
 
+func (storage *FileStorage) SaveUrl(key string, directory string, url string) error {
+	stream, err := GetDownloadStream(url)
+	if err != nil {
+		return fmt.Errorf("failed to download url content %q: %w", url, err)
+	}
+	if stream == nil {
+		return fmt.Errorf("no download stream found for url %q", url)
+	}
+	defer stream.Close()
+
+	err = storage.SaveStream(key, directory, stream)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (storage *FileStorage) Exists(key string, folder string) bool {
 	path := fmt.Sprintf("%s/%s/%s", storage.dataPath, folder, key)
 	_, err := os.Stat(path)

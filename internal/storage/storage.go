@@ -11,6 +11,7 @@ type Storage interface {
 	Setup() error
 	Save(key string, directory string, data []byte) error
 	SaveStream(key string, directory string, stream io.Reader) error
+	SaveUrl(key string, directory string, url string) error
 	Read(key string, directory string) ([]byte, error)
 	ReadStream(key string, directory string) (io.ReadSeekCloser, error)
 	Remove(key string, directory string) error

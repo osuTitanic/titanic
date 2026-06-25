@@ -156,6 +156,23 @@ func (s *S3Storage) SaveStream(key string, directory string, stream io.Reader) e
 	return nil
 }
 
+func (s *S3Storage) SaveUrl(key string, directory string, url string) error {
+	stream, err := GetDownloadStream(url)
+	if err != nil {
+		return fmt.Errorf("failed to download url content %q: %w", url, err)
+	}
+	if stream == nil {
+		return fmt.Errorf("no download stream found for url %q", url)
+	}
+	defer stream.Close()
+
+	err = s.SaveStream(key, directory, stream)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *S3Storage) Read(key string, directory string) ([]byte, error) {
 	stream, err := s.ReadStream(key, directory)
 	if err != nil {
