@@ -70,7 +70,7 @@ func (storage *FileStorage) SaveStream(key string, folder string, stream io.Read
 }
 
 func (storage *FileStorage) SaveUrl(key string, directory string, url string) error {
-	stream, err := GetDownloadStream(url)
+	stream, err := downloadStream(url)
 	if err != nil {
 		return fmt.Errorf("failed to download url content %q: %w", url, err)
 	}
@@ -125,7 +125,7 @@ func (storage *FileStorage) CreateDefaultFolders() error {
 
 // DownloadDefaultAssets downloads all default assets if they do not already exist
 func (storage *FileStorage) DownloadDefaultAssets() error {
-	for assetUrl := range DefaultAssetUrls {
+	for assetUrl := range defaultAssetUrls {
 		parts := strings.SplitN(assetUrl, "/", 2)
 		if len(parts) != 2 {
 			slog.Warn("Invalid asset URL, skipping download", slog.String("url", assetUrl))
@@ -140,7 +140,7 @@ func (storage *FileStorage) DownloadDefaultAssets() error {
 			continue
 		}
 
-		stream, err := GetDownloadStream(assetUrl)
+		stream, err := downloadAssetStream(assetUrl)
 		if err != nil {
 			return fmt.Errorf("failed to get download stream for %s: %w", assetUrl, err)
 		}

@@ -108,6 +108,8 @@ func (s *S3Storage) Setup() error {
 			return fmt.Errorf("create directory marker %q: %w", prefix, err)
 		}
 	}
+
+	// TODO: Download default avatars, I suppose...
 	return nil
 }
 
@@ -157,7 +159,7 @@ func (s *S3Storage) SaveStream(key string, directory string, stream io.Reader) e
 }
 
 func (s *S3Storage) SaveUrl(key string, directory string, url string) error {
-	stream, err := GetDownloadStream(url)
+	stream, err := downloadStream(url)
 	if err != nil {
 		return fmt.Errorf("failed to download url content %q: %w", url, err)
 	}
