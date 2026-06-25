@@ -6,6 +6,17 @@ var rankGraphLoaded = false;
 var playsGraphLoaded = false;
 var viewsGraphLoaded = false;
 
+function scrollToTab(id) {
+    var heading = document.getElementById("tab-" + id);
+    if (!heading) return;
+    heading.scrollIntoView();
+
+    if (window.location.hash !== "#" + id) {
+        window.location.hash = "#" + id;
+        return;
+    }
+}
+
 function loadTab(id, onReady) {
     var content = document.getElementById(id);
     if (!content) {
@@ -59,7 +70,7 @@ function expandProfileTab(id, forceExpand) {
     });
 
     if (forceExpand) {
-        window.location.hash = "#" + activeTab;
+        scrollToTab(activeTab);
     }
 }
 
@@ -595,4 +606,8 @@ function resetNoDataOffset() {
 
 $(document).ready(function () {
     expandProfileTab(activeTab);
+
+    if (window.location.hash !== "") {
+        scrollToTab(activeTab);
+    }
 });
