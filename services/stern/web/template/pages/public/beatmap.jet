@@ -335,7 +335,7 @@
 {{ else }}
     {{ leader := .Scores[0] }}
     {{ yield scoreCard(score=leader, mode=.Mode, rank=0) }}
-    {{ if .PersonalBest }}
+    {{ if .IsAuthenticated() && .PersonalBest }}
     {{ yield scoreCard(score=.PersonalBest, mode=.Mode, rank=.PersonalBestRank) }}
     {{ end }}
 {{ end }}
