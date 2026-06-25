@@ -46,7 +46,7 @@ func UserProfile(ctx *server.Context) {
 		return
 	}
 
-	user, err := ctx.State.Repositories.Users.ById(id, "Groups.Group", "Badges", "Names")
+	user, err := ctx.State.Repositories.Users.ById(id, "Groups.Group", "Badges", "Stamps", "Names")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch user", "id", id, "error", err)
 		InternalServerError(ctx)
@@ -112,7 +112,7 @@ func UserProfile(ctx *server.Context) {
 }
 
 func UserGeneralPartial(ctx *server.Context) {
-	user, ok := fetchProfileUser(ctx)
+	user, ok := fetchProfileUser(ctx, "Stamps")
 	if !ok {
 		return
 	}
@@ -592,14 +592,14 @@ func buildAchievementCategories(unlocked []*schemas.Achievement) []*templates.Us
 	return categories
 }
 
-func fetchProfileUser(ctx *server.Context) (*schemas.User, bool) {
+func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bool) {
 	id, err := strconv.Atoi(ctx.PathValue("id"))
 	if err != nil {
 		NotFound(ctx)
 		return nil, false
 	}
 
-	user, err := ctx.State.Repositories.Users.ById(id)
+	user, err := ctx.State.Repositories.Users.ById(id, preload...)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch user", "id", id, "error", err)
 		InternalServerError(ctx)

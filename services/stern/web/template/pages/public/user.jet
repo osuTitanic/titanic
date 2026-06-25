@@ -439,6 +439,21 @@
         <h4 class="profile-stats-element" title="The total number of times this user's replays have been watched.">
             <b>Replays Watched by Others</b>: {{ .Stats.ReplayViews|formatNumber }} time{{ .Stats.ReplayViews != 1 ? "s" : "" }}
         </h4>
+        {{ if len(.User.Stamps) > 0 }}
+        <br>
+        <h4 class="profile-stats-element" title="Participate in events to receive stamps!"><b>Stamps</b></h4>
+        <table class="profile-centered-space">
+            <tbody>
+            {{ range _, stamp := .User.Stamps }}
+                <td>
+                    <a href="{{ stamp.Url ? stamp.Url : "#" }}" title="{{ stamp.Description }}">
+                        <img src="{{ stamp.Icon }}" style="height: 64px;" alt="Stamp" class="stamp">
+                    </a>
+                </td>
+            {{ end }}
+            </tbody>
+        </table>
+        {{ end }}
         <br>
         <h4 class="profile-stats-element"><b>Ranks</b></h4>
         <table class="profile-centered-space">
