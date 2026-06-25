@@ -91,11 +91,7 @@ func (b *Beatmapset) SourceName() string {
 }
 
 func (b *Beatmapset) Link() string {
-	if b.Server == constants.BeatmapServerBancho {
-		return fmt.Sprintf("https://osu.ppy.sh/s/%d", b.Id)
-	} else {
-		return fmt.Sprintf("/s/%d", b.Id)
-	}
+	return fmt.Sprintf("/s/%d", b.Id)
 }
 
 func (b *Beatmapset) CommentLink() string {
@@ -248,12 +244,6 @@ func (b *Beatmap) Name() string {
 }
 
 func (b *Beatmap) Link() string {
-	if b.Beatmapset == nil {
-		return fmt.Sprintf("/b/%d", b.Id)
-	}
-	if b.Beatmapset.Server == constants.BeatmapServerBancho {
-		return fmt.Sprintf("https://osu.ppy.sh/b/%d", b.Id)
-	}
 	return fmt.Sprintf("/b/%d", b.Id)
 }
 
