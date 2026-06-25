@@ -20,8 +20,18 @@ func downloadAssetStream(key string) (io.ReadCloser, error) {
 }
 
 func downloadStream(url string) (io.ReadCloser, error) {
-	resp, err := http.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "osu!")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
 		return nil, err
 	}
 	return resp.Body, nil
