@@ -54,6 +54,7 @@ type User struct {
 	Favourites          []*BeatmapFavourite     `gorm:"foreignKey:UserId;references:Id"`
 	Groups              []*GroupEntry           `gorm:"foreignKey:UserId;references:Id"`
 	Badges              []*Badge                `gorm:"foreignKey:UserId;references:Id"`
+	Stamps              []*Stamp                `gorm:"foreignKey:UserId;references:Id"`
 	Stats               []*Stats                `gorm:"foreignKey:UserId;references:Id"`
 	Names               []*Name                 `gorm:"foreignKey:UserId;references:Id"`
 	Infringements       []*Infringement         `gorm:"foreignKey:UserId;references:Id"`
@@ -257,6 +258,21 @@ type Badge struct {
 
 func (Badge) TableName() string {
 	return "profile_badges"
+}
+
+type Stamp struct {
+	Id          int       `gorm:"column:id;primaryKey;autoIncrement"`
+	UserId      int       `gorm:"column:user_id"`
+	Icon        string    `gorm:"column:icon"`
+	Url         *string   `gorm:"column:url"`
+	Description *string   `gorm:"column:description"`
+	Created     time.Time `gorm:"column:created;autoCreateTime"`
+
+	User *User `gorm:"foreignKey:UserId;references:Id"`
+}
+
+func (Stamp) TableName() string {
+	return "profile_stamps"
 }
 
 type Name struct {

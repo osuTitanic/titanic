@@ -11,6 +11,7 @@ type Repositories struct {
 	Stats         *repositories.StatsRepository
 	Names         *repositories.NameRepository
 	Badges        *repositories.BadgeRepository
+	Stamps        *repositories.StampRepository
 	Reports       *repositories.ReportRepository
 	Infringements *repositories.InfringementRepository
 	Relationships *repositories.RelationshipRepository
@@ -82,6 +83,7 @@ func NewRepositories(db *gorm.DB) *Repositories {
 		Stats:            repositories.NewStatsRepository(db),
 		Relationships:    repositories.NewRelationshipRepository(db),
 		Badges:           repositories.NewBadgeRepository(db),
+		Stamps:           repositories.NewStampRepository(db),
 		Names:            repositories.NewNameRepository(db),
 		Infringements:    repositories.NewInfringementRepository(db),
 		Reports:          repositories.NewReportRepository(db),
