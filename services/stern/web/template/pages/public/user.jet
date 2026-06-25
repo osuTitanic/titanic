@@ -17,7 +17,9 @@
     {{ yield profileFriendStatus() . }}
     {{ yield profileDetails() . }}
     {{ yield profilePlaystyles() . }}
-    {* TODO: Port the moderation panel *}
+    {{ if .Permissions.IsModerator() }}
+        {{ yield userModerationPanel() . }}
+    {{ end }}
 </div>
 <div class="profile-right">
     {{ yield profileUserpage() . }}
@@ -39,6 +41,9 @@
 <script src="/js/user.js" defer></script>
 <script src="/lib/d3.v3.min.js" defer></script>
 <script src="/lib/nv.d3.min.js" defer></script>
+{{ if .Permissions.IsModerator() }}
+<script src="/js/moderation.js" defer></script>
+{{ end }}
 {{ end }}
 
 {{ block profileUserCard() }}
@@ -872,5 +877,241 @@
     </div>
     {{ end }}
 {{ end }}
+</div>
+{{ end }}
+
+{*
+    Moderator-only sidebar for user management.
+    Includes profile edits, badges, stamps, and infringements.
+*}
+{{ block userModerationPanel() }}
+{{ user := .User }}
+<div class="moderation-container">
+    <h1 class="moderation-header">Moderation</h1>
+
+    {* Edit profile *}
+    <button type="button" onclick="document.getElementById('moderation-edit-profile').showModal()">
+        <i class="icon-edit"></i> Edit profile details
+    </button>
+    <dialog id="moderation-edit-profile" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false;">
+            <h2 class="moderation-dialog-title"><i class="icon-edit"></i> Edit profile details</h2>
+            <div class="moderation-dialog-content">
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" id="mod-email" value="{{ user.Email }}" />
+                </div>
+                <div class="form-row">
+                    <label>Country</label>
+                    <input type="text" id="mod-country" maxlength="2" value="{{ user.Country | upper }}" />
+                </div>
+                <div class="form-row">
+                    <label>Discord ID</label>
+                    <input type="text" id="mod-discord-id" value="{{ user.DiscordId }}" />
+                </div>
+                <div class="form-row">
+                    <label>Title</label>
+                    <input type="text" id="mod-title" value="{{ user.Title }}" />
+                </div>
+                <div class="form-row">
+                    <label>Website</label>
+                    <input type="text" id="mod-website" value="{{ user.Website }}" />
+                </div>
+                <div class="form-row">
+                    <label>Twitter</label>
+                    <input type="text" id="mod-twitter" value="{{ user.Twitter }}" />
+                </div>
+                <div class="form-row">
+                    <label>Discord</label>
+                    <input type="text" id="mod-discord" value="{{ user.Discord }}" />
+                </div>
+                <div class="form-row">
+                    <label>Location</label>
+                    <input type="text" id="mod-location" value="{{ user.Location }}" />
+                </div>
+                <div class="form-row">
+                    <label>Interests</label>
+                    <input type="text" id="mod-interests" value="{{ user.Interests }}" />
+                </div>
+                <div class="form-row">
+                    <label>Userpage</label>
+                    <textarea id="mod-userpage" rows="6">{{ user.UserpageText() }}</textarea>
+                </div>
+                <div class="form-row">
+                    <label>Signature</label>
+                    <textarea id="mod-signature" rows="3">{{ user.Signature }}</textarea>
+                </div>
+                <div class="form-row">
+                    <label>Activated</label>
+                    <input type="checkbox" id="mod-activated" {{ if user.Activated }}checked{{ end }} />
+                </div>
+                <div class="form-row">
+                    <label>Bot account</label>
+                    <input type="checkbox" id="mod-is-bot" {{ if user.IsBot }}checked{{ end }} />
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="confirm-button" onclick="moderationSaveProfile({{ user.Id }})">Save</button>
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-edit-profile').close()">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Badges *}
+    <button type="button" onclick="document.getElementById('moderation-badges').showModal()">
+        <i class="icon-star"></i> Edit badges
+    </button>
+    <dialog id="moderation-badges" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false">
+            <h2 class="moderation-dialog-title"><i class="icon-star"></i> Edit badges</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-badges-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Icon URL</th>
+                                <th style="width: 20%">Redirect URL</th>
+                                <th style="width: 55%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 5%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range _, badge := user.Badges }}
+                            <tr data-badge-id="{{ badge.Id }}">
+                                <td><input type="text" id="badge-icon-{{ badge.Id }}" value="{{ badge.Icon }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-url-{{ badge.Id }}" value="{{ badge.Url }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-desc-{{ badge.Id }}" value="{{ badge.Description }}" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateBadge({{ user.Id }}, {{ badge.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="if(confirm('Delete this badge?')) moderationDeleteBadge({{ user.Id }}, {{ badge.Id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ end }}
+                            <tr id="badge-new-row" class="moderation-new-row">
+                                <td><input type="text" id="badge-new-icon" placeholder="/images/badges/example.png" style="width:100%" /></td>
+                                <td><input type="text" id="badge-new-url" placeholder="https://... (optional)" style="width:100%" /></td>
+                                <td><input type="text" id="badge-new-desc" placeholder="Description (optional)" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddBadge({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-badges').close()">Close</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Stamps *}
+    <button type="button" onclick="document.getElementById('moderation-stamps').showModal()">
+        <i class="icon-bookmark"></i> Edit stamps
+    </button>
+    <dialog id="moderation-stamps" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false">
+            <h2 class="moderation-dialog-title"><i class="icon-bookmark"></i> Edit stamps</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-stamps-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Icon URL</th>
+                                <th style="width: 20%">Redirect URL</th>
+                                <th style="width: 55%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 5%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range _, stamp := user.Stamps }}
+                            <tr data-stamp-id="{{ stamp.Id }}">
+                                <td><input type="text" id="stamp-icon-{{ stamp.Id }}" value="{{ stamp.Icon }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-url-{{ stamp.Id }}" value="{{ stamp.Url }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-desc-{{ stamp.Id }}" value="{{ stamp.Description }}" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateStamp({{ user.Id }}, {{ stamp.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="if(confirm('Delete this stamp?')) moderationDeleteStamp({{ user.Id }}, {{ stamp.Id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ end }}
+                            <tr id="stamp-new-row" class="moderation-new-row">
+                                <td><input type="text" id="stamp-new-icon" placeholder="/images/stamps/example.png" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-new-url" placeholder="https://... (optional)" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-new-desc" placeholder="Description (optional)" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddStamp({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-stamps').close()">Close</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Infringements (rows populated dynamically via js) *}
+    <button type="button" onclick="moderationOpenInfringements({{ user.Id }})">
+        <i class="icon-warning-sign"></i> Edit infringements
+    </button>
+    <dialog id="moderation-infringements" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false;">
+            <h2 class="moderation-dialog-title"><i class="icon-warning-sign"></i> Edit infringements</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-infringements-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%">Time</th>
+                                <th style="width: 15%">Action</th>
+                                <th style="width: 15%">Duration (mins)</th>
+                                <th style="width: 15%">Permanent</th>
+                                <th style="width: 30%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 10%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moderation-infringements-body">
+                            <tr id="infringement-new-row" class="moderation-new-row">
+                                <td></td>
+                                <td>
+                                    <select id="infringement-new-action" style="width: 100%">
+                                        <option value="0">Restrict</option>
+                                        <option value="1">Silence</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" id="infringement-new-duration" min="0" value="0" style="width: 100%" /></td>
+                                <td class="moderation-checkbox-cell"><input type="checkbox" id="infringement-new-permanent" /></td>
+                                <td><input type="text" id="infringement-new-desc" placeholder="Description (optional)" style="width: 100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddInfringement({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-infringements').close()">Close</button>
+                    <div id="moderation-loader" class="loader" style="display: none"></div>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Quick actions *}
+    <button type="button" class="warning-button" onclick="removeUserAvatar({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+        <i class="icon-remove-sign"></i> Remove Avatar
+    </button>
+    <button type="button" class="danger-button" onclick="clearUserProfile({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+        <i class="icon-trash"></i> Clear Profile
+    </button>
+    <button type="button" class="danger-button" onclick="wipeUserScores({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+        <i class="icon-ban-circle"></i> Wipe Scores
+    </button>
+    <button type="button" class="restore-button" onclick="restoreUserScores({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+        <i class="icon-repeat"></i> Restore Scores
+    </button>
 </div>
 {{ end }}
