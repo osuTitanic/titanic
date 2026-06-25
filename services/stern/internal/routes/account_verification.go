@@ -16,7 +16,6 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
-	"gorm.io/gorm"
 )
 
 func RenderVerificationPage(ctx *server.Context, verification *schemas.Verification, success bool, reset bool, errorMessage string) {
@@ -51,12 +50,12 @@ func AccountVerification(ctx *server.Context) {
 
 	verification, err := ctx.State.Verifications.ById(verificationId, "User")
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch verification", "verification_id", verificationId, "error", err)
 		InternalServerError(ctx)
+		return
+	}
+	if verification == nil {
+		NotFound(ctx)
 		return
 	}
 
@@ -110,12 +109,12 @@ func AccountVerificationResend(ctx *server.Context) {
 
 	previousVerification, err := ctx.State.Verifications.ById(verificationId, "User")
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch verification for resend", "verification_id", verificationId, "error", err)
 		InternalServerError(ctx)
+		return
+	}
+	if previousVerification == nil {
+		NotFound(ctx)
 		return
 	}
 

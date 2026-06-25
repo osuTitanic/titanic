@@ -47,7 +47,7 @@ func deleteUser(
 		if err != nil {
 			return fmt.Errorf("failed to fetch user %d: %w", userId, err)
 		}
-		if user.Activated || !user.CreatedAt.Before(cutoff) {
+		if user == nil || user.Activated || !user.CreatedAt.Before(cutoff) {
 			return nil
 		}
 

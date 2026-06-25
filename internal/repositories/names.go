@@ -30,19 +30,13 @@ func (r *NameRepository) Update(updates *schemas.Name, columns ...string) (int64
 func (r *NameRepository) ById(id int, preload ...string) (*schemas.Name, error) {
 	var name schemas.Name
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&name).Error
-	if err != nil {
-		return nil, err
-	}
-	return &name, nil
+	return LookupResult(&name, err)
 }
 
 func (r *NameRepository) ByName(value string, preload ...string) (*schemas.Name, error) {
 	var name schemas.Name
 	err := Preloaded(r.db, preload).Where("name = ?", value).First(&name).Error
-	if err != nil {
-		return nil, err
-	}
-	return &name, nil
+	return LookupResult(&name, err)
 }
 
 func (r *NameRepository) ByReservedNameCaseInsensitive(value string, preload ...string) (*schemas.Name, error) {

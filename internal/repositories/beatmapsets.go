@@ -29,10 +29,7 @@ func (r *BeatmapsetRepository) Update(updates *schemas.Beatmapset, columns ...st
 func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmapset, error) {
 	var beatmapset schemas.Beatmapset
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmapset).Error
-	if err != nil {
-		return nil, err
-	}
-	return &beatmapset, nil
+	return LookupResult(&beatmapset, err)
 }
 
 func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
@@ -54,6 +51,15 @@ func (r *BeatmapsetRepository) GetCount() (int, error) {
 func (r *BeatmapsetRepository) FetchByStatus(status constants.BeatmapStatus, preload ...string) ([]*schemas.Beatmapset, error) {
 	var beatmapsets []*schemas.Beatmapset
 	err := Preloaded(r.db, preload).Where("submission_status = ?", status).Find(&beatmapsets).Error
+	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("creator_id = ?", creatorId).
+		Order("submission_date DESC").
+		Find(&beatmapsets).Error
 	return beatmapsets, err
 }
 

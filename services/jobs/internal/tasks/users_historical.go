@@ -45,6 +45,9 @@ func fixHistoricalDataForUser(app *state.State, logger *slog.Logger, userId int)
 func fixReplayHistoryForUser(app *state.State, logger *slog.Logger, userId int, mode constants.Mode) error {
 	user, err := app.Repositories.Users.ById(userId)
 	if err != nil {
+		return fmt.Errorf("failed to fetch user %d: %w", userId, err)
+	}
+	if user == nil {
 		logger.Warn("User was not found.", "user_id", userId)
 		return nil
 	}
@@ -104,6 +107,9 @@ func fixReplayHistoryForUser(app *state.State, logger *slog.Logger, userId int, 
 func fixPlayHistoryForUser(app *state.State, logger *slog.Logger, userId int, mode constants.Mode) error {
 	user, err := app.Repositories.Users.ById(userId)
 	if err != nil {
+		return fmt.Errorf("failed to fetch user %d: %w", userId, err)
+	}
+	if user == nil {
 		logger.Warn("User was not found.", "user_id", userId)
 		return nil
 	}

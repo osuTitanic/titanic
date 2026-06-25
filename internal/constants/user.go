@@ -12,11 +12,6 @@ const (
 	PlaystyleTouch        Playstyle = 1 << 3
 )
 
-const (
-	DefaultPlayerGroupId    = 999
-	DefaultSupporterGroupId = 1000
-)
-
 func (p Playstyle) Has(flag Playstyle) bool {
 	return p&flag != 0
 }
@@ -46,6 +41,32 @@ func (p Playstyle) String() string {
 
 	return strings.Join(parts, ",")
 }
+
+type UserActivity int
+
+const (
+	ActivityRanksGained            UserActivity = 1
+	ActivityNumberOne              UserActivity = 2
+	ActivityBeatmapLeaderboardRank UserActivity = 3
+	ActivityLostFirstPlace         UserActivity = 4
+	ActivityPPRecord               UserActivity = 5
+	ActivityTopPlay                UserActivity = 6
+	ActivityAchievementUnlocked    UserActivity = 7
+	ActivityScoreSubmitted         UserActivity = 8
+	ActivityBeatmapUploaded        UserActivity = 9
+	ActivityBeatmapUpdated         UserActivity = 10
+	ActivityBeatmapRevived         UserActivity = 11
+	ActivityBeatmapFavouriteAdded  UserActivity = 12
+	ActivityBeatmapFavouriteRemove UserActivity = 13
+	ActivityBeatmapRated           UserActivity = 14
+	ActivityBeatmapCommented       UserActivity = 15
+	ActivityBeatmapDownloaded      UserActivity = 16
+	ActivityBeatmapStatusUpdated   UserActivity = 17
+	ActivityBeatmapNominated       UserActivity = 18
+	ActivityForumTopicCreated      UserActivity = 19
+	ActivityForumPostCreated       UserActivity = 20
+	ActivityBeatmapNuked           UserActivity = 37
+)
 
 var DisallowedUsernameSubstrings = []string{
 	"blow job",

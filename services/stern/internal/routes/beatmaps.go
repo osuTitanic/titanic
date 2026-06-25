@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
-	"gorm.io/gorm"
 )
 
 func BeatmapRedirect(ctx *server.Context) {
@@ -33,16 +31,12 @@ func BeatmapsetRedirect(ctx *server.Context) {
 
 	beatmapset, err := ctx.State.Repositories.Beatmapsets.ById(idInt, "Beatmaps")
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch beatmapset", "id", idInt, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	if len(beatmapset.Beatmaps) == 0 {
+	if beatmapset == nil || len(beatmapset.Beatmaps) == 0 {
 		NotFound(ctx)
 		return
 	}
@@ -78,17 +72,13 @@ func Beatmap(ctx *server.Context) {
 		idInt, "Beatmapset", "Beatmapset.Beatmaps", "Beatmapset.CreatorUser",
 	)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(ctx)
-			return
-		}
 		ctx.Logger.Error("Failed to fetch beatmap", "id", idInt, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	if beatmap.Status <= constants.BeatmapStatusInactive {
-		// Beatmap is inactive / has not been submitted
+	if beatmap == nil || beatmap.Status <= constants.BeatmapStatusInactive {
+		// Beatmap not found / inactive / has not been submitted
 		NotFound(ctx)
 		return
 	}

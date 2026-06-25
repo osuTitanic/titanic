@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,7 +13,6 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 type registrationRequest struct {
@@ -217,8 +215,8 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 			return err
 		}
 
-		playerGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.DefaultPlayerGroupId}
-		supporterGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.DefaultSupporterGroupId}
+		playerGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.GroupPlayers}
+		supporterGroup := &schemas.GroupEntry{UserId: user.Id, GroupId: constants.GroupSupporter}
 
 		if err := repositories.Groups.CreateEntry(playerGroup); err != nil {
 			return err
@@ -336,47 +334,38 @@ func validateRegistrationEmail(ctx *server.Context, email string) (string, error
 		return "Please enter a valid email address!", nil
 	}
 
-	_, err := ctx.State.Users.ByEmail(strings.ToLower(email))
-	if err == nil {
+	user, err := ctx.State.Users.ByEmail(strings.ToLower(email))
+	if err != nil {
+		return "", err
+	}
+	if user != nil {
 		return "This email address is already in use.", nil
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", nil
-	}
-	return "", err
+	return "", nil
 }
 
 func registrationUserExists(ctx *server.Context, username string) (bool, error) {
-	_, err := ctx.State.Users.ByNameCaseInsensitive(username)
-	if err == nil {
-		return true, nil
+	user, err := ctx.State.Users.ByNameCaseInsensitive(username)
+	if err != nil {
+		return false, err
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	return false, err
+	return user != nil, nil
 }
 
 func registrationSafeNameExists(ctx *server.Context, safeName string) (bool, error) {
-	_, err := ctx.State.Users.BySafeName(safeName)
-	if err == nil {
-		return true, nil
+	user, err := ctx.State.Users.BySafeName(safeName)
+	if err != nil {
+		return false, err
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	return false, err
+	return user != nil, nil
 }
 
 func registrationReservedNameExists(ctx *server.Context, username string) (bool, error) {
-	_, err := ctx.State.Names.ByReservedNameCaseInsensitive(username)
-	if err == nil {
-		return true, nil
+	name, err := ctx.State.Names.ByReservedNameCaseInsensitive(username)
+	if err != nil {
+		return false, err
 	}
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
-	}
-	return false, err
+	return name != nil, nil
 }
 
 func writePlainText(ctx *server.Context, status int, body string) {

@@ -28,3 +28,14 @@ func (r *BeatmapPlaysRepository) Update(updates *schemas.BeatmapPlays, columns .
 		columns...,
 	)
 }
+
+func (r *BeatmapPlaysRepository) FetchMostPlayedByUser(userId int, limit, offset int, preload ...string) ([]*schemas.BeatmapPlays, error) {
+	var plays []*schemas.BeatmapPlays
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Order("count DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&plays).Error
+	return plays, err
+}

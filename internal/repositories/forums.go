@@ -116,6 +116,12 @@ func (r *ForumPostRepository) ById(id int64, preload ...string) (*schemas.ForumP
 	return &post, nil
 }
 
+func (r *ForumPostRepository) CountByUserId(userId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumPost{}).Where("user_id = ?", userId).Count(&count).Error
+	return int(count), err
+}
+
 func (r *ForumPostRepository) ManyById(ids []int64, preload ...string) ([]*schemas.ForumPost, error) {
 	if len(ids) == 0 {
 		return []*schemas.ForumPost{}, nil

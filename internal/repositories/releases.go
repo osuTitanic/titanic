@@ -153,10 +153,8 @@ func (r *ReleasesOfficialRepository) FetchFileById(id int) (*schemas.ReleaseFile
 
 func (r *ReleasesOfficialRepository) FetchFileByVersion(version int) (*schemas.ReleaseFiles, error) {
 	var file schemas.ReleaseFiles
-	if err := r.db.Where("file_version = ?", version).First(&file).Error; err != nil {
-		return nil, err
-	}
-	return &file, nil
+	err := r.db.Where("file_version = ?", version).First(&file).Error
+	return LookupResult(&file, err)
 }
 
 func (r *ReleasesOfficialRepository) CreateChangelog(changelog *schemas.ReleaseChangelog) error {

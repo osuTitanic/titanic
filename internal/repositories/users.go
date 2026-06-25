@@ -31,55 +31,37 @@ func (r *UserRepository) Update(updates *schemas.User, columns ...string) (int64
 func (r *UserRepository) ById(id int, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByName(name string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("name = ?", name).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByNameCaseInsensitive(name string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("LOWER(name) = ?", strings.ToLower(name)).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) BySafeName(safeName string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("safe_name = ?", safeName).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByEmail(email string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByDiscordId(discordId int64, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("discord_id = ?", discordId).First(&user).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) Many(critera map[string]any, preload ...string) ([]*schemas.User, error) {

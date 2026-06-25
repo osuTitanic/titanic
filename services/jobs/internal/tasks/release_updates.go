@@ -12,7 +12,6 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/discord"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
-	"gorm.io/gorm"
 )
 
 const updateUrl = "https://osu.ppy.sh/web/check-updates.php"
@@ -61,7 +60,7 @@ func checkStream(app *state.State, logger *slog.Logger, stream string) ([]*schem
 
 	for _, file := range results {
 		existingFile, err := app.Repositories.ReleasesOfficial.FetchFileByVersion(file.FileVersion)
-		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		if err != nil {
 			return nil, err
 		}
 

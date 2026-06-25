@@ -2,6 +2,7 @@ package templates
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/constants"
@@ -30,6 +31,10 @@ type DefaultView struct {
 	CSRFToken   string
 	CurrentPath string
 	CurrentURI  string
+}
+
+func (v DefaultView) IsAuthenticated() bool {
+	return v.CurrentUser != nil
 }
 
 type HomeView struct {
@@ -107,6 +112,154 @@ type BeatmapView struct {
 	Invite                *schemas.BeatmapCollaborationRequest
 	IsBeatmapAuthor       bool
 	BatNominated          bool
+}
+
+type UserProfileView struct {
+	DefaultView
+	User          *schemas.User
+	Mode          constants.Mode
+	IsOnline      bool
+	Followers     int
+	TotalPosts    int
+	PPRank        int
+	PPRankCountry int
+	CurrentAdded  bool // current user friended this profile
+	TargetAdded   bool // profile friended current user
+	IsBlocked     bool
+	SuperFriendly bool
+	General       *UserGeneralTab
+}
+
+func (v UserProfileView) IsOwnProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id == v.User.Id
+}
+
+func (v UserProfileView) IsOtherProfile() bool {
+	return v.CurrentUser != nil && v.CurrentUser.Id != v.User.Id
+}
+
+type UserGeneralTab struct {
+	User           *schemas.User
+	Mode           constants.Mode
+	Stats          *schemas.Stats
+	PPRank         int
+	PPRankCountry  int
+	ScoreRank      int
+	TotalScoreRank int
+	PPv1Rank       int
+	TotalKudosu    int
+	Activity       *UserActivityPage
+}
+
+// HasStats checks if the user has stats worth rendering
+// in the general tab for the selected mode.
+func (t *UserGeneralTab) HasStats() bool {
+	return t.Stats != nil && t.Stats.Playcount > 0 && !t.User.Restricted
+}
+
+type UserActivityPage struct {
+	UserId     int
+	Mode       constants.Mode
+	Rows       []*schemas.Activity
+	Offset     int
+	NextOffset int
+	HasMore    bool
+}
+
+func (p *UserActivityPage) IsFirstPage() bool {
+	return p.Offset == 0
+}
+
+type UserTopPlaysTab struct {
+	UserId     int
+	Mode       constants.Mode
+	IsOwner    bool
+	FirstsRank int
+	Pinned     *UserScorePage
+	Best       *UserScorePage
+	First      *UserScorePage
+}
+
+type UserScorePage struct {
+	UserId          int
+	Mode            constants.Mode
+	Section         string // "pinned" | "best" | "first"
+	Scores          []*schemas.Score
+	Offset          int
+	NextOffset      int
+	HasMore         bool
+	Total           int
+	IsOwner         bool
+	ApprovedRewards bool
+}
+
+func (p *UserScorePage) IsFirstPage() bool {
+	return p.Offset == 0
+}
+
+func (p *UserScorePage) ShowWeight() bool {
+	return p.Section == "best"
+}
+
+type UserHistoryTab struct {
+	UserId     int
+	Mode       constants.Mode
+	MostPlayed []*schemas.BeatmapPlays
+	Recent     []*schemas.Score
+}
+
+type UserKudosuTab struct {
+	UserId      int
+	TotalKudosu int
+	Entries     []*UserKudosuEntry
+}
+
+type UserKudosuEntry struct {
+	Time        time.Time
+	Status      string // "received" | "gave" | "revoked"
+	Preposition string // "from" | "to"
+	Amount      int
+	ActorId     int
+	ActorName   string
+	OtherId     int
+	OtherName   string
+	PostId      int
+	TopicTitle  string
+}
+
+type UserAchievementsTab struct {
+	UserId        int
+	UnlockedCount int
+	Categories    []*UserAchievementCategory
+}
+
+type UserAchievementCategory struct {
+	Name         string
+	Achievements []*UserAchievement
+}
+
+type UserAchievement struct {
+	Name       string
+	Unlocked   bool
+	Filename   string
+	UnlockedAt time.Time
+}
+
+type UserBeatmapsTab struct {
+	UserId         int
+	IsOwner        bool
+	Favourites     []*schemas.BeatmapFavourite
+	Created        []*UserBeatmapGroup
+	Collaborations []*schemas.BeatmapCollaboration
+	Nominations    []*schemas.BeatmapNomination
+}
+
+type UserBeatmapGroup struct {
+	Name        string // e.g. "Ranked", "Graveyarded"
+	Key         string // e.g. "ranked", "graveyarded"
+	CanEdit     bool
+	Revivable   bool
+	Beatmapsets []*schemas.Beatmapset
 }
 
 type BeatmapPacksView struct {

@@ -1,13 +1,11 @@
 package server
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/authentication"
-	"gorm.io/gorm"
 )
 
 func (ctx *Context) IsAuthenticated() bool {
@@ -33,12 +31,11 @@ func (ctx *Context) ResolveAuthentication() {
 
 	user, err := ctx.State.Users.ById(session.UserId)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			ctx.ExpireSessionCookie()
-			return
-		}
-
 		ctx.Logger.Warn("Failed to load authenticated user", "user_id", session.UserId, "error", err)
+		return
+	}
+	if user == nil {
+		ctx.ExpireSessionCookie()
 		return
 	}
 

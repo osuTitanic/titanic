@@ -30,3 +30,12 @@ func (r *BeatmapNominationRepository) FetchBySet(setId int, preload ...string) (
 	err := Preloaded(r.db, preload).Where("set_id = ?", setId).Find(&nominations).Error
 	return nominations, err
 }
+
+func (r *BeatmapNominationRepository) FetchByUser(userId int, preload ...string) ([]*schemas.BeatmapNomination, error) {
+	var nominations []*schemas.BeatmapNomination
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Order("time DESC").
+		Find(&nominations).Error
+	return nominations, err
+}

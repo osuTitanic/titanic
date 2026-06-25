@@ -44,19 +44,13 @@ func (r *VerificationRepository) Update(updates *schemas.Verification, columns .
 func (r *VerificationRepository) ById(id int, preload ...string) (*schemas.Verification, error) {
 	var verification schemas.Verification
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&verification).Error
-	if err != nil {
-		return nil, err
-	}
-	return &verification, nil
+	return LookupResult(&verification, err)
 }
 
 func (r *VerificationRepository) ByToken(token string, preload ...string) (*schemas.Verification, error) {
 	var verification schemas.Verification
 	err := Preloaded(r.db, preload).Where("token = ?", token).First(&verification).Error
-	if err != nil {
-		return nil, err
-	}
-	return &verification, nil
+	return LookupResult(&verification, err)
 }
 
 func (r *VerificationRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Verification, error) {

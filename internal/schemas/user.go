@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -53,6 +54,7 @@ type User struct {
 	Favourites          []*BeatmapFavourite     `gorm:"foreignKey:UserId;references:Id"`
 	Groups              []*GroupEntry           `gorm:"foreignKey:UserId;references:Id"`
 	Badges              []*Badge                `gorm:"foreignKey:UserId;references:Id"`
+	Stamps              []*Stamp                `gorm:"foreignKey:UserId;references:Id"`
 	Stats               []*Stats                `gorm:"foreignKey:UserId;references:Id"`
 	Names               []*Name                 `gorm:"foreignKey:UserId;references:Id"`
 	Infringements       []*Infringement         `gorm:"foreignKey:UserId;references:Id"`
@@ -82,6 +84,88 @@ func (user *User) AvatarUrl() string {
 	}
 	return fmt.Sprintf("/a/%d?c=%s", user.Id, *user.AvatarHash)
 }
+
+func (user *User) UserpageText() string {
+	if user.Userpage == nil {
+		return ""
+	}
+	return *user.Userpage
+}
+
+// DisplayColor returns the username color derived from the user's groups.
+func (user *User) DisplayColor() string {
+	for _, group := range user.SortedGroups() {
+		if group.Color != "#000000" {
+			return group.Color
+		}
+	}
+	return ""
+}
+
+// VisibleGroups returns the user's groups excluding
+// the donator group & otherwise hidden groups
+func (user *User) VisibleGroups() []*Group {
+	visible := make([]*Group, 0, len(user.Groups))
+	for _, group := range user.SortedGroups() {
+		if group.Id == constants.GroupDonator {
+			continue
+		}
+		if group.Hidden {
+			continue
+		}
+		visible = append(visible, group)
+	}
+	return visible
+}
+
+// SortedGroups returns the user's groups in ascending order
+func (user *User) SortedGroups() []*Group {
+	groups := make([]*Group, 0, len(user.Groups))
+	for _, entry := range user.Groups {
+		if entry.Group == nil {
+			continue
+		}
+		groups = append(groups, entry.Group)
+	}
+
+	sort.Slice(groups, func(i, j int) bool {
+		return groups[i].Id < groups[j].Id
+	})
+	return groups
+}
+
+// IsDonator returns whether the user is a member of the Donator group.
+func (user *User) IsDonator() bool {
+	for _, entry := range user.Groups {
+		if entry.GroupId == constants.GroupDonator {
+			return true
+		}
+	}
+	return false
+}
+
+// PreviousNames returns the past usernames of the user.
+func (user *User) PreviousNames() []string {
+	seen := make(map[string]bool)
+	names := make([]string, 0, len(user.Names))
+	// hey golang, please add sets, ty
+
+	for _, name := range user.Names {
+		if name.Name == user.Name || seen[name.Name] {
+			continue
+		}
+		seen[name.Name] = true
+		names = append(names, name.Name)
+	}
+	return names
+}
+
+/* Helper functions for playstyles */
+
+func (user *User) PlaysWithMouse() bool    { return user.Playstyle.Has(constants.PlaystyleMouse) }
+func (user *User) PlaysWithKeyboard() bool { return user.Playstyle.Has(constants.PlaystyleKeyboard) }
+func (user *User) PlaysWithTablet() bool   { return user.Playstyle.Has(constants.PlaystyleTablet) }
+func (user *User) PlaysWithTouch() bool    { return user.Playstyle.Has(constants.PlaystyleTouch) }
 
 type Stats struct {
 	UserId      int            `gorm:"column:id;primaryKey"`
@@ -114,8 +198,27 @@ func (Stats) TableName() string {
 	return "stats"
 }
 
+func (stats *Stats) Accuracy() float64 {
+	return stats.Acc * 100
+}
+
+func (stats *Stats) PlaytimeHours() float64 {
+	return float64(stats.Playtime) / 60 / 60
+}
+
 func (stats *Stats) Level() int {
 	return int(constants.GetLevel(stats.Tscore))
+}
+
+// LevelProgress returns the percentage of progress towards the next level
+func (stats *Stats) LevelProgress() int {
+	precise := constants.GetLevel(stats.Tscore)
+	return int(math.Round((precise - math.Floor(precise)) * 100))
+}
+
+// LevelBarWidth returns the width (in pixels) of the level progress bar
+func (stats *Stats) LevelBarWidth() int {
+	return min(stats.LevelProgress(), 100) * 3
 }
 
 func (stats *Stats) Clears() int {
@@ -155,6 +258,21 @@ type Badge struct {
 
 func (Badge) TableName() string {
 	return "profile_badges"
+}
+
+type Stamp struct {
+	Id          int       `gorm:"column:id;primaryKey;autoIncrement"`
+	UserId      int       `gorm:"column:user_id"`
+	Icon        string    `gorm:"column:icon"`
+	Url         *string   `gorm:"column:url"`
+	Description *string   `gorm:"column:description"`
+	Created     time.Time `gorm:"column:created;autoCreateTime"`
+
+	User *User `gorm:"foreignKey:UserId;references:Id"`
+}
+
+func (Stamp) TableName() string {
+	return "profile_stamps"
 }
 
 type Name struct {

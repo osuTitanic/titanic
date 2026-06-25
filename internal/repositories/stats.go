@@ -32,10 +32,7 @@ func (r *StatsRepository) Update(updates *schemas.Stats, columns ...string) (int
 func (r *StatsRepository) ByMode(userId int, mode int, preload ...string) (*schemas.Stats, error) {
 	var stats schemas.Stats
 	err := Preloaded(r.db, preload).Where("id = ? AND mode = ?", userId, mode).First(&stats).Error
-	if err != nil {
-		return nil, err
-	}
-	return &stats, nil
+	return LookupResult(&stats, err)
 }
 
 func (r *StatsRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Stats, error) {
