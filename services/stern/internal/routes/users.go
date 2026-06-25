@@ -331,55 +331,25 @@ func UserKudosuPartial(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "partials/user_kudosu", tab)
 }
 
-func buildKudosuEntries(userId int, mods []*schemas.BeatmapModding) []*templates.UserKudosuEntry {
-	entries := make([]*templates.UserKudosuEntry, 0, len(mods))
-
-	for _, mod := range mods {
-		status := "gave"
-		switch {
-		case mod.Amount < 0:
-			status = "revoked"
-		case mod.TargetId == userId:
-			status = "received"
-		}
-
-		// On "received" the profile owner is the target, so the sender is the
-		// "other" party. Otherwise the sender is the actor.
-		actor, other := mod.Sender, mod.Target
-		if status == "received" {
-			actor, other = mod.Target, mod.Sender
-		}
-
-		preposition := "from"
-		if status == "gave" {
-			preposition = "to"
-		}
-
-		amount := mod.Amount
-		if amount < 0 {
-			amount = -amount
-		}
-
-		entry := &templates.UserKudosuEntry{
-			Time:        mod.Time,
-			Status:      status,
-			Preposition: preposition,
-			Amount:      amount,
-			PostId:      mod.PostId,
-		}
-		if actor != nil {
-			entry.ActorId, entry.ActorName = actor.Id, actor.Name
-		}
-		if other != nil {
-			entry.OtherId, entry.OtherName = other.Id, other.Name
-		}
-		if mod.Post != nil && mod.Post.Topic != nil {
-			entry.TopicTitle = mod.Post.Topic.Title
-		}
-		entries = append(entries, entry)
+func UserAchievementsPartial(ctx *server.Context) {
+	user, ok := fetchProfileUser(ctx)
+	if !ok {
+		return
 	}
 
-	return entries
+	unlocked, err := ctx.State.Repositories.Achievements.ManyByUserId(user.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch achievements", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	tab := &templates.UserAchievementsTab{
+		UserId:        user.Id,
+		UnlockedCount: len(unlocked),
+		Categories:    buildAchievementCategories(unlocked),
+	}
+	ctx.RenderTemplate(http.StatusOK, "partials/user_achievements", tab)
 }
 
 func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants.Mode) *templates.UserGeneralTab {
@@ -541,6 +511,85 @@ func buildCreatedBeatmapGroups(sets []*schemas.Beatmapset, isOwner bool) []*temp
 		}
 	}
 	return result
+}
+
+func buildKudosuEntries(userId int, mods []*schemas.BeatmapModding) []*templates.UserKudosuEntry {
+	entries := make([]*templates.UserKudosuEntry, 0, len(mods))
+
+	for _, mod := range mods {
+		status := "gave"
+		switch {
+		case mod.Amount < 0:
+			status = "revoked"
+		case mod.TargetId == userId:
+			status = "received"
+		}
+
+		// On "received" the profile owner is the target, so the sender is the
+		// "other" party. Otherwise the sender is the actor.
+		actor, other := mod.Sender, mod.Target
+		if status == "received" {
+			actor, other = mod.Target, mod.Sender
+		}
+
+		preposition := "from"
+		if status == "gave" {
+			preposition = "to"
+		}
+
+		amount := mod.Amount
+		if amount < 0 {
+			amount = -amount
+		}
+
+		entry := &templates.UserKudosuEntry{
+			Time:        mod.Time,
+			Status:      status,
+			Preposition: preposition,
+			Amount:      amount,
+			PostId:      mod.PostId,
+		}
+		if actor != nil {
+			entry.ActorId, entry.ActorName = actor.Id, actor.Name
+		}
+		if other != nil {
+			entry.OtherId, entry.OtherName = other.Id, other.Name
+		}
+		if mod.Post != nil && mod.Post.Topic != nil {
+			entry.TopicTitle = mod.Post.Topic.Title
+		}
+		entries = append(entries, entry)
+	}
+
+	return entries
+}
+
+func buildAchievementCategories(unlocked []*schemas.Achievement) []*templates.UserAchievementCategory {
+	byName := make(map[string]*schemas.Achievement, len(unlocked))
+	for _, achievement := range unlocked {
+		byName[achievement.Name] = achievement
+	}
+	categories := make([]*templates.UserAchievementCategory, 0, len(constants.AchievementCategories))
+
+	for _, catalog := range constants.AchievementCategories {
+		category := &templates.UserAchievementCategory{Name: catalog.Name}
+
+		// For each available achievement in the catalog, check if the user has unlocked it
+		for _, name := range catalog.Achievements {
+			entry := &templates.UserAchievement{
+				Name:     name,
+				Unlocked: false,
+			}
+			if achievement, ok := byName[name]; ok {
+				entry.Unlocked = true
+				entry.Filename = achievement.Filename
+				entry.UnlockedAt = achievement.UnlockedAt
+			}
+			category.Achievements = append(category.Achievements, entry)
+		}
+		categories = append(categories, category)
+	}
+	return categories
 }
 
 func fetchProfileUser(ctx *server.Context) (*schemas.User, bool) {

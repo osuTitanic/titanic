@@ -227,6 +227,24 @@ type UserKudosuEntry struct {
 	TopicTitle  string
 }
 
+type UserAchievementsTab struct {
+	UserId        int
+	UnlockedCount int
+	Categories    []*UserAchievementCategory
+}
+
+type UserAchievementCategory struct {
+	Name         string
+	Achievements []*UserAchievement
+}
+
+type UserAchievement struct {
+	Name       string
+	Unlocked   bool
+	Filename   string
+	UnlockedAt time.Time
+}
+
 type UserBeatmapsTab struct {
 	UserId         int
 	IsOwner        bool

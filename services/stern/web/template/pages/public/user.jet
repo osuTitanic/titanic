@@ -351,7 +351,7 @@
             <td id="tab-achievements" class="tab-heading">Achievements</td>
         </tr>
         <td>
-            <div id="achievements" class="tab-content" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+            <div id="achievements" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/achievements" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
     </tbody>
 </table>
@@ -825,6 +825,36 @@
         <b>{{ entry.Amount }} kudos</b> {{ entry.Preposition }} a post by
         <a href="/u/{{ entry.OtherId }}">{{ entry.OtherName }}</a>
         in <a href="/forum/p/{{ entry.PostId }}">{{ entry.TopicTitle }}</a><br>
+    {{ end }}
+{{ end }}
+</div>
+{{ end }}
+
+{{ block userAchievementsTab() }}
+<div class="tab-spacing">
+{{ if .UnlockedCount == 0 }}
+    This user has not achieved anything yet.
+{{ else }}
+    {{ range _, category := .Categories }}
+    <h2 class="profile-achievement-header">{{ category.Name }}</h2>
+    <div class="achievement-category">
+        {{ range _, achievement := category.Achievements }}
+        <div class="achievement">
+            {{ if achievement.Unlocked }}
+            <img
+                src="/images/achievements/{{ achievement.Filename }}"
+                title="Unlocked {{ achievement.UnlockedAt.Format("2006-01-02 15:04:05") }} UTC"
+                loading="lazy"
+                alt="Achievement Image"
+            >
+            {{ else }}
+            <img src="/images/achievements/unknown.png" alt="Unknown Achievement" loading="lazy">
+            {{ end }}
+            <br>
+            <b>{{ achievement.Name }}</b>
+        </div>
+        {{ end }}
+    </div>
     {{ end }}
 {{ end }}
 </div>
