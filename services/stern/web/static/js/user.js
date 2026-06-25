@@ -74,6 +74,7 @@ function loadTabGraphs(id) {
 
 function loadMoreActivity(link, offset) {
     var row = $(link).closest("tr");
+    row.text("Loading...");
 
     $.get("/partials/users/" + userId + "/activity?mode=" + mode + "&offset=" + offset, function (html) {
         row.replaceWith(html);
