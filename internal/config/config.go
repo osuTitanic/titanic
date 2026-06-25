@@ -156,7 +156,7 @@ type Config struct {
 
 	// Release stream updates (optional)
 	ReleaseUpdatesEnabled      bool   `env:"RELEASE_UPDATES_ENABLED" envDefault:"false"`
-	ReleaseUpdateS3Target      string `env:"RELEASE_UPDATE_S3_TARGET"`
+	ReleaseUpdateLocation      string `env:"RELEASE_UPDATE_LOCATION" envDefault:"release"`
 	ReleaseUpdateNotifyWebhook string `env:"RELEASE_UPDATE_NOTIFY_WEBHOOK"`
 
 	// Debugging options

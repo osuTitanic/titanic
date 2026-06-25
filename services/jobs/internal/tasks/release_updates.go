@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/osuTitanic/titanic-go/internal/discord"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
@@ -107,8 +108,11 @@ func fetchStream(stream string, os string) ([]*schemas.ReleaseFiles, error) {
 }
 
 func postUpdateActions(app *state.State, logger *slog.Logger, file *schemas.ReleaseFiles, stream string) error {
-	// TODO: Upload to s3 / cdn
 	notifyWebhook(app, logger, file, stream)
+	uploadFile(file.UrlFull, app, logger)
+	if file.UrlPatch != nil {
+		uploadFile(*file.UrlPatch, app, logger)
+	}
 	return nil
 }
 
@@ -143,6 +147,23 @@ func notifyWebhook(app *state.State, logger *slog.Logger, file *schemas.ReleaseF
 	if err := webhook.Post(); err != nil {
 		logger.Error("Failed to post webhook notification for new release file", "filename", file.Filename, "error", err)
 	}
+	return nil
+}
+
+func uploadFile(url string, app *state.State, logger *slog.Logger) error {
+	if !app.Config.ReleaseUpdatesEnabled {
+		return nil
+	}
+	if url == "" {
+		return nil
+	}
+	logger.Info("Uploading release file to storage", "url", url)
+
+	urlParts := strings.Split(url, "/")
+	checksum := urlParts[len(urlParts)-1]
+	filename := urlParts[len(urlParts)-2]
+	location := fmt.Sprintf("%s/%s", app.Config.ReleaseUpdateLocation, filename)
+	app.Storage.SaveUrl(checksum, location, url)
 	return nil
 }
 
