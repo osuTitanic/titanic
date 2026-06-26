@@ -59,6 +59,10 @@ func (Score) TableName() string {
 	return "scores"
 }
 
+func (score *Score) Passed() bool {
+	return score.Failtime == nil
+}
+
 func (score *Score) Relaxing() bool {
 	return score.Mods.Has(constants.Relax) || score.Mods.Has(constants.Autopilot)
 }
