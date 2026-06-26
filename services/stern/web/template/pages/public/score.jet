@@ -1,0 +1,188 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .User.Name }} on {{ .Beatmap.Name() }}</title>
+<meta property="og:title" content="{{ .User.Name }}'s score on {{ .Beatmapset.ArtistName() }} - {{ .Beatmapset.TitleName() }} - Titanic!">
+<meta property="og:description" content="{{ .User.Name }} achieved #{{ .ScoreRank > 0 ? .ScoreRank : "N/A" }} with {{ formatFloat(.Score.Acc * 100, 2) }}% ({{ .Score.Grade }}) for {{ .Score.PP|round }}pp on {{ .Beatmap.Name() }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .Beatmapset.LargeThumbnailUrl() }}">
+<link rel="stylesheet" href="/css/scores.css">
+{{ end }}
+
+{{ block body() }}
+<div class="score-container">
+    <div class="top-section">
+        {{ yield scorePlayerCard() }}
+        {{ yield scoreBeatmapCard() }}
+    </div>
+    <div class="bottom-section">
+        {{ yield scoreStats() }}
+        {{ yield scoreGrade() }}
+    </div>
+</div>
+<br>
+{{ end }}
+
+{{ block scorePlayerCard() }}
+<div class="player-card">
+    <div class="player-header">
+        <a href="/u/{{ .User.Id }}">
+            <img src="/a/{{ .User.Id }}" alt="" class="player-avatar avatar-frame" loading="lazy">
+        </a>
+        <div class="player-info">
+            <span class="player-label">
+                <a href="/u/{{ .User.Id }}" class="player-name">{{ .User.Name }}</a>
+                <a href="/rankings/{{ .Score.Mode.Alias() }}/performance?country={{ .User.Country }}">
+                    <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country }}">
+                </a>
+            </span>
+            {{ if .UserStats }}
+            <div class="player-stats">
+                <span class="player-rank">
+                    Global Rank: <b>#{{ if .UserStats.Rank > 0 }}{{ .UserStats.Rank|formatNumber }}{{ else }}N/A{{ end }}</b>
+                    (<span class="player-pp">{{ .UserStats.PP|round|formatNumber }}pp</span>)
+                </span>
+            </div>
+            {{ end }}
+            <div class="play-date">
+                Played on
+                <span title="{{ .Score.SubmittedAt.Format("02/01/2006 at 15:04:05 MST") }}">{{ .Score.SubmittedAt.Format("02/01/2006") }}</span>
+                with
+                <span>{{ .Score.ClientString != "" ? .Score.ClientString : "an unknown version" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ block scoreBeatmapCard() }}
+<div class="beatmap-card">
+    <div class="card-content">
+        <div class="beatmap-info">
+            <a href="/b/{{ .Beatmap.Id }}" class="beatmap-title">
+                <b>{{ .Beatmapset.ArtistName() }} - {{ .Beatmapset.TitleName() }}</b>
+                <span class="beatmap-version">[{{ .Beatmap.Version }}]</span>
+                <span class="beatmap-stars">
+                    ({{ formatFloat(.Beatmap.Diff, 2) }} <i class="icon-star"></i>)
+                </span>
+            </a>
+            <br>
+            <a href="{{ .Beatmapset.CreatorLink() }}" class="beatmap-creator">
+                mapped by <span>{{ .Beatmapset.CreatorName() }}</span>
+            </a>
+        </div>
+        <div class="beatmap-thumbnail">
+            <a href="/b/{{ .Beatmap.Id }}">
+                <img src="{{ .Beatmapset.LargeThumbnailUrl() }}" loading="lazy" alt="" onerror="this.style.opacity='0'">
+            </a>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ block scoreStats() }}
+<div class="stats-panel">
+    <div class="stats-header">
+        <div class="score-display">
+            {{ if .Score.Mode == 0 }}
+            <span class="score-label">Score:</span>
+            {{ else }}
+            <span class="score-label">{{ .Score.Mode.Short() }} Score:</span>
+            {{ end }}
+            <span class="score-value">{{ .Score.TotalScore|formatNumber }}</span>
+            &nbsp;&nbsp;
+            <span class="score-label">Rank:</span>
+            <span class="score-value">#{{ if .ScoreRank > 0 }}{{ .ScoreRank|formatNumber }}{{ else }}N/A{{ end }}</span>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-row">
+            <div class="stat-item hit-300">
+                <span class="hit-label">300</span>
+                <span class="hit-count">{{ .Score.Count300 }}x</span>
+            </div>
+            <div class="stat-item hit-100">
+                <span class="hit-label">100</span>
+                <span class="hit-count">{{ .Score.Count100 }}x</span>
+            </div>
+        </div>
+
+        <div class="stat-row">
+            <div class="stat-item hit-50">
+                <span class="hit-label">50</span>
+                <span class="hit-count">{{ .Score.Count50 }}x</span>
+            </div>
+            <div class="stat-item hit-miss">
+                <span class="hit-label">Miss</span>
+                <span class="hit-count">{{ .Score.CountMiss }}x</span>
+            </div>
+        </div>
+
+        {{ if .Score.Mode == 1 || .Score.Mode == 3 }}
+        {* Taiko & Mania specific *}
+        <div class="stat-row">
+            <div class="stat-item hit-geki">
+                <span class="hit-label">Geki</span>
+                <span class="hit-count">{{ .Score.CountGeki }}x</span>
+            </div>
+            <div class="stat-item hit-katu">
+                <span class="hit-label">Katu</span>
+                <span class="hit-count">{{ .Score.CountKatu }}x</span>
+            </div>
+        </div>
+        {{ end }}
+    </div>
+
+    <div class="score-metadata {{ if .Score.Mods > 0 }}has-mods{{ end }}">
+        <div class="metadata-item combo">
+            <span class="label">Max Combo</span>
+            <span class="value">{{ .Score.MaxCombo }}x</span>
+        </div>
+        <div class="metadata-item accuracy">
+            <span class="label">Accuracy</span>
+            <span class="value">{{ formatFloat(.Score.Acc * 100, 2) }}%</span>
+        </div>
+        {{ if .Score.Mods > 0 }}
+        <div class="metadata-item mods">
+            <span class="label">Mods</span>
+            <span class="value">+{{ .Score.Mods|shortMods }}</span>
+        </div>
+        {{ end }}
+        <div class="metadata-item pp">
+            <span class="label">PP</span>
+            {{ if .Beatmap.Status == 4 }}
+            <span class="value" title="{{ formatFloat(.Score.PP, 4) }}pp if ranked">
+                <i class="icon-heart"></i>
+            </span>
+            {{ else if .Score.Relaxing() }}
+            <span class="value" title="PP is not awarded for Relax/Autopilot scores">
+                <i class="icon-remove"></i>
+            </span>
+            {{ else }}
+            <span class="value" title="{{ formatFloat(.Score.PP, 4) }}pp">
+                {{ .Score.PP|round|formatNumber }}pp
+            </span>
+            {{ end }}
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ block scoreGrade() }}
+<div class="grade-section">
+    <div class="grade-wrapper">
+        <img src="/images/grades/{{ .Score.Grade }}.png" alt="Grade {{ .Score.Grade }}" class="grade-image" loading="lazy">
+    </div>
+
+    <div class="score-buttons">
+        {{ if .Score.ReplayMd5 }}
+        <a href="/scores/{{ .Score.Id }}/download" class="score-button button-blue">
+            <i class="icon-download-alt"></i> Download Replay
+        </a>
+        {{ end }}
+        <a href="/b/{{ .Beatmap.Id }}" class="score-button button-grey">
+            <i class="icon-arrow-left"></i> Return to Beatmap
+        </a>
+    </div>
+</div>
+{{ end }}

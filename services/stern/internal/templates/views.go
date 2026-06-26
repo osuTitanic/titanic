@@ -114,6 +114,16 @@ type BeatmapView struct {
 	BatNominated          bool
 }
 
+type ScoreView struct {
+	DefaultView
+	Score      *schemas.Score
+	User       *schemas.User
+	UserStats  *schemas.Stats
+	Beatmap    *schemas.Beatmap
+	Beatmapset *schemas.Beatmapset
+	ScoreRank  int
+}
+
 type UserProfileView struct {
 	DefaultView
 	User          *schemas.User
