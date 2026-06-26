@@ -63,7 +63,7 @@ func (provider *BeatmapProvider) Setup() error {
 	return nil
 }
 
-func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, error) {
+func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
 	return provider.ResolverForSet(setId).Osz(setId, noVideo)
 }
 

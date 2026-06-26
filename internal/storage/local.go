@@ -40,6 +40,22 @@ func (storage *FileStorage) ReadStream(key string, folder string) (io.ReadSeekCl
 	return os.Open(path)
 }
 
+func (storage *FileStorage) ReadStreamAt(key string, folder string) (ReaderAtCloser, int64, error) {
+	path := fmt.Sprintf("%s/%s/%s", storage.dataPath, folder, key)
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	info, err := file.Stat()
+	if err != nil {
+		file.Close()
+		return nil, 0, err
+	}
+
+	return file, info.Size(), nil
+}
+
 func (storage *FileStorage) Save(key string, folder string, data []byte) error {
 	path := fmt.Sprintf("%s/%s", storage.dataPath, folder)
 	err := os.MkdirAll(path, 0755)

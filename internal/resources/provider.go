@@ -9,7 +9,7 @@ type BeatmapResourceProvider interface {
 
 	// Osz returns a stream to the osz archive for the given beatmapset.
 	// The caller is responsible for closing the returned stream.
-	Osz(setId int, noVideo bool) (io.ReadCloser, error)
+	Osz(setId int, noVideo bool) (io.ReadCloser, int64, error)
 
 	// Osu returns a stream to a single beatmap file.
 	// The caller is responsible for closing the returned stream.

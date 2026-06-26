@@ -6,6 +6,8 @@ github.com/Lekuruu/bbgo v0.0.0-20260514150256-b3a9835059ee h1:qicb1h69z/Ud6npokT
 github.com/Lekuruu/bbgo v0.0.0-20260514150256-b3a9835059ee/go.mod h1:BRKU1vxbnPtJBr+gGHQONX0DF7QwiFVCQstnQ0TC3d8=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735 h1:AwbABgwDVM0koi2RBrNC1/YVSGkgEsROlmpg1wQaAMQ=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735/go.mod h1:rUO3pVDrDhmuYLR+TrHig7IadSJwO4he5Q9904z5Mnc=
+github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034 h1:XgWmskBCaNGxp7KWMQPsB0GmS4as1hvsXfUO98IzLtk=
+github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034/go.mod h1:ois1qfC302IL45douuku0RRum1fu5XALRSHzNAb9X7U=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=
