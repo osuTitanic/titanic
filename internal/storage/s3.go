@@ -216,6 +216,32 @@ func (s *S3Storage) ReadStream(key string, directory string) (io.ReadSeekCloser,
 	return object, nil
 }
 
+func (s *S3Storage) ReadStreamAt(key string, directory string) (ReaderAtCloser, int64, error) {
+	objectName, err := makeObjectName(directory, key)
+	if err != nil {
+		return nil, 0, err
+	}
+	ctx := context.Background()
+
+	object, err := s.client.GetObject(
+		ctx,
+		s.bucketName,
+		objectName,
+		minio.GetObjectOptions{},
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf("get object %q: %w", objectName, err)
+	}
+
+	info, err := object.Stat()
+	if err != nil {
+		object.Close()
+		return nil, 0, fmt.Errorf("stat object %q: %w", objectName, err)
+	}
+
+	return object, info.Size, nil
+}
+
 func (s *S3Storage) Remove(key string, directory string) error {
 	objectName, err := makeObjectName(directory, key)
 	if err != nil {
