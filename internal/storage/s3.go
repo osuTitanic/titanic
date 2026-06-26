@@ -239,7 +239,8 @@ func (s *S3Storage) ReadStreamAt(key string, directory string) (ReaderAtCloser, 
 		return nil, 0, fmt.Errorf("stat object %q: %w", objectName, err)
 	}
 
-	return object, info.Size, nil
+	objectBuffer := newBufferedReader(object, info.Size, 6*1024*1024)
+	return objectBuffer, info.Size, nil
 }
 
 func (s *S3Storage) Remove(key string, directory string) error {
