@@ -32,6 +32,21 @@ func (m Mode) String() string {
 	}
 }
 
+func (m Mode) Short() string {
+	switch m {
+	case ModeOsu:
+		return "Standard"
+	case ModeTaiko:
+		return "Taiko"
+	case ModeCatch:
+		return "Catch"
+	case ModeMania:
+		return "Mania"
+	default:
+		return fmt.Sprintf("%d", m)
+	}
+}
+
 func (m Mode) Alias() string {
 	switch m {
 	case ModeOsu:
