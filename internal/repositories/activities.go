@@ -31,7 +31,7 @@ func (r *ActivityRepository) FetchRecentByUser(userId int, mode int, limit int, 
 	var activities []*schemas.Activity
 	err := Preloaded(r.db, preload).
 		Where("user_id = ?", userId).
-		Where("mode = ? OR mode IS NULL", mode).
+		Where("mode = ?", mode).
 		Where("time > ?", time.Now().Add(-until)).
 		Where("hidden = ?", false).
 		Order("id DESC").
