@@ -41,10 +41,7 @@ func (r *ScoreRepository) UpdateByBeatmapId(updates *schemas.Score, columns ...s
 func (r *ScoreRepository) ById(id int64, preload ...string) (*schemas.Score, error) {
 	var score schemas.Score
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&score).Error
-	if err != nil {
-		return nil, err
-	}
-	return &score, nil
+	return LookupResult(&score, err)
 }
 
 func (r *ScoreRepository) ManyById(ids []int64, preload ...string) ([]*schemas.Score, error) {
