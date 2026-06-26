@@ -56,6 +56,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /b/{id}", routes.Beatmap)
 	server.Handle("GET /scores/{id}", routes.Score)
 	server.Handle("GET /scores/{id}/{$}", routes.Score)
+	server.Handle("GET /scores/{id}/download", routes.ScoreReplayDownload)
 	server.Handle("GET /beatmaps/{id}", routes.BeatmapRedirect)
 	server.Handle("GET /beatmapsets", routes.Search)
 	server.Handle("GET /beatmapsets/", routes.Search)
