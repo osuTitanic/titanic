@@ -50,7 +50,7 @@ func (resolver *MirrorResolver) Setup() error {
 	return nil
 }
 
-func (resolver *MirrorResolver) Osz(setId int, noVideo bool) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
 	resolver.logger.Debug(
 		"Downloading osz...",
 		"set_id", setId,
@@ -77,12 +77,14 @@ func (resolver *MirrorResolver) Osu(beatmapId int) (io.ReadCloser, error) {
 
 	// Special case for beatmaps: we want to check titanic first for beatmaps
 	// TODO: Remove this special case & make the download_server consistent
-	return resolver.FetchStreamFromMirrors(beatmapId, mirrors)
+	stream, _, err := resolver.FetchStreamFromMirrors(beatmapId, mirrors)
+	return stream, err
 }
 
 func (resolver *MirrorResolver) Preview(setId int) (io.ReadCloser, error) {
 	resolver.logger.Debug("Downloading preview...", "set_id", setId)
-	return resolver.FetchStream(constants.BeatmapResourceTypeAudio, setId)
+	stream, _, err := resolver.FetchStream(constants.BeatmapResourceTypeAudio, setId)
+	return stream, err
 }
 
 func (resolver *MirrorResolver) Background(setId int, large bool) (io.ReadCloser, error) {
@@ -93,21 +95,22 @@ func (resolver *MirrorResolver) Background(setId int, large bool) (io.ReadCloser
 		resourceType = constants.BeatmapResourceTypeBackground
 	}
 
-	return resolver.FetchStream(resourceType, setId)
+	stream, _, err := resolver.FetchStream(resourceType, setId)
+	return stream, err
 }
 
 // FetchStream resolves the mirrors for the given resource type and returns a
 // stream to the first mirror that responds successfully.
-func (resolver *MirrorResolver) FetchStream(resourceType constants.BeatmapResourceType, setId int) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) FetchStream(resourceType constants.BeatmapResourceType, setId int) (io.ReadCloser, int64, error) {
 	mirrors := resolver.ResolveMirrors(resourceType, resolver.server)
 	return resolver.FetchStreamFromMirrors(setId, mirrors)
 }
 
 // FetchStreamFromMirrors iterates through the provided mirrors, returning a stream
 // from the first mirror that responds successfully.
-func (resolver *MirrorResolver) FetchStreamFromMirrors(setId int, mirrors []*schemas.BeatmapMirror) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) FetchStreamFromMirrors(setId int, mirrors []*schemas.BeatmapMirror) (io.ReadCloser, int64, error) {
 	if len(mirrors) == 0 {
-		return nil, ErrNoMirrorsAvailable
+		return nil, 0, ErrNoMirrorsAvailable
 	}
 
 	for _, mirror := range mirrors {
@@ -123,10 +126,10 @@ func (resolver *MirrorResolver) FetchStreamFromMirrors(setId int, mirrors []*sch
 			response.Body.Close()
 			continue
 		}
-		return response.Body, nil
+		return response.Body, response.ContentLength, nil
 	}
 
-	return nil, ErrResourceNotFound
+	return nil, 0, ErrResourceNotFound
 }
 
 // PerformMirrorRequest sends a request to a single mirror, returning its
