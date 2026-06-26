@@ -13,6 +13,7 @@
 
 # Go workspace file
 go.work
+go.work.sum
 
 # User-specific stuff
 .idea/**/workspace.xml
