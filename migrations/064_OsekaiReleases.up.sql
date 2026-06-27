@@ -1,3 +1,7 @@
+-- This has been removed for now, because file entries were incorrectly generated
+-- I'll include this once I have a more consistent setup
+
+/*
 BEGIN;
 
 -- Release b370
@@ -3802,3 +3806,4 @@ FROM releases_official_files
 WHERE file_hash IN ('d41d8cd98f00b204e9800998ecf8427e', 'b22bf1e4ecd4be3d909dc68ccab74eec', '2e7a800133625f827cf46aa0bb1af800', 'c870147dff89c95c81f8fbdfbc6344ac', 'd7f05d3fa5e745e02e1de41821ccccaf', '3f6de1b4476dd77b42adab8cd8c1f7b5', 'eea5e428ce63804f9b12d21c97b5968f', 'a02ee61542caae25f8a44c9428d30247', '45a786658d3f69717652fed471d03ee0', '5e9af52e463636f704e64c2d28f9cf40', 'f4dce9e69b168fd397255264e85c70c1', 'f757b90ecd5f55f7b1ade82d878e16b6', '525a20c6e9d2c58c085c42198308a3bf', '307ea9788c984e3f6117799c4c20a70b', 'c99710c67fcf9434edaee80b6e07bfab', 'ce931021e18f385f519e945a8a10548e', '121b131eaa369d8f58dacc5c39a77d80');
 
 COMMIT;
+*/
