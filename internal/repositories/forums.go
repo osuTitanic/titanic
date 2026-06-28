@@ -47,6 +47,21 @@ func (r *ForumRepository) FetchSubForums(parentId int, preload ...string) ([]*sc
 	return forums, err
 }
 
+func (r *ForumRepository) ById(id int, preload ...string) (*schemas.Forum, error) {
+	var forum schemas.Forum
+	err := Preloaded(r.db, preload).Where("id = ?", id).First(&forum).Error
+	return LookupResult(&forum, err)
+}
+
+func (r *ForumRepository) FetchTopicCount(forumId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumTopic{}).
+		Where("forum_id = ?", forumId).
+		Where("hidden = ?", false).
+		Count(&count).Error
+	return int(count), err
+}
+
 type ForumTopicRepository struct {
 	db *gorm.DB
 }
