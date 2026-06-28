@@ -23,7 +23,6 @@ const (
 )
 
 type BeatmapProvider struct {
-	cfg         *config.Config
 	logger      *slog.Logger
 	cache       *redis.Client
 	beatmapsets *repositories.BeatmapsetRepository
@@ -45,7 +44,6 @@ func NewBeatmapProvider(
 
 	return &BeatmapProvider{
 		logger:      slog.Default().With("component", "BeatmapProvider"),
-		cfg:         cfg,
 		cache:       cache,
 		beatmapsets: beatmapsets,
 		fallback:    mirrorResolver,
@@ -66,7 +64,6 @@ func (provider *BeatmapProvider) Setup() error {
 }
 
 func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
-	go PurgeOsz(setId, provider.cfg)
 	return provider.ResolverForSet(setId).Osz(setId, noVideo)
 }
 
