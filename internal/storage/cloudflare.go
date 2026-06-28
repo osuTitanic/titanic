@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// TODO: this should probably be moved to internal/resources
+
 type CloudflarePurgeConfiguration struct {
 	PurgeEnabled bool
 	ZoneId       string

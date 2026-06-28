@@ -23,11 +23,12 @@ const (
 )
 
 type BeatmapProvider struct {
-	logger      *slog.Logger
-	cache       *redis.Client
-	beatmapsets *repositories.BeatmapsetRepository
-	resolvers   map[constants.BeatmapServer]BeatmapResourceProvider
-	fallback    BeatmapResourceProvider
+	logger        *slog.Logger
+	cache         *redis.Client
+	beatmapsets   *repositories.BeatmapsetRepository
+	resolvers     map[constants.BeatmapServer]BeatmapResourceProvider
+	fallback      BeatmapResourceProvider
+	cfPurgeConfig *storage.CloudflarePurgeConfiguration
 }
 
 func NewBeatmapProvider(
@@ -51,6 +52,7 @@ func NewBeatmapProvider(
 			constants.BeatmapServerBancho:  mirrorResolver,
 			constants.BeatmapServerTitanic: storageResolver,
 		},
+		cfPurgeConfig: cfg.CloudflarePurgeConfig(),
 	}
 }
 
@@ -64,6 +66,7 @@ func (provider *BeatmapProvider) Setup() error {
 }
 
 func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
+	go storage.PurgeOsz(setId, provider.cfPurgeConfig)
 	return provider.ResolverForSet(setId).Osz(setId, noVideo)
 }
 
