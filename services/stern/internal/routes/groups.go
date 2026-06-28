@@ -25,6 +25,10 @@ func Group(ctx *server.Context) {
 		NotFound(ctx)
 		return
 	}
+	if group.Hidden {
+		NotFound(ctx)
+		return
+	}
 
 	groupUsers, err := ctx.State.Users.ManyByGroupId(group.Id)
 	if err != nil {
