@@ -37,6 +37,13 @@ func (v DefaultView) IsAuthenticated() bool {
 	return v.CurrentUser != nil
 }
 
+func (v DefaultView) CurrentUserId() int {
+	if v.CurrentUser == nil {
+		return 0
+	}
+	return v.CurrentUser.Id
+}
+
 type HomeView struct {
 	DefaultView
 	News               []*schemas.ForumPost
