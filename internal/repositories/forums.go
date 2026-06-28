@@ -268,6 +268,32 @@ func (r *ForumPostRepository) FetchLastForForums(forumIds []int, preload ...stri
 	return postsByForum, nil
 }
 
+func (r *ForumPostRepository) FetchLastForTopics(topicIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
+	if len(topicIds) == 0 {
+		return map[int]*schemas.ForumPost{}, nil
+	}
+
+	lastPostIds := r.db.Model(&schemas.ForumPost{}).
+		Select("MAX(id)").
+		Where("topic_id IN ?", topicIds).
+		Where("hidden = ?", false).
+		Group("topic_id")
+
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("id IN (?)", lastPostIds).
+		Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	postsByTopic := make(map[int]*schemas.ForumPost, len(posts))
+	for _, post := range posts {
+		postsByTopic[post.TopicId] = post
+	}
+	return postsByTopic, nil
+}
+
 type ForumIconRepository struct {
 	db *gorm.DB
 }
