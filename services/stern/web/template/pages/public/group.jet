@@ -1,0 +1,43 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Group.Name }} - Group Info</title>
+<meta property="og:title" content="{{ .Group.Name }} - Group Info - Titanic!">
+<meta property="og:description" content="{{ .Group.Description != "" ? .Group.Description : "Find out more about this group" }}"> {* <-- wtf am i supposed to put here as a default description *}
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/g/{{ .Group.Id }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="/css/group.css">
+{{ end }}
+
+{{ block body() }}
+<div class="group-head">
+    <h1 class="group-header">{{ .Group.Name }}</h1>
+    {{ if .Group.Description != "" }}
+    <p class="group-description">{{ .Group.Description }}</p>
+    {{ end }}
+</div>
+{{ if len(.Users) <= 0 }}
+<div>nobody seems to be in this group :(</div>
+{{ else }}
+<div class="group-users">
+    {{ range _, user := .Users }}
+    <div class="user">
+        <a href="/u/{{ user.Id }}">
+            <div class="username-wrapper">
+                <div class="username">{{ user.Name }}</div>
+                <div class="flag">
+                    <img src="/images/flags/{{ user.Country|lower }}.gif" loading="lazy" alt="{{ user.Country }} Flag">
+                </div>
+            </div>
+            <div class="avatar avatar-frame">
+                <img src="{{ user.AvatarUrl() }}" alt="" loading="lazy" width="120" height="120">
+            </div>
+            {{ if user.TitleText() != "" }}
+            <div class="user-title">{{ user.Title }}</div>
+            {{ end }}
+        </a>
+    </div>
+    {{ end }}
+</div>
+{{ end }}
+{{ end }}

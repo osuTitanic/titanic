@@ -28,10 +28,7 @@ func (r *GroupRepository) Update(updates *schemas.Group, columns ...string) (int
 func (r *GroupRepository) ById(id int, preload ...string) (*schemas.Group, error) {
 	var group schemas.Group
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&group).Error
-	if err != nil {
-		return nil, err
-	}
-	return &group, nil
+	return LookupResult(&group, err)
 }
 
 func (r *GroupRepository) Many(includeHidden bool, preload ...string) ([]*schemas.Group, error) {

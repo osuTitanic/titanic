@@ -85,6 +85,13 @@ func (user *User) AvatarUrl() string {
 	return fmt.Sprintf("/a/%d?c=%s", user.Id, *user.AvatarHash)
 }
 
+func (user *User) TitleText() string {
+	if user.Title == nil {
+		return ""
+	}
+	return *user.Title
+}
+
 func (user *User) UserpageText() string {
 	if user.Userpage == nil {
 		return ""
