@@ -72,58 +72,6 @@ type VerificationView struct {
 	ErrorMessage string
 }
 
-type DownloadView struct {
-	DefaultView
-	SelectedCategory string
-	Categories       []*DownloadCategory
-	Clients          []*schemas.Release
-}
-
-type DownloadCategory struct {
-	Name     string
-	Url      string
-	Selected bool
-}
-
-type BeatmapSearchView struct {
-	DefaultView
-	Beatmapsets []*schemas.Beatmapset
-	SearchSort  string
-	SearchOrder string
-	Pagination  PaginationView
-}
-
-type BeatmapView struct {
-	DefaultView
-	Beatmap               *schemas.Beatmap
-	Beatmapset            *schemas.Beatmapset
-	Mode                  constants.Mode
-	Mods                  string
-	Scores                []*schemas.Score
-	PersonalBest          *schemas.Score
-	PersonalBestRank      int
-	Favourites            []*schemas.BeatmapFavourite
-	FavouritesCount       int
-	Favourited            bool
-	Collaborations        []*schemas.BeatmapCollaboration
-	Nominations           []*schemas.BeatmapNomination
-	Friends               map[int]bool
-	CollaborationRequests []*schemas.BeatmapCollaborationRequest
-	Invite                *schemas.BeatmapCollaborationRequest
-	IsBeatmapAuthor       bool
-	BatNominated          bool
-}
-
-type ScoreView struct {
-	DefaultView
-	Score      *schemas.Score
-	User       *schemas.User
-	UserStats  *schemas.Stats
-	Beatmap    *schemas.Beatmap
-	Beatmapset *schemas.Beatmapset
-	ScoreRank  int
-}
-
 type UserProfileView struct {
 	DefaultView
 	User          *schemas.User
@@ -272,11 +220,63 @@ type UserBeatmapGroup struct {
 	Beatmapsets []*schemas.Beatmapset
 }
 
+type DownloadView struct {
+	DefaultView
+	SelectedCategory string
+	Categories       []*DownloadCategory
+	Clients          []*schemas.Release
+}
+
+type DownloadCategory struct {
+	Name     string
+	Url      string
+	Selected bool
+}
+
+type BeatmapView struct {
+	DefaultView
+	Beatmap               *schemas.Beatmap
+	Beatmapset            *schemas.Beatmapset
+	Mode                  constants.Mode
+	Mods                  string
+	Scores                []*schemas.Score
+	PersonalBest          *schemas.Score
+	PersonalBestRank      int
+	Favourites            []*schemas.BeatmapFavourite
+	FavouritesCount       int
+	Favourited            bool
+	Collaborations        []*schemas.BeatmapCollaboration
+	Nominations           []*schemas.BeatmapNomination
+	Friends               map[int]bool
+	CollaborationRequests []*schemas.BeatmapCollaborationRequest
+	Invite                *schemas.BeatmapCollaborationRequest
+	IsBeatmapAuthor       bool
+	BatNominated          bool
+}
+
 type BeatmapPacksView struct {
 	DefaultView
 	BeatmapPacks     []*schemas.BeatmapPack
 	Categories       []string
 	CategorySelected string
+}
+
+type BeatmapSearchView struct {
+	DefaultView
+	Beatmapsets []*schemas.Beatmapset
+	SearchSort  string
+	SearchOrder string
+	Pagination  PaginationView
+}
+
+type ScoreView struct {
+	DefaultView
+	Score      *schemas.Score
+	User       *schemas.User
+	UserStats  *schemas.Stats
+	Beatmap    *schemas.Beatmap
+	Beatmapset *schemas.Beatmapset
+	ScoreRank  int
 }
 
 type RankingsView struct {
