@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"slices"
 	"strings"
 )
 
@@ -105,9 +106,7 @@ func (h *ColorLogger) Handle(_ context.Context, record slog.Record) error {
 }
 
 func (h *ColorLogger) WithAttrs(attrs []slog.Attr) slog.Handler {
-	newAttrs := make([]slog.Attr, 0, len(h.attrs)+len(attrs))
-	newAttrs = append(newAttrs, h.attrs...)
-	newAttrs = append(newAttrs, attrs...)
+	newAttrs := slices.Concat(h.attrs, attrs)
 	return &ColorLogger{
 		out:   h.out,
 		level: h.level,
