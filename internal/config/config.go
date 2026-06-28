@@ -42,6 +42,12 @@ type Config struct {
 	S3Bucket    string `env:"S3_BUCKET" envDefault:"osutitanic"`
 	S3Region    string `env:"S3_REGION" envDefault:""`
 
+	// Cloudflare cache purge configuration (optional)
+	CloudflarePurgeEnabled bool        `env:"CLOUDFLARE_PURGE_ENABLED" envDefault:"false"`
+	CloudflareZoneId       string      `env:"CLOUDFLARE_ZONE_ID"`
+	CloudflareApiToken     string      `env:"CLOUDFLARE_API_TOKEN"`
+	CloudflarePurgeOszUrls StringSlice `env:"CLOUDFLARE_PURGE_OSZ_URLS" envDefault:""`
+
 	// Menu icon configuration (optional)
 	MenuIconImage string `env:"MENUICON_IMAGE"`
 	MenuIconUrl   string `env:"MENUICON_URL"`
