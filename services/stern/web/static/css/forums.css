@@ -9,7 +9,6 @@
     font-weight: 100;
     margin-left: 10px;
     margin-bottom: 15px;
-    text-shadow: #efcfe1 0px 0px 10px;
     color: #868686;
     white-space: nowrap;
     font-weight: lighter;
@@ -48,9 +47,6 @@
     line-height: 35px;
     font-weight: normal;
     border-radius: 5px;
-    background: rgb(91, 83, 153);
-    background: -webkit-linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
-    background-image: linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
 }
 
 .subforum-table {
@@ -128,31 +124,26 @@
     font-weight: bold;
 }
 
-.light-row {
-    background-color: #edebfa;
+.row-light,
+.row-dark {
     font-size: 90%;
 }
 
-.light-row td {
+.row-light td {
     padding: 2px;
     border: 1px solid #e2dffa;
     border-radius: 2px;
     vertical-align: middle;
 }
 
-.dark-row {
-    background-color: #e3e1fa;
-    font-size: 90%;
-}
-
-.dark-row td {
+.row-dark td {
     padding: 2px;
     border: 1px solid rgb(206, 215, 250);
     border-radius: 2px;
     vertical-align: middle;
 }
 
-.light-row img, .dark-row img {
+.row-light img, .row-dark img {
     vertical-align: middle;
 }
 
@@ -162,8 +153,6 @@
 
 .bar td {
     height: 15px;
-    background: -webkit-linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
-    background-image: linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
     color: white;
     padding-left: 2.5px;
     padding-bottom: 2px;
@@ -211,10 +200,8 @@
 }
 
 .post-avatar {
-    background-color: white;
     width: 130px;
     height: 130px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     margin: 5px auto;
 }
 
@@ -300,51 +287,6 @@
 .hover-button {
     opacity: 0;
     transition: opacity 0.1s;
-}
-
-.button-blue {
-    background-color: #5b5399;
-    background: -webkit-linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
-    background-image: linear-gradient(rgb(123, 114, 207) 0%, rgb(91, 83, 153) 100%);
-}
-
-.button-blue:hover {
-    text-shadow: 2px 1px 8px #b7befd;
-    background-color: #3a6d9c;
-    background: -webkit-linear-gradient(rgb(83, 147, 207) 0%, rgb(58, 109, 156) 100%);
-    background-image: linear-gradient(rgb(83, 147, 207) 0%, rgb(58, 109, 156) 100%);
-}
-
-.button-blue:disabled {
-    background-color: #5a5a5a;
-    background: -webkit-linear-gradient(rgb(150, 150, 150) 0%, rgb(90, 90, 90) 100%);
-    background-image: linear-gradient(rgb(150, 150, 150) 0%, rgb(90, 90, 90) 100%);
-}
-
-.button-red {
-    background-color: #9b3838;
-    background: -webkit-linear-gradient(rgb(209, 63, 63) 0%, rgb(155, 56, 56) 100%);
-    background-image: linear-gradient(rgb(209, 63, 63) 0%, rgb(155, 56, 56) 100%);
-}
-
-.button-red:hover {
-    text-shadow: 2px 1px 8px #b7befd;
-    background-color: #d33333;
-    background: -webkit-linear-gradient(rgb(230, 49, 49) 0%, rgb(211, 51, 51) 100%);
-    background-image: linear-gradient(rgb(230, 49, 49) 0%, rgb(211, 51, 51) 100%);
-}
-
-.button-grey {
-    background-color: #646464;
-    background: -webkit-linear-gradient(rgb(170, 170, 170) 0%, rgb(100, 100, 100) 100%);
-    background-image: linear-gradient(rgb(170, 170, 170) 0%, rgb(100, 100, 100) 100%);
-}
-
-.button-grey:hover {
-    text-shadow: 2px 1px 8px #b7befd;
-    background-color: #6d6d6d;
-    background: -webkit-linear-gradient(rgb(179, 179, 179) 0%, rgb(109, 109, 109) 100%);
-    background-image: linear-gradient(rgb(179, 179, 179) 0%, rgb(109, 109, 109) 100%);
 }
 
 .post-subject {
