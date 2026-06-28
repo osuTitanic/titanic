@@ -42,6 +42,12 @@ type Config struct {
 	S3Bucket    string `env:"S3_BUCKET" envDefault:"osutitanic"`
 	S3Region    string `env:"S3_REGION" envDefault:""`
 
+	// Cloudflare cache purge configuration (optional)
+	CloudflarePurgeEnabled bool        `env:"CLOUDFLARE_PURGE_ENABLED" envDefault:"false"`
+	CloudflareZoneId       string      `env:"CLOUDFLARE_ZONE_ID"`
+	CloudflareApiToken     string      `env:"CLOUDFLARE_API_TOKEN"`
+	CloudflarePurgeOszUrls StringSlice `env:"CLOUDFLARE_PURGE_OSZ_URLS" envDefault:""`
+
 	// Menu icon configuration (optional)
 	MenuIconImage string `env:"MENUICON_IMAGE"`
 	MenuIconUrl   string `env:"MENUICON_URL"`
@@ -217,6 +223,24 @@ func (c *Config) S3Config() *storage.S3Config {
 		BucketName:      c.S3Bucket,
 		AccessKeyID:     c.S3AccessKey,
 		SecretAccessKey: c.S3SecretKey,
+	}
+}
+
+func (c *Config) CloudflarePurgeConfig() *storage.CloudflarePurgeConfiguration {
+	oszUrls := []string{
+		fmt.Sprintf("%s/d/{id}", c.OsuBaseUrl()),
+		fmt.Sprintf("%s/d/{id}n", c.OsuBaseUrl()),
+	}
+	if len(c.CloudflarePurgeOszUrls) > 0 {
+		oszUrls = c.CloudflarePurgeOszUrls
+	}
+
+	return &storage.CloudflarePurgeConfiguration{
+		PurgeEnabled: c.CloudflarePurgeEnabled,
+		ZoneId:       c.CloudflareZoneId,
+		ApiToken:     c.CloudflareApiToken,
+		OszPurgeUrls: oszUrls,
+		UserAgent:    fmt.Sprintf("osuTitanic/titanic (%s)", c.DomainName),
 	}
 }
 
