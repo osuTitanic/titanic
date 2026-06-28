@@ -32,7 +32,7 @@
             <div class="avatar avatar-frame">
                 <img src="{{ user.AvatarUrl() }}" alt="" loading="lazy" width="120" height="120">
             </div>
-            {{ if user.Title != "" }}
+            {{ if user.TitleText() != "" }}
             <div class="user-title">{{ user.Title }}</div>
             {{ end }}
         </a>
