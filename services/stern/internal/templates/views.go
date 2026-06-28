@@ -236,12 +236,74 @@ type GroupView struct {
 type ForumHomeView struct {
 	DefaultView
 	Sections []*ForumSection
-	Recent   map[int]*schemas.ForumPost
 }
 
 type ForumSection struct {
 	Forum     *schemas.Forum
-	Subforums []*schemas.Forum
+	Subforums []*ForumSubforum
+}
+
+type ForumSubforum struct {
+	Forum         *schemas.Forum
+	Recent        *schemas.ForumPost
+	CurrentUserId int
+}
+
+type ForumView struct {
+	DefaultView
+	Forum          *schemas.Forum
+	Parents        []*schemas.Forum
+	Subforums      []*schemas.Forum
+	SubforumRecent map[int]*schemas.ForumPost
+	Announcements  []*ForumTopicPreview
+	Topics         []*ForumTopicPreview
+	ActiveUsers    []*ForumActiveUser
+	HasCustomIcons bool
+	TopicCount     int
+	CanCreateTopic bool
+	Pagination     PaginationView
+}
+
+func (v ForumView) HasTopics() bool {
+	return len(v.Announcements) > 0 || len(v.Topics) > 0
+}
+
+type ForumTopicPreview struct {
+	Topic          *schemas.ForumTopic
+	LastPost       *schemas.ForumPost
+	StatusIcon     string
+	PageCount      int
+	Index          int
+	ForumId        int
+	HasCustomIcons bool
+	CurrentUserId  int
+}
+
+func (p ForumTopicPreview) PreviewTruncated() bool {
+	// This will determine if we show the
+	// ellipsis (...) after the first page
+	return p.PageCount > 4
+}
+
+func (p ForumTopicPreview) PreviewPages() []int {
+	if p.PageCount <= 4 {
+		// For shorter topics, show all pages
+		// e.g. [1, 2, 3, 4]
+		pages := make([]int, 0, p.PageCount)
+		for page := 1; page <= p.PageCount; page++ {
+			pages = append(pages, page)
+		}
+		return pages
+	}
+
+	// For longer topics, show the first page and the last three
+	// e.g. if a topic has 10 pages, this will return [1, 8, 9, 10]
+	return []int{1, p.PageCount - 2, p.PageCount - 1, p.PageCount}
+}
+
+type ForumActiveUser struct {
+	Id   int
+	Name string
 }
 
 type DownloadView struct {
