@@ -226,6 +226,17 @@ type GroupView struct {
 	Users []*schemas.User
 }
 
+type ForumHomeView struct {
+	DefaultView
+	Sections []*ForumSection
+	Recent   map[int]*schemas.ForumPost
+}
+
+type ForumSection struct {
+	Forum     *schemas.Forum
+	Subforums []*schemas.Forum
+}
+
 type DownloadView struct {
 	DefaultView
 	SelectedCategory string

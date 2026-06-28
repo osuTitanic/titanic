@@ -1,0 +1,65 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Forum</title>
+<meta property="og:title" content="Forum - Titanic!">
+<meta property="og:description" content="Discuss and share your thoughts with the community.">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="/css/forums.css">
+{{ end }}
+
+{{ block body() }}
+<table class="forum-home">
+    <tbody>
+    {{ range _, section := .Sections }}
+    <tr>
+        <td class="mainforum-head" colspan="5">
+            <h4>{{ section.Forum.Name }}</h4>
+        </td>
+    </tr>
+        {{ range _, forum := section.Subforums }}
+        <tr>
+            <td width="50%" class="subforum-head">
+                <img src="/images/icons/forum/titanic.png" alt="Forum Icon"
+                     width="34"
+                     style="float: left; margin-right: 12px;">
+                <div>
+                    <a href="/forum/{{ forum.Id }}">{{ forum.Name }}</a>
+                    <p>{{ forum.Description }}</p>
+                </div>
+                {* TODO: Subforums *}
+            </td>
+            <td style="text-align: center;" class="subforum-stats">
+                <p class="subforum-topiccount">{{ forum.TopicCount|formatNumber }}</p>
+                <p class="subforum-postcount">{{ forum.PostCount|formatNumber }}</p>
+            </td>
+            <td style="text-align: right;" class="subforum-topics">
+                {{ recent := .Recent[forum.Id] }}
+                {{ if recent }}
+                    <a href="/forum/{{ recent.ForumId }}/p/{{ recent.Id }}/">
+                        {{ recent.Topic.Title }}
+                    </a>
+                    <p>
+                        <time class="timeago" datetime="{{ recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                        by
+                        {{ color := recent.User.DisplayColor() }}
+                        {{ if color == "" && .CurrentUser && .CurrentUser.Id == recent.User.Id }}
+                            {{ color = "#310e7a" }}
+                        {{ end }}
+                        {{ if color != "" }}
+                        <a href="/u/{{ recent.User.Id }}" class="username-colored" style="color: {{ color }};">{{ recent.User.Name }}</a>
+                        {{ else }}
+                        <a href="/u/{{ recent.User.Id }}">{{ recent.User.Name }}</a>
+                        {{ end }}
+                    </p>
+                {{ else }}
+                    <p>No recent topics</p>
+                {{ end }}
+            </td>
+        </tr>
+        {{ end }}
+    {{ end }}
+    </tbody>
+</table>
+{{ end }}
