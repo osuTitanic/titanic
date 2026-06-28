@@ -1,41 +1,33 @@
-package storage
+package resources
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/osuTitanic/titanic-go/internal/config"
 )
-
-// TODO: this should probably be moved to internal/resources
-
-type CloudflarePurgeConfiguration struct {
-	PurgeEnabled bool
-	ZoneId       string
-	ApiToken     string
-	OszPurgeUrls []string
-	UserAgent    string
-}
-
-func (cfg *CloudflarePurgeConfiguration) CanPurge() bool {
-	return cfg.PurgeEnabled && cfg.ZoneId != "" && cfg.ApiToken != ""
-}
 
 // Cloudflare accepts at most 30 urls per request
 const maxUrlsPerRequest = 30
 const purgeEndpoint = "https://api.cloudflare.com/client/v4/zones/%s/purge_cache"
 
-func PurgeOsz(setId int, cfg *CloudflarePurgeConfiguration) error {
-	if !cfg.CanPurge() {
+var cloudflareHttpClient = &http.Client{Timeout: 10 * time.Second}
+
+func PurgeOsz(setId int, cfg *config.Config) error {
+	if !cfg.CloudflarePurgeEnabled {
 		return nil
 	}
-	affectedUrls := oszUrls(setId, cfg.OszPurgeUrls)
+	affectedUrls := resolveOszUrls(setId, cfg)
 	return PurgeUrls(affectedUrls, cfg)
 }
 
-func PurgeUrls(urls []string, cfg *CloudflarePurgeConfiguration) error {
-	if !cfg.CanPurge() {
+func PurgeUrls(urls []string, cfg *config.Config) error {
+	if !cfg.CloudflarePurgeEnabled {
 		return nil
 	}
 
@@ -50,10 +42,12 @@ func PurgeUrls(urls []string, cfg *CloudflarePurgeConfiguration) error {
 			return err
 		}
 	}
+
+	slog.With("component", "cloudflare").Debug("Purged cached urls", "count", len(filteredUrls))
 	return nil
 }
 
-func purgeUrlChunk(urls []string, cfg *CloudflarePurgeConfiguration) error {
+func purgeUrlChunk(urls []string, cfg *config.Config) error {
 	payload := map[string]any{"files": urls}
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -62,20 +56,18 @@ func purgeUrlChunk(urls []string, cfg *CloudflarePurgeConfiguration) error {
 
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf(purgeEndpoint, cfg.ZoneId),
+		fmt.Sprintf(purgeEndpoint, cfg.CloudflareZoneId),
 		bytes.NewBuffer(body),
 	)
 	if err != nil {
 		return err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+cfg.ApiToken)
+	req.Header.Set("User-Agent", fmt.Sprintf("osuTitanic/titanic (%s)", cfg.DomainName))
+	req.Header.Set("Authorization", "Bearer "+cfg.CloudflareApiToken)
 	req.Header.Set("Content-Type", "application/json")
-	if cfg.UserAgent != "" {
-		req.Header.Set("User-Agent", cfg.UserAgent)
-	}
 
-	resp, err := httpClient.Do(req)
+	resp, err := cloudflareHttpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -88,7 +80,15 @@ func purgeUrlChunk(urls []string, cfg *CloudflarePurgeConfiguration) error {
 	return nil
 }
 
-func oszUrls(setId int, templates []string) []string {
+func resolveOszUrls(setId int, cfg *config.Config) []string {
+	templates := []string{
+		fmt.Sprintf("%s/d/{id}", cfg.OsuBaseUrl()),
+		fmt.Sprintf("%s/d/{id}n", cfg.OsuBaseUrl()),
+	}
+	if len(cfg.CloudflarePurgeOszUrls) > 0 {
+		templates = cfg.CloudflarePurgeOszUrls
+	}
+
 	urls := make([]string, 0, len(templates))
 	for _, template := range templates {
 		url := strings.ReplaceAll(template, "{id}", fmt.Sprintf("%d", setId))

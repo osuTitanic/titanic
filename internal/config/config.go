@@ -226,24 +226,6 @@ func (c *Config) S3Config() *storage.S3Config {
 	}
 }
 
-func (c *Config) CloudflarePurgeConfig() *storage.CloudflarePurgeConfiguration {
-	oszUrls := []string{
-		fmt.Sprintf("%s/d/{id}", c.OsuBaseUrl()),
-		fmt.Sprintf("%s/d/{id}n", c.OsuBaseUrl()),
-	}
-	if len(c.CloudflarePurgeOszUrls) > 0 {
-		oszUrls = c.CloudflarePurgeOszUrls
-	}
-
-	return &storage.CloudflarePurgeConfiguration{
-		PurgeEnabled: c.CloudflarePurgeEnabled,
-		ZoneId:       c.CloudflareZoneId,
-		ApiToken:     c.CloudflareApiToken,
-		OszPurgeUrls: oszUrls,
-		UserAgent:    fmt.Sprintf("osuTitanic/titanic (%s)", c.DomainName),
-	}
-}
-
 func (c *Config) EmailsEnabled() bool {
 	return c.EmailProvider != "" && c.EmailSender != ""
 }
