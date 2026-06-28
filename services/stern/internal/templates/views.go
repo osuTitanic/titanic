@@ -223,6 +223,7 @@ type UserBeatmapGroup struct {
 type GroupView struct {
 	DefaultView
 	Group *schemas.Group
+	Users []*schemas.User
 }
 
 type DownloadView struct {

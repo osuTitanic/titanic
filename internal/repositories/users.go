@@ -136,6 +136,15 @@ func (r *UserRepository) ManyByCreationDate(limit int, ascending bool, preload .
 	return users, err
 }
 
+func (r *UserRepository) ManyByGroupId(groupId int, preload ...string) ([]*schemas.User, error) {
+	var users []*schemas.User
+	err := Preloaded(r.db, preload).Model(&schemas.User{}).
+		Joins("JOIN groups_entries ON groups_entries.user_id = users.id").
+		Where("groups_entries.group_id = ?", groupId).
+		Find(&users).Error
+	return users, err
+}
+
 func (r *UserRepository) ManyAutoDeleteCandidates(cutoff time.Time, preload ...string) ([]*schemas.User, error) {
 	var users []*schemas.User
 	query := Preloaded(r.db, preload).Model(&schemas.User{}).

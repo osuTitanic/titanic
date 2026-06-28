@@ -26,9 +26,16 @@ func Group(ctx *server.Context) {
 		return
 	}
 
+	groupUsers, err := ctx.State.Users.ManyByGroupId(group.Id)
+	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+
 	view := templates.GroupView{
 		DefaultView: buildDefaultView(ctx),
 		Group:       group,
+		Users:       groupUsers,
 	}
 	ctx.RenderTemplate(200, "pages/public/group", view)
 }
