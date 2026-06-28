@@ -62,6 +62,13 @@ func (ForumTopic) TableName() string {
 	return "forum_topics"
 }
 
+func (topic *ForumTopic) StatusTextValue() string {
+	if topic.StatusText == nil {
+		return ""
+	}
+	return *topic.StatusText
+}
+
 type ForumPost struct {
 	Id         int64                `gorm:"column:id;primaryKey;autoIncrement"`
 	TopicId    int                  `gorm:"column:topic_id"`
