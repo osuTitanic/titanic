@@ -27,6 +27,26 @@ func (r *ForumRepository) Update(updates *schemas.Forum, columns ...string) (int
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ForumRepository) FetchMainForums(preload ...string) ([]*schemas.Forum, error) {
+	var forums []*schemas.Forum
+	err := Preloaded(r.db, preload).
+		Where("parent_id IS NULL").
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Find(&forums).Error
+	return forums, err
+}
+
+func (r *ForumRepository) FetchSubForums(parentId int, preload ...string) ([]*schemas.Forum, error) {
+	var forums []*schemas.Forum
+	err := Preloaded(r.db, preload).
+		Where("parent_id = ?", parentId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Find(&forums).Error
+	return forums, err
+}
+
 type ForumTopicRepository struct {
 	db *gorm.DB
 }
