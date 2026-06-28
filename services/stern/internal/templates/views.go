@@ -220,6 +220,11 @@ type UserBeatmapGroup struct {
 	Beatmapsets []*schemas.Beatmapset
 }
 
+type GroupView struct {
+	DefaultView
+	Group *schemas.Group
+}
+
 type DownloadView struct {
 	DefaultView
 	SelectedCategory string

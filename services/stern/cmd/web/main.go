@@ -52,6 +52,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /download/{$}", routes.Download)
 	server.Handle("GET /u/{query}", routes.UserProfile)
 	server.Handle("GET /users/{query}", routes.UserProfileRedirect)
+	server.Handle("GET /g/{id}", routes.Group)
 	server.Handle("GET /s/{id}", routes.BeatmapsetRedirect)
 	server.Handle("GET /b/{id}", routes.Beatmap)
 	server.Handle("GET /scores/{id}", routes.Score)
