@@ -114,6 +114,53 @@ func (r *ForumTopicRepository) FetchAnnouncements(limit int, offset int, preload
 	return topics, err
 }
 
+func (r *ForumTopicRepository) FetchRecentByLastPost(forumId int, limit int, offset int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("hidden = ?", false).
+		Order("last_post_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchPinnedByForumId(forumId int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("pinned = ?", true).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchAnnouncementsByForumId(forumId int, limit int, offset int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("announcement = ?", true).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) AverageViews() (float64, error) {
+	var average *float64
+	err := r.db.Model(&schemas.ForumTopic{}).
+		Select("AVG(views)").
+		Scan(&average).Error
+	if err != nil || average == nil {
+		return 0, err
+	}
+	return *average, nil
+}
+
 type ForumPostRepository struct {
 	db *gorm.DB
 }
