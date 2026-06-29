@@ -101,7 +101,7 @@ func AccountVerificationResend(ctx *server.Context) {
 		return
 	}
 
-	verificationId, ok := parseVerificationId(ctx.Request.URL.Query().Get("id"))
+	verificationId, ok := parseVerificationId(ctx.QueryValue("id"))
 	if !ok {
 		NotFound(ctx)
 		return

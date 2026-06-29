@@ -171,8 +171,8 @@ func AccountRegister(ctx *server.Context) {
 }
 
 func AccountRegisterCheck(ctx *server.Context) {
-	fieldType := ctx.Request.URL.Query().Get("type")
-	value := ctx.Request.URL.Query().Get("value")
+	fieldType := ctx.QueryValue("type")
+	value := ctx.QueryValue("value")
 	if fieldType == "" || value == "" {
 		writePlainText(ctx, http.StatusOK, "")
 		return

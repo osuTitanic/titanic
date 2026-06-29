@@ -130,7 +130,7 @@ func UserActivityPartial(ctx *server.Context) {
 
 	mode := resolveMode(ctx, user.PreferredMode)
 	offset := 0
-	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("offset")); err == nil && parsed > 0 {
+	if parsed, err := ctx.QueryValueInt("offset"); err == nil && parsed > 0 {
 		offset = parsed
 	}
 
@@ -196,7 +196,7 @@ func UserScoresPartial(ctx *server.Context) {
 		return
 	}
 
-	section := ctx.Request.URL.Query().Get("section")
+	section := ctx.QueryValue("section")
 	if section != "pinned" && section != "best" && section != "first" {
 		NotFound(ctx)
 		return
@@ -205,7 +205,7 @@ func UserScoresPartial(ctx *server.Context) {
 	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
 
 	offset := 0
-	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("offset")); err == nil && parsed > 0 {
+	if parsed, err := ctx.QueryValueInt("offset"); err == nil && parsed > 0 {
 		offset = parsed
 	}
 

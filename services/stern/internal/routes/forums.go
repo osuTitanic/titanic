@@ -109,7 +109,7 @@ func ForumView(ctx *server.Context) {
 	helpers.ForumMarkUserActive(ctx, forum.Id)
 
 	page := 1
-	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("page")); err == nil && parsed > 1 {
+	if parsed, err := ctx.QueryValueInt("page"); err == nil && parsed > 1 {
 		page = parsed
 	}
 	offset := (page - 1) * forumTopicsPerPage

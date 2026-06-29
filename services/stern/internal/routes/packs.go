@@ -12,7 +12,7 @@ func BeatmapPacks(ctx *server.Context) {
 		return
 	}
 
-	category := ctx.Request.URL.Query().Get("category")
+	category := ctx.QueryValue("category")
 	if category == "" && len(categories) > 0 {
 		category = categories[0]
 	}
