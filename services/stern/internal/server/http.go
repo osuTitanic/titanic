@@ -134,6 +134,17 @@ func (ctx *Context) PathValueInt(name string) (int, error) {
 	return strconv.Atoi(pathValue)
 }
 
+// QueryValue is a helper function to get query parameters from the request context.
+func (ctx *Context) QueryValue(name string) string {
+	return ctx.Request.URL.Query().Get(name)
+}
+
+// QueryValueInt returns a query parameter as an integer
+func (ctx *Context) QueryValueInt(name string) (int, error) {
+	queryValue := strings.TrimSpace(ctx.QueryValue(name))
+	return strconv.Atoi(queryValue)
+}
+
 func (ctx *Context) Redirect(status int, location string) {
 	http.Redirect(ctx.Response, ctx.Request, location, status)
 }
