@@ -145,6 +145,15 @@ func (ctx *Context) QueryValueInt(name string) (int, error) {
 	return strconv.Atoi(queryValue)
 }
 
+// QueryValueDefault attempts to get a query parameter from
+// the request while falling back to the given if not present.
+func (ctx *Context) QueryValueDefault(name, fallback string) string {
+	if queryValue := ctx.QueryValue(name); queryValue != "" {
+		return queryValue
+	}
+	return fallback
+}
+
 func (ctx *Context) Redirect(status int, location string) {
 	http.Redirect(ctx.Response, ctx.Request, location, status)
 }
