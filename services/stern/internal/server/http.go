@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -125,6 +126,12 @@ func (ctx *Context) Permissions() *permissions.Set {
 // e.g. if the route is "/users/{id}", you can get the "id" variable by calling ctx.PathValue("id").
 func (ctx *Context) PathValue(name string) string {
 	return ctx.Request.PathValue(name)
+}
+
+// PathValueInt does the same thing as PathValue, but tries to parse the query as an integer.
+func (ctx *Context) PathValueInt(name string) (int, error) {
+	pathValue := strings.TrimSpace(ctx.PathValue(name))
+	return strconv.Atoi(pathValue)
 }
 
 func (ctx *Context) Redirect(status int, location string) {
