@@ -210,6 +210,63 @@ func (r *ForumPostRepository) CountByUserId(userId int) (int, error) {
 	return int(count), err
 }
 
+func (r *ForumPostRepository) CountByTopic(topicId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumPost{}).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Count(&count).Error
+	return int(count), err
+}
+
+func (r *ForumPostRepository) FetchRangeByTopic(topicId int, limit int, offset int, preload ...string) ([]*schemas.ForumPost, error) {
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&posts).Error
+	return posts, err
+}
+
+func (r *ForumPostRepository) FetchInitialByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) PostCountsByUsers(userIds []int) (map[int]int, error) {
+	counts := make(map[int]int, len(userIds))
+	if len(userIds) == 0 {
+		return counts, nil
+	}
+
+	type row struct {
+		UserId int
+		Count  int
+	}
+	var rows []row
+	err := r.db.Model(&schemas.ForumPost{}).
+		Select("user_id, COUNT(id) AS count").
+		Where("user_id IN ?", userIds).
+		Group("user_id").
+		Scan(&rows).Error
+	if err != nil {
+		return counts, err
+	}
+
+	for _, r := range rows {
+		counts[r.UserId] = r.Count
+	}
+	return counts, nil
+}
+
 func (r *ForumPostRepository) ManyById(ids []int64, preload ...string) ([]*schemas.ForumPost, error) {
 	if len(ids) == 0 {
 		return []*schemas.ForumPost{}, nil
