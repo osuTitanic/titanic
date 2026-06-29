@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"slices"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -218,6 +217,171 @@ func ForumView(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/forum/forum", view)
 }
 
+func ForumTopicView(ctx *server.Context) {
+	forumId, err := ctx.PathValueInt("id")
+	if err != nil {
+		NotFound(ctx)
+		return
+	}
+
+	topicId, err := ctx.PathValueInt("topicId")
+	if err != nil {
+		NotFound(ctx)
+		return
+	}
+
+	topic, err := ctx.State.ForumTopics.ById(topicId, "Forum", "Icon")
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch topic", "error", err, "topic", topicId)
+		InternalServerError(ctx)
+		return
+	}
+	if topic == nil || topic.Hidden {
+		NotFound(ctx)
+		return
+	}
+
+	if topic.ForumId != forumId {
+		// Redirect to the correct url for this topic
+		ctx.Redirect(http.StatusFound, fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id))
+		return
+	}
+
+	page := 1
+	if parsed, err := ctx.QueryValueInt("page"); err == nil && parsed > 1 {
+		page = parsed
+	}
+	offset := (page - 1) * forumPostsPerPage
+
+	posts, err := ctx.State.ForumPosts.FetchRangeByTopic(
+		topic.Id, forumPostsPerPage, offset,
+		"Icon", "User", "User.Groups.Group",
+	)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch topic posts", "error", err, "topic", topic.Id)
+		InternalServerError(ctx)
+		return
+	}
+
+	postCount, err := ctx.State.ForumPosts.CountByTopic(topic.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch post count", "error", err, "topic", topic.Id)
+		InternalServerError(ctx)
+		return
+	}
+
+	// Mark the topic as read & bump its view counter for this visitor
+	helpers.ForumUpdateTopicReadState(ctx, topic.Id)
+	helpers.ForumUpdateViews(ctx, topic.Id)
+	helpers.ForumMarkUserActive(ctx, topic.ForumId)
+
+	// Resolve the very first post in the topic, used for meta tags
+	initialPost := new(schemas.ForumPost)
+
+	if page == 1 && len(posts) > 0 {
+		// We're on the first page so we don't need to explicitly query for it
+		initialPost = posts[0]
+	} else {
+		initialPost, err = ctx.State.ForumPosts.FetchInitialByTopic(topic.Id, "User")
+		if err != nil {
+			ctx.Logger.Error("Failed to fetch initial post", "error", err, "topic", topic.Id)
+		}
+	}
+
+	if initialPost == nil {
+		NotFound(ctx)
+		return
+	}
+
+	// Override the icon of the initial post with the topic's icon
+	if page == 1 && len(posts) > 0 {
+		posts[0].Icon = topic.Icon
+	}
+
+	postUserIds := make([]int, 0, len(posts))
+	for _, post := range posts {
+		postUserIds = append(postUserIds, post.UserId)
+	}
+
+	postCounts, err := ctx.State.ForumPosts.PostCountsByUsers(postUserIds)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch user post counts", "error", err, "topic", topic.Id)
+		postCounts = map[int]int{}
+	}
+
+	isSubscribed := false
+	isBookmarked := false
+	if ctx.CurrentUser != nil {
+		isSubscribed, _ = ctx.State.ForumSubscribers.Exists(topic.Id, ctx.CurrentUser.Id)
+		isBookmarked, _ = ctx.State.ForumBookmarks.Exists(topic.Id, ctx.CurrentUser.Id)
+	}
+
+	// Resolve the permissions that gate the topic & post actions
+	authenticated := ctx.CurrentUser != nil
+	canCreatePosts := authenticated && ctx.HasPermission("forum.posts.create")
+	canEditOwn := authenticated && ctx.HasPermission("forum.posts.edit")
+	canDeleteOwn := authenticated && ctx.HasPermission("forum.posts.delete")
+	canEditOthers := authenticated && ctx.HasPermission("forum.moderation.posts.edit")
+	canDeleteOthers := authenticated && ctx.HasPermission("forum.moderation.posts.delete")
+	canBypassTopicLock := authenticated && ctx.HasPermission("forum.moderation.topics.bypass_lock")
+	canBypassPostLock := authenticated && ctx.HasPermission("forum.moderation.posts.bypass_lock")
+
+	topicLocked := topic.LockedAt != nil
+	showActions := authenticated && (!topicLocked || canBypassTopicLock)
+
+	previews := make([]*templates.ForumPostPreview, 0, len(posts))
+	for _, post := range posts {
+		isOwn := authenticated && ctx.CurrentUser.Id == post.UserId
+
+		editable := !post.EditLocked || canBypassPostLock
+		canModify := showActions && !post.Deleted && editable
+
+		canDelete := (isOwn && canDeleteOwn) || (!isOwn && canDeleteOthers)
+		canEdit := (isOwn && canEditOwn) || (!isOwn && canEditOthers)
+
+		previews = append(previews, &templates.ForumPostPreview{
+			Post:        post,
+			Icon:        post.Icon,
+			AuthorTitle: forumUserTitle(post.User, postCounts[post.UserId]),
+			PostCount:   postCounts[post.UserId],
+			CanDelete:   canModify && canDelete,
+			CanEdit:     canModify && canEdit,
+			CanQuote:    showActions && canCreatePosts,
+		})
+	}
+
+	// Just to be safe here (this should actually never be nil)
+	metaImage := ""
+	if initialPost.User != nil {
+		metaImage = ctx.State.Config.OsuBaseUrl() + initialPost.User.AvatarUrl()
+	}
+
+	view := templates.ForumTopicView{
+		DefaultView:     buildDefaultView(ctx),
+		Forum:           topic.Forum,
+		Topic:           topic,
+		Parents:         fetchForumParents(ctx, topic.Forum),
+		Posts:           previews,
+		ActiveUsers:     fetchActiveForumUsers(ctx, topic.ForumId),
+		PostCount:       postCount,
+		IsSubscribed:    isSubscribed,
+		IsBookmarked:    isBookmarked,
+		CanCreatePosts:  canCreatePosts,
+		CanReply:        canCreatePosts && (!topicLocked || canBypassTopicLock),
+		ReplyLocked:     topicLocked && !canBypassTopicLock,
+		MetaDescription: strings.SplitN(initialPost.Content, "\n", 2)[0],
+		MetaImage:       metaImage,
+		Pagination: templates.NewPagination(templates.PaginationOptions{
+			Path:        fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id),
+			Query:       ctx.Request.URL.Query(),
+			CurrentPage: page,
+			Total:       postCount,
+			PageSize:    forumPostsPerPage,
+		}),
+	}
+	ctx.RenderTemplate(http.StatusOK, "pages/forum/topic", view)
+}
+
 func mergeForumTopics(pinned, recent []*schemas.ForumTopic) []*schemas.ForumTopic {
 	seen := make(map[int]bool, len(pinned)+len(recent))
 	merged := make([]*schemas.ForumTopic, 0, len(pinned)+len(recent))
@@ -299,6 +463,37 @@ func topicStatusIcon(topic *schemas.ForumTopic, read bool, averageViews float64)
 		return fmt.Sprintf("/images/icons/topics/topic_%s_hot.gif", state)
 	}
 	return fmt.Sprintf("/images/icons/topics/topic_%s.gif", state)
+}
+
+func forumUserTitle(user *schemas.User, postCount int) string {
+	if user != nil {
+		if title := user.TitleText(); title != "" {
+			return title
+		}
+	}
+
+	switch {
+	case postCount < 5:
+		return "Rhythm Rookie"
+	case postCount < 15:
+		return "Tempo Trainee"
+	case postCount < 30:
+		return "Whistle Blower"
+	case postCount < 50:
+		return "Cymbal Sounder"
+	case postCount < 80:
+		return "Beat Clicker"
+	case postCount < 120:
+		return "Slider Savant"
+	case postCount < 180:
+		return "Spinner Sage"
+	case postCount < 260:
+		return "Star Shooter"
+	case postCount < 500:
+		return "Combo Commander"
+	default:
+		return "Rhythm Incarnate"
+	}
 }
 
 func fetchForumParents(ctx *server.Context, forum *schemas.Forum) []*schemas.Forum {

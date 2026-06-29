@@ -306,6 +306,38 @@ type ForumActiveUser struct {
 	Name string
 }
 
+type ForumTopicView struct {
+	DefaultView
+	Forum           *schemas.Forum
+	Topic           *schemas.ForumTopic
+	Parents         []*schemas.Forum
+	Posts           []*ForumPostPreview
+	Pagination      PaginationView
+	ActiveUsers     []*ForumActiveUser
+	PostCount       int
+	IsSubscribed    bool
+	IsBookmarked    bool
+	CanCreatePosts  bool
+	CanReply        bool
+	ReplyLocked     bool
+	MetaDescription string
+	MetaImage       string
+}
+
+func (v ForumTopicView) TopicLocked() bool {
+	return v.Topic.LockedAt != nil
+}
+
+type ForumPostPreview struct {
+	Post        *schemas.ForumPost
+	Icon        *schemas.ForumIcon
+	AuthorTitle string
+	PostCount   int
+	CanEdit     bool
+	CanDelete   bool
+	CanQuote    bool
+}
+
 type DownloadView struct {
 	DefaultView
 	SelectedCategory string

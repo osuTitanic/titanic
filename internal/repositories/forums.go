@@ -85,10 +85,7 @@ func (r *ForumTopicRepository) Update(updates *schemas.ForumTopic, columns ...st
 func (r *ForumTopicRepository) ById(id int, preload ...string) (*schemas.ForumTopic, error) {
 	var topic schemas.ForumTopic
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&topic).Error
-	if err != nil {
-		return nil, err
-	}
-	return &topic, nil
+	return LookupResult(&topic, err)
 }
 
 func (r *ForumTopicRepository) ManyById(ids []int, preload ...string) ([]*schemas.ForumTopic, error) {
