@@ -356,6 +356,12 @@ func ForumTopicView(ctx *server.Context) {
 		metaImage = ctx.State.Config.OsuBaseUrl() + initialPost.User.AvatarUrl()
 	}
 
+	linkedBeatmapset, err := ctx.State.Beatmapsets.ByTopicId(topic.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch beatmapset by topic", "error", err, "topic", topic.Id)
+		linkedBeatmapset = nil
+	}
+
 	view := templates.ForumTopicView{
 		DefaultView:     buildDefaultViewWithPermissions(ctx),
 		Forum:           topic.Forum,
@@ -363,6 +369,7 @@ func ForumTopicView(ctx *server.Context) {
 		Parents:         fetchForumParents(ctx, topic.Forum),
 		Posts:           previews,
 		ActiveUsers:     fetchActiveForumUsers(ctx, topic.ForumId),
+		Beatmapset:      linkedBeatmapset,
 		PostCount:       postCount,
 		IsSubscribed:    isSubscribed,
 		IsBookmarked:    isBookmarked,

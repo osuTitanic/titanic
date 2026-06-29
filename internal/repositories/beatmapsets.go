@@ -32,6 +32,14 @@ func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmap
 	return LookupResult(&beatmapset, err)
 }
 
+func (r *BeatmapsetRepository) ByTopicId(topicId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
 func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
 	if len(ids) == 0 {
 		return []*schemas.Beatmapset{}, nil
