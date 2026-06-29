@@ -357,7 +357,7 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	view := templates.ForumTopicView{
-		DefaultView:     buildDefaultView(ctx),
+		DefaultView:     buildDefaultViewWithPermissions(ctx),
 		Forum:           topic.Forum,
 		Topic:           topic,
 		Parents:         fetchForumParents(ctx, topic.Forum),
@@ -544,8 +544,7 @@ func canCreateForumTopic(ctx *server.Context, forum *schemas.Forum) bool {
 	if !ctx.HasPermission("forum.topics.create") {
 		return false
 	}
-	if beatmapForumIds[forum.Id] {
-		// Inside the beatmap forums, we want to check for a special permission
+	if forum.IsBeatmapForum() {
 		return ctx.HasPermission("forum.topics.create_beatmap")
 	}
 	return true

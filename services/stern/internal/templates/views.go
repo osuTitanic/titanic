@@ -314,6 +314,7 @@ type ForumTopicView struct {
 	Posts           []*ForumPostPreview
 	Pagination      PaginationView
 	ActiveUsers     []*ForumActiveUser
+	Beatmapset      *schemas.Beatmapset
 	PostCount       int
 	IsSubscribed    bool
 	IsBookmarked    bool
@@ -326,6 +327,10 @@ type ForumTopicView struct {
 
 func (v ForumTopicView) TopicLocked() bool {
 	return v.Topic.LockedAt != nil
+}
+
+func (v ForumTopicView) HasBeatmapset() bool {
+	return v.Beatmapset != nil
 }
 
 type ForumPostPreview struct {

@@ -53,7 +53,18 @@
         {{ else }}
         <a onclick="addBookmark({{ .Topic.Id }})" id="bookmark-button">Bookmark topic</a>
         {{ end }}
-        {* TODO: beatmapset linking *}
+        {{ if .Forum.IsBeatmapRequestsForum() && .Permissions.Has("forum.topics.link_beatmapset") }}
+            |
+            {{ if !.HasBeatmapset() }}
+            <a onclick="linkTopicToBeatmap()">
+                Link to Beatmapset
+            </a>
+            {{ else }}
+            <a onclick="unlinkTopicFromBeatmap()">
+                Unlink Beatmapset
+            </a>
+            {{ end }}
+        {{ end }}
     {{ end }}
     </td>
 </table>
