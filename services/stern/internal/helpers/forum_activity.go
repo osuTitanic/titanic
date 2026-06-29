@@ -1,5 +1,7 @@
 package helpers
 
+// TODO: figure out if we really need a separate "helpers" module for this alone
+
 import (
 	"crypto/md5"
 	"encoding/hex"
@@ -15,6 +17,7 @@ import (
 const forumReadTimestampExpiry = 14 * 24 * time.Hour
 const forumActivityExpiry = 5 * time.Minute
 const forumAverageViewsTTL = 5 * time.Minute
+const forumViewLockExpiry = time.Minute
 
 // ForumSessionIdentifier returns a key used to track
 // which topics the current visitor has already read.
@@ -178,6 +181,39 @@ func ForumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) m
 	}
 
 	return statuses
+}
+
+// ForumUpdateTopicReadState marks a topic as read by the current visitor.
+func ForumUpdateTopicReadState(ctx *server.Context, topicId int) {
+	key := fmt.Sprintf("forums:topic_read_timestamps:%s", ForumSessionIdentifier(ctx))
+	now := strconv.FormatFloat(float64(time.Now().Unix()), 'f', -1, 64)
+
+	context := ctx.Request.Context()
+	if err := ctx.State.Redis.HSet(context, key, strconv.Itoa(topicId), now).Err(); err != nil {
+		ctx.Logger.Error("Failed to update topic read state", "topic_id", topicId, "error", err)
+		return
+	}
+
+	ctx.State.Redis.Expire(context, key, forumReadTimestampExpiry)
+}
+
+// ForumUpdateViews increments a topic's view counter.
+func ForumUpdateViews(ctx *server.Context, topicId int) {
+	key := fmt.Sprintf("forums:viewlock:%d:%s", topicId, ctx.IP())
+	context := ctx.Request.Context()
+
+	// View updates are limited per-ip
+	// TODO: We should probably use the session identifier here though...?
+	if locked, _ := ctx.State.Redis.Exists(context, key).Result(); locked > 0 {
+		return
+	}
+
+	if err := ctx.State.ForumTopics.IncrementViews(topicId); err != nil {
+		ctx.Logger.Error("Failed to increment topic views", "topic_id", topicId, "error", err)
+		return
+	}
+
+	ctx.State.Redis.Set(context, key, 1, forumViewLockExpiry)
 }
 
 func forumActiveUsersKey(forumId int) string {
