@@ -76,9 +76,14 @@
     Hmmm... seems like nothing was posted here?
 </p>
 {{ else }}
-    {* TODO: beatmapset link banner *}
-    {{ range _, post := .Posts }}
+    {{ range index, post := .Posts }}
     <div class="post-spacing"></div>
+    {{ if .HasBeatmapset() && index == 0 }}
+    <div class="beatmapset-link-info">
+        This topic is linked to a beatmapset.
+        Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
+    </div>
+    {{ end }}
     {{ yield forumTopicPost() post }}
     {{ end }}
 {{ end }}
