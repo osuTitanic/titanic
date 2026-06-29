@@ -161,6 +161,12 @@ func (r *ForumTopicRepository) AverageViews() (float64, error) {
 	return *average, nil
 }
 
+func (r *ForumTopicRepository) IncrementViews(topicId int) error {
+	return r.db.Model(&schemas.ForumTopic{}).
+		Where("id = ?", topicId).
+		UpdateColumn("views", gorm.Expr("views + 1")).Error
+}
+
 type ForumPostRepository struct {
 	db *gorm.DB
 }
