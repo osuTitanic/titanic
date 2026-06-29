@@ -22,8 +22,7 @@ func BeatmapRedirect(ctx *server.Context) {
 }
 
 func BeatmapsetRedirect(ctx *server.Context) {
-	id := ctx.PathValue("id")
-	idInt, err := strconv.Atoi(id)
+	idInt, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
@@ -61,8 +60,7 @@ func BeatmapsetRedirect(ctx *server.Context) {
 }
 
 func Beatmap(ctx *server.Context) {
-	id := ctx.PathValue("id")
-	idInt, err := strconv.Atoi(id)
+	idInt, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return

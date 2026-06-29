@@ -593,7 +593,7 @@ func buildAchievementCategories(unlocked []*schemas.Achievement) []*templates.Us
 }
 
 func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bool) {
-	id, err := strconv.Atoi(ctx.PathValue("id"))
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return nil, false

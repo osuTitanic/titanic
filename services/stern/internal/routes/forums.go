@@ -82,7 +82,7 @@ func ForumHome(ctx *server.Context) {
 }
 
 func ForumView(ctx *server.Context) {
-	forumId, err := strconv.Atoi(strings.TrimSpace(ctx.PathValue("id")))
+	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
