@@ -392,6 +392,14 @@ func (r *ForumBookmarkRepository) Update(updates *schemas.ForumBookmark, columns
 	)
 }
 
+func (r *ForumBookmarkRepository) Exists(topicId int, userId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumBookmark{}).
+		Where("topic_id = ? AND user_id = ?", topicId, userId).
+		Count(&count).Error
+	return count > 0, err
+}
+
 type ForumSubscriberRepository struct {
 	db *gorm.DB
 }
@@ -414,4 +422,12 @@ func (r *ForumSubscriberRepository) Update(updates *schemas.ForumSubscriber, col
 		updates,
 		columns...,
 	)
+}
+
+func (r *ForumSubscriberRepository) Exists(topicId int, userId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumSubscriber{}).
+		Where("topic_id = ? AND user_id = ?", topicId, userId).
+		Count(&count).Error
+	return count > 0, err
 }
