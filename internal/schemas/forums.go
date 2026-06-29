@@ -31,6 +31,14 @@ func (Forum) TableName() string {
 	return "forums"
 }
 
+func (f *Forum) IsBeatmapForum() bool {
+	return constants.BeatmapForumIds[f.Id]
+}
+
+func (f *Forum) IsBeatmapRequestsForum() bool {
+	return f.Id == constants.ForumBeatmapsRequests
+}
+
 type ForumTopic struct {
 	Id            int                  `gorm:"column:id;primaryKey;autoIncrement"`
 	ForumId       int                  `gorm:"column:forum_id"`
