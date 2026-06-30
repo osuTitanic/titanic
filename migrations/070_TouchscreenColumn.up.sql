@@ -1,0 +1,1 @@
+ALTER TABLE scores ADD COLUMN touchscreen bool NOT NULL DEFAULT FALSE;
