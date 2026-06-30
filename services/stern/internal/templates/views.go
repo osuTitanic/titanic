@@ -341,6 +341,46 @@ type ForumPostPreview struct {
 	CanEdit     bool
 	CanDelete   bool
 	CanQuote    bool
+
+	BeatmapsetId    int
+	ShowKudosuBox   bool
+	CanManageKudosu bool
+	CanResetKudosu  bool
+	CanRevokeKudosu bool
+	KudosuTotal     int
+	LatestKudosu    *schemas.BeatmapModding
+}
+
+func (p ForumPostPreview) HasKudosuExcludedIcon() bool {
+	if p.Icon == nil {
+		return false
+	}
+
+	// Exclude kudosu awards for bubble / ranking / qualification
+	switch p.Icon.Id {
+	case constants.ForumIconHeart, constants.ForumIconBubble, constants.ForumIconFire:
+		return true
+	default:
+		return false
+	}
+}
+
+func (p ForumPostPreview) KudosuStatusColor() string {
+	switch {
+	case p.KudosuTotal > 0:
+		return "green"
+	case p.KudosuTotal == 0:
+		return "black"
+	default:
+		return "red"
+	}
+}
+
+func (p ForumPostPreview) AbsoluteKudosuTotal() int {
+	if p.KudosuTotal < 0 {
+		return -p.KudosuTotal
+	}
+	return p.KudosuTotal
 }
 
 type DownloadView struct {

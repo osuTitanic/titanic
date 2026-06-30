@@ -197,6 +197,10 @@ func (b *Beatmapset) DisplayDateTitle() string {
 	return "Last update"
 }
 
+func (b *Beatmapset) IsApproved() bool {
+	return b.Status > constants.BeatmapStatusPending
+}
+
 type Beatmap struct {
 	Id               int                     `gorm:"column:id;primaryKey;autoIncrement"`
 	SetId            int                     `gorm:"column:set_id"`
@@ -324,7 +328,7 @@ type BeatmapModding struct {
 	TargetId int       `gorm:"column:target_id"`
 	SenderId int       `gorm:"column:sender_id"`
 	SetId    int       `gorm:"column:set_id"`
-	PostId   int       `gorm:"column:post_id"`
+	PostId   int64     `gorm:"column:post_id"`
 	Amount   int       `gorm:"column:amount;default:0"`
 	Time     time.Time `gorm:"column:time;autoCreateTime"`
 

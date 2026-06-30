@@ -299,14 +299,22 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	postUserIds := make([]int, 0, len(posts))
+	postIds := make([]int, 0, len(posts))
 	for _, post := range posts {
 		postUserIds = append(postUserIds, post.UserId)
+		postIds = append(postIds, int(post.Id))
 	}
 
 	postCounts, err := ctx.State.ForumPosts.PostCountsByUsers(postUserIds)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch user post counts", "error", err, "topic", topic.Id)
 		postCounts = map[int]int{}
+	}
+
+	linkedBeatmapset, err := ctx.State.Beatmapsets.ByTopicId(topic.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch beatmapset by topic", "error", err, "topic", topic.Id)
+		linkedBeatmapset = nil
 	}
 
 	isSubscribed := false
@@ -339,27 +347,45 @@ func ForumTopicView(ctx *server.Context) {
 		canDelete := (isOwn && canDeleteOwn) || (!isOwn && canDeleteOthers)
 		canEdit := (isOwn && canEditOwn) || (!isOwn && canEditOthers)
 
-		previews = append(previews, &templates.ForumPostPreview{
-			Post:        post,
-			Icon:        post.Icon,
-			AuthorTitle: forumUserTitle(post.User, postCounts[post.UserId]),
-			PostCount:   postCounts[post.UserId],
-			CanDelete:   canModify && canDelete,
-			CanEdit:     canModify && canEdit,
-			CanQuote:    showActions && canCreatePosts,
-		})
+		kudosuTotals, latestKudosu := fetchKudosuForPosts(
+			postIds, linkedBeatmapset, ctx,
+		)
+		preview := &templates.ForumPostPreview{
+			Post:         post,
+			Icon:         post.Icon,
+			AuthorTitle:  forumUserTitle(post.User, postCounts[post.UserId]),
+			PostCount:    postCounts[post.UserId],
+			CanDelete:    canModify && canDelete,
+			CanEdit:      canModify && canEdit,
+			CanQuote:     showActions && canCreatePosts,
+			KudosuTotal:  kudosuTotals[post.Id],
+			LatestKudosu: latestKudosu[post.Id],
+		}
+
+		if linkedBeatmapset != nil && linkedBeatmapset.CreatorId != nil {
+			canForceRewardKudosu := authenticated && ctx.HasPermission("beatmaps.moderation.force_nominate")
+			isBeatmapsetCreator := authenticated && *linkedBeatmapset.CreatorId == ctx.CurrentUser.Id
+
+			preview.BeatmapsetId = linkedBeatmapset.Id
+			preview.CanResetKudosu = authenticated && ctx.HasPermission("forum.kudosu.reset")   // && !linkedBeatmapset.IsApproved()
+			preview.CanRevokeKudosu = authenticated && ctx.HasPermission("forum.kudosu.revoke") // && !linkedBeatmapset.IsApproved()
+			preview.ShowKudosuBox = post.UserId != *linkedBeatmapset.CreatorId && !preview.HasKudosuExcludedIcon()
+
+			// When the user is owner of the set -> allow kudsou awards while set is unranked
+			// When the user is a BAT member -> allow deny / reset actions even when set it ranked
+			// When the user is a BAT manager -> allow all kudosu actions even when set it ranked
+
+			preview.CanManageKudosu = (isBeatmapsetCreator && !linkedBeatmapset.IsApproved()) || canForceRewardKudosu
+			preview.CanManageKudosu = preview.CanManageKudosu || (preview.CanResetKudosu || preview.CanRevokeKudosu)
+		}
+
+		previews = append(previews, preview)
 	}
 
 	// Just to be safe here (this should actually never be nil)
 	metaImage := ""
 	if initialPost.User != nil {
 		metaImage = ctx.State.Config.OsuBaseUrl() + initialPost.User.AvatarUrl()
-	}
-
-	linkedBeatmapset, err := ctx.State.Beatmapsets.ByTopicId(topic.Id)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch beatmapset by topic", "error", err, "topic", topic.Id)
-		linkedBeatmapset = nil
 	}
 
 	view := templates.ForumTopicView{
@@ -555,4 +581,28 @@ func canCreateForumTopic(ctx *server.Context, forum *schemas.Forum) bool {
 		return ctx.HasPermission("forum.topics.create_beatmap")
 	}
 	return true
+}
+
+func fetchKudosuForPosts(postIds []int, linkedBeatmapset *schemas.Beatmapset, ctx *server.Context) (map[int64]int, map[int64]*schemas.BeatmapModding) {
+	kudosuTotals := map[int64]int{}
+	latestKudosu := map[int64]*schemas.BeatmapModding{}
+	if linkedBeatmapset == nil {
+		return kudosuTotals, latestKudosu
+	}
+
+	mods, err := ctx.State.Repositories.Modding.FetchByPosts(postIds)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch post kudosu", "error", err)
+		return kudosuTotals, latestKudosu
+	}
+
+	for _, mod := range mods {
+		postId := mod.PostId
+		kudosuTotals[postId] += mod.Amount
+		if _, exists := latestKudosu[postId]; !exists {
+			latestKudosu[postId] = mod
+		}
+	}
+
+	return kudosuTotals, latestKudosu
 }

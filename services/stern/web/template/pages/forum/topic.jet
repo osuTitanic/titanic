@@ -124,7 +124,9 @@
                 </div>
             </div>
             <br>
-            {* TODO: kudosu box for beatmap topics *}
+            {{ if .ShowKudosuBox }}
+            {{ yield forumKudosuBox() }}
+            {{ end }}
         </td>
         <td class="post-content-wrapper">
             <div style="background-color: #ebe8ff;">
@@ -226,4 +228,31 @@
     {{ end }}
 </div>
 <br>
+{{ end }}
+
+{{ block forumKudosuBox() }}
+    {{ kudosu := .LatestKudosu }}
+    <div class="kudosu-box">
+        <p style="color: {{ .KudosuStatusColor() }}" id="kudosu-status-{{ .Post.Id }}">
+            {{ if .KudosuTotal > 0 }}
+            Earned {{ .KudosuTotal|formatNumber }} kudosu.
+            {{ else if .KudosuTotal == 0 }}
+            No kudosu yet.
+            {{ else }}
+            Lost {{ .AbsoluteKudosuTotal()|formatNumber }} kudosu.
+            {{ end }}
+        </p>
+        {{ if .CanManageKudosu }}
+            {{ if kudosu && kudosu.Amount > 0 && .CanRevokeKudosu }}
+                {* BATs can revoke existing kudosu *}
+                <a onclick="revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a>
+            {{ else if kudosu && .CanResetKudosu }}
+                {* Kudosu was revoked -> BATs have the option to reset it *}
+                <a onclick="resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a>
+            {{ else if !kudosu }}
+                {* Eligible posts without kudosu can be rewarded *}
+                <a onclick="giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a>
+            {{ end }}
+        {{ end }}
+    </div>
 {{ end }}
