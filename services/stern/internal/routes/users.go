@@ -663,13 +663,13 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 
 func resolveUserByName(ctx *server.Context, query string) {
 	// Try to find the user by their current name first
-	if user, err := ctx.State.Repositories.Users.ByNameCaseInsensitive(query); err == nil && user != nil {
+	if user, err := ctx.State.Repositories.Users.ByNameExtended(query); err == nil && user != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", user.Id))
 		return
 	}
 
 	// Search the name history as a backup
-	if name, err := ctx.State.Repositories.Names.ByName(query); err == nil && name != nil {
+	if name, err := ctx.State.Repositories.Names.ByNameExtended(query); err == nil && name != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", name.UserId))
 		return
 	}
