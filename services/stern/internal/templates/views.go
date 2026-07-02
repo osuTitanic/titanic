@@ -188,7 +188,7 @@ type UserKudosuEntry struct {
 	ActorName   string
 	OtherId     int
 	OtherName   string
-	PostId      int
+	PostId      int64
 	TopicTitle  string
 }
 
