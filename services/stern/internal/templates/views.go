@@ -44,6 +44,13 @@ func (v DefaultView) CurrentUserId() int {
 	return v.CurrentUser.Id
 }
 
+type ErrorMessageView struct {
+	DefaultView
+	Title   string
+	Heading string
+	Message string
+}
+
 type HomeView struct {
 	DefaultView
 	News               []*schemas.ForumPost

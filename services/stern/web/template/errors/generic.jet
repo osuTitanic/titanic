@@ -1,0 +1,16 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Title }}</title>
+<link rel="stylesheet" href="/css/error.css">
+{{ end }}
+
+{{ block body() }}
+<img src="/images/art/ffffff.png" alt="Error Image">
+<div class="description">
+    <h1>{{ .Heading }}</h1>
+    {{ if .Message != "" }}
+    <p>{{ .Message }}</p>
+    {{ end }}
+</div>
+{{ end }}
