@@ -3,6 +3,7 @@ package repositories
 import (
 	"errors"
 
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -238,6 +239,60 @@ func (r *ForumPostRepository) FetchInitialByTopic(topicId int, preload ...string
 	return LookupResult(&post, err)
 }
 
+func (r *ForumPostRepository) FetchLastByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchLastByUserInTopic(topicId int, userId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("user_id = ?", userId).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchLastBatPost(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Joins("JOIN groups_entries ON groups_entries.user_id = forum_posts.user_id").
+		Where("forum_posts.topic_id = ?", topicId).
+		Where("forum_posts.hidden = ?", false).
+		Where("groups_entries.group_id = ?", constants.GroupBAT).
+		Order("forum_posts.id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchDrafts(userId int, topicId int, preload ...string) ([]*schemas.ForumPost, error) {
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("user_id = ?", userId).
+		Where("draft = ?", true).
+		Order("id DESC").
+		Find(&posts).Error
+	return posts, err
+}
+
+func (r *ForumPostRepository) CountBeforePost(postId int64, topicId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumPost{}).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Where("id < ?", postId).
+		Count(&count).Error
+	return int(count), err
+}
+
 func (r *ForumPostRepository) PostCountsByUsers(userIds []int) (map[int]int, error) {
 	counts := make(map[int]int, len(userIds))
 	if len(userIds) == 0 {
@@ -374,6 +429,12 @@ func (r *ForumIconRepository) Update(updates *schemas.ForumIcon, columns ...stri
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ForumIconRepository) FetchAll() ([]*schemas.ForumIcon, error) {
+	var icons []*schemas.ForumIcon
+	err := r.db.Order(`"order" ASC`).Order("id ASC").Find(&icons).Error
+	return icons, err
+}
+
 type ForumReportRepository struct {
 	db *gorm.DB
 }
@@ -484,4 +545,12 @@ func (r *ForumSubscriberRepository) Exists(topicId int, userId int) (bool, error
 		Where("topic_id = ? AND user_id = ?", topicId, userId).
 		Count(&count).Error
 	return count > 0, err
+}
+
+func (r *ForumSubscriberRepository) FetchByTopic(topicId int, preload ...string) ([]*schemas.ForumSubscriber, error) {
+	var subscribers []*schemas.ForumSubscriber
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Find(&subscribers).Error
+	return subscribers, err
 }
