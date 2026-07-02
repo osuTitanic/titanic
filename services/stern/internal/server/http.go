@@ -139,7 +139,7 @@ func (ctx *Context) QueryValue(name string) string {
 	return ctx.Request.URL.Query().Get(name)
 }
 
-// QueryValueInt returns a query parameter as an integer
+// QueryValueInt returns a query parameter as an integer.
 func (ctx *Context) QueryValueInt(name string) (int, error) {
 	queryValue := strings.TrimSpace(ctx.QueryValue(name))
 	return strconv.Atoi(queryValue)
@@ -152,6 +152,17 @@ func (ctx *Context) QueryValueDefault(name, fallback string) string {
 		return queryValue
 	}
 	return fallback
+}
+
+// FormValue is a helper function to get form values from the request body.
+func (ctx *Context) FormValue(name string) string {
+	return ctx.Request.FormValue(name)
+}
+
+// FormValueInt returns a form value as an integer.
+func (ctx *Context) FormValueInt(name string) (int, error) {
+	formValue := strings.TrimSpace(ctx.FormValue(name))
+	return strconv.Atoi(formValue)
 }
 
 func (ctx *Context) Redirect(status int, location string) {
