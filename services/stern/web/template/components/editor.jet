@@ -10,7 +10,7 @@
 
 {{ block editorSubject() }}
 <p class="post-subject">
-    Subject: <input type="text" name="title" class="nav-search" value="{{ .Subject }}" autofocus>
+    Subject: <input type="text" name="title" class="nav-search" value="{{ .Subject }}"{{ if !.FocusBody }} autofocus{{ end }}>
 </p>
 {{ end }}
 
@@ -57,7 +57,7 @@
         This section is formatted in bbcode. Learn more about it
         <a href="https://osu.ppy.sh/wiki/en/BBCode">here</a>!
     </p>
-    <textarea class="bbcode-editor" name="bbcode" style="resize: vertical; min-height: 200px;">{{ .Content }}</textarea>
+    <textarea class="bbcode-editor" name="bbcode" style="resize: vertical; min-height: 200px;"{{ if .FocusBody }} autofocus{{ end }}>{{ .Content }}</textarea>
 </div>
 {{ end }}
 

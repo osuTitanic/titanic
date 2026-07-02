@@ -145,6 +145,12 @@ func (ctx *Context) QueryValueInt(name string) (int, error) {
 	return strconv.Atoi(queryValue)
 }
 
+// QueryValueInt64 returns a query parameter as an int64.
+func (ctx *Context) QueryValueInt64(name string) (int64, error) {
+	queryValue := strings.TrimSpace(ctx.QueryValue(name))
+	return strconv.ParseInt(queryValue, 10, 64)
+}
+
 // QueryValueDefault attempts to get a query parameter from
 // the request while falling back to the given if not present.
 func (ctx *Context) QueryValueDefault(name, fallback string) string {

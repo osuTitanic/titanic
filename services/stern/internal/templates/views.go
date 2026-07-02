@@ -422,6 +422,7 @@ type ForumEditorContext struct {
 	SubmitText string
 	CancelUrl  string // if empty -> no cancel link
 	DraftUrl   string // if empty -> no save-draft button
+	FocusBody  bool   // autofocus the body instead of the subject
 
 	ShowSubject bool
 	Subject     string
