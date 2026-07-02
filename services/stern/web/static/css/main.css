@@ -673,6 +673,55 @@ input[type="url"], input[type="search"] {
     border-width: 1px 5px;
 }
 
+.bbcode img {
+    max-width: 630px;
+}
+
+.bbcode video {
+    max-width: 500px;
+    max-height: 500px;
+}
+
+.bbcode ol {
+    padding-left: 20px;
+}
+
+.bbcode .beatmap-timecode {
+    color: #000;
+    display: inline-block;
+    border-radius: 3px;
+    padding: 1px 2px;
+    margin: 1px 3px;
+    background: #ddecff;
+    border: 1px solid #91c2ff;
+    font-size: 90%;
+    font-weight: bold;
+}
+
+.bbcode .beatmap-timecode:hover {
+    background: #fff;
+    text-decoration: none;
+}
+
+.bbcode .beatmap-header {
+    color: #433f75;
+    display: inline-block;
+    width: 100%;
+    margin: 1px 3px 5px -8px;
+    padding-left: 8px;
+    border-bottom: solid 1px #bebbcd;
+    box-shadow: 0 3px 2px -3px #bebbcd;
+    font-size: 140%;
+    font-weight: bold;
+}
+
+.bbcode-preview {
+    margin: 5px 5px 1.5px 5px;
+    background-color: #dbd8fd;
+    border-radius: 2.5px;
+    min-width: 90%;
+}
+
 .bbcode-editor {
     white-space: pre-line;
     height: auto;
@@ -745,53 +794,27 @@ input[type="url"], input[type="search"] {
     background-color: rgb(205, 205, 240);
 }
 
-.bbcode img {
-    max-width: 630px;
-}
-
-.bbcode video {
-    max-width: 500px;
-    max-height: 500px;
-}
-
-.bbcode ol {
-    padding-left: 20px;
-}
-
-.bbcode .beatmap-timecode {
-    color: #000;
-    display: inline-block;
-    border-radius: 3px;
-    padding: 1px 2px;
-    margin: 1px 3px;
-    background: #ddecff;
-    border: 1px solid #91c2ff;
+.bbcode-editor-controls {
+    margin: 12px;
+    float: right;
+    text-align: right;
     font-size: 90%;
-    font-weight: bold;
 }
 
-.bbcode .beatmap-timecode:hover {
-    background: #fff;
-    text-decoration: none;
+.bbcode-editor-control-row {
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
-.bbcode .beatmap-header {
-    color: #433f75;
-    display: inline-block;
-    width: 100%;
-    margin: 1px 3px 5px -8px;
-    padding-left: 8px;
-    border-bottom: solid 1px #bebbcd;
-    box-shadow: 0 3px 2px -3px #bebbcd;
-    font-size: 140%;
-    font-weight: bold;
+.bbcode-editor-kudosu-hint {
+    clear: both;
+    font-size: 90%;
+    padding: 5px;
+    margin-top: 6px;
 }
 
-.bbcode-preview {
-    margin: 5px 5px 1.5px 5px;
-    background-color: #dbd8fd;
-    border-radius: 2.5px;
-    min-width: 90%;
+.bbcode-editor-kudosu-hint div {
+    padding: 2px 0;
 }
 
 .popup {

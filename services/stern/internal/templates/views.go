@@ -383,6 +383,67 @@ func (p ForumPostPreview) AbsoluteKudosuTotal() int {
 	return p.KudosuTotal
 }
 
+type ForumCreateTopicView struct {
+	DefaultView
+	Forum   *schemas.Forum
+	Parents []*schemas.Forum
+	Editor  ForumEditorContext
+}
+
+type ForumPostEditorView struct {
+	DefaultView
+	Forum    *schemas.Forum
+	Topic    *schemas.ForumTopic
+	Parents  []*schemas.Forum
+	Editor   ForumEditorContext
+	Action   string
+	ActionId int64
+}
+
+type ForumEditorIcon struct {
+	Id       int
+	Name     string
+	Location string
+	Selected bool
+}
+
+// this is a very verbose struct. i'll have to see if it can be simplified later, but for now it works
+// as i wanted to outline the editor template first, before writing any handler code
+
+type ForumEditorContext struct {
+	Content    string
+	SubmitText string
+	CancelUrl  string // if empty -> no cancel link
+	DraftUrl   string // if empty -> no save-draft button
+
+	ShowSubject bool
+	Subject     string
+
+	ShowIcons        bool
+	NoneIconSelected bool
+	Icons            []*ForumEditorIcon
+
+	ShowControls    bool
+	ShowStatusInput bool
+	StatusText      string
+	NotifyChecked   bool
+	ShowLockTopic   bool
+	TopicLocked     bool
+	ShowLockPost    bool
+	PostLocked      bool
+	ShowTopicTypes  bool
+	TopicType       string // "global" | "pinned" | "announcement"
+
+	ShowKudosuHint     bool
+	KudosuReward       int
+	ShowKudosuIconNote bool
+	BeatmapsetId       int
+}
+
+func (v ForumEditorContext) HasContent() bool {
+	return v.Content != ""
+}
+
 type DownloadView struct {
 	DefaultView
 	SelectedCategory string

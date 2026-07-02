@@ -1,0 +1,139 @@
+{{ block editor() }}
+{{ if .ShowSubject }}{{ yield editorSubject() }}{{ end }}
+{{ if .ShowIcons }}{{ yield editorIcons() }}{{ end }}
+{{ yield editorBody() }}
+{{ if .ShowControls }}{{ yield editorControls() }}{{ end }}
+{{ if .ShowKudosuHint }}{{ yield editorKudosuHint() }}{{ end }}
+{{ yield editorButtons() }}
+{{ if .HasContent() }}{{ yield editorPreview() }}{{ end }}
+{{ end }}
+
+{{ block editorSubject() }}
+<p class="post-subject">
+    Subject: <input type="text" name="title" class="nav-search" value="{{ .Subject }}" autofocus>
+</p>
+{{ end }}
+
+{{ block editorIcons() }}
+<div class="icon-selection">
+    <input type="radio" name="icon" value="-1" id="icon-none"{{ if .NoneIconSelected }} checked{{ end }}>
+    <label for="icon-none">None</label>
+    {{ range _, icon := .Icons }}
+    <input type="radio" name="icon" value="{{ icon.Id }}" id="icon-{{ icon.Id }}"{{ if icon.Selected }} checked{{ end }}>
+    <label for="icon-{{ icon.Id }}">
+        <img src="{{ icon.Location }}" alt="{{ icon.Name }}">
+    </label>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block editorBody() }}
+<div id="editor-wrapper">
+    <div class="bbcode-toolbar">
+        <button type="button" data-bbcode-tag="b"><b>B</b></button>
+        <button type="button" data-bbcode-tag="i"><i>i</i></button>
+        <button type="button" data-bbcode-tag="u"><u>u</u></button>
+        <button type="button" data-bbcode-tag="centre"><p>Centre</p></button>
+        <button type="button" data-bbcode-tag="strike"><p>Strike</p></button>
+        <button type="button" data-bbcode-tag="heading"><p>Heading</p></button>
+        <button type="button" data-bbcode-tag="code"><p>Code</p></button>
+        <button type="button" data-bbcode-tag="img"><p>Image</p></button>
+        <button type="button" data-bbcode-tag="url" data-property=""><u>URL</u></button>
+        <button type="button" data-bbcode-tag="list"><p>Unordered List</p></button>
+        <button type="button" data-bbcode-tag="list" data-property=""><p>Ordered List</p></button>
+        <button type="button" data-bbcode-tag="*" data-no-close><p>[*]</p></button>
+        <button type="button" data-bbcode-tag="profile" data-property="user-id"><p>Profile</p></button>
+        <button type="button" data-bbcode-tag="video"><p>Video</p></button>
+        <button type="button" data-bbcode-tag="quote" data-property="username"><p>Quote</p></button>
+        <button type="button" data-bbcode-tag="size" data-property="150"><p>Size</p></button>
+        <button type="button" data-bbcode-tag="email" data-property="user@example.com"><p>E-Mail</p></button>
+        <button type="button" data-bbcode-tag="google"><p>Google</p></button>
+        <button type="button" data-bbcode-tag="youtube"><p>YouTube</p></button>
+        <button type="button" data-bbcode-tag="box" data-property="Box"><p>Box</p></button>
+        <button type="button" data-bbcode-tag="color" data-property="red"><p>Color</p></button>
+        <button type="button" data-bbcode-tag="spoilerbox"><p>Spoiler</p></button>
+    </div>
+    <p id="bbcode-help">
+        This section is formatted in bbcode. Learn more about it
+        <a href="https://osu.ppy.sh/wiki/en/BBCode">here</a>!
+    </p>
+    <textarea class="bbcode-editor" name="bbcode" style="resize: vertical; min-height: 200px;">{{ .Content }}</textarea>
+</div>
+{{ end }}
+
+{{ block editorControls() }}
+<div class="bbcode-editor-controls">
+    {{ if .ShowStatusInput }}
+    <div class="bbcode-editor-control-row">
+        Status:
+        <input type="text" name="topic-status" value="{{ .StatusText }}" class="nav-search" style="min-width: 300px">
+    </div>
+    {{ end }}
+
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="notify" id="notify"{{ if .NotifyChecked }} checked{{ end }}>
+        <label for="notify">Notify me when a reply is posted</label>
+    </div>
+
+    {{ if .ShowLockTopic }}
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="locked" id="locked"{{ if .TopicLocked }} checked{{ end }}>
+        <label for="locked">Lock this topic</label>
+    </div>
+    {{ end }}
+
+    {{ if .ShowLockPost }}
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="edit-locked" id="edit-locked"{{ if .PostLocked }} checked{{ end }}>
+        <label for="edit-locked">Lock this post</label>
+    </div>
+    {{ end }}
+
+    {{ if .ShowTopicTypes }}
+    <div class="bbcode-editor-control-row">
+        Post topic as:
+        <input type="radio" name="type" value="global" id="type-global"{{ if .TopicType == "global" }} checked{{ end }}>
+        <label for="type-global">Global</label>
+        <input type="radio" name="type" value="pinned" id="type-pinned"{{ if .TopicType == "pinned" }} checked{{ end }}>
+        <label for="type-pinned">Pinned</label>
+        <input type="radio" name="type" value="announcement" id="type-announcement"{{ if .TopicType == "announcement" }} checked{{ end }}>
+        <label for="type-announcement">Announcement</label>
+    </div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block editorKudosuHint() }}
+<div class="bbcode-editor-kudosu-hint">
+    <div>
+        You will gain <b>{{ .KudosuReward }} kudosu</b> for this post
+        if it is deemed as helpful by the map's creator.
+    </div>
+    {{ if .ShowKudosuIconNote }}
+    <div>
+        Please note that changing the icon <i><b>won't</b></i> affect the status of the map.
+        Instead, please do so in the <a href="/s/{{ .BeatmapsetId }}">BAT Controls</a> panel.
+        The icon will automatically update.
+    </div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block editorButtons() }}
+<div class="post-buttons" style="justify-content: flex-start;">
+    <input type="submit" value="{{ .SubmitText }}" class="button-blue">
+    <button type="button" class="bbcode-preview-button button-blue" onclick="return loadBBCodePreview(this)">Preview</button>
+    {{ if .CancelUrl != "" }}
+    <a href="{{ .CancelUrl }}" class="button-red">Cancel</a>
+    {{ end }}
+    {{ if .DraftUrl != "" }}
+    <input type="submit" formaction="{{ .DraftUrl }}" class="button-grey" value="Save Draft">
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block editorPreview() }}
+<div class="bbcode-preview bbcode">
+    {{ .Content | bbcode | unsafe }}
+</div>
+{{ end }}
