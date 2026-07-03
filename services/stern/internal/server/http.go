@@ -134,6 +134,12 @@ func (ctx *Context) PathValueInt(name string) (int, error) {
 	return strconv.Atoi(pathValue)
 }
 
+// PathValueInt64 returns a path variable as an int64.
+func (ctx *Context) PathValueInt64(name string) (int64, error) {
+	pathValue := strings.TrimSpace(ctx.PathValue(name))
+	return strconv.ParseInt(pathValue, 10, 64)
+}
+
 // QueryValue is a helper function to get query parameters from the request context.
 func (ctx *Context) QueryValue(name string) string {
 	return ctx.Request.URL.Query().Get(name)
