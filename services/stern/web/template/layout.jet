@@ -192,7 +192,6 @@
                     <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
                 </form>
             </div>
-            {* TODO: Add IE-only scripts *}
             <script src="/lib/jquery.min.js"></script>
             <script src="/lib/jquery.migrate.min.js" defer></script>
             <script src="/lib/jquery.timeago.js" defer></script>
