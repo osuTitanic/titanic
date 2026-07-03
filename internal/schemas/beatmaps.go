@@ -162,6 +162,10 @@ func (b *Beatmapset) TagsText() string {
 	return ""
 }
 
+func (b *Beatmapset) IsApproved() bool {
+	return b.Status > constants.BeatmapStatusPending
+}
+
 // RequiredNominations returns the amount of nominations a beatmapset needs to
 // be qualified: 2, plus one extra for every additional game mode it contains.
 func (b *Beatmapset) RequiredNominations() int {
@@ -195,10 +199,6 @@ func (b *Beatmapset) DisplayDateTitle() string {
 		return "Approved date"
 	}
 	return "Last update"
-}
-
-func (b *Beatmapset) IsApproved() bool {
-	return b.Status > constants.BeatmapStatusPending
 }
 
 type Beatmap struct {
