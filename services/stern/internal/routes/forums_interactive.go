@@ -133,6 +133,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		Title:         title,
 		Pinned:        pinned,
 		Announcement:  announcement,
+		CreatedAt:     time.Now().UTC(),
 	}
 	if err := ctx.State.ForumTopics.Create(topic); err != nil {
 		ctx.Logger.Error("Failed to create topic", "error", err, "forum", forum.Id)
@@ -310,6 +311,83 @@ func ForumPostAction(ctx *server.Context) {
 		return
 	}
 	handleForumReply(ctx, topic)
+}
+
+func ForumDraftAction(ctx *server.Context) {
+	if !requireLogin(ctx) {
+		return
+	}
+
+	forumId, err := ctx.PathValueInt("id")
+	if err != nil {
+		NotFound(ctx)
+		return
+	}
+
+	topicId, err := ctx.PathValueInt("topicId")
+	if err != nil {
+		NotFound(ctx)
+		return
+	}
+
+	topic, err := ctx.State.ForumTopics.ById(topicId)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch topic", "error", err, "topic", topicId)
+		InternalServerError(ctx)
+		return
+	}
+	if topic == nil || topic.Hidden || topic.ForumId != forumId {
+		NotFound(ctx)
+		return
+	}
+
+	if valid, err := ctx.ValidateCSRF(); err != nil || !valid {
+		RenderErrorPage(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
+		return
+	}
+
+	if isPostingRejected(ctx) {
+		return
+	}
+
+	if !ctx.HasPermission("forum.posts.create") {
+		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to post here.")
+		return
+	}
+
+	topicUrl := fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id)
+	content := ctx.Request.FormValue("bbcode")
+	if content == "" {
+		ctx.Redirect(http.StatusSeeOther, topicUrl)
+		return
+	}
+
+	// Only a single draft is kept per user & topic
+	if drafts, _ := ctx.State.ForumPosts.FetchDrafts(ctx.CurrentUser.Id, topic.Id); len(drafts) > 0 {
+		for _, draft := range drafts {
+			if err := ctx.State.ForumPosts.Delete(draft); err != nil {
+				ctx.Logger.Warn("Failed to delete old draft", "error", err, "draft", draft.Id)
+			}
+		}
+	}
+
+	draft := &schemas.ForumPost{
+		TopicId:   topic.Id,
+		ForumId:   topic.ForumId,
+		UserId:    ctx.CurrentUser.Id,
+		Content:   content,
+		Draft:     true,
+		Hidden:    true,
+		CreatedAt: time.Now().UTC(),
+	}
+	if err := ctx.State.ForumPosts.Create(draft); err != nil {
+		ctx.Logger.Error("Failed to save draft", "error", err, "topic", topic.Id)
+		InternalServerError(ctx)
+		return
+	}
+
+	ctx.Logger.Info("Saved a forum draft", "user", ctx.CurrentUser.Id, "topic", topic.Id, "draft", draft.Id)
+	ctx.Redirect(http.StatusSeeOther, topicUrl)
 }
 
 func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {

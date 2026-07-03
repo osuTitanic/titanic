@@ -63,6 +63,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /forum/{id}/t/{topicId}/post", routes.ForumPostEditorView)
 	server.Handle("GET /forum/{id}/t/{topicId}/post/", routes.ForumPostEditorView)
 	server.Handle("POST /forum/{id}/t/{topicId}/post", routes.ForumPostAction)
+	server.Handle("POST /forum/{id}/t/{topicId}/draft", routes.ForumDraftAction)
 	server.Handle("GET /s/{id}", routes.BeatmapsetRedirect)
 	server.Handle("GET /b/{id}", routes.Beatmap)
 	server.Handle("GET /scores/{id}", routes.Score)
