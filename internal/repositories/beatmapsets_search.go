@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"slices"
 	"strings"
 	"unicode"
 
@@ -178,7 +179,6 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 	joins.beatmaps = joins.beatmaps || filtersRequireBeatmaps
 
 	if strings.TrimSpace(updatedSearchQuery) != "" {
-		joins.beatmaps = true
 		query = applyBeatmapsetTextSearch(query, updatedSearchQuery)
 	}
 
@@ -294,17 +294,27 @@ func applyBeatmapsetSearchSort(query *gorm.DB, options BeatmapsetSearchOptions, 
 func applyBeatmapsetTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
 	// Start with a plain full-text search, which is fast and
 	// effective for exact matches of the query terms
-	condition := "(beatmapsets.search @@ plainto_tsquery('simple', ?) OR beatmaps.search @@ plainto_tsquery('simple', ?)"
-	args := []any{textQuery, textQuery}
+	setCondition := "sets.search @@ plainto_tsquery('simple', ?)"
+	mapCondition := "maps.search @@ plainto_tsquery('simple', ?)"
+	args := []any{textQuery}
 
 	// Add an optional fuzzy full-text search, which can help find results
 	// when some terms are slightly different from the indexed text
 	if fuzzyQuery := fuzzyTsQuery(textQuery); fuzzyQuery != "" {
-		condition += " OR beatmapsets.search @@ to_tsquery('simple', ?) OR beatmaps.search @@ to_tsquery('simple', ?)"
-		args = append(args, fuzzyQuery, fuzzyQuery)
+		setCondition += " OR sets.search @@ to_tsquery('simple', ?)"
+		mapCondition += " OR maps.search @@ to_tsquery('simple', ?)"
+		args = append(args, fuzzyQuery)
 	}
 
-	return query.Where(condition+")", args...)
+	// Keeping each table in its own subquery lets postgres use the
+	// GIN indexes on both "search" columns
+	subquery := `beatmapsets.id IN (
+		SELECT sets.id FROM beatmapsets AS sets WHERE ` + setCondition + `
+		UNION
+		SELECT maps.set_id FROM beatmaps AS maps WHERE ` + mapCondition + `
+	)`
+
+	return query.Where(subquery, slices.Concat(args, args)...)
 }
 
 func fuzzyTsQuery(query string) string {
