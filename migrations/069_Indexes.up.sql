@@ -257,3 +257,7 @@ CREATE INDEX IF NOT EXISTS idx_dms_unread_by_target ON direct_messages USING btr
 -- comments
 CREATE INDEX IF NOT EXISTS idx_comments_target ON comments USING btree (target_id, target_type, "time");
 CREATE INDEX IF NOT EXISTS idx_comments_user_time ON comments USING btree (user_id, "time");
+
+-- profile partials
+CREATE INDEX IF NOT EXISTS idx_scores_pinned_by_user ON scores USING btree (user_id, mode, pp DESC) WHERE (pinned = true AND hidden = false AND status > 1);
+CREATE INDEX IF NOT EXISTS idx_profile_activity_recent ON profile_activity USING btree (user_id, mode, "time" DESC) WHERE (hidden = false);

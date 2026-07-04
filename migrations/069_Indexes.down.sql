@@ -187,3 +187,5 @@ DROP INDEX IF EXISTS idx_users_rankings_covering;
 DROP INDEX IF EXISTS idx_users_restricted;
 DROP INDEX IF EXISTS idx_users_safe_name;
 DROP INDEX IF EXISTS idx_verifications_user_id;
+DROP INDEX IF EXISTS idx_scores_pinned_by_user;
+DROP INDEX IF EXISTS idx_profile_activity_recent;
