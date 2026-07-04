@@ -111,7 +111,7 @@ func ForumPostEditorView(ctx *server.Context) {
 		NotifyChecked:    isSubscribed,
 		TopicLocked:      topic.LockedAt != nil,
 		PostLocked:       referencedPost != nil && referencedPost.EditLocked,
-		ShowStatusInput:  action != forumActionEdit && ctx.HasPermission("forum.moderation.topics.set_status"),
+		ShowStatusInput:  (action != forumActionEdit || editingInitialPost) && ctx.HasPermission("forum.moderation.topics.set_status"),
 		ShowLockTopic:    action != forumActionEdit && ctx.HasPermission("forum.moderation.topics.lock"),
 		ShowLockPost:     action == forumActionEdit && ctx.HasPermission("forum.moderation.posts.lock"),
 		ShowTopicTypes:   editingInitialPost && ctx.HasPermission("forum.moderation.topics.set_options"),
@@ -549,10 +549,20 @@ func restoreDraft(ctx *server.Context, topicId int) string {
 }
 
 func applyEditedTopicOptions(ctx *server.Context, topic *schemas.ForumTopic, editingInitialPost bool) {
-	// Topic "options" refers to the topic type (pinned, announcement, etc.) and the topic title.
+	// Topic "options" refers to the topic type (pinned, announcement, etc.), the topic title and status.
 	// We can only set those if we're editing the initial post of the topic, and if we have the appropriate permissions.
 	if !editingInitialPost {
 		return
+	}
+
+	if title := strings.TrimSpace(ctx.FormValue("title")); title != "" {
+		update := &schemas.ForumTopic{
+			Id:    topic.Id,
+			Title: title,
+		}
+		if _, err := ctx.State.ForumTopics.Update(update, "title"); err != nil {
+			ctx.Logger.Error("Failed to update topic title", "error", err, "topic", topic.Id)
+		}
 	}
 
 	if ctx.HasPermission("forum.moderation.topics.set_options") {
@@ -567,13 +577,18 @@ func applyEditedTopicOptions(ctx *server.Context, topic *schemas.ForumTopic, edi
 		}
 	}
 
-	if title := strings.TrimSpace(ctx.FormValue("title")); title != "" {
-		update := &schemas.ForumTopic{
-			Id:    topic.Id,
-			Title: title,
-		}
-		if _, err := ctx.State.ForumTopics.Update(update, "title"); err != nil {
-			ctx.Logger.Error("Failed to update topic title", "error", err, "topic", topic.Id)
+	if ctx.HasPermission("forum.moderation.topics.set_status") {
+		status := strings.TrimSpace(ctx.FormValue("topic-status"))
+
+		// Check if the status text has changed, and if so, update it
+		if status != topic.StatusTextValue() {
+			update := &schemas.ForumTopic{Id: topic.Id}
+			if status != "" {
+				update.StatusText = &status
+			}
+			if _, err := ctx.State.ForumTopics.Update(update, "status_text"); err != nil {
+				ctx.Logger.Error("Failed to update topic status", "error", err, "topic", topic.Id)
+			}
 		}
 	}
 }
