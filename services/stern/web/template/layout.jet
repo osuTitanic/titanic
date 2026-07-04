@@ -41,7 +41,14 @@
     <![endif]-->
 </head>
 <body id="titanic">
-    {* TODO: add the restricted account banner *}
+    {{ if .CurrentUser && .CurrentUser.Restricted }}
+    <div class="alert-header">
+        <h1 style="margin-top: 0; color: white;">Your account was <strong>restricted</strong>!</h1>
+        <div>
+            You won't have be able to engage with other users or submit scores. If you wish to appeal your restriction, please <a href="mailto:{{ .Config.EmailSender }}" style="color:white; font-weight: bold;">contact the administration team</a>.
+        </div>
+    </div><br>
+    {{ end }}
     <div class="main">
         <a id="top_support" class="top_button" href="https://ko-fi.com/lekuru"></a>
         <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
