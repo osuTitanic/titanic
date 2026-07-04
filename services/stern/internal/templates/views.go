@@ -45,6 +45,13 @@ func (v DefaultView) CurrentUserId() int {
 	return v.CurrentUser.Id
 }
 
+func (v DefaultView) PreferredModeAlias() string {
+	if v.CurrentUser == nil {
+		return constants.ModeOsu.Alias()
+	}
+	return v.CurrentUser.PreferredMode.Alias()
+}
+
 type ErrorMessageView struct {
 	DefaultView
 	Title   string

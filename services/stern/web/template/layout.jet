@@ -73,20 +73,19 @@
                     </ul>
                 </li>
                 <li class="nav-element nav-element-dropdown">
-                    {* TODO: use user preferred mode in rankings path *}
-                    <a href="/rankings/osu/performance">
+                    <a href="/rankings/{{ .PreferredModeAlias() }}/performance">
                         Rankings
                         <img class="dropdown-indicator" src="/images/arrow-white-highlight.png" alt="»">
                     </a>
                     <ul class="nav-dropdown">
                         <li>
-                            <a href="/rankings/osu/performance">Performance</a>
-                            <a href="/rankings/osu/country">Countries</a>
-                            <a href="/rankings/osu/rscore">Ranked Score</a>
-                            <a href="/rankings/osu/tscore">Total Score</a>
-                            <a href="/rankings/osu/ppv1">PPv1</a>
-                            <a href="/rankings/osu/clears">Clears</a>
-                            <a href="/rankings/osu/leader">First Places</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/performance">Performance</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/country">Countries</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/rscore">Ranked Score</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/tscore">Total Score</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/ppv1">PPv1</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/clears">Clears</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/leader">First Places</a>
                             <a href="/rankings/kudosu">Kudosu</a>
                         </li>
                     </ul>
