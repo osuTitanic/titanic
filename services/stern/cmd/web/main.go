@@ -68,7 +68,12 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /forum/{id}/t/{topicId}/p/{postId}/", routes.ForumPostPermalink)
 	server.Handle("GET /forum/{id}/p/{postId}", routes.ForumPostRedirect)
 	server.Handle("GET /forum/{id}/p/{postId}/", routes.ForumPostRedirect)
-	// TODO: Add /forum/t/{id} & /forum/p/{id} redirects
+	server.Handle("GET /forum/{kind}/{rest...}", routes.ForumShortlinkRedirect)
+	server.Handle("GET /forum/posting.php", routes.ForumQuickReplyRedirect)
+	server.Handle("GET /forum/viewtopic.php", routes.ForumViewTopicRedirect)
+	server.Handle("GET /forum/viewforum.php", routes.ForumViewForumRedirect)
+	server.Handle("GET /forum/ucp.php", routes.ForumControlPanelRedirect)
+	server.Handle("GET /forum/index.php", routes.ForumIndexRedirect)
 	server.Handle("GET /s/{id}", routes.BeatmapsetRedirect)
 	server.Handle("GET /b/{id}", routes.Beatmap)
 	server.Handle("GET /scores/{id}", routes.Score)
