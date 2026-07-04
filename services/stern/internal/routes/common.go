@@ -59,6 +59,7 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	if requestURI := ctx.Request.URL.RequestURI(); requestURI != "" {
 		currentURI = requestURI
 	}
+	userAgent := ctx.Request.UserAgent()
 
 	return templates.DefaultView{
 		Stats:             buildStatistics(ctx.State),
@@ -69,6 +70,8 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 		CurrentPath:       currentPath,
 		CurrentURI:        currentURI,
 		NotificationCount: fetchNotificationCount(ctx),
+		IsModernBrowser:   server.IsModernBrowser(userAgent),
+		IsIE:              server.IsInternetExplorer(userAgent),
 	}
 }
 
