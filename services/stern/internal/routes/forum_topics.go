@@ -346,6 +346,8 @@ func ForumCreateTopicAction(ctx *server.Context) {
 }
 
 func forumUserTitle(user *schemas.User, postCount int) string {
+	// Either we have a set user title, or we generate one based on their post count
+	// Example: https://web.archive.org/web/20120523235247/http://osu.ppy.sh/forum/t/4795
 	if user != nil {
 		if title := user.TitleText(); title != "" {
 			return title
@@ -382,6 +384,9 @@ func fetchKudosuForPosts(postIds []int, linkedBeatmapset *schemas.Beatmapset, ct
 	if linkedBeatmapset == nil {
 		return kudosuTotals, latestKudosu
 	}
+
+	// We want to fetch the total kudosu for each post in one database
+	// query, as well as the latest kudosu for each post
 
 	mods, err := ctx.State.Repositories.Modding.FetchByPosts(postIds)
 	if err != nil {

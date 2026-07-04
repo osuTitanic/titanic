@@ -446,9 +446,15 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 }
 
 func canEditPostIcon(ctx *server.Context, topic *schemas.ForumTopic, action string, editingLatestPost bool) bool {
+	// We only allow editing the post icon when editing the latest post in the topic.
+	// The other way to do it would be to make a new post that changes the icon.
 	if action == forumActionEdit && !editingLatestPost {
 		return false
 	}
+
+	// We only want certain users to be able to edit the post icon.
+	// Either we have the permission to change the icon anywhere, or the topic
+	// allows for it and we also have the permission to change it in that case.
 	if ctx.HasPermission("forum.moderation.topics.edit_icon") {
 		return true
 	}
@@ -489,6 +495,10 @@ func resolveTopicIconChange(ctx *server.Context, topic *schemas.ForumTopic) (boo
 }
 
 func resolveEditorContent(ctx *server.Context, topic *schemas.ForumTopic, action string, post *schemas.ForumPost) string {
+	// Determine the placeholder content for the editor
+	// For edit: use the post content
+	// For quote: use the post content wrapped in a quote tag
+	// For new post: use the last saved draft, if any
 	switch action {
 	case forumActionEdit:
 		if post != nil && !post.Deleted {
@@ -505,6 +515,9 @@ func resolveEditorContent(ctx *server.Context, topic *schemas.ForumTopic, action
 }
 
 func buildQuote(post *schemas.ForumPost) string {
+	// The quote is built by stripping out any existing quotes, images, or videos from the post content.
+	// To be entirely honest, this is a bit janky right now... It would probably be better to use
+	// bbcode.Strip(...), which would remove all bbcode tags.
 	content := post.Content
 	for _, pattern := range quoteStripPatterns {
 		content = pattern.ReplaceAllString(content, "")
@@ -536,6 +549,8 @@ func restoreDraft(ctx *server.Context, topicId int) string {
 }
 
 func applyEditedTopicOptions(ctx *server.Context, topic *schemas.ForumTopic, editingInitialPost bool) {
+	// Topic "options" refers to the topic type (pinned, announcement, etc.) and the topic title.
+	// We can only set those if we're editing the initial post of the topic, and if we have the appropriate permissions.
 	if !editingInitialPost {
 		return
 	}
@@ -599,10 +614,14 @@ func notifyForumSubscribers(ctx *server.Context, topic *schemas.ForumTopic, post
 		if err := ctx.State.Notifications.Create(notification); err != nil {
 			ctx.Logger.Warn("Failed to create forum notification", "error", err, "user", subscriber.UserId)
 		}
+		// TODO: In the future, we should probably have a system to send
+		// 		 notifications to multiple sources e.g. email, discord, etc.
 	}
 }
 
 func updateBeatmapTopicStatus(ctx *server.Context, topic *schemas.ForumTopic, beatmapset *schemas.Beatmapset) {
+	// The topic status text is dynamically resolved based on the beatmapset status
+	// Not every topic has a linked beatmapset though, so we only do it if we have one
 	status := resolveBeatmapTopicStatus(ctx, topic, beatmapset)
 	update := &schemas.ForumTopic{Id: topic.Id, StatusText: nil}
 	if status != "" {
@@ -650,6 +669,10 @@ func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, 
 		return
 	}
 
+	// The kudosu hint is shown to a user if we have a linked beatmapset, stating
+	// that you can receive kudosu for posting in the topic. The amount of kudosu
+	// is determined by whether the topic has been posted in within the last 7 days or not.
+	// This should reward users for modding beatmaps that have been inactive for a while.
 	editor.ShowKudosuHint = true
 	editor.BeatmapsetId = beatmapset.Id
 	editor.KudosuReward = 2
