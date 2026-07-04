@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/schemas"
-	"github.com/osuTitanic/titanic-go/services/stern/internal/helpers"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -103,7 +102,7 @@ func ForumView(ctx *server.Context) {
 	}
 
 	// Track the current user for "Users browsing this forum"
-	helpers.ForumMarkUserActive(ctx, forum.Id)
+	forumMarkUserActive(ctx, forum.Id)
 
 	page := 1
 	if parsed, err := ctx.QueryValueInt("page"); err == nil && parsed > 1 {
@@ -163,8 +162,8 @@ func ForumView(ctx *server.Context) {
 		lastPosts = map[int]*schemas.ForumPost{}
 	}
 
-	readStatuses := helpers.ForumTopicReadStatuses(ctx, slices.Concat(announcements, topics))
-	averageViews := helpers.ForumAverageTopicViews(ctx)
+	readStatuses := forumTopicReadStatuses(ctx, slices.Concat(announcements, topics))
+	averageViews := forumAverageTopicViews(ctx)
 
 	hasCustomIcons := false
 	for _, topic := range topics {

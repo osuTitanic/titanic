@@ -1,6 +1,4 @@
-package helpers
-
-// TODO: figure out if we really need a separate "helpers" module for this alone
+package routes
 
 import (
 	"crypto/md5"
@@ -19,9 +17,9 @@ const forumActivityExpiry = 5 * time.Minute
 const forumAverageViewsTTL = 5 * time.Minute
 const forumViewLockExpiry = time.Minute
 
-// ForumSessionIdentifier returns a key used to track
+// forumSessionIdentifier returns a key used to track
 // which topics the current visitor has already read.
-func ForumSessionIdentifier(ctx *server.Context) string {
+func forumSessionIdentifier(ctx *server.Context) string {
 	var seed string = ctx.IP()
 
 	if ctx.CurrentUser != nil {
@@ -34,8 +32,8 @@ func ForumSessionIdentifier(ctx *server.Context) string {
 	return hex.EncodeToString(sum[:])
 }
 
-// ForumMarkUserActive records that the current user is browsing a forum.
-func ForumMarkUserActive(ctx *server.Context, forumId int) {
+// forumMarkUserActive records that the current user is browsing a forum.
+func forumMarkUserActive(ctx *server.Context, forumId int) {
 	if ctx.CurrentUser == nil {
 		return
 	}
@@ -55,8 +53,8 @@ func ForumMarkUserActive(ctx *server.Context, forumId int) {
 	ctx.State.Redis.Expire(context, key, forumActivityExpiry)
 }
 
-// ForumGetActiveUsers returns the ids of users that recently browsed the forum.
-func ForumGetActiveUsers(ctx *server.Context, forumId int) []int {
+// forumGetActiveUsers returns the ids of users that recently browsed the forum.
+func forumGetActiveUsers(ctx *server.Context, forumId int) []int {
 	key := forumActiveUsersKey(forumId)
 	cutoff := time.Now().Add(-forumActivityExpiry).Unix()
 	context := ctx.Request.Context()
@@ -83,9 +81,9 @@ func ForumGetActiveUsers(ctx *server.Context, forumId int) []int {
 	return userIds
 }
 
-// ForumAverageTopicViews returns the average view count across all
+// forumAverageTopicViews returns the average view count across all
 // topics, used to decide whether a topic is "hot".
-func ForumAverageTopicViews(ctx *server.Context) float64 {
+func forumAverageTopicViews(ctx *server.Context) float64 {
 	context := ctx.Request.Context()
 
 	// Check if value is cached first
@@ -110,8 +108,8 @@ func ForumAverageTopicViews(ctx *server.Context) float64 {
 	return average
 }
 
-// ForumTopicReadStatuses resolves whether each given topic has been read by the current visitor.
-func ForumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) map[int]bool {
+// forumTopicReadStatuses resolves whether each given topic has been read by the current visitor.
+func forumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) map[int]bool {
 	statuses := make(map[int]bool, len(topics))
 	if len(topics) == 0 {
 		return statuses
@@ -127,7 +125,7 @@ func ForumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) m
 		unique = append(unique, topic)
 	}
 
-	key := fmt.Sprintf("forums:topic_read_timestamps:%s", ForumSessionIdentifier(ctx))
+	key := fmt.Sprintf("forums:topic_read_timestamps:%s", forumSessionIdentifier(ctx))
 	context := ctx.Request.Context()
 
 	fields := make([]string, len(unique))
@@ -183,9 +181,9 @@ func ForumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) m
 	return statuses
 }
 
-// ForumUpdateTopicReadState marks a topic as read by the current visitor.
-func ForumUpdateTopicReadState(ctx *server.Context, topicId int) {
-	key := fmt.Sprintf("forums:topic_read_timestamps:%s", ForumSessionIdentifier(ctx))
+// forumUpdateTopicReadState marks a topic as read by the current visitor.
+func forumUpdateTopicReadState(ctx *server.Context, topicId int) {
+	key := fmt.Sprintf("forums:topic_read_timestamps:%s", forumSessionIdentifier(ctx))
 	now := strconv.FormatFloat(float64(time.Now().Unix()), 'f', -1, 64)
 
 	context := ctx.Request.Context()
@@ -197,8 +195,8 @@ func ForumUpdateTopicReadState(ctx *server.Context, topicId int) {
 	ctx.State.Redis.Expire(context, key, forumReadTimestampExpiry)
 }
 
-// ForumUpdateViews increments a topic's view counter.
-func ForumUpdateViews(ctx *server.Context, topicId int) {
+// forumUpdateViews increments a topic's view counter.
+func forumUpdateViews(ctx *server.Context, topicId int) {
 	key := fmt.Sprintf("forums:viewlock:%d:%s", topicId, ctx.IP())
 	context := ctx.Request.Context()
 

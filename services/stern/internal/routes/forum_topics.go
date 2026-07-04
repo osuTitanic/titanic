@@ -8,7 +8,6 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
-	"github.com/osuTitanic/titanic-go/services/stern/internal/helpers"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -67,9 +66,9 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	// Mark the topic as read & bump its view counter for this visitor
-	helpers.ForumUpdateTopicReadState(ctx, topic.Id)
-	helpers.ForumUpdateViews(ctx, topic.Id)
-	helpers.ForumMarkUserActive(ctx, topic.ForumId)
+	forumUpdateTopicReadState(ctx, topic.Id)
+	forumUpdateViews(ctx, topic.Id)
+	forumMarkUserActive(ctx, topic.ForumId)
 
 	// Resolve the very first post in the topic, used for meta tags
 	initialPost := new(schemas.ForumPost)
@@ -337,7 +336,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 	updateForumSubscription(ctx, topic.Id, shouldNotify)
 
 	// Broadcast to activity feed (discord, #announce, profile, ...)
-	go helpers.BroadcastForumTopicActivity(ctx, forum, topic, post)
+	go broadcastForumTopicActivity(ctx, forum, topic, post)
 
 	ctx.Logger.Info(
 		"Created a new forum topic",

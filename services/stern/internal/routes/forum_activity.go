@@ -1,4 +1,4 @@
-package helpers
+package routes
 
 import (
 	"github.com/osuTitanic/titanic-go/internal/activity"
@@ -7,7 +7,7 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 )
 
-func BroadcastForumTopicActivity(ctx *server.Context, forum *schemas.Forum, topic *schemas.ForumTopic, post *schemas.ForumPost) {
+func broadcastForumTopicActivity(ctx *server.Context, forum *schemas.Forum, topic *schemas.ForumTopic, post *schemas.ForumPost) {
 	err := activity.Submit(
 		ctx.State, ctx.CurrentUser.Id, nil,
 		constants.ActivityForumTopicCreated,
@@ -28,7 +28,7 @@ func BroadcastForumTopicActivity(ctx *server.Context, forum *schemas.Forum, topi
 	}
 }
 
-func BroadcastForumPostActivity(ctx *server.Context, topic *schemas.ForumTopic, post *schemas.ForumPost) {
+func broadcastForumPostActivity(ctx *server.Context, topic *schemas.ForumTopic, post *schemas.ForumPost) {
 	err := activity.Submit(
 		ctx.State, ctx.CurrentUser.Id, nil,
 		constants.ActivityForumPostCreated,

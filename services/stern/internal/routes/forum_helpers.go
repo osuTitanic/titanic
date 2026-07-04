@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/schemas"
-	"github.com/osuTitanic/titanic-go/services/stern/internal/helpers"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -59,7 +58,7 @@ func fetchForumParents(ctx *server.Context, forum *schemas.Forum) []*schemas.For
 }
 
 func fetchActiveForumUsers(ctx *server.Context, forumId int) []*templates.ForumActiveUser {
-	activeIds := helpers.ForumGetActiveUsers(ctx, forumId)
+	activeIds := forumGetActiveUsers(ctx, forumId)
 	if len(activeIds) == 0 {
 		return nil
 	}

@@ -10,7 +10,6 @@ import (
 
 	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
-	"github.com/osuTitanic/titanic-go/services/stern/internal/helpers"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -357,7 +356,7 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	}
 
 	// Broadcast to activity feed (discord, #announce, profile, ...)
-	go helpers.BroadcastForumPostActivity(ctx, topic, post)
+	go broadcastForumPostActivity(ctx, topic, post)
 
 	ctx.Logger.Info("Created a forum post", "user", ctx.CurrentUser.Id, "topic", topic.Id, "post", post.Id)
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))
