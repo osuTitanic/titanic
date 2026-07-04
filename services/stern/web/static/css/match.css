@@ -68,16 +68,32 @@
     color: white;
 }
 
-.dark-row {
-    background-color: #dad7fb;
-}
-
-.light-row {
-    background-color: #e7e4fc;
-}
-
 .fail {
     color: #888888
+}
+
+.fail-score {
+    font-weight: bold;
+}
+
+.fail-label {
+    color: #ff0000;
+}
+
+.event-aborted {
+    color: #ff0000;
+}
+
+.team-blue-text {
+    color: #0000ff;
+}
+
+.team-red-text {
+    color: #ff0000;
+}
+
+.winner {
+    font-weight: bold;
 }
 
 .beatmap-info {

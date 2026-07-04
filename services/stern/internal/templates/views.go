@@ -521,6 +521,71 @@ type ScoreView struct {
 	ScoreRank  int
 }
 
+type MatchView struct {
+	DefaultView
+	Match  *schemas.Match
+	Events []*MatchEventView
+}
+
+func (v MatchView) IsOngoing() bool {
+	// Check if match is still running on bancho right now
+	return v.Match.EndedAt == nil
+}
+
+type MatchEventView struct {
+	Time time.Time
+	Type constants.MatchEventType
+	User *MatchEventUser // affected user for join/leave/kick/host events
+	Game *MatchGameView  // populated for result events
+}
+
+type MatchEventUser struct {
+	Id   int
+	Name string
+}
+
+type MatchGameView struct {
+	BeatmapId   int
+	BeatmapText string
+	Mode        constants.Mode
+	TeamMode    constants.MatchTeamType
+	ScoringMode constants.MatchScoringType
+	Duration    string
+	Results     []*MatchGameResult
+	TeamResult  *MatchTeamResult // populated for team vs. games
+}
+
+type MatchGameResult struct {
+	Place     int
+	UserId    int
+	Username  string
+	Country   string
+	Team      constants.SlotTeam
+	Mods      constants.Mods
+	Score     int
+	Accuracy  float64
+	MaxCombo  int
+	Count300  int
+	Count100  int
+	Count50   int
+	CountMiss int
+	Failed    bool
+}
+
+type MatchTeamResult struct {
+	Blue   string // formatted team value, e.g. "1,234,567" or "98.32%"
+	Red    string
+	Winner constants.SlotTeam
+	Margin string // formatted difference, e.g. "12,345 points"
+}
+
+func (r MatchTeamResult) WinnerName() string {
+	if r.Winner == constants.SlotTeamNeutral {
+		return "Draw"
+	}
+	return r.Winner.String()
+}
+
 type RankingsView struct {
 	DefaultView
 	Pagination    PaginationView
