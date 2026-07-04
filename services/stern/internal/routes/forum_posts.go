@@ -243,7 +243,7 @@ func ForumDraftAction(ctx *server.Context) {
 		Content:   content,
 		Draft:     true,
 		Hidden:    true,
-		CreatedAt: time.Now().UTC(),
+		CreatedAt: time.Now(),
 	}
 	if err := ctx.State.ForumPosts.Create(draft); err != nil {
 		ctx.Logger.Error("Failed to save draft", "error", err, "topic", topic.Id)
@@ -292,11 +292,8 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		ForumId:   topic.ForumId,
 		UserId:    ctx.CurrentUser.Id,
 		Content:   content,
-		CreatedAt: time.Now().UTC(),
+		CreatedAt: time.Now(),
 	}
-	// TODO: we eventually want to migrate to timezone-aware timestamps
-	// 	     unfortunately i made the stupid decision to use non-timezoned timestamps
-	//       for literally everything inside the database, which sucks
 
 	wasChanged, iconUpdate := resolveTopicIconChange(ctx, topic)
 	if wasChanged {
@@ -314,7 +311,7 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	updateForumSubscription(ctx, topic.Id, notify)
 
 	// Assemble the topic updates caused by this reply
-	topicUpdates := &schemas.ForumTopic{Id: topic.Id, LastPostAt: time.Now().UTC()}
+	topicUpdates := &schemas.ForumTopic{Id: topic.Id, LastPostAt: time.Now()}
 	columns := []string{"last_post_at"}
 
 	if wasChanged {

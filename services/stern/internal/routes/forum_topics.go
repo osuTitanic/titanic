@@ -311,7 +311,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		Title:         title,
 		Pinned:        pinned,
 		Announcement:  announcement,
-		CreatedAt:     time.Now().UTC(),
+		CreatedAt:     time.Now(),
 	}
 	if err := ctx.State.ForumTopics.Create(topic); err != nil {
 		ctx.Logger.Error("Failed to create topic", "error", err, "forum", forum.Id)

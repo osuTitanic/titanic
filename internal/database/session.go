@@ -3,6 +3,8 @@ package database
 import (
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,7 +12,19 @@ import (
 
 // CreateSession opens a postgres connection using values from `config.Config`
 func CreateSession(cfg *config.Config) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(cfg.PostgresDSN()), &gorm.Config{
+	connConfig, err := pgx.ParseConfig(cfg.PostgresDSN())
+	if err != nil {
+		return nil, err
+	}
+
+	// Open the pool through the pgx stdlib driver, so the UTC timestamp
+	// codec can be registered on every new connection
+	pool := stdlib.OpenDB(
+		*connConfig,
+		stdlib.OptionAfterConnect(registerUTCTimestampCodec),
+	)
+
+	db, err := gorm.Open(postgres.New(postgres.Config{Conn: pool}), &gorm.Config{
 		Logger:      NewGormLogger(),
 		PrepareStmt: true, // TODO: Benchmark this change to see if it actually improves performance
 	})
