@@ -61,14 +61,28 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	}
 
 	return templates.DefaultView{
-		Stats:       buildStatistics(ctx.State),
-		Query:       ctx.Request.URL.Query(),
-		Config:      ctx.State.Config,
-		CSRFToken:   ctx.CSRFToken,
-		CurrentUser: ctx.CurrentUser,
-		CurrentPath: currentPath,
-		CurrentURI:  currentURI,
+		Stats:             buildStatistics(ctx.State),
+		Query:             ctx.Request.URL.Query(),
+		Config:            ctx.State.Config,
+		CSRFToken:         ctx.CSRFToken,
+		CurrentUser:       ctx.CurrentUser,
+		CurrentPath:       currentPath,
+		CurrentURI:        currentURI,
+		NotificationCount: fetchNotificationCount(ctx),
 	}
+}
+
+func fetchNotificationCount(ctx *server.Context) int {
+	if ctx.CurrentUser == nil {
+		return 0
+	}
+
+	count, err := ctx.State.Notifications.CountUnreadByUserId(ctx.CurrentUser.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch notification count", "error", err)
+		return 0
+	}
+	return count
 }
 
 func buildDefaultViewWithPermissions(ctx *server.Context) templates.DefaultView {

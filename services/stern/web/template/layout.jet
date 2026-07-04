@@ -11,7 +11,6 @@
     <meta name="theme-color" content="rgba(96, 60, 186, 1)">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/logo/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="/images/logo/icon-192.png">
-    {* TODO: add manifest *}
 
     <link rel="dns-prefetch" href="{{ .Config.ApiBaseUrl() }}">
     <link rel="preconnect" href="{{ .Config.ApiBaseUrl() }}" crossorigin>
@@ -43,7 +42,6 @@
 </head>
 <body id="titanic">
     {* TODO: add the restricted account banner *}
-    {* TODO: add the seasonal snow canvas *}
     <div class="main">
         <a id="top_support" class="top_button" href="https://ko-fi.com/lekuru"></a>
         <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
@@ -53,7 +51,6 @@
             {* TODO: add IE-specific raster logo fallback *}
         </a>
         <div class="nav">
-            {* TODO: extract this navigation into partial *}
             <ul class="nav-list">
                 <li class="nav-element">
                     <a href="/">Home</a>
@@ -137,8 +134,11 @@
                         <a href="/account/"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
                         <a href="/account/#notifications">
                             <i class="icon-bell-alt" style="color: #808080;"></i>
-                            No notifications
-                            {* TODO: Notifications *}
+                            {{ if .NotificationCount > 0 }}
+                                {{ .NotificationCount }} notification{{ if .NotificationCount != 1 }}s{{ end }}
+                            {{ else }}
+                                No notifications
+                            {{ end }}
                         </a>
                         <a href="#" onclick="document.getElementById('logout-form').submit()" class="nav-login" id="logout-text">
                             <i class="icon-power-off" style="color: #808080;"></i> Logout
@@ -203,7 +203,6 @@
             </div>
             <div class="gradient"></div>
             <script src="/js/editor.js" fetchpriority="low" defer></script>
-            {* TODO: Add the seasonal snow script *}
         </div>
     </div>
 </body>

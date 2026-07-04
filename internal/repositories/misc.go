@@ -51,6 +51,15 @@ func (r *NotificationRepository) CountByUserId(userId int) (int, error) {
 	return int(count), err
 }
 
+func (r *NotificationRepository) CountUnreadByUserId(userId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Notification{}).
+		Where("user_id = ?", userId).
+		Where("read = ?", false).
+		Count(&count).Error
+	return int(count), err
+}
+
 func (r *NotificationRepository) DeleteByType(userId int, notificationType constants.NotificationType) (int64, error) {
 	result := r.db.Where("user_id = ?", userId).
 		Where("type = ?", notificationType).

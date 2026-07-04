@@ -23,14 +23,15 @@ func (stats *Statistics) OnlineUsers() int {
 }
 
 type DefaultView struct {
-	Query       url.Values
-	Config      *config.Config
-	CurrentUser *schemas.User
-	Permissions *permissions.Set
-	Stats       *Statistics
-	CSRFToken   string
-	CurrentPath string
-	CurrentURI  string
+	Query             url.Values
+	Config            *config.Config
+	CurrentUser       *schemas.User
+	Permissions       *permissions.Set
+	Stats             *Statistics
+	CSRFToken         string
+	CurrentPath       string
+	CurrentURI        string
+	NotificationCount int
 }
 
 func (v DefaultView) IsAuthenticated() bool {
