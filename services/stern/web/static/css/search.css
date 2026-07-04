@@ -305,3 +305,21 @@ body {
     margin-top: 10px;
     margin-bottom: 5px;
 }
+
+.ie6 .beatmap-search-container {
+    display: block;
+}
+
+.ie6 .beatmapset {
+    width: 400px;
+}
+
+.ie6 .beatmap-info {
+    width: 265px;
+}
+
+.ie6 .beatmapset .hidden-elements {
+    width: 100px;
+    margin: 0;
+    padding: 0;
+}
