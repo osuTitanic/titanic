@@ -377,7 +377,8 @@ function updatePerformanceGraphYAxis(chart, range) {
 }
 
 function loadPerformanceGraph(userId, mode) {
-    if (typeof nv === "undefined" || !nv.addGraph) return;
+    if (typeof nv === "undefined" || nv === undefined || !nv.addGraph) return;
+    if (typeof d3 === "undefined" || d3 === undefined || !d3.selectAll) return;
     if (rankGraphLoaded) return;
     rankGraphLoaded = true;
 
