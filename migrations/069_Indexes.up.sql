@@ -16,6 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_nominations_set_id ON beatmap_nominations USING b
 CREATE INDEX IF NOT EXISTS idx_beatmaps_difficulty ON beatmaps USING btree (diff DESC);
 CREATE INDEX IF NOT EXISTS idx_beatmaps_id_desc ON beatmaps USING btree (id DESC);
 CREATE INDEX IF NOT EXISTS idx_beatmaps_mode ON beatmaps USING btree (mode);
+CREATE INDEX IF NOT EXISTS idx_beatmaps_mode_status ON beatmaps USING btree (mode, status);
 CREATE INDEX IF NOT EXISTS idx_beatmaps_playcount_desc ON beatmaps USING btree (playcount DESC);
 CREATE INDEX IF NOT EXISTS idx_beatmaps_set_id_playcount_include ON beatmaps USING btree (set_id) INCLUDE (playcount);
 CREATE INDEX IF NOT EXISTS idx_beatmaps_set_id_playcount_with_lb ON beatmaps USING btree (set_id, playcount DESC) WHERE (status > 0);

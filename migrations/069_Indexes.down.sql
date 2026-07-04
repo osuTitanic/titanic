@@ -13,6 +13,7 @@ DROP INDEX IF EXISTS idx_nominations_set_id;
 DROP INDEX IF EXISTS idx_beatmaps_difficulty;
 DROP INDEX IF EXISTS idx_beatmaps_id_desc;
 DROP INDEX IF EXISTS idx_beatmaps_mode;
+DROP INDEX IF EXISTS idx_beatmaps_mode_status;
 DROP INDEX IF EXISTS idx_beatmaps_playcount_desc;
 DROP INDEX IF EXISTS idx_beatmaps_set_id_playcount_include;
 DROP INDEX IF EXISTS idx_beatmaps_set_id_playcount_with_lb;
