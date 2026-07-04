@@ -75,6 +75,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /forum/ucp.php", routes.ForumControlPanelRedirect)
 	server.Handle("GET /forum/index.php", routes.ForumIndexRedirect)
 	server.Handle("GET /s/{id}", routes.BeatmapsetRedirect)
+	server.Handle("GET /mp/{id}", routes.Match)
+	server.Handle("GET /mp/{id}/{$}", routes.Match)
 	server.Handle("GET /b/{id}", routes.Beatmap)
 	server.Handle("GET /scores/{id}", routes.Score)
 	server.Handle("GET /scores/{id}/{$}", routes.Score)

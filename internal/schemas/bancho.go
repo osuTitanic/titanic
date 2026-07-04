@@ -112,35 +112,6 @@ func (HardwareVerified) TableName() string {
 	return "clients_verified"
 }
 
-type Match struct {
-	Id        int        `gorm:"column:id;primaryKey;autoIncrement"`
-	BanchoId  int        `gorm:"column:bancho_id"`
-	Name      string     `gorm:"column:name"`
-	CreatorId int        `gorm:"column:creator_id"`
-	CreatedAt time.Time  `gorm:"column:created_at"`
-	EndedAt   *time.Time `gorm:"column:ended_at"`
-
-	Creator *User         `gorm:"foreignKey:CreatorId;references:Id"`
-	Events  []*MatchEvent `gorm:"foreignKey:MatchId;references:Id"`
-}
-
-func (Match) TableName() string {
-	return "mp_matches"
-}
-
-type MatchEvent struct {
-	MatchId int             `gorm:"column:match_id;primaryKey"`
-	Time    time.Time       `gorm:"column:time;primaryKey;autoCreateTime"`
-	Type    int             `gorm:"column:type"`
-	Data    json.RawMessage `gorm:"column:data;type:jsonb"`
-
-	Match *Match `gorm:"foreignKey:MatchId;references:Id"`
-}
-
-func (MatchEvent) TableName() string {
-	return "mp_events"
-}
-
 type BanchoActivity struct {
 	Time     time.Time `gorm:"column:time;primaryKey;autoCreateTime"`
 	OsuCount int       `gorm:"column:osu_count;default:0"`
