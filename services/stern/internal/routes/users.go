@@ -130,7 +130,7 @@ func UserActivityPartial(ctx *server.Context) {
 
 	mode := resolveMode(ctx, user.PreferredMode)
 	offset := 0
-	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("offset")); err == nil && parsed > 0 {
+	if parsed, err := ctx.QueryValueInt("offset"); err == nil && parsed > 0 {
 		offset = parsed
 	}
 
@@ -196,7 +196,7 @@ func UserScoresPartial(ctx *server.Context) {
 		return
 	}
 
-	section := ctx.Request.URL.Query().Get("section")
+	section := ctx.QueryValue("section")
 	if section != "pinned" && section != "best" && section != "first" {
 		NotFound(ctx)
 		return
@@ -205,7 +205,7 @@ func UserScoresPartial(ctx *server.Context) {
 	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
 
 	offset := 0
-	if parsed, err := strconv.Atoi(ctx.Request.URL.Query().Get("offset")); err == nil && parsed > 0 {
+	if parsed, err := ctx.QueryValueInt("offset"); err == nil && parsed > 0 {
 		offset = parsed
 	}
 
@@ -593,7 +593,7 @@ func buildAchievementCategories(unlocked []*schemas.Achievement) []*templates.Us
 }
 
 func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bool) {
-	id, err := strconv.Atoi(ctx.PathValue("id"))
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return nil, false
@@ -663,13 +663,13 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 
 func resolveUserByName(ctx *server.Context, query string) {
 	// Try to find the user by their current name first
-	if user, err := ctx.State.Repositories.Users.ByNameCaseInsensitive(query); err == nil && user != nil {
+	if user, err := ctx.State.Repositories.Users.ByNameExtended(query); err == nil && user != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", user.Id))
 		return
 	}
 
 	// Search the name history as a backup
-	if name, err := ctx.State.Repositories.Names.ByName(query); err == nil && name != nil {
+	if name, err := ctx.State.Repositories.Names.ByNameExtended(query); err == nil && name != nil {
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", name.UserId))
 		return
 	}

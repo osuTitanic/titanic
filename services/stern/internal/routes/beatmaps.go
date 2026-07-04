@@ -22,8 +22,7 @@ func BeatmapRedirect(ctx *server.Context) {
 }
 
 func BeatmapsetRedirect(ctx *server.Context) {
-	id := ctx.PathValue("id")
-	idInt, err := strconv.Atoi(id)
+	idInt, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
@@ -61,8 +60,7 @@ func BeatmapsetRedirect(ctx *server.Context) {
 }
 
 func Beatmap(ctx *server.Context) {
-	id := ctx.PathValue("id")
-	idInt, err := strconv.Atoi(id)
+	idInt, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
@@ -268,11 +266,8 @@ func fetchUserFriends(ctx *server.Context) (friends map[int]bool, err error) {
 
 func resolveMode(ctx *server.Context, fallback constants.Mode) constants.Mode {
 	mode := fallback
-	modeQuery := ctx.Request.URL.Query().Get("mode")
-	if modeQuery != "" {
-		if parsed, err := strconv.Atoi(modeQuery); err == nil {
-			mode = constants.Mode(parsed)
-		}
+	if parsed, err := ctx.QueryValueInt("mode"); err == nil {
+		mode = constants.Mode(parsed)
 	}
 
 	if mode < constants.ModeOsu || mode > constants.ModeMania {
@@ -282,7 +277,7 @@ func resolveMode(ctx *server.Context, fallback constants.Mode) constants.Mode {
 }
 
 func resolveMods(ctx *server.Context) (*constants.Mods, string) {
-	mods := ctx.Request.URL.Query().Get("mods")
+	mods := ctx.QueryValue("mods")
 	mods = strings.TrimPrefix(strings.TrimSpace(mods), "+")
 	if mods == "" {
 		return nil, ""

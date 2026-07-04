@@ -18,7 +18,7 @@ func Download(ctx *server.Context) {
 		return
 	}
 
-	selectedCategory := ctx.Request.URL.Query().Get("category")
+	selectedCategory := ctx.QueryValue("category")
 	if selectedCategory == "" {
 		selectedCategory = resolveDefaultCategory(releases)
 	}

@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"strconv"
-
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
@@ -14,7 +12,7 @@ func BeatmapPacks(ctx *server.Context) {
 		return
 	}
 
-	category := ctx.Request.URL.Query().Get("category")
+	category := ctx.QueryValue("category")
 	if category == "" && len(categories) > 0 {
 		category = categories[0]
 	}
@@ -35,18 +33,13 @@ func BeatmapPacks(ctx *server.Context) {
 }
 
 func BeatmapPackInfo(ctx *server.Context) {
-	id := ctx.PathValue("id")
-	if id == "" {
-		NotFound(ctx)
-		return
-	}
-	idInt, err := strconv.Atoi(id)
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
 	}
 
-	pack, err := ctx.State.Repositories.BeatmapPacks.FetchById(idInt, "Creator", "Entries", "Entries.Beatmapset")
+	pack, err := ctx.State.Repositories.BeatmapPacks.FetchById(id, "Creator", "Entries", "Entries.Beatmapset")
 	if err != nil {
 		InternalServerError(ctx)
 		return

@@ -3,6 +3,8 @@ package schemas
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/osuTitanic/titanic-go/internal/constants"
 )
 
 type Login struct {
@@ -74,7 +76,7 @@ type Activity struct {
 	Id     int             `gorm:"column:id;primaryKey;autoIncrement"`
 	UserId int             `gorm:"column:user_id"`
 	Time   time.Time       `gorm:"column:time;autoCreateTime"`
-	Mode   *int            `gorm:"column:mode"`
+	Mode   *constants.Mode `gorm:"column:mode"`
 	Type   int             `gorm:"column:type;default:0"`
 	Data   json.RawMessage `gorm:"column:data;type:jsonb;default:'{}'"`
 	Hidden bool            `gorm:"column:hidden;default:false"`

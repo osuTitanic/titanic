@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -96,6 +97,17 @@ func (ctx *Context) Country() string {
 	return country
 }
 
+func (ctx *Context) RequireLogin() bool {
+	if ctx.IsAuthenticated() {
+		return true
+	}
+	ctx.Redirect(
+		http.StatusSeeOther,
+		"/account/login?redirect="+ctx.Request.URL.RequestURI(),
+	)
+	return false
+}
+
 func (ctx *Context) HasPermission(permission string) bool {
 	return ctx.Permissions().Has(permission)
 }
@@ -125,6 +137,55 @@ func (ctx *Context) Permissions() *permissions.Set {
 // e.g. if the route is "/users/{id}", you can get the "id" variable by calling ctx.PathValue("id").
 func (ctx *Context) PathValue(name string) string {
 	return ctx.Request.PathValue(name)
+}
+
+// PathValueInt does the same thing as PathValue, but tries to parse the query as an integer.
+func (ctx *Context) PathValueInt(name string) (int, error) {
+	pathValue := strings.TrimSpace(ctx.PathValue(name))
+	return strconv.Atoi(pathValue)
+}
+
+// PathValueInt64 returns a path variable as an int64.
+func (ctx *Context) PathValueInt64(name string) (int64, error) {
+	pathValue := strings.TrimSpace(ctx.PathValue(name))
+	return strconv.ParseInt(pathValue, 10, 64)
+}
+
+// QueryValue is a helper function to get query parameters from the request context.
+func (ctx *Context) QueryValue(name string) string {
+	return ctx.Request.URL.Query().Get(name)
+}
+
+// QueryValueInt returns a query parameter as an integer.
+func (ctx *Context) QueryValueInt(name string) (int, error) {
+	queryValue := strings.TrimSpace(ctx.QueryValue(name))
+	return strconv.Atoi(queryValue)
+}
+
+// QueryValueInt64 returns a query parameter as an int64.
+func (ctx *Context) QueryValueInt64(name string) (int64, error) {
+	queryValue := strings.TrimSpace(ctx.QueryValue(name))
+	return strconv.ParseInt(queryValue, 10, 64)
+}
+
+// QueryValueDefault attempts to get a query parameter from
+// the request while falling back to the given if not present.
+func (ctx *Context) QueryValueDefault(name, fallback string) string {
+	if queryValue := ctx.QueryValue(name); queryValue != "" {
+		return queryValue
+	}
+	return fallback
+}
+
+// FormValue is a helper function to get form values from the request body.
+func (ctx *Context) FormValue(name string) string {
+	return ctx.Request.FormValue(name)
+}
+
+// FormValueInt returns a form value as an integer.
+func (ctx *Context) FormValueInt(name string) (int, error) {
+	formValue := strings.TrimSpace(ctx.FormValue(name))
+	return strconv.Atoi(formValue)
 }
 
 func (ctx *Context) Redirect(status int, location string) {

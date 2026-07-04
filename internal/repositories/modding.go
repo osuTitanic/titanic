@@ -44,3 +44,16 @@ func (r *BeatmapModdingRepository) FetchRangeByUser(userId int, limit, offset in
 		Find(&entries).Error
 	return entries, err
 }
+
+func (r *BeatmapModdingRepository) FetchByPosts(postIds []int, preload ...string) ([]*schemas.BeatmapModding, error) {
+	if len(postIds) == 0 {
+		return []*schemas.BeatmapModding{}, nil
+	}
+
+	var entries []*schemas.BeatmapModding
+	err := Preloaded(r.db, preload).
+		Where("post_id IN ?", postIds).
+		Order("time DESC, id DESC").
+		Find(&entries).Error
+	return entries, err
+}

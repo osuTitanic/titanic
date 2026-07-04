@@ -628,33 +628,6 @@ function applyCsrfToForms() {
     }
 }
 
-function reloadCsrfBeforeSubmit(formElement) {
-    var submitHandler = function (e) {
-        e = e || window.event;
-        if (e.preventDefault) {
-            e.preventDefault();
-        } else {
-            e.returnValue = false;
-        }
-        reloadCsrfToken(function () {
-            HTMLFormElement.prototype.submit.call(formElement);
-        });
-    };
-
-    $(formElement).on("submit", submitHandler);
-}
-
-function applyCsrfUpdaterToForms() {
-    var forms = document.getElementsByTagName("form");
-
-    for (var i = 0; i < forms.length; i++) {
-        var elements = $(forms[i]).find('input[name="csrf_token"]');
-        if (elements.length > 0) {
-            reloadCsrfBeforeSubmit(forms[i]);
-        }
-    }
-}
-
 function renderTimeagoElements() {
     var times = [];
     if (document.getElementsByClassName) {
@@ -684,10 +657,6 @@ function jumpToPlayer() {
 $(document).ready(function (e) {
     pageLoaded = true;
     renderTimeagoElements();
-
-    if (isLoggedIn()) {
-        applyCsrfUpdaterToForms();
-    }
 });
 
 $(window).on("beforeunload", function (e) {

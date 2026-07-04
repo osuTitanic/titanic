@@ -37,6 +37,20 @@ func (v DefaultView) IsAuthenticated() bool {
 	return v.CurrentUser != nil
 }
 
+func (v DefaultView) CurrentUserId() int {
+	if v.CurrentUser == nil {
+		return 0
+	}
+	return v.CurrentUser.Id
+}
+
+type ErrorMessageView struct {
+	DefaultView
+	Title   string
+	Heading string
+	Message string
+}
+
 type HomeView struct {
 	DefaultView
 	News               []*schemas.ForumPost
@@ -181,7 +195,7 @@ type UserKudosuEntry struct {
 	ActorName   string
 	OtherId     int
 	OtherName   string
-	PostId      int
+	PostId      int64
 	TopicTitle  string
 }
 
@@ -224,6 +238,218 @@ type GroupView struct {
 	DefaultView
 	Group *schemas.Group
 	Users []*schemas.User
+}
+
+type ForumHomeView struct {
+	DefaultView
+	Sections []*ForumSection
+}
+
+type ForumSection struct {
+	Forum     *schemas.Forum
+	Subforums []*ForumSubforum
+}
+
+type ForumSubforum struct {
+	Forum         *schemas.Forum
+	Recent        *schemas.ForumPost
+	CurrentUserId int
+}
+
+type ForumView struct {
+	DefaultView
+	Forum          *schemas.Forum
+	Parents        []*schemas.Forum
+	Subforums      []*schemas.Forum
+	SubforumRecent map[int]*schemas.ForumPost
+	Announcements  []*ForumTopicPreview
+	Topics         []*ForumTopicPreview
+	ActiveUsers    []*ForumActiveUser
+	HasCustomIcons bool
+	TopicCount     int
+	CanCreateTopic bool
+	Pagination     PaginationView
+}
+
+func (v ForumView) HasTopics() bool {
+	return len(v.Announcements) > 0 || len(v.Topics) > 0
+}
+
+type ForumTopicPreview struct {
+	Topic          *schemas.ForumTopic
+	LastPost       *schemas.ForumPost
+	StatusIcon     string
+	PageCount      int
+	Index          int
+	ForumId        int
+	HasCustomIcons bool
+	CurrentUserId  int
+}
+
+func (p ForumTopicPreview) PreviewTruncated() bool {
+	// This will determine if we show the
+	// ellipsis (...) after the first page
+	return p.PageCount > 4
+}
+
+func (p ForumTopicPreview) PreviewPages() []int {
+	if p.PageCount <= 4 {
+		// For shorter topics, show all pages
+		// e.g. [1, 2, 3, 4]
+		pages := make([]int, 0, p.PageCount)
+		for page := 1; page <= p.PageCount; page++ {
+			pages = append(pages, page)
+		}
+		return pages
+	}
+
+	// For longer topics, show the first page and the last three
+	// e.g. if a topic has 10 pages, this will return [1, 8, 9, 10]
+	return []int{1, p.PageCount - 2, p.PageCount - 1, p.PageCount}
+}
+
+type ForumActiveUser struct {
+	Id   int
+	Name string
+}
+
+type ForumTopicView struct {
+	DefaultView
+	Forum           *schemas.Forum
+	Topic           *schemas.ForumTopic
+	Parents         []*schemas.Forum
+	Posts           []*ForumPostPreview
+	Pagination      PaginationView
+	ActiveUsers     []*ForumActiveUser
+	Beatmapset      *schemas.Beatmapset
+	PostCount       int
+	IsSubscribed    bool
+	IsBookmarked    bool
+	CanCreatePosts  bool
+	CanReply        bool
+	ReplyLocked     bool
+	MetaDescription string
+	MetaImage       string
+}
+
+func (v ForumTopicView) TopicLocked() bool {
+	return v.Topic.LockedAt != nil
+}
+
+func (v ForumTopicView) HasBeatmapset() bool {
+	return v.Beatmapset != nil
+}
+
+type ForumPostPreview struct {
+	Post        *schemas.ForumPost
+	Icon        *schemas.ForumIcon
+	AuthorTitle string
+	PostCount   int
+	CanEdit     bool
+	CanDelete   bool
+	CanQuote    bool
+
+	BeatmapsetId    int
+	ShowKudosuBox   bool
+	CanManageKudosu bool
+	CanResetKudosu  bool
+	CanRevokeKudosu bool
+	KudosuTotal     int
+	LatestKudosu    *schemas.BeatmapModding
+}
+
+func (p ForumPostPreview) HasKudosuExcludedIcon() bool {
+	if p.Icon == nil {
+		return false
+	}
+
+	// Exclude kudosu awards for bubble / ranking / qualification
+	switch p.Icon.Id {
+	case constants.ForumIconHeart, constants.ForumIconBubble, constants.ForumIconFire:
+		return true
+	default:
+		return false
+	}
+}
+
+func (p ForumPostPreview) KudosuStatusColor() string {
+	switch {
+	case p.KudosuTotal > 0:
+		return "green"
+	case p.KudosuTotal == 0:
+		return "black"
+	default:
+		return "red"
+	}
+}
+
+func (p ForumPostPreview) AbsoluteKudosuTotal() int {
+	if p.KudosuTotal < 0 {
+		return -p.KudosuTotal
+	}
+	return p.KudosuTotal
+}
+
+type ForumCreateTopicView struct {
+	DefaultView
+	Forum   *schemas.Forum
+	Parents []*schemas.Forum
+	Editor  ForumEditorContext
+}
+
+type ForumPostEditorView struct {
+	DefaultView
+	Forum    *schemas.Forum
+	Topic    *schemas.ForumTopic
+	Parents  []*schemas.Forum
+	Editor   ForumEditorContext
+	Action   string
+	ActionId int64
+}
+
+type ForumEditorIcon struct {
+	Id       int
+	Name     string
+	Location string
+	Selected bool
+}
+
+// this is a very verbose struct. i'll have to see if it can be simplified later, but for now it works
+// as i wanted to outline the editor template first, before writing any handler code
+
+type ForumEditorContext struct {
+	Content    string
+	SubmitText string
+	CancelUrl  string // if empty -> no cancel link
+	DraftUrl   string // if empty -> no save-draft button
+	FocusBody  bool   // autofocus the body instead of the subject
+
+	ShowSubject bool
+	Subject     string
+
+	ShowIcons        bool
+	NoneIconSelected bool
+	Icons            []*ForumEditorIcon
+
+	ShowControls    bool
+	ShowStatusInput bool
+	StatusText      string
+	NotifyChecked   bool
+	ShowLockTopic   bool
+	TopicLocked     bool
+	ShowLockPost    bool
+	PostLocked      bool
+	ShowTopicTypes  bool
+	TopicType       string // "global" | "pinned" | "announcement"
+
+	ShowKudosuHint     bool
+	KudosuReward       int
+	ShowKudosuIconNote bool
+	BeatmapsetId       int
+}
+
+func (v ForumEditorContext) HasContent() bool {
+	return v.Content != ""
 }
 
 type DownloadView struct {

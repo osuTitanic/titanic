@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 
 	"github.com/osuTitanic/titanic-go/internal/discord"
@@ -55,7 +56,7 @@ func checkStream(app *state.State, logger *slog.Logger, stream string) ([]*schem
 	if err != nil {
 		return nil, err
 	}
-	results := append(resultsWindows, resultsLinux...)
+	results := slices.Concat(resultsWindows, resultsLinux)
 	resultsNew := make([]*schemas.ReleaseFiles, 0)
 
 	for _, file := range results {

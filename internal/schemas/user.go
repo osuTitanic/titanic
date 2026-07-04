@@ -99,6 +99,13 @@ func (user *User) UserpageText() string {
 	return *user.Userpage
 }
 
+func (user *User) SignatureText() string {
+	if user.Signature == nil {
+		return ""
+	}
+	return *user.Signature
+}
+
 // DisplayColor returns the username color derived from the user's groups.
 func (user *User) DisplayColor() string {
 	for _, group := range user.SortedGroups() {

@@ -11,7 +11,7 @@ import (
 )
 
 func Screenshot(ctx *server.Context) {
-	id, err := strconv.Atoi(ctx.PathValue("id"))
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -61,7 +61,7 @@ func Screenshot(ctx *server.Context) {
 }
 
 func ScreenshotRedirect(ctx *server.Context) {
-	id, err := strconv.Atoi(ctx.PathValue("id"))
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return

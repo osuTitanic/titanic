@@ -46,6 +46,25 @@ func (r *UserRepository) ByNameCaseInsensitive(name string, preload ...string) (
 	return LookupResult(&user, err)
 }
 
+func (r *UserRepository) ByNameExtended(query string, preload ...string) (*schemas.User, error) {
+	var user schemas.User
+	err := Preloaded(r.db, preload).
+		Where(
+			"LOWER(name) = ? OR name ILIKE ?",
+			strings.ToLower(query),
+			"%"+query+"%",
+		).
+		Order(
+			gorm.Expr(
+				"CASE WHEN LOWER(name) = ? THEN 0 ELSE 1 END",
+				strings.ToLower(query),
+			),
+		).
+		Order("LENGTH(name) ASC").
+		First(&user).Error
+	return LookupResult(&user, err)
+}
+
 func (r *UserRepository) BySafeName(safeName string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
 	err := Preloaded(r.db, preload).Where("safe_name = ?", safeName).First(&user).Error

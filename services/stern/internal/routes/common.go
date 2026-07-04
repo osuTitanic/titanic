@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,6 +12,17 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
+
+// RenderErrorPage renders a generic message page for errors
+func RenderErrorPage(ctx *server.Context, status int, heading, message string) {
+	view := templates.ErrorMessageView{
+		DefaultView: buildDefaultView(ctx),
+		Title:       fmt.Sprintf("%s - Titanic!", heading),
+		Heading:     heading,
+		Message:     message,
+	}
+	ctx.RenderTemplate(status, "errors/generic", view)
+}
 
 func NotFound(ctx *server.Context) {
 	ctx.RenderTemplate(

@@ -1,16 +1,12 @@
 package routes
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
 
 func Group(ctx *server.Context) {
-	groupIdString := strings.TrimSpace(ctx.PathValue("id"))
-	groupId, err := strconv.Atoi(groupIdString)
+	groupId, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return

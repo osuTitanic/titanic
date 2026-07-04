@@ -39,6 +39,18 @@ func (r *NameRepository) ByName(value string, preload ...string) (*schemas.Name,
 	return LookupResult(&name, err)
 }
 
+func (r *NameRepository) ByNameExtended(query string, preload ...string) (*schemas.Name, error) {
+	var name *schemas.Name
+	err := Preloaded(r.db, preload).
+		Where(
+			"name ILIKE ? OR name ILIKE ?",
+			query, "%"+query+"%",
+		).
+		Order("LENGTH(name) ASC").
+		First(&name).Error
+	return LookupResult(name, err)
+}
+
 func (r *NameRepository) ByReservedNameCaseInsensitive(value string, preload ...string) (*schemas.Name, error) {
 	var name schemas.Name
 	err := Preloaded(r.db, preload).

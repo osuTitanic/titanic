@@ -3,6 +3,7 @@ package repositories
 import (
 	"errors"
 
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -25,6 +26,41 @@ func (r *ForumRepository) Delete(forum *schemas.Forum) error {
 
 func (r *ForumRepository) Update(updates *schemas.Forum, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *ForumRepository) FetchMainForums(preload ...string) ([]*schemas.Forum, error) {
+	var forums []*schemas.Forum
+	err := Preloaded(r.db, preload).
+		Where("parent_id IS NULL").
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Find(&forums).Error
+	return forums, err
+}
+
+func (r *ForumRepository) FetchSubForums(parentId int, preload ...string) ([]*schemas.Forum, error) {
+	var forums []*schemas.Forum
+	err := Preloaded(r.db, preload).
+		Where("parent_id = ?", parentId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Find(&forums).Error
+	return forums, err
+}
+
+func (r *ForumRepository) ById(id int, preload ...string) (*schemas.Forum, error) {
+	var forum schemas.Forum
+	err := Preloaded(r.db, preload).Where("id = ?", id).First(&forum).Error
+	return LookupResult(&forum, err)
+}
+
+func (r *ForumRepository) FetchTopicCount(forumId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumTopic{}).
+		Where("forum_id = ?", forumId).
+		Where("hidden = ?", false).
+		Count(&count).Error
+	return int(count), err
 }
 
 type ForumTopicRepository struct {
@@ -50,10 +86,7 @@ func (r *ForumTopicRepository) Update(updates *schemas.ForumTopic, columns ...st
 func (r *ForumTopicRepository) ById(id int, preload ...string) (*schemas.ForumTopic, error) {
 	var topic schemas.ForumTopic
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&topic).Error
-	if err != nil {
-		return nil, err
-	}
-	return &topic, nil
+	return LookupResult(&topic, err)
 }
 
 func (r *ForumTopicRepository) ManyById(ids []int, preload ...string) ([]*schemas.ForumTopic, error) {
@@ -77,6 +110,59 @@ func (r *ForumTopicRepository) FetchAnnouncements(limit int, offset int, preload
 		Limit(limit).
 		Find(&topics).Error
 	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchRecentByLastPost(forumId int, limit int, offset int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("hidden = ?", false).
+		Order("last_post_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchPinnedByForumId(forumId int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("pinned = ?", true).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchAnnouncementsByForumId(forumId int, limit int, offset int, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	err := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("announcement = ?", true).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) AverageViews() (float64, error) {
+	var average *float64
+	err := r.db.Model(&schemas.ForumTopic{}).
+		Select("AVG(views)").
+		Scan(&average).Error
+	if err != nil || average == nil {
+		return 0, err
+	}
+	return *average, nil
+}
+
+func (r *ForumTopicRepository) IncrementViews(topicId int) error {
+	return r.db.Model(&schemas.ForumTopic{}).
+		Where("id = ?", topicId).
+		UpdateColumn("views", gorm.Expr("views + 1")).Error
 }
 
 type ForumPostRepository struct {
@@ -122,6 +208,117 @@ func (r *ForumPostRepository) CountByUserId(userId int) (int, error) {
 	return int(count), err
 }
 
+func (r *ForumPostRepository) CountByTopic(topicId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumPost{}).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Count(&count).Error
+	return int(count), err
+}
+
+func (r *ForumPostRepository) FetchRangeByTopic(topicId int, limit int, offset int, preload ...string) ([]*schemas.ForumPost, error) {
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Offset(offset).
+		Limit(limit).
+		Find(&posts).Error
+	return posts, err
+}
+
+func (r *ForumPostRepository) FetchInitialByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchLastByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchLastByUserInTopic(topicId int, userId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("user_id = ?", userId).
+		Where("hidden = ?", false).
+		Order("id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchLastBatPost(topicId int, preload ...string) (*schemas.ForumPost, error) {
+	var post schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Joins("JOIN groups_entries ON groups_entries.user_id = forum_posts.user_id").
+		Where("forum_posts.topic_id = ?", topicId).
+		Where("forum_posts.hidden = ?", false).
+		Where("groups_entries.group_id = ?", constants.GroupBAT).
+		Order("forum_posts.id DESC").
+		First(&post).Error
+	return LookupResult(&post, err)
+}
+
+func (r *ForumPostRepository) FetchDrafts(userId int, topicId int, preload ...string) ([]*schemas.ForumPost, error) {
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Where("user_id = ?", userId).
+		Where("draft = ?", true).
+		Order("id DESC").
+		Find(&posts).Error
+	return posts, err
+}
+
+func (r *ForumPostRepository) CountBeforePost(postId int64, topicId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumPost{}).
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Where("id < ?", postId).
+		Count(&count).Error
+	return int(count), err
+}
+
+func (r *ForumPostRepository) PostCountsByUsers(userIds []int) (map[int]int, error) {
+	counts := make(map[int]int, len(userIds))
+	if len(userIds) == 0 {
+		return counts, nil
+	}
+
+	type row struct {
+		UserId int
+		Count  int
+	}
+	var rows []row
+	err := r.db.Model(&schemas.ForumPost{}).
+		Select("user_id, COUNT(id) AS count").
+		Where("user_id IN ?", userIds).
+		Group("user_id").
+		Scan(&rows).Error
+	if err != nil {
+		return counts, err
+	}
+
+	for _, r := range rows {
+		counts[r.UserId] = r.Count
+	}
+	return counts, nil
+}
+
 func (r *ForumPostRepository) ManyById(ids []int64, preload ...string) ([]*schemas.ForumPost, error) {
 	if len(ids) == 0 {
 		return []*schemas.ForumPost{}, nil
@@ -160,6 +357,58 @@ func (r *ForumPostRepository) FetchInitialByTopicIds(topicIds []int, preload ...
 	return postsByTopic, nil
 }
 
+func (r *ForumPostRepository) FetchLastForForums(forumIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
+	if len(forumIds) == 0 {
+		return map[int]*schemas.ForumPost{}, nil
+	}
+
+	lastPostIds := r.db.Model(&schemas.ForumPost{}).
+		Select("MAX(id)").
+		Where("forum_id IN ?", forumIds).
+		Where("hidden = ?", false).
+		Group("forum_id")
+
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("id IN (?)", lastPostIds).
+		Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	postsByForum := make(map[int]*schemas.ForumPost, len(posts))
+	for _, post := range posts {
+		postsByForum[post.ForumId] = post
+	}
+	return postsByForum, nil
+}
+
+func (r *ForumPostRepository) FetchLastForTopics(topicIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
+	if len(topicIds) == 0 {
+		return map[int]*schemas.ForumPost{}, nil
+	}
+
+	lastPostIds := r.db.Model(&schemas.ForumPost{}).
+		Select("MAX(id)").
+		Where("topic_id IN ?", topicIds).
+		Where("hidden = ?", false).
+		Group("topic_id")
+
+	var posts []*schemas.ForumPost
+	err := Preloaded(r.db, preload).
+		Where("id IN (?)", lastPostIds).
+		Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	postsByTopic := make(map[int]*schemas.ForumPost, len(posts))
+	for _, post := range posts {
+		postsByTopic[post.TopicId] = post
+	}
+	return postsByTopic, nil
+}
+
 type ForumIconRepository struct {
 	db *gorm.DB
 }
@@ -178,6 +427,12 @@ func (r *ForumIconRepository) Delete(icon *schemas.ForumIcon) error {
 
 func (r *ForumIconRepository) Update(updates *schemas.ForumIcon, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *ForumIconRepository) FetchAll() ([]*schemas.ForumIcon, error) {
+	var icons []*schemas.ForumIcon
+	err := r.db.Order(`"order" ASC`).Order("id ASC").Find(&icons).Error
+	return icons, err
 }
 
 type ForumReportRepository struct {
@@ -252,6 +507,14 @@ func (r *ForumBookmarkRepository) Update(updates *schemas.ForumBookmark, columns
 	)
 }
 
+func (r *ForumBookmarkRepository) Exists(topicId int, userId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumBookmark{}).
+		Where("topic_id = ? AND user_id = ?", topicId, userId).
+		Count(&count).Error
+	return count > 0, err
+}
+
 type ForumSubscriberRepository struct {
 	db *gorm.DB
 }
@@ -274,4 +537,20 @@ func (r *ForumSubscriberRepository) Update(updates *schemas.ForumSubscriber, col
 		updates,
 		columns...,
 	)
+}
+
+func (r *ForumSubscriberRepository) Exists(topicId int, userId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.ForumSubscriber{}).
+		Where("topic_id = ? AND user_id = ?", topicId, userId).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *ForumSubscriberRepository) FetchByTopic(topicId int, preload ...string) ([]*schemas.ForumSubscriber, error) {
+	var subscribers []*schemas.ForumSubscriber
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		Find(&subscribers).Error
+	return subscribers, err
 }

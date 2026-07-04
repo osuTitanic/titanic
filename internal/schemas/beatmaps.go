@@ -162,6 +162,10 @@ func (b *Beatmapset) TagsText() string {
 	return ""
 }
 
+func (b *Beatmapset) IsApproved() bool {
+	return b.Status > constants.BeatmapStatusPending
+}
+
 // RequiredNominations returns the amount of nominations a beatmapset needs to
 // be qualified: 2, plus one extra for every additional game mode it contains.
 func (b *Beatmapset) RequiredNominations() int {
@@ -324,7 +328,7 @@ type BeatmapModding struct {
 	TargetId int       `gorm:"column:target_id"`
 	SenderId int       `gorm:"column:sender_id"`
 	SetId    int       `gorm:"column:set_id"`
-	PostId   int       `gorm:"column:post_id"`
+	PostId   int64     `gorm:"column:post_id"`
 	Amount   int       `gorm:"column:amount;default:0"`
 	Time     time.Time `gorm:"column:time;autoCreateTime"`
 

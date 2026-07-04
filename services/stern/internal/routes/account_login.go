@@ -19,7 +19,7 @@ const (
 )
 
 func AccountLoginPage(ctx *server.Context) {
-	redirectTarget := sanitizeRedirectTarget(ctx.Request.URL.Query().Get("redirect"))
+	redirectTarget := sanitizeRedirectTarget(ctx.QueryValue("redirect"))
 	if ctx.IsAuthenticated() {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
 		return

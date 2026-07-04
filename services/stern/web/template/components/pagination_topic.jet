@@ -1,0 +1,28 @@
+{{ if .Total > 0 }}
+<table width="100%">
+    <tbody><tr>
+        <td align="right" style="padding-right: 4px">
+        {{ .Total|formatNumber }} posts |
+        <a onclick="jumpToPage();">Jump</a> |
+
+        {{ if .HasPrevious }}
+            <a href="{{ .PreviousUrl }}">Previous</a>
+        {{ end }}
+
+        {{ range .Items }}
+            {{ if .Ellipsis }}
+                ...
+            {{ else if .Current }}
+                <b>{{ .Label }}</b>
+            {{ else }}
+                <a href="{{ .Url }}">{{ .Label }}</a>
+            {{ end }}
+        {{ end }}
+
+        {{ if .HasNext }}
+            <a href="{{ .NextUrl }}">Next</a>
+        {{ end }}
+        </td>
+    </tr></tbody>
+</table>
+{{ end }}
