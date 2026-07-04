@@ -3,10 +3,12 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/helpers"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
@@ -19,140 +21,14 @@ const (
 	forumActionQuote = "quote"
 )
 
-func ForumCreateTopicView(ctx *server.Context) {
-	if !ctx.RequireLogin() {
-		return
+var (
+	quoteStripPatterns = []*regexp.Regexp{
+		regexp.MustCompile(`(?s)\[quote(?:=[^\]]+)?\].*?\[/quote\]`),
+		regexp.MustCompile(`(?s)\[img\].*?\[/img\]`),
+		regexp.MustCompile(`(?s)\[(?:video|youtube)\].*?\[/(?:video|youtube)\]`),
 	}
-
-	forumId, err := ctx.PathValueInt("id")
-	if err != nil {
-		NotFound(ctx)
-		return
-	}
-
-	forum, err := ctx.State.Forums.ById(forumId)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch forum", "error", err, "forum", forumId)
-		InternalServerError(ctx)
-		return
-	}
-	if forum == nil || forum.Hidden {
-		NotFound(ctx)
-		return
-	}
-
-	if !canCreateForumTopic(ctx, forum) {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
-		return
-	}
-
-	editor := templates.ForumEditorContext{
-		SubmitText:     "Create Topic",
-		CancelUrl:      fmt.Sprintf("/forum/%d", forum.Id),
-		ShowSubject:    true,
-		ShowIcons:      canEditForumIcon(ctx, forum.AllowIcons),
-		Icons:          buildEditorIcons(fetchForumIcons(ctx), -1),
-		ShowControls:   true,
-		ShowTopicTypes: ctx.HasPermission("forum.moderation.topics.set_options"),
-		TopicType:      "global", // TODO: perhaps add an enum for this
-	}
-	editor.NoneIconSelected = true
-
-	view := templates.ForumCreateTopicView{
-		DefaultView: buildDefaultViewWithPermissions(ctx),
-		Forum:       forum,
-		Parents:     fetchForumParents(ctx, forum),
-		Editor:      editor,
-	}
-	ctx.RenderTemplate(http.StatusOK, "pages/forum/create", view)
-}
-
-func ForumCreateTopicAction(ctx *server.Context) {
-	if !ctx.RequireLogin() {
-		return
-	}
-
-	forumId, err := ctx.PathValueInt("id")
-	if err != nil {
-		NotFound(ctx)
-		return
-	}
-
-	forum, err := ctx.State.Forums.ById(forumId)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch forum", "error", err, "forum", forumId)
-		InternalServerError(ctx)
-		return
-	}
-	if forum == nil || forum.Hidden {
-		NotFound(ctx)
-		return
-	}
-
-	if valid, err := ctx.ValidateCSRF(); err != nil || !valid {
-		RenderErrorPage(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
-		return
-	}
-
-	if !canCreateForumTopic(ctx, forum) {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
-		return
-	}
-	if isPostingRejected(ctx) {
-		return
-	}
-
-	title := strings.TrimSpace(ctx.Request.FormValue("title"))
-	content := ctx.Request.FormValue("bbcode")
-	if title == "" || content == "" {
-		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d", forum.Id))
-		return
-	}
-
-	pinned, announcement := resolveTopicType(ctx)
-	canEditIcon := canEditForumIcon(ctx, forum.AllowIcons)
-
-	topic := &schemas.ForumTopic{
-		ForumId:       forum.Id,
-		CreatorId:     ctx.CurrentUser.Id,
-		IconId:        resolveSubmittedIcon(ctx, canEditIcon),
-		CanChangeIcon: forum.AllowIcons,
-		Title:         title,
-		Pinned:        pinned,
-		Announcement:  announcement,
-		CreatedAt:     time.Now().UTC(),
-	}
-	if err := ctx.State.ForumTopics.Create(topic); err != nil {
-		ctx.Logger.Error("Failed to create topic", "error", err, "forum", forum.Id)
-		InternalServerError(ctx)
-		return
-	}
-
-	post := &schemas.ForumPost{
-		TopicId: topic.Id,
-		ForumId: forum.Id,
-		UserId:  ctx.CurrentUser.Id,
-		Content: content,
-		IconId:  topic.IconId,
-	}
-	if err := ctx.State.ForumPosts.Create(post); err != nil {
-		ctx.Logger.Error("Failed to create initial post", "error", err, "topic", topic.Id)
-		InternalServerError(ctx)
-		return
-	}
-
-	shouldNotify := ctx.Request.FormValue("notify") != ""
-	updateForumSubscription(ctx, topic.Id, shouldNotify)
-
-	// Broadcast to activity feed (discord, #announce, profile, ...)
-	go helpers.BroadcastForumTopicActivity(ctx, forum, topic, post)
-
-	ctx.Logger.Info(
-		"Created a new forum topic",
-		"user", ctx.CurrentUser.Id, "topic", topic.Id, "title", topic.Title,
-	)
-	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d", forum.Id, topic.Id))
-}
+	quoteBlankLines = regexp.MustCompile(`(?:\r\n){2,}`)
+)
 
 func ForumPostEditorView(ctx *server.Context) {
 	if !ctx.RequireLogin() {
@@ -568,4 +444,218 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 
 	ctx.Logger.Info("Edited a forum post", "user", ctx.CurrentUser.Id, "post", post.Id)
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))
+}
+
+func canEditPostIcon(ctx *server.Context, topic *schemas.ForumTopic, action string, editingLatestPost bool) bool {
+	if action == forumActionEdit && !editingLatestPost {
+		return false
+	}
+	if ctx.HasPermission("forum.moderation.topics.edit_icon") {
+		return true
+	}
+	return topic.CanChangeIcon && ctx.HasPermission("forum.topics.edit_icon")
+}
+
+func resolveTopicIconChange(ctx *server.Context, topic *schemas.ForumTopic) (bool, *constants.ForumIcon) {
+	// Either the user has the permission to change the icon anywhere, or the topic allows
+	// for it and the user also has the permission to change it in that case.
+	// (we definitively want a better permission system for forums lol)
+	canChange := ctx.HasPermission("forum.moderation.topics.edit_icon") ||
+		(topic.CanChangeIcon && ctx.HasPermission("forum.topics.edit_icon"))
+	if !canChange {
+		return false, nil
+	}
+
+	iconId, err := ctx.FormValueInt("icon")
+	if err != nil {
+		iconId = -1
+	}
+
+	current := -1
+	if topic.IconId != nil {
+		current = int(*topic.IconId)
+	}
+
+	if iconId == current {
+		// Nothing changed
+		return false, nil
+	}
+	if iconId < 0 {
+		// Icon was removed (-1)
+		return true, nil
+	}
+	// Icon was changed to a new value
+	icon := constants.ForumIcon(iconId)
+	return true, &icon
+}
+
+func resolveEditorContent(ctx *server.Context, topic *schemas.ForumTopic, action string, post *schemas.ForumPost) string {
+	switch action {
+	case forumActionEdit:
+		if post != nil && !post.Deleted {
+			return post.Content
+		}
+	case forumActionQuote:
+		if post != nil && !post.Deleted {
+			return buildQuote(post)
+		}
+	case forumActionPost:
+		return restoreDraft(ctx, topic.Id)
+	}
+	return ""
+}
+
+func buildQuote(post *schemas.ForumPost) string {
+	content := post.Content
+	for _, pattern := range quoteStripPatterns {
+		content = pattern.ReplaceAllString(content, "")
+	}
+
+	content = quoteBlankLines.ReplaceAllString(content, "\r\n\r\n")
+
+	// Drop the separator in beatmap submission posts
+	if parts := strings.Split(content, "---------------\n"); len(parts) > 1 {
+		content = parts[len(parts)-1]
+	}
+
+	author := ""
+	if post.User != nil {
+		author = strings.NewReplacer("[", "", "]", "").Replace(post.User.Name)
+	}
+	return fmt.Sprintf("[quote=%s]%s[/quote]", author, strings.TrimSpace(content))
+}
+
+func restoreDraft(ctx *server.Context, topicId int) string {
+	drafts, err := ctx.State.ForumPosts.FetchDrafts(ctx.CurrentUser.Id, topicId)
+	if err != nil || len(drafts) == 0 {
+		return ""
+	}
+	if err := ctx.State.ForumPosts.Delete(drafts[0]); err != nil {
+		ctx.Logger.Warn("Failed to delete restored draft", "error", err, "draft", drafts[0].Id)
+	}
+	return drafts[0].Content
+}
+
+func applyEditedTopicOptions(ctx *server.Context, topic *schemas.ForumTopic, editingInitialPost bool) {
+	if !editingInitialPost {
+		return
+	}
+
+	if ctx.HasPermission("forum.moderation.topics.set_options") {
+		pinned, announcement := resolveTopicType(ctx)
+		update := &schemas.ForumTopic{
+			Id:           topic.Id,
+			Pinned:       pinned,
+			Announcement: announcement,
+		}
+		if _, err := ctx.State.ForumTopics.Update(update, "pinned", "announcement"); err != nil {
+			ctx.Logger.Error("Failed to update topic type", "error", err, "topic", topic.Id)
+		}
+	}
+
+	if title := strings.TrimSpace(ctx.FormValue("title")); title != "" {
+		update := &schemas.ForumTopic{
+			Id:    topic.Id,
+			Title: title,
+		}
+		if _, err := ctx.State.ForumTopics.Update(update, "title"); err != nil {
+			ctx.Logger.Error("Failed to update topic title", "error", err, "topic", topic.Id)
+		}
+	}
+}
+
+func topicTypeString(topic *schemas.ForumTopic) string {
+	switch {
+	case topic == nil:
+		return "global"
+	case topic.Announcement:
+		return "announcement"
+	case topic.Pinned:
+		return "pinned"
+	default:
+		return "global"
+	}
+}
+
+func notifyForumSubscribers(ctx *server.Context, topic *schemas.ForumTopic, post *schemas.ForumPost) {
+	subscribers, err := ctx.State.ForumSubscribers.FetchByTopic(topic.Id)
+	if err != nil {
+		ctx.Logger.Warn("Failed to fetch topic subscribers", "error", err, "topic", topic.Id)
+		return
+	}
+
+	for _, subscriber := range subscribers {
+		if subscriber.UserId == ctx.CurrentUser.Id {
+			// Don't notify the author of the post
+			continue
+		}
+
+		notification := &schemas.Notification{
+			UserId:  subscriber.UserId,
+			Type:    constants.NotificationTypeForum,
+			Header:  "New Post",
+			Content: fmt.Sprintf("%s posted something in \"%s\". Click here to view it!", ctx.CurrentUser.Name, topic.Title),
+			Link:    fmt.Sprintf("/forum/%d/p/%d", topic.ForumId, post.Id),
+		}
+		if err := ctx.State.Notifications.Create(notification); err != nil {
+			ctx.Logger.Warn("Failed to create forum notification", "error", err, "user", subscriber.UserId)
+		}
+	}
+}
+
+func updateBeatmapTopicStatus(ctx *server.Context, topic *schemas.ForumTopic, beatmapset *schemas.Beatmapset) {
+	status := resolveBeatmapTopicStatus(ctx, topic, beatmapset)
+	update := &schemas.ForumTopic{Id: topic.Id, StatusText: nil}
+	if status != "" {
+		update.StatusText = &status
+	}
+	if _, err := ctx.State.ForumTopics.Update(update, "status_text"); err != nil {
+		ctx.Logger.Error("Failed to update beatmap topic status", "error", err, "topic", topic.Id)
+	}
+}
+
+func resolveBeatmapTopicStatus(ctx *server.Context, topic *schemas.ForumTopic, beatmapset *schemas.Beatmapset) string {
+	if beatmapset.IsApproved() || beatmapset.Status == constants.BeatmapStatusGraveyard {
+		// Ranked or graveyarded sets carry no status text
+		return ""
+	}
+
+	if nominations, _ := ctx.State.Nominations.FetchBySet(beatmapset.Id); len(nominations) > 0 {
+		// We already have at least one nomination, so the set is waiting for approval
+		return "Waiting for approval..."
+	}
+
+	lastBatPost, _ := ctx.State.ForumPosts.FetchLastBatPost(topic.Id)
+	if lastBatPost == nil {
+		// No nominations & no BAT posts -> the set is still waiting for modding
+		return "Needs modding"
+	}
+
+	var lastCreatorPost *schemas.ForumPost
+	if beatmapset.CreatorId != nil {
+		lastCreatorPost, _ = ctx.State.ForumPosts.FetchLastByUserInTopic(topic.Id, *beatmapset.CreatorId)
+	}
+	if lastCreatorPost == nil || lastBatPost.Id > lastCreatorPost.Id {
+		// Last post was by a BAT member, so the set is waiting for a response from the creator
+		return "Waiting for creator's response..."
+	}
+
+	return "Waiting for further modding..."
+}
+
+func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, topic *schemas.ForumTopic, beatmapset *schemas.Beatmapset) {
+	if beatmapset == nil || beatmapset.CreatorId == nil {
+		return
+	}
+	if *beatmapset.CreatorId == ctx.CurrentUser.Id || beatmapset.Status >= constants.BeatmapStatusRanked {
+		return
+	}
+
+	editor.ShowKudosuHint = true
+	editor.BeatmapsetId = beatmapset.Id
+	editor.KudosuReward = 2
+	if time.Since(topic.LastPostAt) < 7*24*time.Hour {
+		editor.KudosuReward = 1
+	}
+	editor.ShowKudosuIconNote = canEditForumIcon(ctx, topic.CanChangeIcon)
 }
