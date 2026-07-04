@@ -97,6 +97,17 @@ func (ctx *Context) Country() string {
 	return country
 }
 
+func (ctx *Context) RequireLogin() bool {
+	if ctx.IsAuthenticated() {
+		return true
+	}
+	ctx.Redirect(
+		http.StatusSeeOther,
+		"/account/login?redirect="+ctx.Request.URL.RequestURI(),
+	)
+	return false
+}
+
 func (ctx *Context) HasPermission(permission string) bool {
 	return ctx.Permissions().Has(permission)
 }

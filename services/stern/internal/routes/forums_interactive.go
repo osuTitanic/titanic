@@ -34,7 +34,7 @@ const forumTitleMaxLength = 128
 const forumPostMaxLength = 1 << 14
 
 func ForumCreateTopicView(ctx *server.Context) {
-	if !requireLogin(ctx) {
+	if !ctx.RequireLogin() {
 		return
 	}
 
@@ -82,7 +82,7 @@ func ForumCreateTopicView(ctx *server.Context) {
 }
 
 func ForumCreateTopicAction(ctx *server.Context) {
-	if !requireLogin(ctx) {
+	if !ctx.RequireLogin() {
 		return
 	}
 
@@ -169,7 +169,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 }
 
 func ForumPostEditorView(ctx *server.Context) {
-	if !requireLogin(ctx) {
+	if !ctx.RequireLogin() {
 		return
 	}
 
@@ -274,7 +274,7 @@ func ForumPostEditorView(ctx *server.Context) {
 }
 
 func ForumPostAction(ctx *server.Context) {
-	if !requireLogin(ctx) {
+	if !ctx.RequireLogin() {
 		return
 	}
 
@@ -318,7 +318,7 @@ func ForumPostAction(ctx *server.Context) {
 }
 
 func ForumDraftAction(ctx *server.Context) {
-	if !requireLogin(ctx) {
+	if !ctx.RequireLogin() {
 		return
 	}
 
@@ -722,17 +722,6 @@ func buildEditorIcons(icons []*schemas.ForumIcon, selectedId int) []*templates.F
 		})
 	}
 	return result
-}
-
-func requireLogin(ctx *server.Context) bool {
-	if ctx.IsAuthenticated() {
-		return true
-	}
-	ctx.Redirect(
-		http.StatusSeeOther,
-		"/account/login?redirect="+ctx.Request.URL.RequestURI(),
-	)
-	return false
 }
 
 func isPostingRejected(ctx *server.Context) bool {
