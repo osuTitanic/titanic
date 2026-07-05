@@ -511,6 +511,16 @@ type BeatmapSearchView struct {
 	Pagination  PaginationView
 }
 
+type ChangelogOsumeView struct {
+	Config *config.Config
+	Groups []*ChangelogGroup
+}
+
+type ChangelogGroup struct {
+	Date    string // formatted as "Jan 2, 2006"
+	Entries []*schemas.ReleaseChangelog
+}
+
 type ScoreView struct {
 	DefaultView
 	Score      *schemas.Score
