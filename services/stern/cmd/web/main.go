@@ -50,6 +50,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("POST /account/reset", routes.PasswordReset)
 	server.Handle("GET /download", routes.Download)
 	server.Handle("GET /download/{$}", routes.Download)
+	server.Handle("GET /p/doyoureallywanttoaskpeppy", routes.PeppySkillIssue)
+	server.Handle("GET /p/doyoureallywanttoaskpeppy/", routes.PeppySkillIssue)
 	server.Handle("GET /u/{query}", routes.UserProfile)
 	server.Handle("GET /users/{query}", routes.UserProfileRedirect)
 	server.Handle("GET /g/{id}", routes.Group)

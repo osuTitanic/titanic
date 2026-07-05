@@ -1,0 +1,23 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Messaging Levi</title>
+<meta property="og:title" content="Messaging Levi - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/p/doyoureallywanttoaskpeppy">
+{{ end }}
+
+{{ block body() }}
+<div style="margin: 20px;">
+    <h1 style="color: #cc2e8a; font-weight: normal; font-size: 160%;">
+        Messaging Levi
+    </h1>
+    <br>
+    <p>
+        You were most likely trying to message Levi, however, peppy, the original creator of osu! has disabled in-game messaging to him.
+        Levi uses the same user ID as peppy; due to this, you can't send him a message directly. <br><br>
+
+        But don't worry! You can still reach him in-game by using the <b>!asklevi</b> command.
+    </p>
+</div>
+{{ end }}
