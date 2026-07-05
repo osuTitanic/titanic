@@ -398,15 +398,11 @@ function performApiRequest(method, path, data, callbackSuccess, callbackError) {
         throw new Error("This browser does not support AJAX requests.");
     }
 
-    if (!("withCredentails" in xhr)) {
-        // IE8 and IE9 (or IE7)
-        url = osuBaseurl + "/api" + path;
-    }
-
     try {
         xhr.withCredentials = true;
     } catch (e) {
         console.warn("This browser does not support ajax credentials.");
+        url = osuBaseurl + "/api" + path;
     }
 
     // Use the current site protocol
