@@ -244,6 +244,13 @@ type UserBeatmapGroup struct {
 	Beatmapsets []*schemas.Beatmapset
 }
 
+type SettingsOverviewView struct {
+	DefaultView
+	TotalPosts    int
+	Notifications []*schemas.Notification
+	Bookmarks     []*schemas.ForumBookmark
+}
+
 type GroupView struct {
 	DefaultView
 	Group *schemas.Group
