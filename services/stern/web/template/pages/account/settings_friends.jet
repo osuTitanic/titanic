@@ -1,0 +1,69 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Friends</title>
+<meta property="og:title" content="Friends - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/friends">
+<link rel="stylesheet" href="/css/settings.css">
+{{ end }}
+
+{{ block body() }}
+{{ include "/components/settings_sidebar.jet" . }}
+{{ yield friendsHeading() }}
+{{ yield friendsList() }}
+{{ yield friendsScripts() }}
+{{ end }}
+
+{{ block friendsHeading() }}
+<div class="friends-heading">
+    <h1>Friends</h1>
+    <p>Here you can view and manage your friends. You currently have a total of {{ len(.Friends) }} friends.</p>
+</div>
+{{ end }}
+
+{{ block friendsList() }}
+<div class="friends">
+    {{ range _, friend := .Friends }}
+    {{ yield friendItem() friend }}
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block friendItem() }}
+<div class="friend">
+    <div class="avatar">
+        <a href="/u/{{ .User.Id }}">
+            <img src="{{ .User.AvatarUrl() }}" alt="" loading="lazy">
+        </a>
+    </div>
+    <div class="friend-description">
+        <p>{{ .User.Name }}</p>
+        {{ if .IsMutual }}
+        <a id="{{ .User.Id }}" style="color: red;" onclick="return removeFriend(this);">Remove Mutual Friend</a>
+        {{ else }}
+        <a id="{{ .User.Id }}" style="color: red;" onclick="return removeFriend(this);">Remove</a>
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block friendsScripts() }}
+<script>
+    function removeFriend(element) {
+        if (!isLoggedIn())
+            return;
+
+        performApiRequest("DELETE", "/account/friends?id=" + element.id, null, function(xhr) {
+            var data = JSON.parse(xhr.responseText);
+            var friendContainer = element.parentElement.parentElement;
+            friendContainer.style.opacity = 0;
+
+            setTimeout(function () {
+                friendContainer.parentNode.removeChild(friendContainer);
+            }, 350);
+        });
+        return false;
+    }
+</script>
+{{ end }}

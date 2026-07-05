@@ -251,6 +251,16 @@ type SettingsOverviewView struct {
 	Bookmarks     []*schemas.ForumBookmark
 }
 
+type SettingsFriendsView struct {
+	DefaultView
+	Friends []*SettingsFriend
+}
+
+type SettingsFriend struct {
+	User     *schemas.User
+	IsMutual bool
+}
+
 type GroupView struct {
 	DefaultView
 	Group *schemas.Group

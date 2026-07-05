@@ -67,3 +67,23 @@ func (r *RelationshipRepository) TargetIdsByStatus(userId int, status int) ([]in
 		Error
 	return targetIds, err
 }
+
+func (r *RelationshipRepository) UserIdsByStatus(targetId int, status int) ([]int, error) {
+	var userIds []int
+	err := r.db.Model(&schemas.Relationship{}).
+		Where("target_id = ? AND status = ?", targetId, status).
+		Pluck("user_id", &userIds).
+		Error
+	return userIds, err
+}
+
+func (r *RelationshipRepository) FetchTargetUsers(userId int, status int) ([]*schemas.User, error) {
+	var users []*schemas.User
+	err := r.db.Model(&schemas.User{}).
+		Joins("JOIN relationships ON relationships.target_id = users.id").
+		Where("relationships.user_id = ?", userId).
+		Where("relationships.status = ?", status).
+		Order("relationships.target_id ASC").
+		Find(&users).Error
+	return users, err
+}
