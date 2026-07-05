@@ -11,4 +11,6 @@ var (
 	Username          = regexp.MustCompile(`^[a-zA-Z0-9^\-{}_\[\] ]+$`)
 	DiscordUsername   = regexp.MustCompile(`^@?[a-z0-9_-]{3,32}$`)
 	DiscordEmote      = regexp.MustCompile(`<a?:([a-zA-Z0-9_]{2,32}):\d{17,20}>`)
+	TwitterHandle     = regexp.MustCompile(`https?://(www.)?(twitter|x)\.com/(@\w+|\w+)`)
+	URL               = regexp.MustCompile(`(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s` + "`" + `!()\[\]{};:'\".,<>?«»“”‘’]))`) // yeahhh this is something alright
 )

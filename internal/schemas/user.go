@@ -106,6 +106,41 @@ func (user *User) SignatureText() string {
 	return *user.Signature
 }
 
+func (user *User) WebsiteText() string {
+	if user.Website == nil {
+		return ""
+	}
+	return *user.Website
+}
+
+func (user *User) DiscordText() string {
+	if user.Discord == nil {
+		return ""
+	}
+	return *user.Discord
+}
+
+func (user *User) TwitterText() string {
+	if user.Twitter == nil {
+		return ""
+	}
+	return *user.Twitter
+}
+
+func (user *User) LocationText() string {
+	if user.Location == nil {
+		return ""
+	}
+	return *user.Location
+}
+
+func (user *User) InterestsText() string {
+	if user.Interests == nil {
+		return ""
+	}
+	return *user.Interests
+}
+
 // DisplayColor returns the username color derived from the user's groups.
 func (user *User) DisplayColor() string {
 	for _, group := range user.SortedGroups() {

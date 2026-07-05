@@ -880,7 +880,7 @@ input[type="url"], input[type="search"] {
 #error {
     background-color: #eab9d6;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    margin: 10px;
+    margin-bottom: 5px;
     border-radius: 5px;
     padding: 10px;
 }
@@ -888,7 +888,7 @@ input[type="url"], input[type="search"] {
 #info {
     background-color: #e1f1fa;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    margin: 10px;
+    margin-bottom: 5px;
     border-radius: 5px;
     padding: 10px;
 }

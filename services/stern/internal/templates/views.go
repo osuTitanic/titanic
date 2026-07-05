@@ -256,6 +256,14 @@ type SettingsFriendsView struct {
 	Friends []*SettingsFriend
 }
 
+type SettingsProfileView struct {
+	DefaultView
+	InfoMessage     string
+	ErrorMessage    string
+	UserpageEditor  ForumEditorContext
+	SignatureEditor ForumEditorContext
+}
+
 type SettingsFriend struct {
 	User     *schemas.User
 	IsMutual bool
