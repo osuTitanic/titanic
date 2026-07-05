@@ -374,28 +374,33 @@ function createLoaderOverlay() {
     return overlay;
 }
 
+function createXhr() {
+    if (window.XMLHttpRequest) {
+        // Modern browsers
+        return new XMLHttpRequest();
+    }
+    try {
+        // IE6
+        return new ActiveXObject("Microsoft.XMLHTTP");
+    } catch (e) {
+        return null;
+    }
+}
+
 function performApiRequest(method, path, data, callbackSuccess, callbackError) {
     var url = apiBaseurl + path;
     var xhr;
 
     // Use XMLHttpRequest or XDomainRequest if available
     // otherwise, try ActiveX for older IE versions
-    try {
-        if (window.XMLHttpRequest && "withCredentials" in new XMLHttpRequest()) {
-            // Modern browsers
-            xhr = new XMLHttpRequest();
-        } else if (window.XMLHttpRequest) {
-            // IE8 and IE9 (or IE7)
-            xhr = new XMLHttpRequest();
-            // Rewrite url to use /api as fallback, due to cors limitations
-            url = osuBaseurl + "/api" + path;
-        } else {
-            // IE6
-            xhr = new ActiveXObject("Microsoft.XMLHTTP");
-            url = osuBaseurl + "/api" + path;
-        }
-    } catch (e) {
+    xhr = createXhr();
+    if (!xhr) {
         throw new Error("This browser does not support AJAX requests.");
+    }
+
+    if (!("withCredentails" in xhr)) {
+        // IE8 and IE9 (or IE7)
+        url = osuBaseurl + "/api" + path;
     }
 
     try {

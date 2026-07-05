@@ -243,8 +243,72 @@ for (var i = 0; i < editors.length; i++) {
     });
 }
 
+function setupDraftAutosave() {
+    // Periodically save forum post drafts in the background, so users don't lose
+    // progress if they navigate away or something dies
+    var form = document.querySelector("form[data-draft-url]");
+    if (!form) {
+        return;
+    }
+
+    var draftUrl = form.getAttribute("data-draft-url");
+    var textarea = form.querySelector("textarea[name='bbcode']");
+    if (!draftUrl || !textarea) {
+        return;
+    }
+
+    var lastSaved = "";
+    var timer = null;
+
+    function saveDraft() {
+        var content = textarea.value;
+        if (content === lastSaved) {
+            return;
+        }
+        if (trimString(content).length <= 10) {
+            return;
+        }
+
+        var xhr = createXhr();
+        if (!xhr) {
+            return;
+        }
+
+        var body = "bbcode=" + encodeURIComponent(content) + "&csrf_token=" + encodeURIComponent(csrfToken);
+
+        try {
+            xhr.withCredentials = true;
+        } catch (e) {}
+
+        xhr.open("POST", draftUrl, true);
+        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        xhr.setRequestHeader("X-CSRF-Token", csrfToken);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== 4) {
+                return;
+            }
+            if (xhr.status >= 200 && xhr.status < 300) {
+                lastSaved = content;
+            }
+        };
+        xhr.send(body);
+    }
+    timer = setInterval(saveDraft, 10000);
+
+    // Stop autosaving once the user submits the form
+    $(form).on("submit", function () {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    });
+}
+
 var toolbars = $(".bbcode-toolbar");
 
 for (var i = 0; i < toolbars.length; i++) {
     $(toolbars[i]).on("click", insertBBCode);
 }
+
+$(document).ready(setupDraftAutosave);
