@@ -2,8 +2,11 @@ package templates
 
 import (
 	"fmt"
+	"html"
 	"math"
 	"reflect"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/CloudyKit/jet/v6"
@@ -13,6 +16,7 @@ import (
 	"golang.org/x/text/message"
 )
 
+var markdownLinkPattern = regexp.MustCompile(`\[([^\]]+)\]\((https?://[^\s)]+)\)`)
 var printer = message.NewPrinter(language.English)
 
 func formatNumber(a jet.Arguments) reflect.Value {
@@ -104,6 +108,41 @@ func shortMods(a jet.Arguments) reflect.Value {
 		return reflect.ValueOf(short)
 	}
 	return reflect.ValueOf("None")
+}
+
+func markdownUrls(a jet.Arguments) reflect.Value {
+	a.RequireNumOfArguments("markdownUrls", 1, 1)
+
+	input, ok := a.Get(0).Interface().(string)
+	if !ok {
+		return reflect.ValueOf("")
+	}
+
+	var builder strings.Builder
+	lastEnd := 0
+
+	for _, match := range markdownLinkPattern.FindAllStringSubmatchIndex(input, -1) {
+		start, end := match[0], match[1]
+
+		// Extract the text and href from the match
+		text := input[match[2]:match[3]]
+		href := input[match[4]:match[5]]
+
+		// Write the text before the match and the link itself
+		builder.WriteString(html.EscapeString(input[lastEnd:start]))
+
+		// Write the link in HTML format
+		builder.WriteString(`<a href="`)
+		builder.WriteString(html.EscapeString(href))
+		builder.WriteString(`">`)
+		builder.WriteString(html.EscapeString(text))
+		builder.WriteString(`</a>`)
+		lastEnd = end
+	}
+
+	// Write the remaining text after the last match
+	builder.WriteString(html.EscapeString(input[lastEnd:]))
+	return reflect.ValueOf(builder.String())
 }
 
 func reflectFloat(value reflect.Value) float64 {

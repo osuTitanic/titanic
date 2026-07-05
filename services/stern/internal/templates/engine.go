@@ -41,6 +41,7 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("shortMods", shortMods)
 	set.AddGlobalFunc("scoreWeight", scoreWeight)
 	set.AddGlobalFunc("bbcode", renderBBCode)
+	set.AddGlobalFunc("markdownUrls", markdownUrls)
 	set.AddGlobalFunc("forumUserLink", forumUserLink)
 	set.AddGlobalFunc("formatActivity", formatActivity)
 	set.AddGlobalFunc("beatmapRatingWidth", beatmapRatingWidth)
