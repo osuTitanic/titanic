@@ -2,6 +2,7 @@ package schemas
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -178,4 +179,40 @@ type ReleaseChangelog struct {
 
 func (ReleaseChangelog) TableName() string {
 	return "releases_official_changelog"
+}
+
+// PrefixedText returns the changelog text prefixed with its area, if set
+func (c *ReleaseChangelog) PrefixedText() string {
+	if c.Area == nil {
+		return c.Text
+	}
+	area := strings.TrimSpace(*c.Area)
+	if area == "" {
+		return c.Text
+	}
+	return area + ": " + c.Text
+}
+
+// TypeSymbol returns the plain-text symbol used in the client changelog stream
+func (c *ReleaseChangelog) TypeSymbol() string {
+	switch strings.ToLower(c.Type) {
+	case "add", "important":
+		return "+"
+	case "remove":
+		return "-"
+	case "fix":
+		return "*"
+	default:
+		return ""
+	}
+}
+
+// IconType returns the changelog type normalized to an available icon name
+func (c *ReleaseChangelog) IconType() string {
+	switch c.Type {
+	case "fix", "add", "misc":
+		return c.Type
+	default:
+		return "misc"
+	}
 }

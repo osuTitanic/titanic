@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -167,4 +169,15 @@ func (r *ReleasesOfficialRepository) DeleteChangelog(changelog *schemas.ReleaseC
 
 func (r *ReleasesOfficialRepository) UpdateChangelog(updates *schemas.ReleaseChangelog, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *ReleasesOfficialRepository) FetchChangelogRangeDesc(startDate time.Time, limit, offset int) ([]*schemas.ReleaseChangelog, error) {
+	var entries []*schemas.ReleaseChangelog
+	err := r.db.
+		Where("created_at <= ?", startDate).
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&entries).Error
+	return entries, err
 }
