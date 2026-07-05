@@ -154,6 +154,25 @@ func ResizeImage(data []byte, width int, height int) ([]byte, error) {
 	return generator.CreateThumbnail(image)
 }
 
+// ResizeImageToPng resizes the given image data to the provided dimensions and
+// always encodes the result as PNG, regardless of the source format.
+func ResizeImageToPng(data []byte, width int, height int) ([]byte, error) {
+	img, _, err := image.Decode(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	rect := image.Rect(0, 0, width, height)
+	dst := image.NewRGBA(rect)
+	draw.CatmullRom.Scale(dst, rect, img, img.Bounds(), draw.Over, nil)
+
+	var buffer bytes.Buffer
+	if err := png.Encode(&buffer, dst); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
+}
+
 // CreateThumbnail generates a thumbnail.
 func (gen *ImageGenerator) CreateThumbnail(i *Image) ([]byte, error) {
 	if i.ContentType == "application/octet-stream" {
