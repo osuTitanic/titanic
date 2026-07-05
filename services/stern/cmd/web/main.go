@@ -51,6 +51,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /account/reset", routes.PasswordResetPage)
 	server.Handle("POST /account/reset", routes.PasswordReset)
 	server.Handle("GET /account/friends", routes.AccountFriends)
+	server.Handle("GET /account/chat", routes.AccountChat)
 	server.Handle("GET /download", routes.Download)
 	server.Handle("GET /download/{$}", routes.Download)
 	server.Handle("GET /p/doyoureallywanttoaskpeppy", routes.PeppySkillIssue)
