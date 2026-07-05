@@ -228,13 +228,7 @@ func ForumDraftAction(ctx *server.Context) {
 	}
 
 	// Only a single draft is kept per user & topic
-	if drafts, _ := ctx.State.ForumPosts.FetchDrafts(ctx.CurrentUser.Id, topic.Id); len(drafts) > 0 {
-		for _, draft := range drafts {
-			if err := ctx.State.ForumPosts.Delete(draft); err != nil {
-				ctx.Logger.Warn("Failed to delete old draft", "error", err, "draft", draft.Id)
-			}
-		}
-	}
+	clearForumDrafts(ctx, topic.Id)
 
 	draft := &schemas.ForumPost{
 		TopicId:   topic.Id,
@@ -253,6 +247,19 @@ func ForumDraftAction(ctx *server.Context) {
 
 	ctx.Logger.Info("Saved a forum draft", "user", ctx.CurrentUser.Id, "topic", topic.Id, "draft", draft.Id)
 	ctx.Redirect(http.StatusSeeOther, topicUrl)
+}
+
+func clearForumDrafts(ctx *server.Context, topicId int) {
+	drafts, err := ctx.State.ForumPosts.FetchDrafts(ctx.CurrentUser.Id, topicId)
+	if err != nil {
+		ctx.Logger.Warn("Failed to fetch drafts for cleanup", "error", err, "topic", topicId)
+		return
+	}
+	for _, draft := range drafts {
+		if err := ctx.State.ForumPosts.Delete(draft); err != nil {
+			ctx.Logger.Warn("Failed to delete draft", "error", err, "draft", draft.Id)
+		}
+	}
 }
 
 func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
@@ -305,6 +312,9 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		InternalServerError(ctx)
 		return
 	}
+
+	// The reply was posted, so any saved drafts for this topic are now obsolete
+	clearForumDrafts(ctx, topic.Id)
 
 	notify := ctx.Request.FormValue("notify") != ""
 	notifyForumSubscribers(ctx, topic, post)

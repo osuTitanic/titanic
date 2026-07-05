@@ -18,7 +18,7 @@
     <a href="/forum/{{ .Forum.Id }}">{{ .Forum.Name }}</a> »
     <a href="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/">{{ .Topic.Title }}</a>
 </h1>
-<form action="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post" method="post" style="padding: 0 5px;">
+<form action="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post" method="post" style="padding: 0 5px;" data-draft-url="{{ .Editor.DraftUrl }}">
     {{ yield editor() .Editor }}
     <input type="hidden" name="action" value="{{ .Action }}">
     <input type="hidden" name="id" value="{{ .ActionId }}">
