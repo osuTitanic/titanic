@@ -45,6 +45,16 @@ func (r *NotificationRepository) ManyByUserId(userId int, preload ...string) ([]
 	return notifications, err
 }
 
+func (r *NotificationRepository) UnreadByUserId(userId int, preload ...string) ([]*schemas.Notification, error) {
+	var notifications []*schemas.Notification
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Where("read = ?", false).
+		Order("time DESC").
+		Find(&notifications).Error
+	return notifications, err
+}
+
 func (r *NotificationRepository) CountByUserId(userId int) (int, error) {
 	var count int64
 	err := r.db.Model(&schemas.Notification{}).Where("user_id = ?", userId).Count(&count).Error
