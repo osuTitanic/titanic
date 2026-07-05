@@ -118,8 +118,11 @@ function resetConnection() {
 }
 
 function onNetworkConfiguration(data) {
-    // Assuming we only have one network
-    var network = data.networks[0];
+    var network = data.network;
+    if (!network) {
+        console.error("Received network configuration without a network:", data);
+        return;
+    }
 
     // Initialize channels
     for (var i = 0; i < network.channels.length; i++) {
@@ -329,7 +332,7 @@ function handleChannelMessage(data) {
     }
 
     var message = data.msg.text;
-    var highlight = data.msg.highlight;
+    var highlight = data.highlight || data.msg.highlight;
     var time = data.msg.time || new Date();
 
     // Store message in appropriate cache
