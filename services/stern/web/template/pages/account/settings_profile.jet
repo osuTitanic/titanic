@@ -34,7 +34,6 @@
 {{ end }}
 
 {{ block avatarForm() }}
-{* TODO: Add avatar upload handler *}
 <form class="section" action="/account/profile/avatar" method="post" enctype="multipart/form-data">
     <div class="avatar-box avatar-frame">
         <img src="{{ .CurrentUser.AvatarUrl() }}" alt="">
