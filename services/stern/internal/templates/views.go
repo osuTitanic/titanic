@@ -264,6 +264,22 @@ type SettingsProfileView struct {
 	SignatureEditor ForumEditorContext
 }
 
+type SettingsSecurityView struct {
+	DefaultView
+	InfoMessage  string
+	ErrorMessage string
+	IrcUsername  string
+	Logins       []*SecurityLogin
+}
+
+type SecurityLogin struct {
+	Time     time.Time
+	IsWebIrc bool
+	Country  string
+	Ip       string
+	Version  string
+}
+
 type SettingsFriend struct {
 	User     *schemas.User
 	IsMutual bool

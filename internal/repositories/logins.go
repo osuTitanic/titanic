@@ -28,3 +28,14 @@ func (r *LoginRepository) Update(updates *schemas.Login, columns ...string) (int
 		columns...,
 	)
 }
+
+func (r *LoginRepository) FetchMany(userId int, limit int, offset int) ([]*schemas.Login, error) {
+	var logins []*schemas.Login
+	err := r.db.
+		Where("user_id = ?", userId).
+		Order("time DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&logins).Error
+	return logins, err
+}
