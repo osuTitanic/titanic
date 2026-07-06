@@ -1,0 +1,13 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Posting Too Quickly - Titanic!</title>
+<link rel="stylesheet" href="/css/error.css">
+{{ end }}
+
+{{ block body() }}
+<img src="/images/art/ffffff.png" alt="Error Image">
+<div class="description">
+    <h1>You are posting too quickly, slow down!</h1>
+</div>
+{{ end }}

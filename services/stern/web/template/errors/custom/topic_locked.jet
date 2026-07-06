@@ -1,0 +1,13 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Topic Locked - Titanic!</title>
+<link rel="stylesheet" href="/css/error.css">
+{{ end }}
+
+{{ block body() }}
+<img src="/images/art/ffffff.png" alt="Error Image">
+<div class="description">
+    <h1>The topic you are trying to post in is locked!</h1>
+</div>
+{{ end }}
