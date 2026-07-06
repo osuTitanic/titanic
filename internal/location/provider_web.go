@@ -39,9 +39,11 @@ func (p *WebProvider) Setup() error {
 }
 
 func (p *WebProvider) Resolve(ip string) (*Location, error) {
+	p.logger.Debug("Resolving location", "ip", ip)
+
+	// When requesting /json/ (without an IP set), the API provides our own location.
+	// We can take advantage of that for local IPs, since they won't be resolvable otherwise.
 	if IsLocalIP(ip) {
-		// When requesting /json/ (without an IP set), the API provides our own location
-		// We can take advantage of that for local IPs, since they won't be resolvable otherwise.
 		ip = ""
 	}
 
