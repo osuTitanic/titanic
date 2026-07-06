@@ -22,19 +22,18 @@ func BeatmapRedirect(ctx *server.Context) {
 }
 
 func BeatmapsetRedirect(ctx *server.Context) {
-	idInt, err := ctx.PathValueInt("id")
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
 	}
 
-	beatmapset, err := ctx.State.Repositories.Beatmapsets.ById(idInt, "Beatmaps")
+	beatmapset, err := ctx.State.Repositories.Beatmapsets.ById(id, "Beatmaps")
 	if err != nil {
-		ctx.Logger.Error("Failed to fetch beatmapset", "id", idInt, "error", err)
+		ctx.Logger.Error("Failed to fetch beatmapset", "id", id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
-
 	if beatmapset == nil || len(beatmapset.Beatmaps) == 0 {
 		NotFound(ctx)
 		return
@@ -59,22 +58,57 @@ func BeatmapsetRedirect(ctx *server.Context) {
 	ctx.Redirect(http.StatusMovedPermanently, location)
 }
 
+func RedirectToBeatmapset(ctx *server.Context) {
+	id := ctx.PathValue("id")
+	if id == "" {
+		NotFound(ctx)
+		return
+	}
+	ctx.Redirect(http.StatusFound, fmt.Sprintf("/s/%s", id))
+}
+
+func RedirectToDiscussion(ctx *server.Context) {
+	id, err := ctx.PathValueInt("setId")
+	if err != nil {
+		NotFound(ctx)
+		return
+	}
+
+	beatmapset, err := ctx.State.Repositories.Beatmapsets.ById(id)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch beatmapset", "id", id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+	if beatmapset == nil {
+		NotFound(ctx)
+		return
+	}
+
+	// Beatmapsets without a forum topic fall back to the set page
+	if beatmapset.TopicId == nil {
+		ctx.Redirect(http.StatusFound, fmt.Sprintf("/s/%d", beatmapset.Id))
+		return
+	}
+
+	ctx.Redirect(http.StatusFound, fmt.Sprintf("/forum/t/%d", *beatmapset.TopicId))
+}
+
 func Beatmap(ctx *server.Context) {
-	idInt, err := ctx.PathValueInt("id")
+	id, err := ctx.PathValueInt("id")
 	if err != nil {
 		NotFound(ctx)
 		return
 	}
 
 	beatmap, err := ctx.State.Repositories.Beatmaps.ById(
-		idInt, "Beatmapset", "Beatmapset.Beatmaps", "Beatmapset.CreatorUser",
+		id, "Beatmapset", "Beatmapset.Beatmaps", "Beatmapset.CreatorUser",
 	)
 	if err != nil {
-		ctx.Logger.Error("Failed to fetch beatmap", "id", idInt, "error", err)
+		ctx.Logger.Error("Failed to fetch beatmap", "id", id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
-
 	if beatmap == nil || beatmap.Status <= constants.BeatmapStatusInactive {
 		// Beatmap not found / inactive / has not been submitted
 		NotFound(ctx)
