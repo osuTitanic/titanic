@@ -9,6 +9,7 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/database"
 	"github.com/osuTitanic/titanic-go/internal/email"
+	"github.com/osuTitanic/titanic-go/internal/location"
 	"github.com/osuTitanic/titanic-go/internal/logging"
 	"github.com/osuTitanic/titanic-go/internal/performance"
 	"github.com/osuTitanic/titanic-go/internal/permissions"
@@ -31,6 +32,7 @@ type State struct {
 	Redis    *redis.Client
 	Storage  storage.Storage
 	Email    email.Email
+	Location location.Provider
 
 	// Services
 	Permissions permissions.Resolver
@@ -90,6 +92,12 @@ func NewState(environmentFiles ...string) (*State, error) {
 		return nil, fmt.Errorf("state: failed to setup email service: %w", err)
 	}
 
+	geolocation := location.NewProvider()
+	if err := geolocation.Setup(); err != nil {
+		database.CloseSession(db)
+		return nil, fmt.Errorf("state: failed to setup location service: %w", err)
+	}
+
 	redisPassword := ""
 	if cfg.RedisPass != nil {
 		redisPassword = *cfg.RedisPass
@@ -121,6 +129,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Storage:         storageProvider,
 		Logger:          logger,
 		Email:           mailer,
+		Location:        geolocation,
 		Redis:           redisClient,
 		Repositories:    repos,
 		Resources:       beatmapResources,
