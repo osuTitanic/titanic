@@ -12,7 +12,7 @@
 {{ include "/components/settings_sidebar.jet" . }}
 {{ yield friendsHeading() }}
 {{ yield friendsList() }}
-{{ yield friendsScripts() }}
+<script src="/js/settings.js"></script>
 {{ end }}
 
 {{ block friendsHeading() }}
@@ -46,24 +46,4 @@
         {{ end }}
     </div>
 </div>
-{{ end }}
-
-{{ block friendsScripts() }}
-<script>
-    function removeFriend(element) {
-        if (!isLoggedIn())
-            return;
-
-        performApiRequest("DELETE", "/account/friends?id=" + element.id, null, function(xhr) {
-            var data = JSON.parse(xhr.responseText);
-            var friendContainer = element.parentElement.parentElement;
-            friendContainer.style.opacity = 0;
-
-            setTimeout(function () {
-                friendContainer.parentNode.removeChild(friendContainer);
-            }, 350);
-        });
-        return false;
-    }
-</script>
 {{ end }}

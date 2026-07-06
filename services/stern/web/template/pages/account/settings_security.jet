@@ -169,6 +169,7 @@
 
 {{ block securityScripts() }}
 <script src="/js/irc.js"></script>
+<script src="/js/settings.js"></script>
 {{ if .Config.RecaptchaSiteKey != "" }}
 <script src="https://www.google.com/recaptcha/api.js?render={{ .Config.RecaptchaSiteKey }}"></script>
 <script>
@@ -180,47 +181,4 @@
     });
 </script>
 {{ end }}
-<script>
-    function dataExport() {
-        var passwordValidation = document.getElementById('data-export-password');
-        var password = passwordValidation.value;
-        if (!password) {
-            alert('Please enter your current password to confirm the data export.');
-            return;
-        }
-        var data = { password: password };
-
-        var recaptchaResponse = document.getElementById('recaptcha-response');
-        if (recaptchaResponse && recaptchaResponse.value) {
-            data['recaptcha_response'] = recaptchaResponse.value;
-        }
-
-        var exportButton = document.getElementById('data-export-button');
-        exportButton.disabled = true;
-        exportButton.value = 'Exporting...';
-
-        performApiRequest("POST", "/account/export", data, function(xhr) {
-            var blob = new Blob([xhr.responseText], { type: 'application/json' });
-            var url = URL.createObjectURL(blob);
-
-            // Invoke download prompt with json response data
-            var a = document.createElement('a');
-            a.download = "data_export.json";
-            a.href = url;
-            a.click();
-
-            exportButton.value = 'Exported!';
-        }, function(xhr) {
-            var response = JSON.parse(xhr.responseText);
-            if (!response.details) {
-                alert('An error occurred while exporting your data. Please try again later.');
-            } else {
-                alert(response.details);
-            }
-
-            exportButton.disabled = false;
-            exportButton.value = 'Export';
-        });
-    }
-</script>
 {{ end }}

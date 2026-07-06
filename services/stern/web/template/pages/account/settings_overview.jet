@@ -20,7 +20,7 @@
     {{ yield notificationsSection() }}
     {{ yield bookmarksSection() }}
 </div>
-{{ yield settingsScripts() }}
+<script src="/js/settings.js"></script>
 {{ end }}
 
 {{ block activitySection() }}
@@ -92,70 +92,4 @@
     </div>
     <a class="delete-link" onclick="return removeBookmark({{ .TopicId }})">Delete</a>
 </div>
-{{ end }}
-
-{{ block settingsScripts() }}
-<script>
-    function handleNotificationClick(event, linkElement) {
-        event.preventDefault();
-
-        var notificationElement = linkElement.closest('.notification');
-        var notificationId = notificationElement.id;
-        var targetUrl = linkElement.href;
-
-        // Mark notification as read
-        performApiRequest('DELETE', '/account/notifications/' + notificationId, null, function(xhr) {
-            notificationElement.classList.remove('new');
-
-            // Redirect to the target URL after marking as read
-            if (targetUrl) window.location.href = targetUrl;
-        });
-
-        return false;
-    }
-
-    function handleNotificationBoxClick(event, notificationId) {
-        event.preventDefault();
-
-        var notificationElement = document.getElementById(notificationId);
-        var targetUrl = notificationElement.querySelector('.notification-link').href;
-
-        // Mark notification as read
-        performApiRequest('DELETE', '/account/notifications/' + notificationId, null, function(xhr) {
-            notificationElement.classList.remove('new');
-
-            // Redirect to the target URL after marking as read
-            if (targetUrl) window.location.href = targetUrl;
-        });
-
-        return false;
-    }
-
-    function clearAllNotifications() {
-        performApiRequest('DELETE', '/account/notifications', null, function(xhr) {
-            var elements = document.querySelectorAll('.notification');
-            for (var i = 0; i < elements.length; i++) {
-                elements[i].classList.remove('new');
-                elements[i].onclick = function() {};
-            }
-
-            reloadPageSoon(500);
-        });
-    }
-
-    function removeBookmark(topicId) {
-        performApiRequest("DELETE", "/forum/bookmarks/" + topicId, null, function(xhr) {
-            var data = JSON.parse(xhr.responseText);
-            var bookmark = document.getElementById('bookmark-' + topicId);
-            bookmark.parentNode.removeChild(bookmark);
-
-            var totalBookmarks = document.querySelectorAll('.bookmark').length;
-            if (totalBookmarks === 0) {
-                var bookmarks = document.querySelector('.bookmarks');
-                bookmarks.innerHTML = 'You have no bookmarks';
-            }
-        });
-        return false;
-    }
-</script>
 {{ end }}
