@@ -13,7 +13,7 @@ import (
 func ForumPostRedirect(ctx *server.Context) {
 	postId, err := ctx.PathValueInt64("postId")
 	if err != nil {
-		NotFound(ctx)
+		PostNotFound(ctx)
 		return
 	}
 	redirectToForumPost(ctx, postId)
@@ -23,13 +23,13 @@ func ForumPostRedirect(ctx *server.Context) {
 func ForumPostPermalink(ctx *server.Context) {
 	postId, err := ctx.PathValueInt64("postId")
 	if err != nil {
-		NotFound(ctx)
+		PostNotFound(ctx)
 		return
 	}
 
 	post, err := ctx.State.ForumPosts.ById(postId)
 	if err != nil || post == nil {
-		RenderErrorPage(ctx, http.StatusNotFound, "Post Not Found", "The post you are looking for could not be found.")
+		PostNotFound(ctx)
 		return
 	}
 
@@ -61,7 +61,7 @@ func ForumShortlinkRedirect(ctx *server.Context) {
 	case kind == "t" && len(segments) == 1:
 		topicId, err := strconv.Atoi(segments[0])
 		if err != nil {
-			NotFound(ctx)
+			TopicNotFound(ctx)
 			return
 		}
 		redirectToForumTopic(ctx, topicId)
@@ -71,7 +71,7 @@ func ForumShortlinkRedirect(ctx *server.Context) {
 		kind == "p" && len(segments) == 1:
 		postId, err := strconv.ParseInt(segments[len(segments)-1], 10, 64)
 		if err != nil {
-			NotFound(ctx)
+			PostNotFound(ctx)
 			return
 		}
 		redirectToForumPost(ctx, postId)
@@ -84,13 +84,13 @@ func ForumShortlinkRedirect(ctx *server.Context) {
 func ForumQuickReplyRedirect(ctx *server.Context) {
 	topicId, err := ctx.QueryValueInt("t")
 	if err != nil || topicId <= 0 {
-		RenderErrorPage(ctx, http.StatusNotFound, "Topic Not Found", "The topic you are looking for could not be found.")
+		TopicNotFound(ctx)
 		return
 	}
 
 	topic, err := ctx.State.ForumTopics.ById(topicId)
 	if err != nil || topic == nil {
-		RenderErrorPage(ctx, http.StatusNotFound, "Topic Not Found", "The topic you are looking for could not be found.")
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -111,14 +111,14 @@ func ForumViewTopicRedirect(ctx *server.Context) {
 		return
 	}
 
-	RenderErrorPage(ctx, http.StatusNotFound, "Topic Not Found", "The topic you are looking for could not be found.")
+	TopicNotFound(ctx)
 }
 
 // ForumViewForumRedirect handles phpBB-style /forum/viewforum.php?f={forumId} urls
 func ForumViewForumRedirect(ctx *server.Context) {
 	forumId, err := ctx.QueryValueInt("f")
 	if err != nil || forumId <= 0 {
-		RenderErrorPage(ctx, http.StatusNotFound, "Forum Not Found", "The forum you are looking for could not be found.")
+		ForumNotFound(ctx)
 		return
 	}
 
@@ -147,7 +147,7 @@ func ForumIndexRedirect(ctx *server.Context) {
 func redirectToForumTopic(ctx *server.Context, topicId int) {
 	topic, err := ctx.State.ForumTopics.ById(topicId)
 	if err != nil || topic == nil {
-		RenderErrorPage(ctx, http.StatusNotFound, "Topic Not Found", "The topic you are looking for could not be found.")
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -159,7 +159,7 @@ func redirectToForumTopic(ctx *server.Context, topicId int) {
 func redirectToForumPost(ctx *server.Context, postId int64) {
 	post, err := ctx.State.ForumPosts.ById(postId)
 	if err != nil || post == nil {
-		RenderErrorPage(ctx, http.StatusNotFound, "Post Not Found", "The post you are looking for could not be found.")
+		PostNotFound(ctx)
 		return
 	}
 

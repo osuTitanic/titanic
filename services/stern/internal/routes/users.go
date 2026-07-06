@@ -27,7 +27,7 @@ const (
 func UserProfileRedirect(ctx *server.Context) {
 	query := strings.TrimSpace(ctx.PathValue("query"))
 	if query == "" {
-		NotFound(ctx)
+		UserNotFound(ctx)
 		return
 	}
 	ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%s", query))
@@ -36,7 +36,7 @@ func UserProfileRedirect(ctx *server.Context) {
 func UserProfile(ctx *server.Context) {
 	query := strings.TrimSpace(ctx.PathValue("query"))
 	if query == "" {
-		NotFound(ctx)
+		UserNotFound(ctx)
 		return
 	}
 
@@ -54,7 +54,7 @@ func UserProfile(ctx *server.Context) {
 	}
 
 	if user == nil || !user.Activated {
-		NotFound(ctx)
+		UserNotFound(ctx)
 		return
 	}
 
@@ -675,5 +675,5 @@ func resolveUserByName(ctx *server.Context, query string) {
 	}
 
 	// womp womp
-	NotFound(ctx)
+	UserNotFound(ctx)
 }

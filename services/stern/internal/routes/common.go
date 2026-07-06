@@ -13,8 +13,8 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 )
 
-// RenderErrorPage renders a generic message page for errors
-func RenderErrorPage(ctx *server.Context, status int, heading, message string) {
+// RenderError renders a generic message page for errors
+func RenderError(ctx *server.Context, status int, heading, message string) {
 	view := templates.ErrorMessageView{
 		DefaultView: buildDefaultView(ctx),
 		Title:       fmt.Sprintf("%s - Titanic!", heading),
@@ -24,9 +24,19 @@ func RenderErrorPage(ctx *server.Context, status int, heading, message string) {
 	ctx.RenderTemplate(status, "errors/generic", view)
 }
 
+// RenderErrorPage renders a custom error page based on the provided template name
+func RenderErrorPage(ctx *server.Context, status int, name string) {
+	ctx.RenderTemplate(
+		status,
+		"errors/custom/"+name,
+		buildDefaultView(ctx),
+	)
+}
+
 func NotFound(ctx *server.Context) {
 	ctx.RenderTemplate(
-		http.StatusNotFound, "errors/404",
+		http.StatusNotFound,
+		"errors/404",
 		buildDefaultView(ctx),
 	)
 }
@@ -50,6 +60,50 @@ func InternalServerError(ctx *server.Context) {
 	if _, err := ctx.Response.Write(body); err != nil {
 		ctx.Logger.Error("Failed to write response body", "template", "errors/500", "error", err)
 	}
+}
+
+func BeatmapNotFound(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusNotFound, "beatmap_not_found")
+}
+
+func ForumNotFound(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusNotFound, "forum_not_found")
+}
+
+func TopicNotFound(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusNotFound, "topic_not_found")
+}
+
+func PostNotFound(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusNotFound, "post_not_found")
+}
+
+func UserNotFound(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusNotFound, "user_not_found")
+}
+
+func TopicLocked(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusForbidden, "topic_locked")
+}
+
+func PostLocked(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusForbidden, "post_locked")
+}
+
+func UserSilenced(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusForbidden, "user_silenced")
+}
+
+func UserRestricted(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusForbidden, "user_restricted")
+}
+
+func PostingTooQuickly(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusTooManyRequests, "posting_too_quickly")
+}
+
+func PostTooLong(ctx *server.Context) {
+	RenderErrorPage(ctx, http.StatusBadRequest, "post_too_long")
 }
 
 func buildDefaultView(ctx *server.Context) templates.DefaultView {

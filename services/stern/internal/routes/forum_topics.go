@@ -15,13 +15,13 @@ import (
 func ForumTopicView(ctx *server.Context) {
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	topicId, err := ctx.PathValueInt("topicId")
 	if err != nil {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -32,7 +32,7 @@ func ForumTopicView(ctx *server.Context) {
 		return
 	}
 	if topic == nil || topic.Hidden {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -84,7 +84,7 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	if initialPost == nil {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -217,7 +217,7 @@ func ForumCreateTopicView(ctx *server.Context) {
 
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
@@ -228,12 +228,12 @@ func ForumCreateTopicView(ctx *server.Context) {
 		return
 	}
 	if forum == nil || forum.Hidden {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	if !canCreateForumTopic(ctx, forum) {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
 		return
 	}
 
@@ -265,7 +265,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
@@ -276,17 +276,17 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		return
 	}
 	if forum == nil || forum.Hidden {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	if valid, err := ctx.ValidateCSRF(); err != nil || !valid {
-		RenderErrorPage(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
+		RenderError(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
 		return
 	}
 
 	if !canCreateForumTopic(ctx, forum) {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
 		return
 	}
 	if isPostingRejected(ctx) {

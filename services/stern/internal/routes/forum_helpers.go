@@ -18,24 +18,24 @@ func isPostingRejected(ctx *server.Context) bool {
 		return false
 	}
 	if ctx.CurrentUser.SilenceEnd != nil && time.Now().Before(*ctx.CurrentUser.SilenceEnd) {
-		RenderErrorPage(ctx, http.StatusForbidden, "You are silenced!", "You cannot post while you are silenced.")
+		UserSilenced(ctx)
 		return true
 	}
 	if ctx.CurrentUser.Restricted {
-		RenderErrorPage(ctx, http.StatusForbidden, "You are restricted!", "You cannot post while your account is restricted.")
+		UserRestricted(ctx)
 		return true
 	}
 
 	canBypassLength := ctx.HasPermission("forum.moderation.posts.bypass_length")
 	postLength := len(ctx.Request.FormValue("bbcode"))
 	if postLength > forumPostMaxLength && !canBypassLength {
-		RenderErrorPage(ctx, http.StatusForbidden, "Post too long", "Please limit your post to 15000 characters or less.")
+		PostTooLong(ctx)
 		return true
 	}
 
 	titleLength := len(ctx.Request.FormValue("title"))
 	if titleLength > forumTitleMaxLength && !canBypassLength {
-		RenderErrorPage(ctx, http.StatusForbidden, "Title too long", "Please limit your title to 128 characters or less.")
+		RenderError(ctx, http.StatusForbidden, "Title too long", "Please limit your title to 128 characters or less.")
 		return true
 	}
 

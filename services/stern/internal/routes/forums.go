@@ -80,7 +80,7 @@ func ForumHome(ctx *server.Context) {
 func ForumView(ctx *server.Context) {
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
@@ -91,7 +91,7 @@ func ForumView(ctx *server.Context) {
 		return
 	}
 	if forum == nil || forum.Hidden {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 

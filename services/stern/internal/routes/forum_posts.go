@@ -36,13 +36,13 @@ func ForumPostEditorView(ctx *server.Context) {
 
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	topicId, err := ctx.PathValueInt("topicId")
 	if err != nil {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -53,7 +53,7 @@ func ForumPostEditorView(ctx *server.Context) {
 		return
 	}
 	if topic == nil || topic.Hidden {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 	if topic.ForumId != forumId {
@@ -141,13 +141,13 @@ func ForumPostAction(ctx *server.Context) {
 
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	topicId, err := ctx.PathValueInt("topicId")
 	if err != nil {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -158,12 +158,12 @@ func ForumPostAction(ctx *server.Context) {
 		return
 	}
 	if topic == nil || topic.Hidden || topic.ForumId != forumId {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
 	if valid, err := ctx.ValidateCSRF(); err != nil || !valid {
-		RenderErrorPage(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
+		RenderError(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
 		return
 	}
 
@@ -185,13 +185,13 @@ func ForumDraftAction(ctx *server.Context) {
 
 	forumId, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		ForumNotFound(ctx)
 		return
 	}
 
 	topicId, err := ctx.PathValueInt("topicId")
 	if err != nil {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
@@ -202,12 +202,12 @@ func ForumDraftAction(ctx *server.Context) {
 		return
 	}
 	if topic == nil || topic.Hidden || topic.ForumId != forumId {
-		NotFound(ctx)
+		TopicNotFound(ctx)
 		return
 	}
 
 	if valid, err := ctx.ValidateCSRF(); err != nil || !valid {
-		RenderErrorPage(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
+		RenderError(ctx, http.StatusForbidden, "Invalid Request", "Your session has expired, please try again.")
 		return
 	}
 
@@ -216,7 +216,7 @@ func ForumDraftAction(ctx *server.Context) {
 	}
 
 	if !ctx.HasPermission("forum.posts.create") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to post here.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to post here.")
 		return
 	}
 
@@ -264,11 +264,11 @@ func clearForumDrafts(ctx *server.Context, topicId int) {
 
 func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	if !ctx.HasPermission("forum.posts.create") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to post here.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to post here.")
 		return
 	}
 	if topic.LockedAt != nil && !ctx.HasPermission("forum.moderation.topics.bypass_lock") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Topic Locked", "The topic you are trying to post in is locked!")
+		TopicLocked(ctx)
 		return
 	}
 
@@ -283,7 +283,7 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		}
 		if delta < 8*time.Second {
 			// Let the user know to chill out a lil
-			RenderErrorPage(ctx, http.StatusTooManyRequests, "Slow Down!", "You are posting too quickly, slow down!")
+			PostingTooQuickly(ctx)
 			return
 		}
 	}
@@ -371,30 +371,30 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 
 func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	if !ctx.HasPermission("forum.posts.edit") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to edit posts.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to edit posts.")
 		return
 	}
 
 	if topic.LockedAt != nil && !ctx.HasPermission("forum.moderation.topics.bypass_lock") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Topic Locked", "The topic you are trying to post in is locked!")
+		TopicLocked(ctx)
 		return
 	}
 
 	postId, _ := strconv.ParseInt(strings.TrimSpace(ctx.Request.FormValue("id")), 10, 64)
 	post, err := ctx.State.ForumPosts.ById(postId)
 	if err != nil || post == nil {
-		RenderErrorPage(ctx, http.StatusNotFound, "Post Not Found", "The post you are trying to edit could not be found.")
+		PostNotFound(ctx)
 		return
 	}
 
 	if post.EditLocked && !ctx.HasPermission("forum.moderation.posts.bypass_lock") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Post Locked", "The post you are trying to edit is locked!")
+		PostLocked(ctx)
 		return
 	}
 
 	isOwnPost := post.UserId == ctx.CurrentUser.Id
 	if !isOwnPost && !ctx.HasPermission("forum.moderation.posts.edit") {
-		RenderErrorPage(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to edit this post.")
+		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to edit this post.")
 		return
 	}
 

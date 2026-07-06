@@ -15,7 +15,7 @@ import (
 func BeatmapRedirect(ctx *server.Context) {
 	id := ctx.PathValue("id")
 	if id == "" {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 	ctx.Redirect(http.StatusFound, fmt.Sprintf("/b/%s", id))
@@ -24,7 +24,7 @@ func BeatmapRedirect(ctx *server.Context) {
 func BeatmapsetRedirect(ctx *server.Context) {
 	id, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
@@ -35,7 +35,7 @@ func BeatmapsetRedirect(ctx *server.Context) {
 		return
 	}
 	if beatmapset == nil || len(beatmapset.Beatmaps) == 0 {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
@@ -61,7 +61,7 @@ func BeatmapsetRedirect(ctx *server.Context) {
 func RedirectToBeatmapset(ctx *server.Context) {
 	id := ctx.PathValue("id")
 	if id == "" {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 	ctx.Redirect(http.StatusFound, fmt.Sprintf("/s/%s", id))
@@ -70,7 +70,7 @@ func RedirectToBeatmapset(ctx *server.Context) {
 func RedirectToDiscussion(ctx *server.Context) {
 	id, err := ctx.PathValueInt("setId")
 	if err != nil {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
@@ -81,7 +81,7 @@ func RedirectToDiscussion(ctx *server.Context) {
 		return
 	}
 	if beatmapset == nil {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
@@ -97,7 +97,7 @@ func RedirectToDiscussion(ctx *server.Context) {
 func Beatmap(ctx *server.Context) {
 	id, err := ctx.PathValueInt("id")
 	if err != nil {
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
@@ -111,7 +111,7 @@ func Beatmap(ctx *server.Context) {
 	}
 	if beatmap == nil || beatmap.Status <= constants.BeatmapStatusInactive {
 		// Beatmap not found / inactive / has not been submitted
-		NotFound(ctx)
+		BeatmapNotFound(ctx)
 		return
 	}
 
