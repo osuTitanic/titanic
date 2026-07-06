@@ -18,7 +18,7 @@ type provider struct {
 	web *WebProvider
 
 	mutex sync.RWMutex
-	cache map[string]*Location
+	cache map[string]*Location // TODO: add a ttl/lru for this
 }
 
 func NewProvider() Provider {
