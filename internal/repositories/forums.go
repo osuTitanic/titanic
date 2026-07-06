@@ -515,6 +515,16 @@ func (r *ForumBookmarkRepository) Exists(topicId int, userId int) (bool, error) 
 	return count > 0, err
 }
 
+func (r *ForumBookmarkRepository) FetchByUserId(userId int, preload ...string) ([]*schemas.ForumBookmark, error) {
+	var bookmarks []*schemas.ForumBookmark
+	err := Preloaded(r.db, preload).
+		Joins("JOIN forum_topics ON forum_topics.id = forum_bookmarks.topic_id").
+		Where("forum_bookmarks.user_id = ?", userId).
+		Where("forum_topics.hidden = ?", false).
+		Find(&bookmarks).Error
+	return bookmarks, err
+}
+
 type ForumSubscriberRepository struct {
 	db *gorm.DB
 }

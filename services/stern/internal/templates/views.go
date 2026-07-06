@@ -244,6 +244,47 @@ type UserBeatmapGroup struct {
 	Beatmapsets []*schemas.Beatmapset
 }
 
+type SettingsOverviewView struct {
+	DefaultView
+	TotalPosts    int
+	Notifications []*schemas.Notification
+	Bookmarks     []*schemas.ForumBookmark
+}
+
+type SettingsFriendsView struct {
+	DefaultView
+	Friends []*SettingsFriend
+}
+
+type SettingsProfileView struct {
+	DefaultView
+	InfoMessage     string
+	ErrorMessage    string
+	UserpageEditor  ForumEditorContext
+	SignatureEditor ForumEditorContext
+}
+
+type SettingsSecurityView struct {
+	DefaultView
+	InfoMessage  string
+	ErrorMessage string
+	IrcUsername  string
+	Logins       []*SecurityLogin
+}
+
+type SecurityLogin struct {
+	Time     time.Time
+	IsWebIrc bool
+	Country  string
+	Ip       string
+	Version  string
+}
+
+type SettingsFriend struct {
+	User     *schemas.User
+	IsMutual bool
+}
+
 type GroupView struct {
 	DefaultView
 	Group *schemas.Group
