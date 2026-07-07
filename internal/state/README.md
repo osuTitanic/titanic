@@ -14,6 +14,7 @@ Most services should start here instead of manually creating each dependency.
 - `Storage` for app storage
 - `Email` for email delivery
 - `Repositories` for actual database access
+- `Extensions` for service-specific dependencies
 - `Rankings` for ranking services
 - `PPv1` for ppv1 score calculation helpers
 
@@ -45,5 +46,36 @@ if err != nil {
 }
 defer app.Close()
 ```
+
+## Extensions
+
+Extensions allow services to attach their own dependencies to `State` without adding every service-specific type to the shared state struct.
+They are stored by string key and retrieved with the expected Go type.
+
+Stern uses this for the wiki service.
+The service is created during startup in [main.go](https://github.com/osuTitanic/titanic-go/blob/main/services/stern/cmd/web/main.go#L183) and registered under the `"wiki"` key:
+
+```go
+wikiService := wiki.NewService(
+	app.Config,
+	app.Repositories,
+	slog.Default().With("component", "wiki"),
+)
+state.RegisterExtension(app, "wiki", wikiService)
+```
+
+Routes can later resolve the typed service from the request state:
+
+```go
+service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
+if !ok {
+	return errors.New("wiki service not available")
+}
+
+// ...
+```
+
+`GetExtension` returns `false` when the key is missing or the stored value does not match the requested type.
+Extensions are only stored on the state object. If an extension owns resources that need cleanup, the service that registers it should close them during shutdown. In the future, I might add a way to do cleanup extensions through a `Close` method or something similar.
 
 <!-- TODO: Document repositories, transactions & lifecycle -->
