@@ -11,12 +11,8 @@
     <meta name="theme-color" content="rgba(96, 60, 186, 1)">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/logo/apple-touch-icon.png">
     <link rel="apple-touch-icon" href="/images/logo/icon-192.png">
-
     <link rel="dns-prefetch" href="{{ .Config.ApiBaseUrl() }}">
     <link rel="preconnect" href="{{ .Config.ApiBaseUrl() }}" crossorigin>
-    <link rel="dns-prefetch" href="https://cdn.socket.io">
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
     <link rel="stylesheet" href="/css/main.css">
     <meta property="og:site_name" content="Titanic!">
