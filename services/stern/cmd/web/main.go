@@ -8,6 +8,7 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/routes"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
+	"github.com/osuTitanic/titanic-go/services/stern/internal/wiki"
 	web "github.com/osuTitanic/titanic-go/services/stern/web"
 )
 
@@ -177,6 +178,10 @@ func main() {
 		slog.Error("Failed to initialize templates", "error", err)
 		os.Exit(1)
 	}
+
+	// Register wiki service extension to app state
+	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
+	state.RegisterExtension(app, "wiki", wikiService)
 
 	server := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
 	InitializeWebRoutes(server)

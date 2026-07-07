@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic-go/internal/schemas"
+	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/wiki"
@@ -35,8 +36,12 @@ func WikiHome(ctx *server.Context) {
 		return
 	}
 
-	// TODO: Persist wiki service somewhere, not sure where yet
-	service := wiki.NewService(ctx.State.Config, ctx.State.Repositories, ctx.Logger)
+	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
+	if !ok {
+		ctx.Logger.Error("Failed to resolve wiki service from state")
+		InternalServerError(ctx)
+		return
+	}
 	urls := service.URLs()
 
 	pageCount, err := ctx.State.WikiPages.Count()
@@ -126,8 +131,13 @@ func WikiArticle(ctx *server.Context) {
 		return
 	}
 
-	// TODO: Persist wiki service somewhere, not sure where yet
-	service := wiki.NewService(ctx.State.Config, ctx.State.Repositories, ctx.Logger)
+	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
+	if !ok {
+		ctx.Logger.Error("Failed to resolve wiki service from state")
+		InternalServerError(ctx)
+		return
+	}
+
 	result, err := service.FetchPage(path, language)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch wiki page", "path", path, "language", language, "error", err)
