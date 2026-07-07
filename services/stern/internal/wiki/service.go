@@ -36,6 +36,9 @@ type CachedMarkdown struct {
 	expires time.Time
 }
 
+// TODO: Once we have persisted the wiki service, we can move this cache
+//		 to be a field on the service instead of a global variable
+
 var markdownCache = struct {
 	sync.Mutex
 	entries map[string]CachedMarkdown

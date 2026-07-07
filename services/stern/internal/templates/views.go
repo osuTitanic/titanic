@@ -680,3 +680,39 @@ type KudosuEntry struct {
 	Rank     int
 	IsFriend bool
 }
+
+type WikiView struct {
+	DefaultView
+	Title              string
+	SiteTitle          string
+	SiteDescription    string
+	SiteUrl            string
+	CanonicalUrl       string
+	Content            string
+	RequestedLanguage  string
+	Language           string
+	SearchQuery        string
+	TranslationUrl     string
+	SourceUrl          string
+	HistoryUrl         string
+	DiscussionUrl      string
+	PageCount          int
+	CurrentDate        string
+	AvailableLanguages []WikiLanguageLink
+	Categories         []*WikiCategoryView
+}
+
+type WikiLanguageLink struct {
+	Code string
+	Name string
+}
+
+type WikiCategoryView struct {
+	Name  string
+	Pages []*WikiPageLink
+}
+
+type WikiPageLink struct {
+	Path  string
+	Title string
+}
