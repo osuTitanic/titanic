@@ -23,23 +23,20 @@ func (service *RankingsService) Update(stats *schemas.Stats, country string) err
 
 	pipe := service.client.Pipeline()
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:performance:%d", mode), redis.Z{Score: stats.PP, Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:performance:%d:%s", mode, country), redis.Z{Score: stats.PP, Member: stats.UserId})
-
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:rscore:%d", mode), redis.Z{Score: float64(stats.Rscore), Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:rscore:%d:%s", mode, country), redis.Z{Score: float64(stats.Rscore), Member: stats.UserId})
-
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:tscore:%d", mode), redis.Z{Score: float64(stats.Tscore), Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:tscore:%d:%s", mode, country), redis.Z{Score: float64(stats.Tscore), Member: stats.UserId})
-
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:ppv1:%d", mode), redis.Z{Score: stats.PPv1, Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:ppv1:%d:%s", mode, country), redis.Z{Score: stats.PPv1, Member: stats.UserId})
-
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:acc:%d", mode), redis.Z{Score: stats.Acc, Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:acc:%d:%s", mode, country), redis.Z{Score: stats.Acc, Member: stats.UserId})
-
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:clears:%d", mode), redis.Z{Score: float64(clears), Member: stats.UserId})
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:clears:%d:%s", mode, country), redis.Z{Score: float64(clears), Member: stats.UserId})
 
+	if len(country) == 2 && country != "xx" {
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:performance:%d:%s", mode, country), redis.Z{Score: stats.PP, Member: stats.UserId})
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:rscore:%d:%s", mode, country), redis.Z{Score: float64(stats.Rscore), Member: stats.UserId})
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:tscore:%d:%s", mode, country), redis.Z{Score: float64(stats.Tscore), Member: stats.UserId})
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:ppv1:%d:%s", mode, country), redis.Z{Score: stats.PPv1, Member: stats.UserId})
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:acc:%d:%s", mode, country), redis.Z{Score: stats.Acc, Member: stats.UserId})
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:clears:%d:%s", mode, country), redis.Z{Score: float64(clears), Member: stats.UserId})
+	}
 	_, err := pipe.Exec(service.ctx)
 	return err
 }
@@ -126,7 +123,10 @@ func (service *RankingsService) UpdateLeaderScores(stats *schemas.Stats, country
 
 	pipe := service.client.Pipeline()
 	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:leader:%d", stats.Mode), entry)
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:leader:%d:%s", stats.Mode, country), entry)
+
+	if len(country) == 2 && country != "xx" {
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:leader:%d:%s", stats.Mode, country), entry)
+	}
 	_, err = pipe.Exec(service.ctx)
 	return err
 }
@@ -153,7 +153,10 @@ func (service *RankingsService) UpdateKudosu(userId int, country string, modding
 
 	pipe := service.client.Pipeline()
 	pipe.ZAdd(service.ctx, "bancho:kudosu", entry)
-	pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:kudosu:%s", country), entry)
+
+	if len(country) == 2 && country != "xx" {
+		pipe.ZAdd(service.ctx, fmt.Sprintf("bancho:kudosu:%s", country), entry)
+	}
 	_, err = pipe.Exec(service.ctx)
 	return err
 }
