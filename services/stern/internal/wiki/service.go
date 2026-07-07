@@ -23,6 +23,7 @@ type Service struct {
 	logger *slog.Logger
 	client *http.Client
 	urls   URLs
+	cache  MarkdownCache
 }
 
 type PageResult struct {
@@ -36,14 +37,9 @@ type CachedMarkdown struct {
 	expires time.Time
 }
 
-// TODO: Once we have persisted the wiki service, we can move this cache
-//		 to be a field on the service instead of a global variable
-
-var markdownCache = struct {
-	sync.Mutex
+type MarkdownCache struct {
+	mutex   sync.Mutex
 	entries map[string]CachedMarkdown
-}{
-	entries: make(map[string]CachedMarkdown),
 }
 
 func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logger) *Service {
@@ -56,6 +52,10 @@ func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logg
 		logger: logger.With("component", "wiki"),
 		client: &http.Client{Timeout: 15 * time.Second},
 		urls:   BuildURLs(cfg),
+		cache: MarkdownCache{
+			entries: make(map[string]CachedMarkdown),
+			mutex:   sync.Mutex{},
+		},
 	}
 }
 
@@ -146,25 +146,25 @@ func (s *Service) FetchMarkdownCached(path, language string) (string, bool) {
 	now := time.Now()
 
 	// Check the cache first & if the entry has expired
-	markdownCache.Lock()
-	entry, ok := markdownCache.entries[cacheKey]
+	s.cache.mutex.Lock()
+	entry, ok := s.cache.entries[cacheKey]
 	if ok && now.Before(entry.expires) {
-		markdownCache.Unlock()
+		s.cache.mutex.Unlock()
 		return entry.content, entry.found
 	}
-	markdownCache.Unlock()
+	s.cache.mutex.Unlock()
 
 	// Entry was not found or has expired -> fetch the markdown from the source
 	content, found := s.FetchMarkdown(path, language)
 
 	// Persist the result in the cache
-	markdownCache.Lock()
-	markdownCache.entries[cacheKey] = CachedMarkdown{
+	s.cache.mutex.Lock()
+	s.cache.entries[cacheKey] = CachedMarkdown{
 		content: content,
 		found:   found,
 		expires: now.Add(markdownCacheTTL),
 	}
-	markdownCache.Unlock()
+	s.cache.mutex.Unlock()
 
 	return content, found
 }
