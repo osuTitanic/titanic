@@ -13,6 +13,7 @@ require (
 	github.com/minio/minio-go/v7 v7.2.0
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/wcharczuk/go-chart/v2 v2.1.2
+	github.com/yuin/goldmark v1.4.13
 	golang.org/x/crypto v0.51.0
 	golang.org/x/image v0.43.0
 	golang.org/x/text v0.38.0

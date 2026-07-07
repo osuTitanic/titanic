@@ -1,0 +1,8 @@
+{{ extends "/pages/wiki/content/fi.jet" }}
+
+{{ block wikiContent() }}
+<div class="wiki-content">
+    <h1>Pahoittelut!</h1>
+    <p>Hakutoimintoa ei ole vielä toteutettu. Tulethan myöhemmin uudelleen!</p>
+</div>
+{{ end }}

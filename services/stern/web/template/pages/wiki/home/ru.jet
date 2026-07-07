@@ -1,0 +1,65 @@
+{{ extends "/pages/wiki/content/ru.jet" }}
+
+{{ block wikiContent() }}
+<div class="wiki-content">
+    <span class="wiki-welcome">
+        <h1>Главная страница</h1>
+        <img src="/images/logo/main-vector.min.svg" alt="logo" width="40" height="40">
+        <h2><i>Добро пожаловать в Titanic! Wiki, совместный справочник обо всём, что связано с Titanic!</i></h2>
+    </span>
+    <div class="wiki-stats">
+        <span>Сейчас у нас <a href="#">{{ .PageCount|formatNumber }}</a> статей, и их становится больше!</span>
+        <span>Сегодня {{ .CurrentDate }}.</span>
+    </div>
+    <div class="wiki-categories">
+        <table>
+            <tbody>
+                <tr><th>Общее описание</th></tr>
+                <tr>
+                    <td>
+                        Titanic! Wiki — это проект сообщества, созданный участниками Titanic!.
+                        Наша цель — создать лучший ресурс обо всём, что связано с Titanic!.
+                        Но мы не справимся одни — <b>нам нужна ваша помощь!</b>
+                        Если вам интересен проект, используйте свои знания и начните помогать уже сегодня!
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table width="100%">
+            <tbody>
+                <tr><th>Другие языки</th></tr>
+                <tr>
+                    <td>
+                        {{ range i, language := .AvailableLanguages }}
+                            <a href="/wiki/{{ language.Code }}">{{ language.Name }}</a>
+                            {{ if i < len(.AvailableLanguages) - 1 }}<b>•</b>{{ end }}
+                        {{ end }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ categoryCount := len(.Categories) }}
+        {{ range i, category := .Categories }}
+        {{ width := "50%" }}
+        {{ if categoryCount % 2 == 1 && i == categoryCount - 1 }}{{ width = "100%" }}{{ end }}
+        <table width="{{ width }}" style="float: {{ if i % 2 == 0 }}left{{ else }}right{{ end }};">
+            <tbody>
+                <tr><th>{{ category.Name }}</th></tr>
+                <tr>
+                    <td>
+                        {{ if len(category.Pages) > 0 }}
+                            {{ range j, page := category.Pages }}
+                                <a href="/wiki/ru/{{ page.Path }}">{{ page.Title }}</a>
+                                {{ if j < len(category.Pages) - 1 }}<b>•</b>{{ end }}
+                            {{ end }}
+                        {{ else }}
+                            В этой категории пока нет страниц.
+                        {{ end }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ end }}
+    </div>
+</div>
+{{ end }}

@@ -11,7 +11,7 @@ type WikiPage struct {
 	Path        string    `gorm:"column:path"`
 	CreatedAt   time.Time `gorm:"column:created_at;autoCreateTime"`
 	LastUpdated time.Time `gorm:"column:last_updated;autoCreateTime"`
-	CategoryId  int       `gorm:"column:category_id"`
+	CategoryId  *int      `gorm:"column:category_id"`
 
 	Category *WikiCategory  `gorm:"foreignKey:CategoryId;references:Id"`
 	Content  []*WikiContent `gorm:"foreignKey:PageId;references:Id"`

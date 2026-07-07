@@ -8,6 +8,7 @@ import (
 	"github.com/osuTitanic/titanic-go/services/stern/internal/routes"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
+	"github.com/osuTitanic/titanic-go/services/stern/internal/wiki"
 	web "github.com/osuTitanic/titanic-go/services/stern/web"
 )
 
@@ -69,6 +70,13 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /u/{query}", routes.UserProfile)
 	server.Handle("GET /users/{query}", routes.UserProfileRedirect)
 	server.Handle("GET /g/{id}", routes.Group)
+	server.Handle("GET /wiki", routes.WikiRedirect)
+	server.Handle("GET /wiki/{$}", routes.WikiRedirect)
+	server.Handle("GET /wiki/{language}", routes.WikiLanguageRedirect)
+	server.Handle("GET /wiki/{language}/{$}", routes.WikiHome)
+	server.Handle("GET /wiki/{language}/search", routes.WikiSearchRedirect)
+	server.Handle("GET /wiki/{language}/search/{$}", routes.WikiSearch)
+	server.Handle("GET /wiki/{language}/{path...}", routes.WikiArticle)
 	server.Handle("GET /forum", routes.ForumHome)
 	server.Handle("GET /forum/{$}", routes.ForumHome)
 	server.Handle("GET /forum/{id}", routes.ForumView)
@@ -170,6 +178,10 @@ func main() {
 		slog.Error("Failed to initialize templates", "error", err)
 		os.Exit(1)
 	}
+
+	// Register wiki service extension to app state
+	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
+	state.RegisterExtension(app, "wiki", wikiService)
 
 	server := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
 	InitializeWebRoutes(server)

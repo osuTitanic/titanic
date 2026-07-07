@@ -1,0 +1,47 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Title }}</title>
+<meta name="description" content="{{ .SiteDescription }}">
+<meta property="og:title" content="{{ .SiteTitle }}">
+{{ if .SiteUrl }}<meta property="og:url" content="{{ .SiteUrl }}">{{ end }}
+<meta property="og:description" content="{{ .SiteDescription }}">
+{{ if .CanonicalUrl }}<link rel="canonical" href="{{ .CanonicalUrl }}">{{ end }}
+<link rel="stylesheet" href="/css/wiki.css">
+{{ end }}
+
+{{ block body() }}
+<div class="wiki-navigation">
+    <div class="left-navigation">
+        <a href="#" class="current">Page</a>
+        <a href="{{ .DiscussionUrl }}">Discuter</a>
+    </div>
+    <div class="right-navigation">
+        <a href="#" class="current">Lire</a>
+        <a href="{{ .SourceUrl }}">Source</a>
+        <a href="{{ .HistoryUrl }}">Historique</a>
+        <div class="wiki-search">
+            <form action="/wiki/fr/search" method="get">
+                <input type="text" name="query" placeholder="Recherche..." value="{{ .SearchQuery }}">
+                <button type="submit">Go!</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="wiki-sidebar"></div>
+{{ if .Language != .RequestedLanguage }}
+<div class="wiki-warning">
+    <p>
+        Cette page n'est pas disponible dans votre langue.
+        Vous pouvez <a href="{{ .TranslationUrl }}">la traduire</a> pour la rendre disponible.
+    </p>
+</div>
+{{ end }}
+<div class="wiki-content">
+    {{ yield wikiContent() }}
+    {{ .Content | unsafe }}
+    <br>
+</div>
+{{ end }}
+
+{{ block wikiContent() }}{{ end }}
