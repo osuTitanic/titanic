@@ -1,0 +1,8 @@
+{{ extends "/pages/wiki/content/de.jet" }}
+
+{{ block wikiContent() }}
+<div class="wiki-content">
+    <h1>Sorry!</h1>
+    <p>Die Suchfunktion ist momentan noch nicht verfügbar. Versuche es später nochmal!</p>
+</div>
+{{ end }}
