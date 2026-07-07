@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/css/main.css">
     <meta property="og:site_name" content="Titanic!">
     <meta property="og:type" content="website">
+    {{ if .Config.EnableSsl }}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{{ end }}
     {{ yield head() }}
 
     <link rel="preload" href="/images/logo/main-vector.min.svg" as="image" fetchpriority="high">
