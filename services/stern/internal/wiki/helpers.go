@@ -103,7 +103,7 @@ func ExtractOutlinks(text string) []Outlink {
 	return outlinks
 }
 
-func createValidUTF8(text string) string {
+func createValidUtf8(text string) string {
 	if utf8.ValidString(text) {
 		return text
 	}
