@@ -1,0 +1,47 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Title }}</title>
+<meta name="description" content="{{ .SiteDescription }}">
+<meta property="og:title" content="{{ .SiteTitle }}">
+{{ if .SiteURL }}<meta property="og:url" content="{{ .SiteURL }}">{{ end }}
+<meta property="og:description" content="{{ .SiteDescription }}">
+{{ if .CanonicalURL }}<link rel="canonical" href="{{ .CanonicalURL }}">{{ end }}
+<link rel="stylesheet" href="/css/wiki.css">
+{{ end }}
+
+{{ block body() }}
+<div class="wiki-navigation">
+    <div class="left-navigation">
+        <a href="#" class="current">Sivu</a>
+        <a href="{{ .DiscussionURL }}">Keskustelu</a>
+    </div>
+    <div class="right-navigation">
+        <a href="#" class="current">Lue</a>
+        <a href="{{ .SourceURL }}">Näytä lähde</a>
+        <a href="{{ .HistoryURL }}">Näytä historia</a>
+        <div class="wiki-search">
+            <form action="/wiki/fi/search" method="get">
+                <input type="text" name="query" placeholder="Haku..." value="{{ .SearchQuery }}">
+                <button type="submit">Hae</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="wiki-sidebar"></div>
+{{ if .Language != .RequestedLanguage }}
+<div class="wiki-warning">
+    <p>
+        Tämä sivu ei ole saatavilla valitsemallasi kielellä.
+        Voit <a href="{{ .TranslationURL }}">kääntää sen</a>, jotta se olisi saatavilla.
+    </p>
+</div>
+{{ end }}
+<div class="wiki-content">
+    {{ yield wikiContent() }}
+    {{ .Content | unsafe }}
+    <br>
+</div>
+{{ end }}
+
+{{ block wikiContent() }}{{ end }}
