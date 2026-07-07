@@ -36,12 +36,14 @@ func RankingsGlobal(ctx *server.Context) {
 		page = 1
 	}
 
-	country := query.Get("country")
-	countryName := ""
-	location := "All Locations"
+	country, countryName, ok := resolveRankingCountry(query.Get("country"))
+	if !ok {
+		NotFound(ctx)
+		return
+	}
 
+	location := "All Locations"
 	if country != "" {
-		countryName = constants.GetCountryNameFromCode(country)
 		location = countryName
 	}
 
@@ -175,6 +177,22 @@ func resolveFriendIds(ctx *server.Context) ([]int, error) {
 	}
 
 	return targetIds, nil
+}
+
+func resolveRankingCountry(value string) (string, string, bool) {
+	country := strings.ToLower(strings.TrimSpace(value))
+	if country == "" {
+		return "", "", true
+	}
+	if country == "xx" {
+		return "", "", false
+	}
+
+	countryName := constants.GetCountryNameFromCode(country)
+	if countryName == "" {
+		return "", "", false
+	}
+	return country, countryName, true
 }
 
 func resolveJumpTo(ctx *server.Context, query url.Values, page int, rankFor func(userId int) (int, error)) (string, int, error) {
