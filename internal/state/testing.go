@@ -86,10 +86,8 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		t.Fatalf("failed to setup location service: %v", err)
 	}
 
-	// TODO: Add a more suitable provider for storage.
-	// 		 Right now it depends on an internet connection to github.
 	storage := storage.NewFileStorage(cfg.DataPath)
-	if err := storage.Setup(); err != nil {
+	if err := storage.CreateDefaultFolders(); err != nil {
 		t.Fatalf("failed to setup storage: %v", err)
 	}
 	repositories := NewRepositories(db)

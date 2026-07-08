@@ -33,7 +33,7 @@ type S3Storage struct {
 	requiredDirectories []string
 }
 
-func NewS3Storage(cfg S3Config) (Storage, error) {
+func NewS3Storage(cfg S3Config) (*S3Storage, error) {
 	if strings.TrimSpace(cfg.Endpoint) == "" {
 		return nil, errors.New("s3 endpoint must not be empty")
 	}
