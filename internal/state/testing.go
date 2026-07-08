@@ -81,14 +81,13 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		// 		 Another option would be to add default test data to the database
 	}
 
-	// TODO: Add more suitable provider for location & storage
-	// 		 Right now they both depend on an internet connection to github/ip-api
-
-	geolocation := location.NewProvider()
+	geolocation := location.NewDummyProvider()
 	if err := geolocation.Setup(); err != nil {
 		t.Fatalf("failed to setup location service: %v", err)
 	}
 
+	// TODO: Add a more suitable provider for storage.
+	// 		 Right now it depends on an internet connection to github.
 	storage := storage.NewFileStorage(cfg.DataPath)
 	if err := storage.Setup(); err != nil {
 		t.Fatalf("failed to setup storage: %v", err)
