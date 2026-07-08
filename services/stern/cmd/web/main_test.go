@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,6 +18,8 @@ import (
 func TestPublicPagesRender(t *testing.T) {
 	app := state.NewTestState(t, state.WithTestMigrations(
 		&schemas.User{},
+		&schemas.Stats{},
+		&schemas.Login{},
 		&schemas.Group{},
 		&schemas.GroupEntry{},
 		&schemas.UserPermission{},
@@ -26,13 +29,17 @@ func TestPublicPagesRender(t *testing.T) {
 		&schemas.ForumIcon{},
 		&schemas.ForumTopic{},
 		&schemas.ForumPost{},
+		&schemas.ForumBookmark{},
 		&schemas.Message{},
 		&schemas.Beatmapset{},
 		&schemas.Beatmap{},
 		&schemas.Score{},
 		&schemas.Release{},
 	))
-	setWebsiteStats(t, app)
+	populateWebsiteStats(t, app)
+
+	fixtures := state.NewTestData(t, app)
+	_, forum, _ := populateWebsiteRenderData(t, fixtures)
 
 	tests := []struct {
 		name string
@@ -42,7 +49,8 @@ func TestPublicPagesRender(t *testing.T) {
 		{name: "download", path: "/download"},
 		{name: "login", path: "/account/login"},
 		{name: "register", path: "/account/register"},
-		// TODO: Add more pages to test, once we have a nice way of creating test data in the db
+		{name: "forum home", path: "/forum"},
+		{name: "forum view", path: fmt.Sprintf("/forum/%d", forum.Id)},
 	}
 	router := newTestRouter(t, app)
 
@@ -51,6 +59,62 @@ func TestPublicPagesRender(t *testing.T) {
 			recorder := httptest.NewRecorder()
 			request := httptest.NewRequest(http.MethodGet, test.path, nil)
 			request.Header.Set("User-Agent", "Mozilla/5.0")
+			router.ServeHTTP(recorder, request)
+
+			if recorder.Code != http.StatusOK {
+				t.Fatalf("GET %s -> %d, want %d\n%s", test.path, recorder.Code, http.StatusOK, recorder.Body.String())
+			}
+			t.Logf("GET %s -> %d, body length: %d", test.path, recorder.Code, len(recorder.Body.String()))
+		})
+	}
+}
+
+func TestAuthenticatedPagesRender(t *testing.T) {
+	app := state.NewTestState(t, state.WithTestMigrations(
+		&schemas.User{},
+		&schemas.Stats{},
+		&schemas.Login{},
+		&schemas.Group{},
+		&schemas.GroupEntry{},
+		&schemas.UserPermission{},
+		&schemas.GroupPermission{},
+		&schemas.Notification{},
+		&schemas.Forum{},
+		&schemas.ForumIcon{},
+		&schemas.ForumTopic{},
+		&schemas.ForumPost{},
+		&schemas.ForumBookmark{},
+		&schemas.Message{},
+		&schemas.Beatmapset{},
+		&schemas.Beatmap{},
+		&schemas.Score{},
+		&schemas.Release{},
+	))
+	populateWebsiteStats(t, app)
+
+	fixtures := state.NewTestData(t, app)
+	user, _, topic := populateWebsiteRenderData(t, fixtures)
+	fixtures.CreateNotification(user)
+	fixtures.CreateForumBookmark(user, topic)
+	fixtures.CreateLogin(user)
+
+	tests := []struct {
+		name string
+		path string
+	}{
+		{name: "account overview", path: "/account"},
+		{name: "account profile", path: "/account/profile"},
+		{name: "account security", path: "/account/security"},
+		{name: "account chat", path: "/account/chat"},
+	}
+	router := newTestRouter(t, app)
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			recorder := httptest.NewRecorder()
+			request := httptest.NewRequest(http.MethodGet, test.path, nil)
+			request.Header.Set("User-Agent", "Mozilla/5.0")
+			request.AddCookie(fixtures.CreateWebsiteSessionCookie(user, request))
 			router.ServeHTTP(recorder, request)
 
 			if recorder.Code != http.StatusOK {
@@ -74,7 +138,7 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 	return server.Router
 }
 
-func setWebsiteStats(t *testing.T, app *state.State) {
+func populateWebsiteStats(t *testing.T, app *state.State) {
 	t.Helper()
 
 	if err := app.Redis.MSet(context.Background(),
@@ -85,4 +149,32 @@ func setWebsiteStats(t *testing.T, app *state.State) {
 	).Err(); err != nil {
 		t.Fatalf("failed to seed redis stats: %v", err)
 	}
+}
+
+func populateWebsiteRenderData(t *testing.T, fixtures *state.TestData) (*schemas.User, *schemas.Forum, *schemas.ForumTopic) {
+	t.Helper()
+
+	user := fixtures.CreateUser()
+	fixtures.CreateStats(user)
+	fixtures.CreateRelease()
+	fixtures.CreateMessage(func(message *schemas.Message) {
+		message.Sender = user.Name
+	})
+
+	mainForum := fixtures.CreateForum(func(forum *schemas.Forum) {
+		forum.Name = "Announcements"
+	})
+	subForum := fixtures.CreateForum(func(forum *schemas.Forum) {
+		parentId := mainForum.Id
+		forum.ParentId = &parentId
+		forum.Name = "Development"
+	})
+	topic := fixtures.CreateForumTopic(subForum, user, func(topic *schemas.ForumTopic) {
+		topic.Announcement = true
+		topic.Title = "i just farted"
+	})
+	fixtures.CreateForumPost(topic, user, func(post *schemas.ForumPost) {
+		post.Content = "idk what to write here"
+	})
+	return user, subForum, topic
 }
