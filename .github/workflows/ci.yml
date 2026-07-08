@@ -28,6 +28,23 @@ jobs:
       - name: Run tests
         run: go test ./...
 
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run integration tests
+        run: go test -tags=integration -count=1 -p 1 ./...
+
   prepare:
     runs-on: ubuntu-latest
 
@@ -114,6 +131,7 @@ jobs:
   build:
     needs:
       - test
+      - integration-test
       - prepare
     runs-on: ubuntu-latest
 
