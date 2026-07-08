@@ -147,3 +147,25 @@ if !ok {
 `GetExtension` returns `false` when the key is missing or the stored value does not match the requested type.
 Extensions are only stored on the state object. It won't automatically clean them up (a little annoying, i know).
 In the future, I might add a way to do cleanup extensions through a `Close` method or something similar.
+
+## Integration Tests
+
+Integration tests can use `NewTestState` and `NewTestData` behind the `integration` build tag.
+`NewTestState` creates temporary PostgreSQL and Redis containers, while `NewTestData` creates rows with overridable defaults.
+
+```go
+app := state.NewTestState(t, state.WithTestMigrations(
+	&schemas.User{},
+	&schemas.Forum{},
+	&schemas.ForumTopic{},
+	&schemas.ForumPost{},
+))
+
+fixtures := state.NewTestData(t, app)
+user := fixtures.CreateUser()
+forum := fixtures.CreateForum()
+topic := fixtures.CreateForumTopic(forum, user, func(topic *schemas.ForumTopic) {
+	topic.Title = "like and subscribe for more hyperlinked blocked"
+})
+fixtures.CreateForumPost(topic, user)
+```
