@@ -907,31 +907,31 @@
                 </div>
                 <div class="form-row">
                     <label>Discord ID</label>
-                    <input type="text" id="mod-discord-id" value="{{ user.DiscordId }}" />
+                    <input type="text" id="mod-discord-id" value="{{ user.DiscordId ? user.DiscordId : "" }}" />
                 </div>
                 <div class="form-row">
                     <label>Title</label>
-                    <input type="text" id="mod-title" value="{{ user.Title }}" />
+                    <input type="text" id="mod-title" value="{{ user.TitleText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Website</label>
-                    <input type="text" id="mod-website" value="{{ user.Website }}" />
+                    <input type="text" id="mod-website" value="{{ user.WebsiteText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Twitter</label>
-                    <input type="text" id="mod-twitter" value="{{ user.Twitter }}" />
+                    <input type="text" id="mod-twitter" value="{{ user.TwitterText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Discord</label>
-                    <input type="text" id="mod-discord" value="{{ user.Discord }}" />
+                    <input type="text" id="mod-discord" value="{{ user.DiscordText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Location</label>
-                    <input type="text" id="mod-location" value="{{ user.Location }}" />
+                    <input type="text" id="mod-location" value="{{ user.LocationText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Interests</label>
-                    <input type="text" id="mod-interests" value="{{ user.Interests }}" />
+                    <input type="text" id="mod-interests" value="{{ user.InterestsText() }}" />
                 </div>
                 <div class="form-row">
                     <label>Userpage</label>
@@ -939,7 +939,7 @@
                 </div>
                 <div class="form-row">
                     <label>Signature</label>
-                    <textarea id="mod-signature" rows="3">{{ user.Signature }}</textarea>
+                    <textarea id="mod-signature" rows="3">{{ user.SignatureText() }}</textarea>
                 </div>
                 <div class="form-row">
                     <label>Activated</label>
