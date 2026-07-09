@@ -16,7 +16,7 @@ function handleApiErrorCallback(xhr, handlerFunction) {
 function getUser(userId, onSuccess, onFailure) {
     var url = "/moderation/users/" + userId + "/profile";
 
-    performApiRequest(
+    return performApiRequest(
         "GET",
         url,
         null,
@@ -33,7 +33,7 @@ function getUser(userId, onSuccess, onFailure) {
 }
 
 function updateUserProfile(userId, data, onSuccess, onFailure) {
-    getUser(
+    return getUser(
         userId,
         function (user) {
             var profileUpdate = {
@@ -62,7 +62,7 @@ function updateUserProfile(userId, data, onSuccess, onFailure) {
 
             var url = "/moderation/users/" + userId + "/profile";
 
-            performApiRequest(
+            return performApiRequest(
                 "PATCH",
                 url,
                 profileUpdate,
@@ -84,17 +84,19 @@ function updateUserProfile(userId, data, onSuccess, onFailure) {
             );
         },
         function (error) {
-            return onFailure(error);
+            if (onFailure) {
+                return onFailure(error);
+            }
         }
     );
 }
 
 function removeUserAvatar(userId, onSuccess, onFailure) {
     if (!confirm("Are you sure you want to remove this user's avatar?")) {
-        return;
+        return null;
     }
 
-    performApiRequest(
+    return performApiRequest(
         "DELETE",
         "/moderation/users/" + userId + "/avatar",
         null,
@@ -291,13 +293,13 @@ function deleteUserInfringement(userId, infringementId, restoreScores, onSuccess
 
 function wipeUserScores(userId, onSuccess, onFailure) {
     if (!confirm("Are you sure you want to wipe this user's scores? (This may take a while)")) {
-        return;
+        return null;
     }
     if (!confirm("Are you ABSOLUTELY sure you want to WIPE the user's scores?")) {
-        return;
+        return null;
     }
 
-    performApiRequest(
+    return performApiRequest(
         "DELETE",
         "/moderation/users/" + userId + "/scores",
         null,
@@ -314,10 +316,10 @@ function wipeUserScores(userId, onSuccess, onFailure) {
 
 function restoreUserScores(userId, onSuccess, onFailure) {
     if (!confirm("Are you sure you want to restore this user's scores? (This may take a while)")) {
-        return;
+        return null;
     }
 
-    performApiRequest(
+    return performApiRequest(
         "POST",
         "/moderation/users/" + userId + "/scores/restore",
         null,
@@ -338,10 +340,10 @@ function deleteUserAccount(userId, onSuccess, onFailure) {
 
 function clearUserProfile(userId, onSuccess, onFailure) {
     if (!confirm("Are you sure you want to clear this user's profile? This action cannot be undone.")) {
-        return;
+        return null;
     }
     if (!confirm("Are you ABSOLUTELY sure you want to CLEAR the user's profile?")) {
-        return;
+        return null;
     }
 
     var data = {
@@ -355,7 +357,7 @@ function clearUserProfile(userId, onSuccess, onFailure) {
         location: null,
         interests: null
     };
-    updateUserProfile(userId, data, onSuccess, onFailure);
+    return updateUserProfile(userId, data, onSuccess, onFailure);
 }
 
 function updateUserCountry(userId, countryCode, onSuccess, onFailure) {
@@ -393,6 +395,22 @@ function defaultOnError(err) {
     alert("An error occurred: " + err.details);
 }
 
+var moderationLoaderOverlay = null;
+
+function showModerationLoader() {
+    if (!moderationLoaderOverlay) {
+        moderationLoaderOverlay = createLoaderOverlay();
+        document.body.appendChild(moderationLoaderOverlay);
+    }
+}
+
+function hideModerationLoader() {
+    if (moderationLoaderOverlay && moderationLoaderOverlay.parentNode) {
+        moderationLoaderOverlay.parentNode.removeChild(moderationLoaderOverlay);
+    }
+    moderationLoaderOverlay = null;
+}
+
 function showSpinner() {
     var el = document.getElementById("moderation-loader");
     if (el) el.style.display = "block";
@@ -401,6 +419,46 @@ function showSpinner() {
 function hideSpinner() {
     var el = document.getElementById("moderation-loader");
     if (el) el.style.display = "none";
+}
+
+function runModerationQuickAction(action) {
+    var request = action(
+        function () {
+            defaultOnSuccess();
+        },
+        function (err) {
+            hideModerationLoader();
+            defaultOnError(err);
+        }
+    );
+
+    if (request) {
+        showModerationLoader();
+    }
+}
+
+function moderationRemoveUserAvatar(userId) {
+    runModerationQuickAction(function (onSuccess, onFailure) {
+        return removeUserAvatar(userId, onSuccess, onFailure);
+    });
+}
+
+function moderationClearUserProfile(userId) {
+    runModerationQuickAction(function (onSuccess, onFailure) {
+        return clearUserProfile(userId, onSuccess, onFailure);
+    });
+}
+
+function moderationWipeUserScores(userId) {
+    runModerationQuickAction(function (onSuccess, onFailure) {
+        return wipeUserScores(userId, onSuccess, onFailure);
+    });
+}
+
+function moderationRestoreUserScores(userId) {
+    runModerationQuickAction(function (onSuccess, onFailure) {
+        return restoreUserScores(userId, onSuccess, onFailure);
+    });
 }
 
 function moderationSaveProfile(userId) {

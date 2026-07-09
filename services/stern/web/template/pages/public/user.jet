@@ -1101,16 +1101,16 @@
     </dialog>
 
     {* Quick actions *}
-    <button type="button" class="warning-button" onclick="removeUserAvatar({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+    <button type="button" class="warning-button" onclick="moderationRemoveUserAvatar({{ user.Id }})">
         <i class="icon-remove-sign"></i> Remove Avatar
     </button>
-    <button type="button" class="danger-button" onclick="clearUserProfile({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+    <button type="button" class="danger-button" onclick="moderationClearUserProfile({{ user.Id }})">
         <i class="icon-trash"></i> Clear Profile
     </button>
-    <button type="button" class="danger-button" onclick="wipeUserScores({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+    <button type="button" class="danger-button" onclick="moderationWipeUserScores({{ user.Id }})">
         <i class="icon-ban-circle"></i> Wipe Scores
     </button>
-    <button type="button" class="restore-button" onclick="restoreUserScores({{ user.Id }}, defaultOnSuccess, defaultOnError)">
+    <button type="button" class="restore-button" onclick="moderationRestoreUserScores({{ user.Id }})">
         <i class="icon-repeat"></i> Restore Scores
     </button>
 </div>
