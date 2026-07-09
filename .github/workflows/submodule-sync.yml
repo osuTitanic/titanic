@@ -1,4 +1,4 @@
-name: submodule-sync
+name: Submodule Sync
 
 on:
   schedule:

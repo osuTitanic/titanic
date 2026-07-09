@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -131,7 +131,7 @@ jobs:
   build:
     if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
     needs:
-      - test
+      - unit-test
       - integration-test
       - prepare
     runs-on: ubuntu-latest
@@ -168,7 +168,7 @@ jobs:
   publish:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.prepare.outputs.publish_enabled == 'true' }}
     needs:
-      - test
+      - unit-test
       - integration-test
       - prepare
     runs-on: ubuntu-latest
