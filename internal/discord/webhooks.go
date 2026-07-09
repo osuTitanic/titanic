@@ -2,6 +2,7 @@ package discord
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -108,6 +109,14 @@ func (w *Webhook) SetFileReader(name string, content io.Reader) {
 }
 
 func (w *Webhook) Post() error {
+	return w.PostContext(context.Background())
+}
+
+func (w *Webhook) PostContext(ctx context.Context) error {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	p, err := w.buildPayload()
 	if err != nil {
 		return err
@@ -119,9 +128,9 @@ func (w *Webhook) Post() error {
 	}
 
 	if w.File == nil {
-		return w.postJson(jsonData)
+		return w.postJson(ctx, jsonData)
 	}
-	return w.postMultipart(jsonData)
+	return w.postMultipart(ctx, jsonData)
 }
 
 type payload struct {
@@ -154,8 +163,8 @@ func (w *Webhook) buildPayload() (*payload, error) {
 	}, nil
 }
 
-func (w *Webhook) postJson(jsonData []byte) error {
-	req, err := http.NewRequest("POST", w.URL, bytes.NewReader(jsonData))
+func (w *Webhook) postJson(ctx context.Context, jsonData []byte) error {
+	req, err := http.NewRequestWithContext(ctx, "POST", w.URL, bytes.NewReader(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -179,7 +188,7 @@ func (w *Webhook) postJson(jsonData []byte) error {
 	return nil
 }
 
-func (w *Webhook) postMultipart(jsonData []byte) error {
+func (w *Webhook) postMultipart(ctx context.Context, jsonData []byte) error {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 
@@ -200,7 +209,7 @@ func (w *Webhook) postMultipart(jsonData []byte) error {
 		return fmt.Errorf("failed to close multipart writer: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", w.URL, &buf)
+	req, err := http.NewRequestWithContext(ctx, "POST", w.URL, &buf)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
