@@ -18,6 +18,8 @@ func ResolveCookieDomain(cfg *config.Config) string {
 	}
 
 	if strings.Contains(cfg.DomainName, "localhost") {
+		// Browsers do not allow us to use ".localhost" for some reason
+		// so we just don't set the domain at all in this case
 		return ""
 	}
 
