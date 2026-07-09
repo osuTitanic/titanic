@@ -201,7 +201,7 @@ func ValidateTokenTypeAt(token string, secret string, tokenType TokenType, now t
 }
 
 func GenerateTokenId() (string, error) {
-	randomBytes := make([]byte, 16)
+	randomBytes := make([]byte, 32)
 	if _, err := rand.Read(randomBytes); err != nil {
 		return "", fmt.Errorf("authentication: generate token id: %w", err)
 	}
