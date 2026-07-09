@@ -35,6 +35,7 @@
 	respond @options "" 204
 }
 
+http://api.localhost,
 http://api.{$DOMAIN_NAME},
 https://api.{$DOMAIN_NAME} {
 	request_body {
@@ -46,6 +47,7 @@ https://api.{$DOMAIN_NAME} {
 	}
 }
 
+http://assets.localhost,
 http://assets.{$DOMAIN_NAME},
 https://assets.{$DOMAIN_NAME} {
 	handle /menu-content.json {
@@ -61,6 +63,7 @@ https://assets.{$DOMAIN_NAME} {
 	}
 }
 
+http://a.localhost,
 http://a.{$DOMAIN_NAME},
 https://a.{$DOMAIN_NAME} {
 	import cors_get_options
@@ -70,6 +73,7 @@ https://a.{$DOMAIN_NAME} {
 	}
 }
 
+http://c.localhost,
 http://c.{$DOMAIN_NAME},
 https://c.{$DOMAIN_NAME},
 http://c1.{$DOMAIN_NAME},
@@ -112,6 +116,7 @@ https://mahbahowc.{$DOMAIN_NAME} {
 	}
 }
 
+http://server.localhost,
 http://server.{$DOMAIN_NAME},
 https://server.{$DOMAIN_NAME} {
     request_body {
@@ -136,6 +141,7 @@ https://server.{$DOMAIN_NAME} {
 	}
 }
 
+http://s.localhost,
 http://s.{$DOMAIN_NAME},
 https://s.{$DOMAIN_NAME} {
 	handle /images/map-thumb/* {
@@ -187,6 +193,7 @@ https://s.{$DOMAIN_NAME} {
 	}
 }
 
+http://b.localhost,
 http://b.{$DOMAIN_NAME},
 https://b.{$DOMAIN_NAME} {
 	handle /mt/* {
@@ -232,6 +239,8 @@ https://b.{$DOMAIN_NAME} {
 	}
 }
 
+http://d.localhost,
+http://d.osu.localhost,
 http://d.{$DOMAIN_NAME},
 https://d.{$DOMAIN_NAME},
 http://d.osu.{$DOMAIN_NAME},
@@ -244,6 +253,7 @@ https://d.osu.{$DOMAIN_NAME} {
 	}
 }
 
+http://osu.localhost,
 http://osu.{$DOMAIN_NAME},
 https://osu.{$DOMAIN_NAME},
 http://ha.{$DOMAIN_NAME},
