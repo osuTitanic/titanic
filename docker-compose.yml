@@ -152,7 +152,7 @@ services:
         condition: service_completed_successfully
 
   stern:
-    build: ./services/stern
+    image: ghcr.io/osutitanic/stern:latest
     restart: unless-stopped
     env_file:
       - ".env"
@@ -161,15 +161,16 @@ services:
       - POSTGRES_PORT=5432
       - REDIS_HOST=cache
       - REDIS_PORT=6379
+      - FRONTEND_HOST=0.0.0.0
+      - FRONTEND_PORT=80
     networks:
       - titanic
     # ports:
     # Uncomment to access stern from outside
     # - 127.0.0.1:7070:80
     volumes:
-      - "./services/stern/app/static:/stern/app/static"
-      - "./.data/logs/stern:/stern/logs"
-      - "./.data:/stern/.data"
+      - "./www:/app/static"
+      - "./.data:/app/.data"
     depends_on:
       db:
         condition: service_healthy
