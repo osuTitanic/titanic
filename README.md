@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="350" alt="logo" src="https://raw.githubusercontent.com/Lekuruu/titanic/main/.github/images/logo-vector.min.svg">
+  <img width="300" alt="logo" src="https://raw.githubusercontent.com/Lekuruu/titanic/main/.github/images/logo-vector.min.svg">
 </p>
 
 # Titanic
@@ -20,8 +20,6 @@ This repository combines the docker deployment, database migrations, Python serv
 - `services/keel`: API (Python)
 - `services/bot`: Discord bot (Python)
 - `services/jobs`: Background task runner (Go)
-
-Most shared Go application code lives in [State](internal/state/README.md). Go services should generally start with `state.NewState(".env")` instead of creating config, database, Redis, storage, and repositories manually.
 
 ## Contributing
 
