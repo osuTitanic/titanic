@@ -215,6 +215,205 @@ func (data *TestData) CreateRelease(opts ...FixtureOption[schemas.Release]) *sch
 	return release
 }
 
+func (data *TestData) CreateBeatmapset(creator *schemas.User, opts ...FixtureOption[schemas.Beatmapset]) *schemas.Beatmapset {
+	data.t.Helper()
+	data.requireUser(creator)
+
+	sequence := data.next()
+	now := testDataTime(sequence)
+
+	title := fmt.Sprintf("Test Title %d", sequence)
+	artist := fmt.Sprintf("Test Artist %d", sequence)
+	description := "I can't pass this map. Hell diff. this is easy diff but hell difficult."
+	tags := "real stream"
+
+	beatmapset := &schemas.Beatmapset{
+		Title:          stringPointer(title),
+		Artist:         stringPointer(artist),
+		Creator:        stringPointer(creator.Name),
+		Description:    stringPointer(description),
+		Tags:           stringPointer(tags),
+		Status:         constants.BeatmapStatusRanked,
+		Server:         constants.BeatmapServerTitanic,
+		DownloadServer: constants.BeatmapServerTitanic,
+		CreatorId:      &creator.Id,
+		Available:      true,
+		CreatedAt:      now,
+		ApprovedAt:     &now,
+		LastUpdate:     now,
+		AddedAt:        &now,
+		LanguageId:     constants.BeatmapLanguageEnglish,
+		GenreId:        constants.BeatmapGenrePop,
+	}
+	applyFixtureOptions(beatmapset, opts)
+	data.create(beatmapset)
+	return beatmapset
+}
+
+func (data *TestData) CreateBeatmap(beatmapset *schemas.Beatmapset, opts ...FixtureOption[schemas.Beatmap]) *schemas.Beatmap {
+	data.t.Helper()
+	data.requireBeatmapset(beatmapset)
+
+	sequence := data.next()
+	now := testDataTime(sequence)
+	beatmap := &schemas.Beatmap{
+		SetId:            beatmapset.Id,
+		Mode:             constants.ModeOsu,
+		Status:           constants.BeatmapStatusRanked,
+		Checksum:         fmt.Sprintf("test-md5-%d", sequence),
+		Version:          "Insane",
+		Filename:         fmt.Sprintf("%d Test Artist - Test Title.osu", sequence),
+		CreatedAt:        now,
+		LastUpdate:       now,
+		TotalLength:      180,
+		DrainLength:      170,
+		CountNormal:      300,
+		CountSlider:      120,
+		MaxCombo:         543,
+		BPM:              180,
+		CS:               4,
+		AR:               9,
+		OD:               8,
+		HP:               6,
+		Diff:             4.5,
+		SliderMultiplier: 1.4,
+	}
+	applyFixtureOptions(beatmap, opts)
+	data.create(beatmap)
+	return beatmap
+}
+
+func (data *TestData) CreateScore(user *schemas.User, beatmap *schemas.Beatmap, opts ...FixtureOption[schemas.Score]) *schemas.Score {
+	data.t.Helper()
+	data.requireUser(user)
+	data.requireBeatmap(beatmap)
+
+	sequence := data.next()
+	score := &schemas.Score{
+		UserId:        user.Id,
+		BeatmapId:     beatmap.Id,
+		ClientVersion: 20121212,
+		ClientString:  "b20121212",
+		Checksum:      fmt.Sprintf("score-%d", sequence),
+		Mode:          beatmap.Mode,
+		PP:            250.25,
+		PPv1:          180.25,
+		Acc:           0.9876,
+		TotalScore:    987654,
+		MaxCombo:      beatmap.MaxCombo,
+		Mods:          constants.NoMod,
+		Perfect:       true,
+		Count300:      450,
+		Count100:      12,
+		Count50:       1,
+		Grade:         constants.GradeS,
+		StatusPP:      constants.ScoreStatusBest,
+		StatusScore:   constants.ScoreStatusBest,
+		SubmittedAt:   testDataTime(sequence),
+	}
+	applyFixtureOptions(score, opts)
+	data.create(score)
+	return score
+}
+
+func (data *TestData) CreateRelationship(user *schemas.User, target *schemas.User, opts ...FixtureOption[schemas.Relationship]) *schemas.Relationship {
+	data.t.Helper()
+	data.requireUser(user)
+	data.requireUser(target)
+
+	relationship := &schemas.Relationship{
+		UserId:   user.Id,
+		TargetId: target.Id,
+		Status:   0,
+	}
+	applyFixtureOptions(relationship, opts)
+	data.create(relationship)
+	return relationship
+}
+
+func (data *TestData) CreateGroup(opts ...FixtureOption[schemas.Group]) *schemas.Group {
+	data.t.Helper()
+
+	sequence := data.next()
+	group := &schemas.Group{
+		Name:        fmt.Sprintf("Test Group %d", sequence),
+		ShortName:   fmt.Sprintf("TG%d", sequence),
+		Description: stringPointer("cool people"),
+		Color:       "#3366cc",
+	}
+	applyFixtureOptions(group, opts)
+	data.create(group)
+	return group
+}
+
+func (data *TestData) CreateGroupEntry(group *schemas.Group, user *schemas.User, opts ...FixtureOption[schemas.GroupEntry]) *schemas.GroupEntry {
+	data.t.Helper()
+	data.requireGroup(group)
+	data.requireUser(user)
+
+	entry := &schemas.GroupEntry{
+		GroupId: group.Id,
+		UserId:  user.Id,
+	}
+	applyFixtureOptions(entry, opts)
+	data.create(entry)
+	return entry
+}
+
+func (data *TestData) CreateBeatmapPack(creator *schemas.User, opts ...FixtureOption[schemas.BeatmapPack]) *schemas.BeatmapPack {
+	data.t.Helper()
+	data.requireUser(creator)
+
+	sequence := data.next()
+	pack := &schemas.BeatmapPack{
+		Name:         fmt.Sprintf("test-pack-%d", sequence),
+		Category:     "category",
+		DownloadLink: fmt.Sprintf("https://example.com/packs/%d.zip", sequence),
+		Description:  "description",
+		CreatorId:    creator.Id,
+		CreatedAt:    testDataTime(sequence),
+		UpdatedAt:    testDataTime(sequence),
+	}
+	applyFixtureOptions(pack, opts)
+	data.create(pack)
+	return pack
+}
+
+func (data *TestData) CreateBeatmapPackEntry(pack *schemas.BeatmapPack, beatmapset *schemas.Beatmapset, opts ...FixtureOption[schemas.BeatmapPackEntry]) *schemas.BeatmapPackEntry {
+	data.t.Helper()
+	data.requireBeatmapPack(pack)
+	data.requireBeatmapset(beatmapset)
+
+	entry := &schemas.BeatmapPackEntry{
+		PackId:       pack.Id,
+		BeatmapsetId: beatmapset.Id,
+		CreatedAt:    testDataTime(data.next()),
+	}
+	applyFixtureOptions(entry, opts)
+	data.create(entry)
+	return entry
+}
+
+func (data *TestData) CreateBeatmapModding(target *schemas.User, sender *schemas.User, beatmapset *schemas.Beatmapset, post *schemas.ForumPost, opts ...FixtureOption[schemas.BeatmapModding]) *schemas.BeatmapModding {
+	data.t.Helper()
+	data.requireUser(target)
+	data.requireUser(sender)
+	data.requireBeatmapset(beatmapset)
+	data.requireForumPost(post)
+
+	modding := &schemas.BeatmapModding{
+		TargetId: target.Id,
+		SenderId: sender.Id,
+		SetId:    beatmapset.Id,
+		PostId:   post.Id,
+		Amount:   1,
+		Time:     testDataTime(data.next()),
+	}
+	applyFixtureOptions(modding, opts)
+	data.create(modding)
+	return modding
+}
+
 func (data *TestData) CreateMessage(opts ...FixtureOption[schemas.Message]) *schemas.Message {
 	data.t.Helper()
 
@@ -266,6 +465,41 @@ func (data *TestData) requireTopic(topic *schemas.ForumTopic) {
 	}
 }
 
+func (data *TestData) requireForumPost(post *schemas.ForumPost) {
+	data.t.Helper()
+	if post == nil || post.Id == 0 {
+		data.t.Fatal("test data requires a persisted forum post")
+	}
+}
+
+func (data *TestData) requireBeatmapset(beatmapset *schemas.Beatmapset) {
+	data.t.Helper()
+	if beatmapset == nil || beatmapset.Id == 0 {
+		data.t.Fatal("test data requires a persisted beatmapset")
+	}
+}
+
+func (data *TestData) requireBeatmap(beatmap *schemas.Beatmap) {
+	data.t.Helper()
+	if beatmap == nil || beatmap.Id == 0 {
+		data.t.Fatal("test data requires a persisted beatmap")
+	}
+}
+
+func (data *TestData) requireGroup(group *schemas.Group) {
+	data.t.Helper()
+	if group == nil || group.Id == 0 {
+		data.t.Fatal("test data requires a persisted group")
+	}
+}
+
+func (data *TestData) requireBeatmapPack(pack *schemas.BeatmapPack) {
+	data.t.Helper()
+	if pack == nil || pack.Id == 0 {
+		data.t.Fatal("test data requires a persisted beatmap pack")
+	}
+}
+
 func applyFixtureOptions[T any](value *T, opts []FixtureOption[T]) {
 	for _, opt := range opts {
 		if opt != nil {
@@ -276,4 +510,8 @@ func applyFixtureOptions[T any](value *T, opts []FixtureOption[T]) {
 
 func testDataTime(sequence int) time.Time {
 	return time.Date(2012, 1, 1, 12, 0, 0, 0, time.UTC).Add(time.Duration(sequence) * time.Minute)
+}
+
+func stringPointer(value string) *string {
+	return &value
 }
