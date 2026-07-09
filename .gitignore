@@ -4,3 +4,6 @@
 
 # Custom configuration for ssl
 docker-compose.ssl.yml
+
+# Stern static folder
+www/
