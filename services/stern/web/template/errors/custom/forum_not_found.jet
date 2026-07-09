@@ -2,11 +2,11 @@
 
 {{ block head() }}
 <title>Forum Not Found - Titanic!</title>
-<link rel="stylesheet" href="/css/error.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
 {{ end }}
 
 {{ block body() }}
-<img src="/images/art/ffffff.png" alt="Error Image">
+<img src="{{ cachedUrl("/images/art/ffffff.png") }}" alt="Error Image">
 <div class="description">
     <h1>The forum you are looking for was not found!</h1>
 

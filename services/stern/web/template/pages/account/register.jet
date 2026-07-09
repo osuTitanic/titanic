@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/register">
 <meta property="og:description" content="Create your account and start playing today!">
-<link rel="stylesheet" href="/css/account.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -47,7 +47,7 @@
     {{ end }}
 
     <div class="account-form-section account-form-panel">
-        <img src="/images/signup-multi.png" alt="" height="90px">
+        <img src="{{ cachedUrl("/images/signup-multi.png") }}" alt="" height="90px">
         <div class="input-description">
             Titanic! has a policy of <strong>one account per person</strong>!
             Please be aware that creating more than one account per person may result in <strong>permanent deactivation of all accounts</strong>.
@@ -63,7 +63,7 @@
     <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
 </form>
 <script>$("#username").select();</script>
-<script src="/js/register.js"></script>
+<script src="{{ cachedUrl("/js/register.js") }}"></script>
 {{ if .RecaptchaEnabled }}
     {{ yield registerRecaptchaScript() }}
 {{ end }}

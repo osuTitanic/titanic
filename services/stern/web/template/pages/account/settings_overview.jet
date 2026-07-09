@@ -5,7 +5,7 @@
 <meta property="og:title" content="Settings - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/">
-<link rel="stylesheet" href="/css/settings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -20,7 +20,7 @@
     {{ yield notificationsSection() }}
     {{ yield bookmarksSection() }}
 </div>
-<script src="/js/settings.js"></script>
+<script src="{{ cachedUrl("/js/settings.js") }}"></script>
 {{ end }}
 
 {{ block activitySection() }}

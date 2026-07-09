@@ -31,7 +31,7 @@ func BeatmapThumbnail(ctx *server.Context) {
 
 	// If a cache key is provided, the thumbnail may be cached by the client
 	if ctx.QueryValue("c") != "" {
-		ctx.Response.Header().Set("Cache-Control", "public, max-age=86400")
+		ctx.Response.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	}
 
 	ctx.Response.Header().Set("Content-Type", "image/jpeg")
@@ -60,7 +60,7 @@ func BeatmapAudioPreview(ctx *server.Context) {
 
 	// If a cache key is provided, the preview may be cached by the client
 	if ctx.QueryValue("c") != "" {
-		ctx.Response.Header().Set("Cache-Control", "public, max-age=86400")
+		ctx.Response.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	}
 
 	ctx.Response.Header().Set("Content-Type", "audio/mpeg")

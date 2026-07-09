@@ -5,7 +5,7 @@
 <meta property="og:title" content="Security - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/security">
-<link rel="stylesheet" href="/css/settings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -168,8 +168,8 @@
 {{ end }}
 
 {{ block securityScripts() }}
-<script src="/js/irc.js"></script>
-<script src="/js/settings.js"></script>
+<script src="{{ cachedUrl("/js/irc.js") }}"></script>
+<script src="{{ cachedUrl("/js/settings.js") }}"></script>
 {{ if .Config.RecaptchaSiteKey != "" }}
 <script src="https://www.google.com/recaptcha/api.js?render={{ .Config.RecaptchaSiteKey }}"></script>
 <script>

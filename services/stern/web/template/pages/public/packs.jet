@@ -5,7 +5,7 @@
 <meta property="og:title" content="Beatmap Pack Listing - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets/packs">
-<link rel="stylesheet" href="/css/packs.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/packs.css") }}">
 {{ end }}
 
 {{ block body() }}

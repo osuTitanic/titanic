@@ -6,7 +6,7 @@
 <meta property="og:title" content="Profile - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/profile">
-<link rel="stylesheet" href="/css/settings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
 {{ end }}
 
 {{ block body() }}

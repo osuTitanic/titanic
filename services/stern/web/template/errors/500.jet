@@ -2,11 +2,11 @@
 
 {{ block head() }}
 <title>Internal Server Error</title>
-<link rel="stylesheet" href="/css/error.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
 {{ end }}
 
 {{ block body() }}
-<img src="/images/art/titanic.gif" alt="Error Image">
+<img src="{{ cachedUrl("/images/art/titanic.gif") }}" alt="Error Image">
 <div style="text-align: center" class="description">
     <h1>Internal Server Error</h1>
     <p>Hmm.. I guess something went wrong, huh?</p>

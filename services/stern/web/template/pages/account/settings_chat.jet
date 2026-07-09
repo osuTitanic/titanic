@@ -5,7 +5,7 @@
 <meta property="og:title" content="Chat - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/chat">
-<link rel="stylesheet" href="/css/settings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -65,6 +65,6 @@
 {{ block chatScripts() }}
 <script>var loungeBackend = "{{ .Config.LoungeBackend() }}";</script>
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-<script src="/js/irc.js"></script>
-<script src="/js/chat.js"></script>
+<script src="{{ cachedUrl("/js/irc.js") }}"></script>
+<script src="{{ cachedUrl("/js/chat.js") }}"></script>
 {{ end }}

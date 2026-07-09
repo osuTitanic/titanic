@@ -9,19 +9,19 @@
     <meta name="viewport" content="width=1080, user-scalable=yes">
     <meta name="msapplication-TileColor" content="#603cba">
     <meta name="theme-color" content="rgba(96, 60, 186, 1)">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/logo/apple-touch-icon.png">
-    <link rel="apple-touch-icon" href="/images/logo/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ cachedUrl("/images/logo/apple-touch-icon.png") }}">
+    <link rel="apple-touch-icon" href="{{ cachedUrl("/images/logo/icon-192.png") }}">
     <link rel="dns-prefetch" href="{{ .Config.ApiBaseUrl() }}">
     <link rel="preconnect" href="{{ .Config.ApiBaseUrl() }}" crossorigin>
 
-    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="{{ cachedUrl("/css/main.css") }}">
     <meta property="og:site_name" content="Titanic!">
     <meta property="og:type" content="website">
     {{ if .Config.EnableSsl }}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{{ end }}
     {{ yield head() }}
 
-    <link rel="preload" href="/images/logo/main-vector.min.svg" as="image" fetchpriority="high">
-    <link rel="stylesheet" href="/lib/font-awesome.min.css">
+    <link rel="preload" href="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" as="image" fetchpriority="high">
+    <link rel="stylesheet" href="{{ cachedUrl("/lib/font-awesome.min.css") }}">
     <script>
         var apiBaseurl = "{{ .Config.ApiBaseUrl() }}";
         var osuBaseurl = "{{ .Config.OsuBaseUrl() }}";
@@ -32,10 +32,10 @@
         var csrfToken = "{{ .CSRFToken }}";
     </script>
     {{ if .IsModernBrowser }}
-    <script src="/lib/instant.page.js" type="module" defer></script>
+    <script src="{{ cachedUrl("/lib/instant.page.js") }}" type="module" defer></script>
     {{ end }}
     <!--[if IE 7]>
-    <link rel="stylesheet" href="/lib/font-awesome-ie7.min.css">
+    <link rel="stylesheet" href="{{ cachedUrl("/lib/font-awesome-ie7.min.css") }}">
     <![endif]-->
 </head>
 <body id="titanic">
@@ -53,9 +53,9 @@
         <a id="top_discord" class="top_button" href="https://discord.gg/qupv72e7YH"></a>
         <a href="/" aria-label="Home">
             {{ if .IsIE }}
-            <img src="/images/logo/main-low.png" class="logo" width="140" height="140" alt="">
+            <img src="{{ cachedUrl("/images/logo/main-low.png") }}" class="logo" width="140" height="140" alt="">
             {{ else }}
-            <img src="/images/logo/main-vector.min.svg" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
+            <img src="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
             {{ end }}
         </a>
         <div class="nav">
@@ -69,7 +69,7 @@
                 <li class="nav-element nav-element-dropdown">
                     <a href="/beatmapsets/">
                         Beatmaps
-                        <img class="dropdown-indicator" src="/images/arrow-white-highlight.png" alt="»">
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>
                     <ul class="nav-dropdown">
                         <li>
@@ -83,7 +83,7 @@
                 <li class="nav-element nav-element-dropdown">
                     <a href="/rankings/{{ .PreferredModeAlias() }}/performance">
                         Rankings
-                        <img class="dropdown-indicator" src="/images/arrow-white-highlight.png" alt="»">
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>
                     <ul class="nav-dropdown">
                         <li>
@@ -101,7 +101,7 @@
                 <li class="nav-element nav-element-dropdown">
                     <a href="/forum/">
                         Community
-                        <img class="dropdown-indicator" src="/images/arrow-white-highlight.png" alt="»">
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>
                     <ul class="nav-dropdown">
                         <li>
@@ -199,17 +199,17 @@
                     <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
                 </form>
             </div>
-            <script src="/lib/jquery.min.js"></script>
-            <script src="/lib/jquery.migrate.min.js" defer></script>
-            <script src="/lib/jquery.timeago.js" defer></script>
-            <script src="/lib/jquery.marquee.js" defer></script>
-            <script src="/js/main.js" fetchpriority="high"></script>
+            <script src="{{ cachedUrl("/lib/jquery.min.js") }}"></script>
+            <script src="{{ cachedUrl("/lib/jquery.migrate.min.js") }}" defer></script>
+            <script src="{{ cachedUrl("/lib/jquery.timeago.js") }}" defer></script>
+            <script src="{{ cachedUrl("/lib/jquery.marquee.js") }}" defer></script>
+            <script src="{{ cachedUrl("/js/main.js") }}" fetchpriority="high"></script>
             <div class="page">
                 {{ yield body() }}
                 <div style="clear: both;"></div>
             </div>
             <div class="gradient"></div>
-            <script src="/js/editor.js" fetchpriority="low" defer></script>
+            <script src="{{ cachedUrl("/js/editor.js") }}" fetchpriority="low" defer></script>
         </div>
     </div>
 </body>

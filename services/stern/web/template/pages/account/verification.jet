@@ -6,12 +6,12 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/verification">
 <meta property="og:description" content="Verify your Titanic account.">
-<link rel="stylesheet" href="/css/verification.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/verification.css") }}">
 {{ end }}
 
 {{ block body() }}
 <div class="left">
-    <img src="/images/art/awp.png" alt="" height="400px">
+    <img src="{{ cachedUrl("/images/art/awp.png") }}" alt="" height="400px">
 </div>
 <div class="right">
     {{ if .Success }}
