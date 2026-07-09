@@ -3,7 +3,7 @@
 
 Be aware that this project is typically not recommended for use on your own private server, as it is largely customized for our specific needs and can be challenging to modify. **Additionally, if you plan to publicly host this project yourself, you *must* rebrand it under a name distinct from "Titanic!"**.
 
-To set up and use this project, it is advisable to use [Docker](https://www.docker.com/), as it is much simpler in most cases. If you do not feel comfortable using docker, here are some instructions for the [manual setup](https://github.com/osuTitanic/titanic/blob/main/MANUAL.md), which is not recommended but still possible to do.
+To set up and use this project, it is advisable to use [Docker](https://www.docker.com/), as it is much simpler in most cases. If you do not feel comfortable using docker, you can try to set up everything manually, which is not recommended but still possible to do.
 
 Verify that docker is installed:
 
