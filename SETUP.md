@@ -88,13 +88,6 @@ docker compose build
 docker compose up -d
 ```
 
-If you use the bundled Caddy reverse proxy, include the optional Caddy compose file:
-
-```
-docker compose -f docker-compose.yml -f docker-compose.caddy.yml build
-docker compose -f docker-compose.yml -f docker-compose.caddy.yml up -d
-```
-
 ## Connecting with osu!
 
 To connect with osu! stable you will have to set up an ssl certificate for your reverse proxy. The bundled Caddy reverse proxy will try to automatically request one.
