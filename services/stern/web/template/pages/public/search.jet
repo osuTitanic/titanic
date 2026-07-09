@@ -193,6 +193,7 @@
     {{ end }}
 </div>
 {* Enable hover effects *}
+{{ if .IsModernBrowser }}
 <script>
 $(".beatmapset").hover(
     function () {
@@ -211,6 +212,7 @@ $(".beatmapset").hover(
     }
 );
 </script>
+{{ end }}
 {{ end }}
 
 {{ block beatmapsetItem() }}
