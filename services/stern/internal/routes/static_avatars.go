@@ -35,7 +35,7 @@ func Avatar(ctx *server.Context) {
 
 	// If a cache key is provided, the avatar may be cached by the client
 	if ctx.QueryValue("c") != "" {
-		ctx.Response.Header().Set("Cache-Control", "public, max-age=86400")
+		ctx.Response.Header().Set("Cache-Control", "public, max-age=604800, immutable")
 	}
 
 	// Serve a previously resized avatar straight from the cache when available
