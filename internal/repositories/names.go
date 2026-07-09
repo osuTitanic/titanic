@@ -56,10 +56,7 @@ func (r *NameRepository) ByReservedNameCaseInsensitive(value string, preload ...
 	err := Preloaded(r.db, preload).
 		Where("LOWER(name) = ? AND reserved = ?", strings.ToLower(value), true).
 		First(&name).Error
-	if err != nil {
-		return nil, err
-	}
-	return &name, nil
+	return LookupResult(&name, err)
 }
 
 func (r *NameRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Name, error) {

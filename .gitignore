@@ -129,3 +129,7 @@ tmp/
 
 # Python references
 references/
+
+# Code editor configs (i may add those in the future)
+.vscode
+.zed

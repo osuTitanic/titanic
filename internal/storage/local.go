@@ -13,7 +13,7 @@ type FileStorage struct {
 	dataPath string
 }
 
-func NewFileStorage(dataPath string) Storage {
+func NewFileStorage(dataPath string) *FileStorage {
 	return &FileStorage{dataPath: dataPath}
 }
 

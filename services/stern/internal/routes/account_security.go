@@ -150,7 +150,7 @@ func changePassword(ctx *server.Context, newPassword, passwordConfirm string) {
 
 	_, err = ctx.State.Users.Update(
 		&schemas.User{Id: ctx.CurrentUser.Id, Bcrypt: hashedPassword},
-		"bcrypt",
+		"pw",
 	)
 	if err != nil {
 		ctx.Logger.Error("Failed to update password", "user", ctx.CurrentUser.Id, "error", err)
