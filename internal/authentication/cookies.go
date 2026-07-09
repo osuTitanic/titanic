@@ -17,7 +17,7 @@ func ResolveCookieDomain(cfg *config.Config) string {
 		return ""
 	}
 
-	if strings.Contains(cfg.DomainName, "localhost") || strings.Contains(cfg.DomainName, ".local") {
+	if strings.Contains(cfg.DomainName, "localhost") {
 		return ""
 	}
 
@@ -38,6 +38,13 @@ func UseSecureCookies(cfg *config.Config, request *http.Request) bool {
 
 func NewWebsiteSessionCookie(cfg *config.Config, request *http.Request, token string, maxAge time.Duration) *http.Cookie {
 	domain := ResolveCookieDomain(cfg)
+
+	if !strings.Contains(request.Host, cfg.DomainName) {
+		// If we, for example, access the page through an IP address, we
+		// wouldn't be able to authenticate. So this fixes that.
+		domain = ""
+	}
+
 	return &http.Cookie{
 		Name:     WebsiteSessionCookieName,
 		Value:    token,
@@ -50,12 +57,22 @@ func NewWebsiteSessionCookie(cfg *config.Config, request *http.Request, token st
 	}
 }
 
-func NewExpiredCookie(name string, cfg *config.Config) *http.Cookie {
+func NewExpiredWebsiteSessionCookie(cfg *config.Config, request *http.Request) *http.Cookie {
+	domain := ResolveCookieDomain(cfg)
+
+	if !strings.Contains(request.Host, cfg.DomainName) {
+		domain = ""
+	}
+
+	return NewExpiredCookie(WebsiteSessionCookieName, domain, cfg)
+}
+
+func NewExpiredCookie(name, domain string, cfg *config.Config) *http.Cookie {
 	return &http.Cookie{
 		Name:     name,
 		Value:    "",
 		Path:     "/",
-		Domain:   ResolveCookieDomain(cfg),
+		Domain:   domain,
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   cfg != nil && !cfg.GetAllowInsecureCookies(),

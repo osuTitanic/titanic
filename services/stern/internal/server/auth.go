@@ -97,7 +97,7 @@ func (ctx *Context) ExpireSessionCookie() {
 
 	http.SetCookie(
 		ctx.Response,
-		authentication.NewExpiredCookie(authentication.WebsiteSessionCookieName, ctx.State.Config),
+		authentication.NewExpiredWebsiteSessionCookie(ctx.State.Config, ctx.Request),
 	)
 }
 
