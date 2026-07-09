@@ -159,7 +159,7 @@
 
 {{ block orderElement(id, value) }}
 <th>
-    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}">{{ value }}</a>
+    <a href="{{ searchSortUrl(.Query, "/beatmapsets", id) }}" data-instant>{{ value }}</a>
 
     {{ if .SearchSort == id }}
         {{ if .SearchOrder == "0" }}
@@ -174,14 +174,14 @@
 {{ block dataElement(id, value, collection) }}
     {{ selectedElement := .Query.Get(collection) }}
     {{ if selectedElement == id }}
-        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}" class="selected">{{ value }}</a>
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}" class="selected" data-instant>{{ value }}</a>
     {{ else }}
-        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}">{{ value }}</a>
+        <a href="{{ searchParamUrl(.Query, "/beatmapsets", collection, id) }}" data-instant>{{ value }}</a>
     {{ end }}
 {{ end }}
 
 {{ block dataFlag(id, value, removes="") }}
-    <a href="{{ searchFlagUrl(.Query, "/beatmapsets", id, removes) }}" {{ if .Query.Get(id) != "" }}class="selected"{{ end }}>
+    <a href="{{ searchFlagUrl(.Query, "/beatmapsets", id, removes) }}" {{ if .Query.Get(id) != "" }}class="selected"{{ end }} data-instant>
        {{ value }}
     </a>
 {{ end }}
