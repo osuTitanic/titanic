@@ -98,11 +98,13 @@
                     {{ .Post.User.Name }}
                 </a>
             </div>
+            {{ if .Post.User.AvatarHash }}
             <a href="/u/{{ .Post.User.Id }}">
                 <div class="post-avatar avatar-frame">
                     <img src="{{ .Post.User.AvatarUrl() }}" alt="" loading="lazy">
                 </div>
             </a>
+            {{ end }}
             <div>
                 <div class="post-user-title">{{ .AuthorTitle }}</div>
                 <div class="post-user-stats">{{ .PostCount|formatNumber }} posts</div>
