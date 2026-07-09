@@ -66,8 +66,9 @@ func (server *Server) SetCacheHeaders(header http.Header, request *http.Request)
 		// No caching in debug mode pretty please
 		return
 	}
+	hasChecksum := request.URL.Query().Has("c")
 
-	if strings.HasPrefix(request.URL.Path, "/images/") {
+	if strings.HasPrefix(request.URL.Path, "/images/") && !hasChecksum {
 		// Images basically won't change so we can cache them for a week
 		header.Set("Cache-Control", "public, max-age=604800")
 		return
@@ -76,7 +77,7 @@ func (server *Server) SetCacheHeaders(header http.Header, request *http.Request)
 	// Only cache the following paths if we have a "c" parameter
 	// This ensures that we can deploy new versions of static assets
 	// without worrying about users having stale cached versions
-	if !request.URL.Query().Has("c") {
+	if !hasChecksum {
 		return
 	}
 
@@ -84,6 +85,7 @@ func (server *Server) SetCacheHeaders(header http.Header, request *http.Request)
 		"/js/",
 		"/css/",
 		"/lib/",
+		"/images/",
 		"/webfonts/",
 	}
 	for _, prefix := range cacheableStaticPaths {
