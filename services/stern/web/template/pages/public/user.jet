@@ -578,8 +578,8 @@
                         <div class="pp-display-weight">
                             {{ if page.ShowWeight() }}weighted <b>{{ loved ? 0 : round(scoreWeight(page.Offset + index) * 100) }}%</b> ({{ loved ? 0 : round(score.PP * scoreWeight(page.Offset + index)) }}pp){{ end }}
                             <div class="score-icon-container">
-                                <a href="/scores/{{ score.Id }}/download" class="score-replay" title="Download Replay" target="_blank"><i class="icon-download-alt"></i></a>
-                                {{ if page.IsOwner }}<i class="icon-star score-pin-{{ score.Id }} {{ score.Pinned ? "score-pinned-icon" : "score-pin-icon" }}" title="{{ score.Pinned ? "Unpin Score" : "Pin Score" }}" onclick="return togglePin(this, {{ score.Id }}, {{ score.Pinned }})"></i>{{ end }}
+                                <a href="/scores/{{ score.Id }}/download" class="score-replay" title="Download Replay" target="_blank" onclick="stopScoreClick(event)"><i class="icon-download-alt"></i></a>
+                                {{ if page.IsOwner }}<i class="icon-star score-pin-{{ score.Id }} {{ score.Pinned ? "score-pinned-icon" : "score-pin-icon" }}" title="{{ score.Pinned ? "Unpin Score" : "Pin Score" }}" onclick="return togglePin(event, this, {{ score.Id }}, {{ score.Pinned }})"></i>{{ end }}
                             </div>
                         </div>
                     </td>

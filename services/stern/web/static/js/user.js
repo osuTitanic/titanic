@@ -115,16 +115,28 @@ function scoreClicked(event, scoreId) {
     var target = event.target || event.srcElement;
 
     // Ignore clicks on the inner links, replay button and pin icons
-    if ($(target).closest("a")[0]) return false;
-    if ($(target).closest(".score-replay")[0]) return false;
-    if ($(target).closest(".score-pin-icon")[0]) return false;
-    if ($(target).closest(".score-pinned-icon")[0]) return false;
+    if ($(target).closest("a")[0]) return true;
+    if ($(target).closest(".score-replay")[0]) return true;
+    if ($(target).closest(".score-pin-icon")[0]) return true;
+    if ($(target).closest(".score-pinned-icon")[0]) return true;
 
     window.location.href = "/scores/" + scoreId;
     return false;
 }
 
-function togglePin(icon, scoreId, pinned) {
+function stopScoreClick(event) {
+    event = event || window.event;
+    if (!event) return;
+
+    if (event.stopPropagation) {
+        event.stopPropagation();
+    }
+    event.cancelBubble = true;
+}
+
+function togglePin(event, icon, scoreId, pinned) {
+    stopScoreClick(event);
+
     if (!isLoggedIn()) return false;
 
     var method = pinned ? "DELETE" : "POST";
