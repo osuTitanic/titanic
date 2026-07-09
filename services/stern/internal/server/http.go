@@ -31,6 +31,11 @@ type Server struct {
 	Templates *templates.Engine
 }
 
+// IsDebug returns true if the server is running in debug mode
+func (server *Server) IsDebug() bool {
+	return server.State != nil && server.State.Config != nil && server.State.Config.Debug
+}
+
 // Handle registers a stdlib route pattern on the server.
 func (server *Server) Handle(pattern string, handler func(*Context)) {
 	server.Router.HandleFunc(pattern, server.ContextMiddleware(handler))
@@ -38,15 +43,55 @@ func (server *Server) Handle(pattern string, handler func(*Context)) {
 
 // HandleFileSystem registers a static file handler under the provided prefix.
 func (server *Server) HandleFileSystem(prefix string, instance fs.FS) {
+	// Check if we are serving a directory or a single file
 	if strings.HasSuffix(prefix, "/") {
-		server.Router.Handle("GET "+prefix, http.StripPrefix(prefix, http.FileServerFS(instance)))
+		handler := http.StripPrefix(prefix, http.FileServerFS(instance))
+		server.Router.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			server.SetCacheHeaders(w.Header(), r)
+			handler.ServeHTTP(w, r)
+		}))
 		return
 	}
 	filename := path.Base(prefix)
 
 	server.Router.HandleFunc("GET "+prefix, func(w http.ResponseWriter, r *http.Request) {
+		server.SetCacheHeaders(w.Header(), r)
 		http.ServeFileFS(w, r, instance, filename)
 	})
+}
+
+// SetCacheHeaders sets the appropriate cache headers for static assets based on the request path & query parameters.
+func (server *Server) SetCacheHeaders(header http.Header, request *http.Request) {
+	if server.IsDebug() {
+		// No caching in debug mode pretty please
+		return
+	}
+
+	if strings.HasPrefix(request.URL.Path, "/images/") {
+		// Images basically won't change so we can cache them for a week
+		header.Set("Cache-Control", "public, max-age=604800")
+		return
+	}
+
+	// Only cache the following paths if we have a "c" parameter
+	// This ensures that we can deploy new versions of static assets
+	// without worrying about users having stale cached versions
+	if !request.URL.Query().Has("c") {
+		return
+	}
+
+	cacheableStaticPaths := [...]string{
+		"/js/",
+		"/css/",
+		"/lib/",
+		"/webfonts/",
+	}
+	for _, prefix := range cacheableStaticPaths {
+		if strings.HasPrefix(request.URL.Path, prefix) {
+			header.Set("Cache-Control", "public, max-age=1209600")
+			return
+		}
+	}
 }
 
 func NewServer(host string, port int, name string, state *state.State, engine *templates.Engine) *Server {
