@@ -152,17 +152,19 @@ func AccountRegister(ctx *server.Context) {
 	notifyOfficerAboutRegistration(ctx, result.User)
 	broadcastRegistrationActivity(ctx, result.User)
 
-	if err := sendWelcomeEmail(ctx, result.Verification); err != nil {
-		ctx.Logger.Error("Failed to send registration verification email", "user_id", result.User.Id, "verification_id", result.Verification.Id, "error", err)
-		RenderRegisterPage(ctx, "Failed to send verification email. Please try again later!")
-		return
+	if result.Verification != nil {
+		if err := sendWelcomeEmail(ctx, result.Verification); err != nil {
+			ctx.Logger.Error("Failed to send registration verification email", "user_id", result.User.Id, "verification_id", result.Verification.Id, "error", err)
+			RenderRegisterPage(ctx, "Failed to send verification email. Please try again later!")
+			return
+		}
 	}
 
 	if err := recordRegistrationForIP(ctx); err != nil {
 		ctx.Logger.Warn("Failed to record registration count", "user_id", result.User.Id, "error", err)
 	}
 
-	if result.Verification != nil || result.User.Activated {
+	if result.Verification != nil {
 		// Redirect to account verification info page
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/account/verification?id=%d", result.Verification.Id))
 		return
@@ -211,7 +213,7 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 			Email:     input.Email,
 			Bcrypt:    input.HashedPassword,
 			Country:   input.Country,
-			Activated: false, // TODO: Auto-activate if no email provider is given
+			Activated: !ctx.State.Config.EmailsEnabled(),
 		}
 		if err := repositories.Users.Create(user); err != nil {
 			return err
@@ -237,6 +239,12 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 		if err != nil {
 			return err
 		}
+		result.User = user
+
+		if !ctx.State.Config.EmailsEnabled() {
+			// Skip email verification if we can't send emails
+			return nil
+		}
 
 		token, err := generateVerificationToken()
 		if err != nil {
@@ -253,7 +261,6 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 			return err
 		}
 
-		result.User = user
 		result.Verification = verification
 		result.Verification.User = user
 		return nil
@@ -376,11 +383,12 @@ func validateRegistrationUsername(ctx *server.Context, username string) (string,
 }
 
 func validateRegistrationEmail(ctx *server.Context, email string) (string, error) {
+	email = strings.ToLower(strings.TrimSpace(email))
 	if !constants.Email.MatchString(email) {
 		return "Please enter a valid email address!", nil
 	}
 
-	user, err := ctx.State.Users.ByEmail(strings.ToLower(email))
+	user, err := ctx.State.Users.ByEmail(email)
 	if err != nil {
 		return "", err
 	}
