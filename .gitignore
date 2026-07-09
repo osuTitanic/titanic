@@ -1,16 +1,3 @@
-.idea
-.vscode
-.zed
-.data
-.env
-
-# Custom configuration for ssl
-docker-compose.ssl.yml
-
-# Legacy/local Stern static folder
-www/
-
-# Go build and test output
 *.exe
 *.exe~
 *.dll
@@ -25,5 +12,8 @@ tmp/
 bin/
 dist/
 
-# Python references
-references/
+.idea
+.vscode
+.zed
+.data
+.env
