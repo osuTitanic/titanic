@@ -88,7 +88,7 @@ func (server *Server) SetCacheHeaders(header http.Header, request *http.Request)
 	}
 	for _, prefix := range cacheableStaticPaths {
 		if strings.HasPrefix(request.URL.Path, prefix) {
-			header.Set("Cache-Control", "public, max-age=1209600")
+			header.Set("Cache-Control", "public, max-age=31536000, immutable")
 			return
 		}
 	}
