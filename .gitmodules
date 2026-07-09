@@ -9,12 +9,6 @@
 [submodule "services/bot"]
 	path = services/bot
 	url = https://github.com/osuTitanic/banchobot
-[submodule "services/stern"]
-	path = services/stern
-	url = https://github.com/osuTitanic/stern.git
-[submodule "services/jobs"]
-	path = services/jobs
-	url = https://github.com/osuTitanic/jobs.git
 [submodule "services/keel"]
 	path = services/keel
 	url = https://github.com/osuTitanic/keel.git
