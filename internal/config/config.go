@@ -66,7 +66,7 @@ type Config struct {
 
 	// Email configuration (optional)
 	EmailProvider string `env:"EMAIL_PROVIDER" envDefault:"noop"`
-	EmailSender   string `env:"EMAIL_SENDER" envDefault:"support@titanic.sh"`
+	EmailSender   string `env:"EMAIL_SENDER" envDefault:""`
 
 	// SMTP configuration
 	SmtpHost          string `env:"SMTP_HOST"`
