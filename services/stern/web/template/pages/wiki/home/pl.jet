@@ -4,7 +4,7 @@
 <div class="wiki-content">
     <span class="wiki-welcome">
         <h1>Strona główna</h1>
-        <img src="/images/logo/main-vector.min.svg" alt="logo" width="40" height="40">
+        <img src="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" alt="logo" width="40" height="40">
         <h2><i>Witamy w Titanic! Wiki, wspólnym kompendium wszystkiego, co dotyczy Titanic!</i></h2>
     </span>
     <div class="wiki-stats">

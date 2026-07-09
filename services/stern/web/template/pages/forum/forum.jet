@@ -7,7 +7,7 @@
 <meta property="og:description" content="{{ .Forum.Description }}">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/{{ .Forum.Id }}">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
-<link rel="stylesheet" href="/css/forums.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -18,7 +18,7 @@
     {{ yield forumTopics() }}
     {{ yield forumFooter() }}
 </div>
-<script src="/js/forum.js" defer></script>
+<script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
 {{ end }}
 
 {{ block forumLocation() }}
@@ -55,7 +55,7 @@
     {{ range _, subforum := .Subforums }}
         <tr>
             <td width="50%" class="subforum-head" style="background-color: #e3e1fa">
-                <img src="/images/icons/forum/titanic.png" alt="Forum Icon"
+                <img src="{{ cachedUrl("/images/icons/forum/titanic.png") }}" alt="Forum Icon"
                      width="34"
                      style="float: left; margin-right: 12px;">
                 <div>

@@ -2,11 +2,11 @@
 
 {{ block head() }}
 <title>Post too long - Titanic!</title>
-<link rel="stylesheet" href="/css/error.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
 {{ end }}
 
 {{ block body() }}
-<img src="/images/art/ffffff.png" alt="Error Image">
+<img src="{{ cachedUrl("/images/art/ffffff.png") }}" alt="Error Image">
 <div class="description">
     <h1>Your post is too long!</h1>
     Please limit your post to 15000 characters or less.

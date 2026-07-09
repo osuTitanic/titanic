@@ -3,7 +3,7 @@
 
 {{ block head() }}
 <title>Create a Topic - Forum</title>
-<link rel="stylesheet" href="/css/forums.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
 {{ end }}
 
 {{ block body() }}

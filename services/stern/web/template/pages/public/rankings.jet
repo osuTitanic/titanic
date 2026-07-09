@@ -13,7 +13,7 @@
 
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/rankings/{{ .Mode.Alias() }}/{{ .Type.Alias() }}">
-<link rel="stylesheet" href="/css/rankings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/rankings.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -136,15 +136,15 @@
                 {{ .Type }}
             </th>
             <th>
-                <img src="/images/grades/X_small.png" alt="">
-                <img src="/images/grades/XH_small.png" alt="">
+                <img src="{{ cachedUrl("/images/grades/X_small.png") }}" alt="">
+                <img src="{{ cachedUrl("/images/grades/XH_small.png") }}" alt="">
             </th>
             <th>
-                <img src="/images/grades/S_small.png" alt="">
-                <img src="/images/grades/SH_small.png" alt="">
+                <img src="{{ cachedUrl("/images/grades/S_small.png") }}" alt="">
+                <img src="{{ cachedUrl("/images/grades/SH_small.png") }}" alt="">
             </th>
             <th>
-                <img src="/images/grades/A_small.png" alt="">
+                <img src="{{ cachedUrl("/images/grades/A_small.png") }}" alt="">
             </th>
         </tr>
     </thead>

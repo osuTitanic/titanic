@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}">
 <meta property="og:description" content="Relive the early days of osu! with Titanic.">
-<link rel="stylesheet" href="/css/home.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/home.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -101,13 +101,13 @@
 
 {{ block homeActionButtons() }}
 <a href="/download">
-    <img height="55" width="356" src="/images/buttons/download-button.png" alt="Download" loading="lazy">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/download-button.png") }}" alt="Download" loading="lazy">
 </a>
 <a href="https://github.com/osuTitanic/">
-    <img height="55" width="356" src="/images/buttons/contribute-button.png" alt="Contribute" loading="lazy">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/contribute-button.png") }}" alt="Contribute" loading="lazy">
 </a>
 <a href="https://ko-fi.com/lekuru">
-    <img height="55" width="356" src="/images/buttons/support-button.png" alt="Support" loading="lazy">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/support-button.png") }}" alt="Support" loading="lazy">
 </a>
 {{ end }}
 

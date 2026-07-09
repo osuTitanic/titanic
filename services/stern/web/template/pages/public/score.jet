@@ -5,7 +5,7 @@
 <meta property="og:title" content="{{ .User.Name }}'s score on {{ .Beatmapset.ArtistName() }} - {{ .Beatmapset.TitleName() }} - Titanic!">
 <meta property="og:description" content="{{ .User.Name }} achieved #{{ .ScoreRank > 0 ? .ScoreRank : "N/A" }} with {{ formatFloat(.Score.Acc * 100, 2) }}% ({{ .Score.Grade }}) for {{ .Score.PP|round }}pp on {{ .Beatmap.Name() }}">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .Beatmapset.LargeThumbnailUrl() }}">
-<link rel="stylesheet" href="/css/scores.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/scores.css") }}">
 {{ end }}
 
 {{ block body() }}

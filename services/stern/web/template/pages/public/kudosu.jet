@@ -6,7 +6,7 @@
 <meta property="og:description" content="Discover who has contributed the most to beatmap modding on Titanic.">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/rankings/kudosu">
-<link rel="stylesheet" href="/css/rankings.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/rankings.css") }}">
 {{ end }}
 
 {{ block body() }}

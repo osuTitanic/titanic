@@ -2,11 +2,11 @@
 
 {{ block head() }}
 <title>404 Not Found</title>
-<link rel="stylesheet" href="/css/error.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
 {{ end }}
 
 {{ block body() }}
-<img src="/images/art/ffffff.png" alt="Error Image">
+<img src="{{ cachedUrl("/images/art/ffffff.png") }}" alt="Error Image">
 <div class="description">
     <h1>We could not find what your are looking for...</h1>
 </div>

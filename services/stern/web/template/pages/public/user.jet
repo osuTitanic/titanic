@@ -7,8 +7,8 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .User.AvatarUrl() }}">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/u/{{ .User.Id }}">
 <link rel="canonical" href="/u/{{ .User.Id }}">
-<link rel="stylesheet" href="/css/user.css">
-<link rel="stylesheet" href="/lib/nv.d3.min.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/user.css") }}">
+<link rel="stylesheet" href="{{ cachedUrl("/lib/nv.d3.min.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -38,11 +38,11 @@
     var scoreRank = {{ .General.ScoreRank }};
     var ppv1Rank = {{ .General.PPv1Rank }};
 </script>
-<script src="/js/user.js" defer></script>
-<script src="/lib/d3.v3.min.js" defer></script>
-<script src="/lib/nv.d3.min.js" defer></script>
+<script src="{{ cachedUrl("/js/user.js") }}" defer></script>
+<script src="{{ cachedUrl("/lib/d3.v3.min.js") }}" defer></script>
+<script src="{{ cachedUrl("/lib/nv.d3.min.js") }}" defer></script>
 {{ if .Permissions.IsModerator() }}
-<script src="/js/moderation.js" defer></script>
+<script src="{{ cachedUrl("/js/moderation.js") }}" defer></script>
 {{ end }}
 {{ end }}
 
@@ -118,7 +118,7 @@
 
             {{ if .IsOtherProfile() }}
                 <a href="/account/chat?target={{ .User.Id }}">
-                    <img src="/images/icons/user/contact.png" title="Send private message" alt="DM" />
+                    <img src="{{ cachedUrl("/images/icons/user/contact.png") }}" title="Send private message" alt="DM" />
                 </a>
             {{ end }}
 
@@ -130,7 +130,7 @@
 
     {{ if .User.Restricted && .Permissions.IsModerator() }}
         <div class="banned-container">
-            <img src="/images/banned-new.png" alt="Banned" />
+            <img src="{{ cachedUrl("/images/banned-new.png") }}" alt="Banned" />
         </div>
     {{ end }}
 </div>
@@ -464,23 +464,23 @@
         <table class="profile-centered-space">
             <tbody>
                 <tr>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/XH.png" height="42" alt="XH"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/XH.png") }}" height="42" alt="XH"></td>
                     <td style="width: 50px;">{{ .Stats.CountXH }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/X.png" height="42" alt="X"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/X.png") }}" height="42" alt="X"></td>
                     <td style="width: 50px;">{{ .Stats.CountX }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/SH.png" height="42" alt="SH"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/SH.png") }}" height="42" alt="SH"></td>
                     <td style="width: 50px;">{{ .Stats.CountSH }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/S.png" height="42" alt="S"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/S.png") }}" height="42" alt="S"></td>
                     <td style="width: 50px;">{{ .Stats.CountS }}</td>
                 </tr>
                 <tr>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/A.png" height="42" alt="A"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/A.png") }}" height="42" alt="A"></td>
                     <td style="width: 50px;">{{ .Stats.CountA }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/B.png" height="42" alt="B"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/B.png") }}" height="42" alt="B"></td>
                     <td style="width: 50px;">{{ .Stats.CountB }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/C.png" height="42" alt="C"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/C.png") }}" height="42" alt="C"></td>
                     <td style="width: 50px;">{{ .Stats.CountC }}</td>
-                    <td style="width: 42px;"><img loading="lazy" src="/images/grades/D.png" height="50" alt="D"></td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/D.png") }}" height="50" alt="D"></td>
                     <td style="width: 50px;">{{ .Stats.CountD }}</td>
                 </tr>
             </tbody>
@@ -868,7 +868,7 @@
                 alt="Achievement Image"
             >
             {{ else }}
-            <img src="/images/achievements/unknown.png" alt="Unknown Achievement" loading="lazy">
+            <img src="{{ cachedUrl("/images/achievements/unknown.png") }}" alt="Unknown Achievement" loading="lazy">
             {{ end }}
             <br>
             <b>{{ achievement.Name }}</b>

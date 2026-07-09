@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/login">
 <meta property="og:description" content="Reset the password to your Titanic account.">
-<link rel="stylesheet" href="/css/account.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
 {{ end }}
 
 {{ block body() }}

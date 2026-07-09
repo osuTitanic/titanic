@@ -6,7 +6,7 @@
 <meta property="og:description" content="{{ .MetaDescription }}">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/">
 <meta property="og:image" content="{{ .MetaImage }}">
-<link rel="stylesheet" href="/css/forums.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -24,7 +24,7 @@
     {{ yield forumTopicReplyButton() }}
     {{ yield forumTopicActiveUsers() }}
 </div>
-<script src="/js/forum.js" defer></script>
+<script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
 {{ end }}
 
 {{ block forumTopicLocation() }}

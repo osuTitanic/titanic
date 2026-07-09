@@ -5,7 +5,7 @@
 <meta property="og:title" content="{{ .Beatmap.Name() }} - Beatmap Info - Titanic!">
 <meta property="og:description" content="Titanic » Beatmaps » {{ .Beatmap.Name() }}">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .Beatmapset.LargeThumbnailUrl() }}">
-<link rel="stylesheet" href="/css/beatmap.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/beatmap.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -260,16 +260,16 @@
         {{ if .Beatmapset.Available }}
             {{ if .CurrentUser }}
                 <a href="/d/{{ .Beatmapset.Id }}" target="_blank">
-                    <img src="/images/beatmap/osu-download-beatmap.png" alt="Download">
+                    <img src="{{ cachedUrl("/images/beatmap/osu-download-beatmap.png") }}" alt="Download">
                 </a>
                 {{ if .Beatmapset.HasVideo }}
                     <a href="/d/{{ .Beatmapset.Id }}n" target="_blank">
-                        <img src="/images/beatmap/osu-download-beatmap-novid.png" alt="Download without Video">
+                        <img src="{{ cachedUrl("/images/beatmap/osu-download-beatmap-novid.png") }}" alt="Download without Video">
                     </a>
                 {{ end }}
             {{ else }}
                 <a href="#" onclick='return showLoginForm();'>
-                    <img src="/images/beatmap/osu-download-login.png" alt="Login to download Beatmaps"/>
+                    <img src="{{ cachedUrl("/images/beatmap/osu-download-login.png") }}" alt="Login to download Beatmaps"/>
                 </a>
             {{ end }}
         {{ end }}
@@ -518,9 +518,9 @@
     var isBeatmapsetOwner = {{ .IsBeatmapAuthor }};
     var bbcodeDescription = `{{ .Beatmapset.DescriptionText() }}`;
 </script>
-<script src="/js/beatmap.js" defer></script>
+<script src="{{ cachedUrl("/js/beatmap.js") }}" defer></script>
 {{ if .Permissions.IsBat() }}
-<script src="/js/bat.js" defer></script>
+<script src="{{ cachedUrl("/js/bat.js") }}" defer></script>
 {{ end }}
 {{ end }}
 

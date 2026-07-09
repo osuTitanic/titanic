@@ -6,7 +6,7 @@
 <meta property="og:description" content="{{ .Group.Description != "" ? .Group.Description : "Find out more about this group" }}"> {* <-- wtf am i supposed to put here as a default description *}
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/g/{{ .Group.Id }}">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
-<link rel="stylesheet" href="/css/group.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/group.css") }}">
 {{ end }}
 
 {{ block body() }}

@@ -7,7 +7,7 @@
 {{ if .SiteUrl }}<meta property="og:url" content="{{ .SiteUrl }}">{{ end }}
 <meta property="og:description" content="{{ .SiteDescription }}">
 {{ if .CanonicalUrl }}<link rel="canonical" href="{{ .CanonicalUrl }}">{{ end }}
-<link rel="stylesheet" href="/css/wiki.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/wiki.css") }}">
 {{ end }}
 
 {{ block body() }}

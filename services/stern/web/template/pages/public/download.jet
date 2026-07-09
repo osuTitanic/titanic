@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/download">
 <meta property="og:description" content="Let's get you started! Choose and download your preferred version of osu!.">
-<link rel="stylesheet" href="/css/download.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/download.css") }}">
 {{ end }}
 
 {{ block body() }}

@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/events">
 <meta property="og:description" content="Keep up with what's going on in Titanic!">
-<link rel="stylesheet" href="/css/events.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/events.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -25,6 +25,6 @@
 <noscript>
     <p id="status-text">Please enable JavaScript to view the activity feed!</p>
 </noscript>
-<script src="/js/events.js"></script>
+<script src="{{ cachedUrl("/js/events.js") }}"></script>
 {{ end }}
 {{ end }}

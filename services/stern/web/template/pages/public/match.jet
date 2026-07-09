@@ -5,7 +5,7 @@
 <meta property="og:title" content="{{ .Match.Name }} - Titanic!">
 <meta property="og:description" content="Titanic » Matches » {{ .Match.Name }} (#{{ .Match.Id }})">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
-<link rel="stylesheet" href="/css/match.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/match.css") }}">
 {{ if .IsOngoing() }}
 <meta http-equiv="refresh" content="30">
 {{ end }}

@@ -6,7 +6,7 @@
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/beatmapsets">
 <meta property="og:description" content="Explore the vast collection of beatmaps to find songs which suit your tastes">
-<link rel="stylesheet" href="/css/search.css">
+<link rel="stylesheet" href="{{ cachedUrl("/css/search.css") }}">
 {{ end }}
 
 {{ block body() }}
@@ -32,7 +32,7 @@
 
     {{ yield beatmapListing() }}
 </div>
-<script src="/js/search.js"></script>
+<script src="{{ cachedUrl("/js/search.js") }}"></script>
 {{ end }}
 
 {{ block selectionMode() }}
@@ -163,9 +163,9 @@
 
     {{ if .SearchSort == id }}
         {{ if .SearchOrder == "0" }}
-        <img src="/images/down.gif" alt="Descending">
+        <img src="{{ cachedUrl("/images/down.gif") }}" alt="Descending">
         {{ else }}
-        <img src="/images/up.gif" alt="Ascending">
+        <img src="{{ cachedUrl("/images/up.gif") }}" alt="Ascending">
         {{ end }}
     {{ end }}
 </th>
