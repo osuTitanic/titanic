@@ -1,0 +1,40 @@
+{{ extends "/layout.jet" }}
+{{ import "/components/editor.jet" }}
+
+{{ block head() }}
+<title>{{ .Editor.SubmitText }} a Post - Forum</title>
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<style>
+    .header-text { margin: 10px 5px 10px 5px }
+</style>
+<h1 class="header-text">
+    <a href="/forum" style="color:#5a5399">Index</a> »
+    {{ range _, parent := .Parents }}
+        <a href="/forum/{{ parent.Id }}">{{ parent.Name }}</a> »
+    {{ end }}
+    <a href="/forum/{{ .Forum.Id }}">{{ .Forum.Name }}</a> »
+    <a href="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/">{{ .Topic.Title }}</a>
+</h1>
+<form action="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post" method="post" style="padding: 0 5px;" data-draft-url="{{ .Editor.DraftUrl }}">
+    {{ yield editor() .Editor }}
+    <input type="hidden" name="action" value="{{ .Action }}">
+    <input type="hidden" name="id" value="{{ .ActionId }}">
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+</form>
+<br>
+{* Ctrl+Enter -> Submit forum post *}
+<script>
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'Enter') {
+            var submitButton = document.querySelector('.post-buttons input[type="submit"]');
+            if (submitButton) {
+                submitButton.click();
+                submitButton.disabled = true;
+            }
+        }
+    });
+</script>
+{{ end }}

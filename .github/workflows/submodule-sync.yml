@@ -27,9 +27,7 @@ jobs:
         run: |
           git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/anchor.git HEAD | awk '{ print $1}'),services/bancho
           git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/banchobot HEAD | awk '{ print $1}'),services/bot
-          git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/jobs.git HEAD | awk '{ print $1}'),services/jobs
           git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/deck.git HEAD | awk '{ print $1}'),services/deck
-          git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/stern.git HEAD | awk '{ print $1}'),services/stern
           git update-index --cacheinfo 160000,$(git ls-remote https://github.com/osuTitanic/keel.git HEAD | awk '{ print $1}'),services/keel
 
       - name: Commit update

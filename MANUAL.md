@@ -6,6 +6,7 @@
 - [PostgreSQL](https://www.postgresql.org/)
 - [Redis](https://redis.io/)
 - [Python](https://www.python.org/) with pip (3.13 is recommended)
+- [Go](https://go.dev/doc/install/)
 - [Rust Toolchain](https://rustup.rs/) for pp calculations
 
 ## Cloning the main repository
@@ -53,10 +54,11 @@ Here is a list of all projects you want to run:
 
 - `/services/bancho` (Bancho Server)
 - `/services/deck` (Score Server)
-- `/services/stern` (Website)
 - `/services/keel` (API)
+- `/services/stern` (Website, Go)
+- `/services/jobs` (Background tasks, Go)
 
-First, install the dependencies for each project with:
+For the Python service submodules, install the dependencies for each project with:
 
 ```shell
 python3 -m pip install -r requirements.txt
@@ -65,10 +67,17 @@ python3 -m pip install -r requirements.txt
 You might want to use a [virtual environment](https://docs.python.org/3/tutorial/venv.html) for that, if any dependencies conflict with each other.
 
 Rename the `.example.env` files, to `.env` and edit them, to match your setup.
-After that you should be ready to run the all the servers, by running this command for all projects:
+After that you should be ready to run the Python servers with:
 
 ```shell
 python3 main.py
+```
+
+Run the Go services from the repository root:
+
+```shell
+go run ./services/stern/cmd/web
+go run ./services/jobs/cmd/cli -file ./services/jobs/schedule.example.json
 ```
 
 It recommended to run the website, as well as the score server behind a reverse proxy, so that both servers can be accessed under `osu.yourdomain.com`. However this guide won't contain any instructions for that.

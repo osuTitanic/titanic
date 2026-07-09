@@ -1,0 +1,214 @@
+{{ extends "/layout.jet" }}
+{{ import "/components/pagination_forum.jet" }}
+
+{{ block head() }}
+<title>{{ .Forum.Name }} - Forum</title>
+<meta property="og:title" content="{{ .Forum.Name }} - Titanic!">
+<meta property="og:description" content="{{ .Forum.Description }}">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/{{ .Forum.Id }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+{{ yield forumLocation() }}
+<div>
+    {{ yield forumHeader() }}
+    {{ yield forumSubforums() }}
+    {{ yield forumTopics() }}
+    {{ yield forumFooter() }}
+</div>
+<script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
+{{ end }}
+
+{{ block forumLocation() }}
+<h1 class="header-text">
+    <a href="/forum" style="color:#5a5399">Index</a> »
+    {{ range _, parent := .Parents }}
+        <a href="/forum/{{ parent.Id }}">{{ parent.Name }}</a> »
+    {{ end }}
+    <a href="/forum/{{ .Forum.Id }}">{{ .Forum.Name }}</a>
+</h1>
+{{ end }}
+
+{{ block forumHeader() }}
+<table width="100%">
+    <tbody>
+    {{ if .CanCreateTopic && len(.Topics) > 12 }}
+    <tr>
+        <td align="left" style="float: left">
+            <div class="post-buttons-large" style="margin-left: 0;">
+                <a href="/forum/{{ .Forum.Id }}/create" class="button-blue"><i class="icon-edit"></i> New Topic</a>
+            </div>
+        </td>
+    </tr>
+    {{ end }}
+    {{ yield paginationForum() .Pagination }}
+    </tbody>
+</table>
+{{ end }}
+
+{{ block forumSubforums() }}
+{{ if len(.Subforums) > 0 }}
+<table width="100%" class="subforum-table">
+    <tbody>
+    {{ range _, subforum := .Subforums }}
+        <tr>
+            <td width="50%" class="subforum-head" style="background-color: #e3e1fa">
+                <img src="{{ cachedUrl("/images/icons/forum/titanic.png") }}" alt="Forum Icon"
+                     width="34"
+                     style="float: left; margin-right: 12px;">
+                <div>
+                    <a href="/forum/{{ subforum.Id }}">{{ subforum.Name }}</a>
+                    <p>{{ subforum.Description }}</p>
+                </div>
+            </td>
+            <td style="text-align: center;" class="subforum-stats">
+                <p class="subforum-topiccount">{{ subforum.TopicCount|formatNumber }}</p>
+                <p class="subforum-postcount">{{ subforum.PostCount|formatNumber }}</p>
+            </td>
+            <td style="text-align: right;" class="subforum-topics">
+                {{ recent := .SubforumRecent[subforum.Id] }}
+                {{ if recent }}
+                    <a href="/forum/{{ .Forum.Id }}/p/{{ recent.Id }}/">{{ recent.Topic.Title }}</a>
+                    <p>
+                        <time class="timeago" datetime="{{ recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                        by {{ forumUserLink(recent.User, .CurrentUserId()) | unsafe }}
+                    </p>
+                {{ else }}
+                    <p>No recent topics</p>
+                {{ end }}
+            </td>
+        </tr>
+    {{ end }}
+    </tbody>
+</table>
+{{ end }}
+{{ end }}
+
+{{ block forumTopics() }}
+    {{ if .HasTopics() }}
+    <table width="100%" class="topics-table">
+        <thead>
+            <tr>
+                {{ if .HasCustomIcons }}
+                <th colspan="3">Topics</th>
+                {{ else }}
+                <th colspan="2">Topics</th>
+                {{ end }}
+                <th>Author</th>
+                <th></th>
+                <th>Last Post</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{ if len(.Announcements) > 0 }}
+            <tr class="table-header">
+                <td colspan=4 class="topic-header">Announcements</td>
+            </tr>
+            {{ range _, preview := .Announcements }}
+                {{ yield forumTopicRow() preview }}
+            {{ end }}
+            {{ end }}
+            {{ if len(.Topics) > 0 }}
+            <tr class="table-header">
+                <td colspan=4 class="topic-header">Topics</td>
+            </tr>
+            {{ range _, preview := .Topics }}
+                {{ yield forumTopicRow() preview }}
+            {{ end }}
+            {{ end }}
+        </tbody>
+    </table>
+    {{ yield forumActiveUsers() }}
+    {{ else }}
+    <p style="margin-top: 10px; margin-left: 2.5px;">
+        Hmmm... seems like nothing was posted here yet.
+        {{ if .CurrentUser }}Why not be the first one?{{ end }}
+    </p><br>
+    {{ end }}
+{{ end }}
+
+{{ block forumActiveUsers() }}
+<div class="forum-active-users">
+    Users browsing this forum:
+    {{ if len(.ActiveUsers) == 0 }}
+        None
+    {{ else }}
+        {{ range i, user := .ActiveUsers }}
+            <a href="/u/{{ user.Id }}">{{ user.Name }}</a>{{ if i < len(.ActiveUsers) - 1 }}, {{ end }}
+        {{ end }}
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block forumFooter() }}
+<table width="100%">
+    <tbody>
+        <tr>
+            {{ if .CanCreateTopic }}
+            <td align="left" style="float: left">
+                <div class="post-buttons-large" style="margin-left: 0;">
+                    <a href="/forum/{{ .Forum.Id }}/create" class="button-blue"><i class="icon-edit"></i> New Topic</a>
+                </div>
+            </td>
+            {{ end }}
+            {{ yield paginationForumRight() .Pagination }}
+        </tr>
+    </tbody>
+</table>
+{{ end }}
+
+{{ block forumTopicRow() }}
+{{ topic := .Topic }}
+<tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
+    <td align="center" width="4%">
+        <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">
+            <img src="{{ .StatusIcon }}" width="20">
+        </a>
+    </td>
+    {{ if .HasCustomIcons }}
+    <td align="center" width="4%">
+        {{ if topic.Icon }}
+        <img src="{{ topic.Icon.Location }}" alt="{{ topic.Icon.Name }}" width="20">
+        {{ end }}
+    </td>
+    {{ end }}
+    <td>
+        <div>
+            {{ if topic.Pinned }}
+            <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
+            {{ end }}
+            <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">{{ topic.Title }}</a>
+            {{ if topic.StatusTextValue() != "" }}
+            <p class="topic-status-text">{{ topic.StatusTextValue() }}</p>
+            {{ end }}
+        </div>
+        {{ include "/components/pagination_topic_preview.jet" . }}
+    </td>
+    <td align="center">
+        {{ forumUserLink(topic.Creator, .CurrentUserId) | unsafe }}
+    </td>
+    <td width="6%" align="center">
+        <p class="subforum-topiccount">{{ topic.PostCount }}</p>
+        <p class="subforum-postcount">{{ topic.Views }}</p>
+    </td>
+    <td align="center">
+        {{ if .LastPost }}
+            <p>
+                {{ forumUserLink(.LastPost.User, .CurrentUserId) | unsafe }}
+                <a href="/forum/{{ .ForumId }}/p/{{ .LastPost.Id }}/">
+                    <i class="icon-arrow-right" style="color: #ababab"></i>
+                </a>
+            </p>
+            <p>
+                <time class="timeago" datetime="{{ .LastPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+            </p>
+        {{ else }}
+            <p>No posts</p>
+        {{ end }}
+    </td>
+    {* Separator *}
+    <tr></tr>
+</tr>
+{{ end }}

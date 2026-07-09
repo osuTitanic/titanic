@@ -153,6 +153,9 @@ services:
 
   stern:
     image: ghcr.io/osutitanic/stern:latest
+    build:
+      context: .
+      dockerfile: ./services/stern/Dockerfile
     restart: unless-stopped
     env_file:
       - ".env"
@@ -169,7 +172,7 @@ services:
     # Uncomment to access stern from outside
     # - 127.0.0.1:7070:80
     volumes:
-      - "./www:/app/static"
+      - "./services/stern/web/static:/app/static:ro"
       - "./.data:/app/.data"
     depends_on:
       db:
@@ -186,6 +189,9 @@ services:
 
   jobs:
     image: ghcr.io/osutitanic/jobs:latest
+    build:
+      context: .
+      dockerfile: ./services/jobs/Dockerfile
     restart: unless-stopped
     env_file:
       - ".env"

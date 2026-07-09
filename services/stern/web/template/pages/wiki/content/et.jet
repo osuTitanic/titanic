@@ -1,0 +1,47 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Title }}</title>
+<meta name="description" content="{{ .SiteDescription }}">
+<meta property="og:title" content="{{ .SiteTitle }}">
+{{ if .SiteUrl }}<meta property="og:url" content="{{ .SiteUrl }}">{{ end }}
+<meta property="og:description" content="{{ .SiteDescription }}">
+{{ if .CanonicalUrl }}<link rel="canonical" href="{{ .CanonicalUrl }}">{{ end }}
+<link rel="stylesheet" href="{{ cachedUrl("/css/wiki.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="wiki-navigation">
+    <div class="left-navigation">
+        <a href="#" class="current">Leht</a>
+        <a href="{{ .DiscussionUrl }}">Arutelu</a>
+    </div>
+    <div class="right-navigation">
+        <a href="#" class="current">Loe</a>
+        <a href="{{ .SourceUrl }}">Vaata lähteteksti</a>
+        <a href="{{ .HistoryUrl }}">Vaata ajalugu</a>
+        <div class="wiki-search">
+            <form action="/wiki/et/search" method="get">
+                <input type="text" name="query" placeholder="Otsi..." value="{{ .SearchQuery }}">
+                <button type="submit">Otsi</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="wiki-sidebar"></div>
+{{ if .Language != .RequestedLanguage }}
+<div class="wiki-warning">
+    <p>
+        See leht ei ole sinu valitud keeles saadaval.
+        Saad selle <a href="{{ .TranslationUrl }}">tõlkida</a>, et see oleks saadaval.
+    </p>
+</div>
+{{ end }}
+<div class="wiki-content">
+    {{ yield wikiContent() }}
+    {{ .Content | unsafe }}
+    <br>
+</div>
+{{ end }}
+
+{{ block wikiContent() }}{{ end }}

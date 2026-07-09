@@ -1,0 +1,18 @@
+{{ onOverview := .CurrentPath == "/account" || .CurrentPath == "/account/" }}
+<div class="sidebar">
+    <div class="sidebar-section {{ if onOverview }}selected-sidebar{{ end }}">
+        <a href="/account/">Overview</a>
+    </div>
+    <div class="sidebar-section {{ if .CurrentPath == "/account/profile" }}selected-sidebar{{ end }}">
+        <a href="/account/profile">Profile</a>
+    </div>
+    <div class="sidebar-section {{ if .CurrentPath == "/account/security" }}selected-sidebar{{ end }}">
+        <a href="/account/security">Security</a>
+    </div>
+    <div class="sidebar-section {{ if .CurrentPath == "/account/friends" }}selected-sidebar{{ end }}">
+        <a href="/account/friends">Friends</a>
+    </div>
+    <div class="sidebar-section {{ if .CurrentPath == "/account/chat" }}selected-sidebar{{ end }}">
+        <a href="/account/chat">Chat</a>
+    </div>
+</div>

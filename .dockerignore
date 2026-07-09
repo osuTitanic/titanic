@@ -1,3 +1,15 @@
-.env
 .git
+.github
+.data
+.env
+.example.env
+bin
+dist
+tmp
+cli
+coverage.out
+*.test
 www
+
+# Stern static assets are mounted into the runtime container.
+services/stern/web/static/

@@ -1,0 +1,27 @@
+#status-text {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.8s ease-in;
+    font-size: 90%;
+}
+
+#activity-feed-container {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.event-item {
+    transition: all 1s ease-in-out;
+    border-bottom: solid 1px #d0d0d0;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    width: 100%;
+    display: block;
+    font-size: 85%;
+}
+
+.username-link {
+    font-weight: bold;
+}

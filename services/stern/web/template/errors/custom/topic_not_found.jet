@@ -1,0 +1,20 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Topic Not Found - Titanic!</title>
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
+{{ end }}
+
+{{ block body() }}
+<img src="{{ cachedUrl("/images/art/ffffff.png") }}" alt="Error Image">
+<div class="description">
+    <h1>The topic you are looking for was not found!</h1>
+
+    There are a few possible reasons for this:
+    <ul>
+        <li>The topic does not exist.</li>
+        <li>The topic may have been deleted.</li>
+        <li>You may have made a typo!</li>
+    </ul>
+</div>
+{{ end }}

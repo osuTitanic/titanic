@@ -1,0 +1,65 @@
+{{ extends "/pages/wiki/content/es.jet" }}
+
+{{ block wikiContent() }}
+<div class="wiki-content">
+    <span class="wiki-welcome">
+        <h1>Página principal</h1>
+        <img src="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" alt="logo" width="40" height="40">
+        <h2><i>Bienvenido a Titanic! Wiki, un compendio colaborativo de todo lo relacionado con Titanic!.</i></h2>
+    </span>
+    <div class="wiki-stats">
+        <span>Actualmente tenemos <a href="#">{{ .PageCount|formatNumber }}</a> artículos y seguimos creciendo.</span>
+        <span>Hoy es {{ .CurrentDate }}.</span>
+    </div>
+    <div class="wiki-categories">
+        <table>
+            <tbody>
+                <tr><th>Descripción general</th></tr>
+                <tr>
+                    <td>
+                        Titanic! Wiki es un proyecto impulsado por la comunidad y creado por colaboradores dedicados de Titanic!.
+                        Nuestro objetivo es crear el recurso definitivo para todo lo relacionado con Titanic!.
+                        Pero no podemos hacerlo solos: <b>necesitamos tu ayuda!</b>
+                        Si te apasiona el proyecto, usa tus conocimientos y empieza a contribuir hoy mismo.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table width="100%">
+            <tbody>
+                <tr><th>Otros idiomas</th></tr>
+                <tr>
+                    <td>
+                        {{ range i, language := .AvailableLanguages }}
+                            <a href="/wiki/{{ language.Code }}">{{ language.Name }}</a>
+                            {{ if i < len(.AvailableLanguages) - 1 }}<b>•</b>{{ end }}
+                        {{ end }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ categoryCount := len(.Categories) }}
+        {{ range i, category := .Categories }}
+        {{ width := "50%" }}
+        {{ if categoryCount % 2 == 1 && i == categoryCount - 1 }}{{ width = "100%" }}{{ end }}
+        <table width="{{ width }}" style="float: {{ if i % 2 == 0 }}left{{ else }}right{{ end }};">
+            <tbody>
+                <tr><th>{{ category.Name }}</th></tr>
+                <tr>
+                    <td>
+                        {{ if len(category.Pages) > 0 }}
+                            {{ range j, page := category.Pages }}
+                                <a href="/wiki/es/{{ page.Path }}">{{ page.Title }}</a>
+                                {{ if j < len(category.Pages) - 1 }}<b>•</b>{{ end }}
+                            {{ end }}
+                        {{ else }}
+                            No hay páginas disponibles en esta categoría.
+                        {{ end }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ end }}
+    </div>
+</div>
+{{ end }}

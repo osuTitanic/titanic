@@ -1,0 +1,116 @@
+{{ extends "/layout.jet" }}
+{{ import "/components/editor.jet" }}
+
+{{ block head() }}
+<title>Profile</title>
+<meta property="og:title" content="Profile - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/profile">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
+{{ end }}
+
+{{ block body() }}
+{{ include "/components/settings_sidebar.jet" . }}
+<div class="main-settings">
+    <h1>Profile</h1>
+    {{ if .ErrorMessage != "" }}
+    <div><div id="error" class="section">{{ .ErrorMessage }}</div></div>
+    {{ end }}
+    {{ if .InfoMessage != "" }}
+    <div><div id="info" class="section">{{ .InfoMessage }}</div></div>
+    {{ end }}
+    {{ yield profileEditSection() }}
+    {{ yield userpageSection() }}
+    {{ yield signatureSection() }}
+</div>
+{{ end }}
+
+{{ block profileEditSection() }}
+<div id="edit">
+    <h2>Edit Profile</h2>
+    {{ yield avatarForm() }}
+    {{ yield profileForm() }}
+</div>
+{{ end }}
+
+{{ block avatarForm() }}
+<form class="section" action="/account/profile/avatar" method="post" enctype="multipart/form-data">
+    <div class="avatar-box avatar-frame">
+        <img src="{{ .CurrentUser.AvatarUrl() }}" alt="">
+    </div>
+    <input type="file" id="avatar" name="avatar" /><br>
+    <input class="submit-button" type="submit" name="submit" value="Upload">
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}
+
+{{ block profileForm() }}
+<form class="profile-section section" action="/account/profile" method="post">
+    <dl>
+        <div class="inner-section">
+            <dt><label></label><b>Username:</b></label></dt>
+            <dd>{{ .CurrentUser.Name }}</dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="website">Website:</label></dt>
+            <dd><input name="website" type="url" value="{{ .CurrentUser.WebsiteText() }}"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="discord">Discord:</label></dt>
+            <dd><input name="discord" type="text" value="{{ .CurrentUser.DiscordText() }}"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="twitter">Twitter:</label></dt>
+            <dd><input name="twitter" type="text" value="{{ .CurrentUser.TwitterText() }}"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="location">Location:</label></dt>
+            <dd><input name="location" type="text" value="{{ .CurrentUser.LocationText() }}"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="interests">Interests:</label></dt>
+            <dd><input name="interests" type="text" value="{{ .CurrentUser.InterestsText() }}"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label></label><b>Preferred Mode:</b></label></dt>
+            <dd>
+                <input type="radio" name="mode" value="0" {{ if .CurrentUser.PreferredMode == 0 }}checked{{ end }}>osu!</input>
+                <input type="radio" name="mode" value="1" {{ if .CurrentUser.PreferredMode == 1 }}checked{{ end }}>osu!taiko</input>
+                <input type="radio" name="mode" value="2" {{ if .CurrentUser.PreferredMode == 2 }}checked{{ end }}>osu!catch</input>
+                <input type="radio" name="mode" value="3" {{ if .CurrentUser.PreferredMode == 3 }}checked{{ end }}>osu!mania</input>
+            </dd>
+        </div>
+
+        <dd><input class="submit-button" type="submit" name="submit" value="Save"></dd>
+    </dl>
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}
+
+{{ block userpageSection() }}
+<div id="userpage">
+    <h2>Edit Userpage</h2>
+    <form class="section" action="/account/profile/userpage" method="post">
+        {{ yield editor() .UserpageEditor }}
+        <input type="hidden" name="user_id" value="{{ .CurrentUser.Id }}">
+        <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+    </form>
+</div>
+{{ end }}
+
+{{ block signatureSection() }}
+<div id="signature">
+    <h2>Edit Signature</h2>
+    <form class="section" action="/account/profile/signature" method="post">
+        {{ yield editor() .SignatureEditor }}
+        <input type="hidden" name="user_id" value="{{ .CurrentUser.Id }}">
+        <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+    </form>
+</div>
+{{ end }}

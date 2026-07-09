@@ -1,0 +1,95 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Overview</title>
+<meta property="og:title" content="Settings - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
+{{ end }}
+
+{{ block body() }}
+{{ include "/components/settings_sidebar.jet" . }}
+<div class="main-settings">
+    <h1>Overview</h1>
+    <div>
+        Welcome to the user settings page. From here you can monitor, view and update your profile.
+        You can also send messages to other users (if permitted).
+    </div>
+    {{ yield activitySection() }}
+    {{ yield notificationsSection() }}
+    {{ yield bookmarksSection() }}
+</div>
+<script src="{{ cachedUrl("/js/settings.js") }}"></script>
+{{ end }}
+
+{{ block activitySection() }}
+<div id="activity">
+    <h2>Your Activity</h2>
+    <dl class="activity-details section">
+        <dt>Joined:</dt>
+        <dd>{{ .CurrentUser.CreatedAt.Format("01/02/2006, 15:04:05") }}</dd>
+        <dt>Last active:</dt>
+        <dd>{{ .CurrentUser.LatestActivity.Format("01/02/2006, 15:04:05") }}</dd>
+        <dt>Total posts:</dt>
+        <dd>{{ .TotalPosts|formatNumber }}</dd>
+    </dl>
+</div>
+{{ end }}
+
+{{ block notificationsSection() }}
+<div id="notifications">
+    <h2>
+        Notifications
+        {{ if len(.Notifications) > 0 }}
+        <a onclick="clearAllNotifications()" class="clear-all">(clear all)</a>
+        {{ end }}
+    </h2>
+    <div class="section">
+        {{ if len(.Notifications) == 0 }}
+        You have no new notifications
+        {{ else }}
+        <div class="notifications">
+            {{ range _, notification := .Notifications }}
+            {{ yield notificationItem() notification }}
+            {{ end }}
+        </div>
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block notificationItem() }}
+<div class="notification {{ if !.Read }}new{{ end }}" id="{{ .Id }}" onclick="return handleNotificationClick(event, this)">
+    <a href="{{ .Link != "" ? .Link : "#" }}" class="notification-link" onclick="return handleNotificationClick(event, this)">{{ .Header }}</a>
+    <p>{{ .Content | markdownUrls | unsafe }}</p>
+    <p class="time">{{ .Time.Format("01/02/2006, 15:04:05") }}</p>
+</div>
+{{ end }}
+
+{{ block bookmarksSection() }}
+<div id="bookmarks">
+    <h2>Bookmarks</h2>
+    <div class="section">
+        {{ if len(.Bookmarks) == 0 }}
+        You have no bookmarks
+        {{ else }}
+        <div class="bookmarks">
+            {{ range _, bookmark := .Bookmarks }}
+            {{ yield bookmarkItem() bookmark }}
+            {{ end }}
+        </div>
+        {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block bookmarkItem() }}
+<div class="bookmark" id="bookmark-{{ .TopicId }}">
+    <div class="bookmark-link">
+        <a href="/forum/{{ .Topic.ForumId }}">{{ .Topic.Forum.Name }}</a> »
+        <a href="/forum/{{ .Topic.ForumId }}/t/{{ .TopicId }}">{{ .Topic.Title }}</a>
+    </div>
+    <a class="delete-link" onclick="return removeBookmark({{ .TopicId }})">Delete</a>
+</div>
+{{ end }}

@@ -1,0 +1,70 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Chat</title>
+<meta property="og:title" content="Chat - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/chat">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
+{{ end }}
+
+{{ block body() }}
+{{ include "/components/settings_sidebar.jet" . }}
+<div class="chat">
+    <div class="heading">
+        <h1>Chat</h1>
+    </div>
+    <noscript>
+        Please enable JavaScript to use the chat feature!
+    </noscript>
+    <div class="chat-container">
+        {{ yield chatWindow() }}
+        {{ yield chatSelection() }}
+    </div>
+    {{ yield chatScripts() }}
+    <div style="clear: both; margin-bottom: 20px;"></div>
+</div>
+{{ end }}
+
+{{ block chatWindow() }}
+<div class="chat-window">
+    <div class="chat-log">
+    </div>
+    <div class="chat-input">
+        <input type="text" class="chat-message" placeholder="Connecting..." disabled />
+        <button class="chat-send" disabled>Send</button>
+    </div>
+</div>
+{{ end }}
+
+{{ block chatSelection() }}
+<div class="chat-selection">
+    <div class="chat-channels">
+        <h2>Channels</h2>
+        <div id="channel-container">
+            <p class="channel-status">Loading...</p>
+        </div>
+        <div class="channel-join">
+            <input type="text" id="channel-join-input" placeholder="#channel" />
+            <button id="channel-join-btn">Join</button>
+        </div>
+    </div>
+    <div class="chat-dms">
+        <h2>Direct Messages</h2>
+        <div id="dm-container">
+            <p class="dm-status">Loading...</p>
+        </div>
+        <div class="dm-join">
+            <input type="text" id="dm-join-input" placeholder="Username" />
+            <button id="dm-join-btn">Chat</button>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ block chatScripts() }}
+<script>var loungeBackend = "{{ .Config.LoungeBackend() }}";</script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="{{ cachedUrl("/js/irc.js") }}"></script>
+<script src="{{ cachedUrl("/js/chat.js") }}"></script>
+{{ end }}

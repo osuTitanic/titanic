@@ -1,0 +1,64 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Forum</title>
+<meta property="og:title" content="Forum - Titanic!">
+<meta property="og:description" content="Discuss and share your thoughts with the community.">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<table class="forum-home">
+    <tbody>
+    {{ range _, section := .Sections }}
+        {{ yield forumIndexSection() section }}
+    {{ end }}
+    </tbody>
+</table>
+{{ end }}
+
+{{ block forumIndexSection() }}
+<tr>
+    <td class="mainforum-head" colspan="5">
+        <h4>{{ .Forum.Name }}</h4>
+    </td>
+</tr>
+{{ range _, subforum := .Subforums }}
+    {{ yield forumIndexRow() subforum }}
+{{ end }}
+{{ end }}
+
+{{ block forumIndexRow() }}
+{{ forum := .Forum }}
+<tr>
+    <td width="50%" class="subforum-head">
+        <img src="{{ cachedUrl("/images/icons/forum/titanic.png") }}" alt="Forum Icon"
+             width="34"
+             style="float: left; margin-right: 12px;">
+        <div>
+            <a href="/forum/{{ forum.Id }}">{{ forum.Name }}</a>
+            <p>{{ forum.Description }}</p>
+        </div>
+        {* TODO: Subforums *}
+    </td>
+    <td style="text-align: center;" class="subforum-stats">
+        <p class="subforum-topiccount">{{ forum.TopicCount|formatNumber }}</p>
+        <p class="subforum-postcount">{{ forum.PostCount|formatNumber }}</p>
+    </td>
+    <td style="text-align: right;" class="subforum-topics">
+        {{ if .Recent }}
+            <a href="/forum/{{ .Recent.ForumId }}/p/{{ .Recent.Id }}/">
+                {{ .Recent.Topic.Title }}
+            </a>
+            <p>
+                <time class="timeago" datetime="{{ .Recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                by {{ forumUserLink(.Recent.User, .CurrentUserId) | unsafe }}
+            </p>
+        {{ else }}
+            <p>No recent topics</p>
+        {{ end }}
+    </td>
+</tr>
+{{ end }}

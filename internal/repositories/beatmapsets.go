@@ -1,0 +1,91 @@
+package repositories
+
+import (
+	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/schemas"
+	"gorm.io/gorm"
+)
+
+type BeatmapsetRepository struct {
+	db *gorm.DB
+}
+
+func NewBeatmapsetRepository(db *gorm.DB) *BeatmapsetRepository {
+	return &BeatmapsetRepository{db: db}
+}
+
+func (r *BeatmapsetRepository) Create(beatmapset *schemas.Beatmapset) error {
+	return r.db.Create(beatmapset).Error
+}
+
+func (r *BeatmapsetRepository) Delete(beatmapset *schemas.Beatmapset) error {
+	return r.db.Delete(beatmapset).Error
+}
+
+func (r *BeatmapsetRepository) Update(updates *schemas.Beatmapset, columns ...string) (int64, error) {
+	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
+func (r *BeatmapsetRepository) ByTopicId(topicId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("topic_id = ?", topicId).
+		First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
+func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
+	if len(ids) == 0 {
+		return []*schemas.Beatmapset{}, nil
+	}
+
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).Where("id IN ?", ids).Find(&beatmapsets).Error
+	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) GetCount() (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Beatmapset{}).Count(&count).Error
+	return int(count), err
+}
+
+func (r *BeatmapsetRepository) FetchByStatus(status constants.BeatmapStatus, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).Where("submission_status = ?", status).Find(&beatmapsets).Error
+	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("creator_id = ?", creatorId).
+		Order("submission_date DESC").
+		Find(&beatmapsets).Error
+	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) FetchDownloadServer(id int) (constants.BeatmapServer, error) {
+	var server constants.BeatmapServer
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Select("download_server").
+		Where("id = ?", id).
+		Scan(&server).Error
+	return server, err
+}
+
+func (r *BeatmapsetRepository) FetchDownloadServerByBeatmap(beatmapId int) (constants.BeatmapServer, error) {
+	var server constants.BeatmapServer
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Select("beatmapsets.download_server").
+		Joins("JOIN beatmaps ON beatmaps.set_id = beatmapsets.id").
+		Where("beatmaps.id = ?", beatmapId).
+		Scan(&server).Error
+	return server, err
+}

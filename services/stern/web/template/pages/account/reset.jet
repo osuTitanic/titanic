@@ -1,0 +1,36 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Password Reset</title>
+<meta property="og:title" content="Password Reset - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/login">
+<meta property="og:description" content="Reset the password to your Titanic account.">
+<link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    <h1>Forgot your password?</h1>
+</div>
+<form class="account-form reset-form" method="post">
+    <div class="account-form-section account-form-field">
+        <input class="account-form-control validate" type="email" name="email" autocomplete="off" autocapitalize="none" placeholder="Email Address">
+        <div class="input-description">
+            Enter any details you remember about your account. We will do our best to track it down for you!
+        </div>
+    </div>
+    <div class="account-form-section account-form-actions reset-submit">
+        <input class="account-form-button reset-button" type="submit" name="login" value="Continue">
+    </div>
+    {{ if .ErrorMessage != "" }}
+    <div class="account-form-section account-form-error">
+        {{ .ErrorMessage }}
+    </div>
+    {{ end }}
+    <div class="account-form-section account-form-info">
+        Need further assistance? Contact us on our <a href="https://discord.gg/qupv72e7YH">discord</a> or via <a href="mailto:{{ .Config.EmailSender }}">email</a>.
+    </div>
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}

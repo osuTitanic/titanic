@@ -1,0 +1,356 @@
+.page {
+    margin: 0;
+}
+
+.header-text {
+    font-size: 150%;
+    font-weight: 100;
+    margin-left: 10px;
+    margin-bottom: 22px;
+    color: #e15fac;
+    text-shadow: #efcfe1 0px 0px 10px;
+}
+
+.header-text p {
+    font-weight: lighter;
+    font-size: 8pt;
+    color: #cc2e8a;
+}
+
+.header-text a {
+    color: #3843a6;
+    text-shadow: #efcfe1 0px 0px 10px;
+}
+
+.page h2 {
+    text-shadow: #efcfe1 0px 0px 10px;
+    color: #cc2e8a;
+    font-weight: normal;
+    font-size: 110%;
+    margin: 10px;
+}
+
+.beatmap {
+    display: grid;
+}
+
+.difficulty-icon img {
+    width: 16px;
+    height: 16px;
+}
+
+.beatmap-stats {
+    clear: both;
+    background-color: #e1d6fb;
+    border-top: 1px solid #cfc1ef;
+    border-bottom: 1px solid #8462db;
+    padding: 2px;
+    font-size: 9pt;
+}
+
+.beatmap-stats table {
+    width: 100%;
+}
+
+.beatmap-stats td {
+    border-bottom: 1px solid #cfc1ef;
+    vertical-align: middle;
+    padding: 8px;
+}
+
+.beatmap-stats td.beatmap-stats-info {
+    background: #e4dbfb;
+    color: #363143;
+}
+
+.starfield {
+    height: 14px;
+    background: url("/images/beatmap/starn.png");
+    background-repeat: repeat-x;
+    overflow: hidden;
+}
+
+.starfield-selected {
+    height: 14px;
+    background: url("/images/beatmap/star.png");
+    background-repeat: repeat-x;
+    overflow: hidden;
+}
+
+#favourites {
+    font-size: 8pt;
+    overflow: hidden;
+}
+
+.padding {
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 8px;
+    margin-top: 8px;
+}
+
+.beatmap-description {
+    border: 1px solid #e1dfe7;
+    background-color: #f9f7fe;
+    overflow: auto;
+    padding: 7px;
+    margin: 5px;
+    height: 124px;
+    max-width: 825px;
+}
+
+.beatmap-description .bbcode {
+    font-size: 70%;
+    text-align: left;
+    overflow: auto;
+    display: inline;
+    padding: 0;
+}
+
+.beatmap-description .bbcode--normal-line-height br {
+    margin-bottom: 4px;
+}
+
+.description-editor {
+    width: 462.5px;
+    height: 88px;
+    max-width: 462.5px;
+    max-height: 88px;
+    min-width: 462.5px;
+    min-height: 15px;
+    font-size: 90%;
+    margin: 0 0 4px 0;
+}
+
+.beatmap-preview-link {
+    float: left;
+    width: 160px;
+    height: 120px;
+    margin-right: 5px;
+}
+
+.beatmap-description .spoiler {
+    padding: 5px;
+}
+
+.beatmap-description .spoiler-head {
+    display: block;
+    color: black;
+}
+
+.beatmap-description .spoiler-head:hover {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.beatmap-download {
+    float: right;
+    margin-left: 10px;
+    margin-top: 5px;
+}
+
+.score-header {
+    width: 100%;
+    text-align: left;
+    min-height: 100px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.no-records {
+    display: block;
+    padding-top: 42px;
+}
+
+.leader {
+    display: inline-block;
+    text-align: left;
+    border: 1px solid black;
+    font-size: 80%;
+    margin: auto 5px auto;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    border-spacing: 0;
+    padding: 0;
+}
+
+.leader a {
+    color: #fdbf2a;
+}
+
+.leader .row-grade {
+    min-width: 135px;
+}
+
+.leader td {
+    padding: 3px;
+    font-size: 95%;
+    min-width: 115px;
+}
+
+.leader .row-title {
+    font-size: 120%;
+    font-weight: bold;
+    background-color: black;
+    color: white;
+    text-align: left;
+}
+
+.row-grade {
+    text-align: center;
+    height: 100%;
+}
+
+.row-grade img {
+    vertical-align: text-bottom;
+    border: 0;
+}
+
+.scores-header {
+    background-color: #d7d2fb;
+    text-align: center;
+}
+
+.scores {
+    font-size: 73.5%;
+    width: 100%;
+    margin-bottom: 35px;
+    text-align: left;
+    vertical-align: text-bottom;
+    border-spacing: 0;
+}
+
+.scores th {
+    border-bottom: 1px solid #a79ef3;
+    padding: 1px 0;
+}
+
+.scores td {
+    height: 15px;
+    vertical-align: middle;
+    padding: 2.25px 5px 2.25px 5px;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.scores img {
+    vertical-align: top;
+}
+
+.scores .flag {
+    vertical-align: text-top;
+}
+
+.scores .row-light:hover,
+.scores .row-dark:hover,
+.scores .row-score-self:hover,
+.scores .row-score-friend:hover {
+    background-color: #e7f6ff;
+    cursor: pointer;
+}
+
+.score-flag-link,
+.score-flag-link:hover,
+.score-flag-link:focus,
+.score-flag-link:active {
+    text-decoration: none;
+}
+
+.collaboration-request {
+    border-bottom: 1px solid #cfc1ef;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.collaboration-request button {
+    padding: 2.5px;
+    padding-right: 5px;
+    padding-left: 5px;
+    margin-right: 5px;
+}
+
+.beatmap-settings {
+    border-bottom: 1px solid #cfc1ef;
+    padding: 10px;
+}
+
+.beatmap-settings thead h2 {
+    padding-bottom: 5px;
+}
+
+.beatmap-settings td {
+    border: none;
+    padding: 5px;
+    padding-top: 0;
+}
+
+.beatmap-settings button {
+    padding: 1px;
+    padding-right: 4px;
+    padding-left: 4px;
+}
+
+.invite-container {
+    max-height: 100px;
+    display: grid;
+    row-gap: 1em;
+    overflow: auto;
+    align-content: center;
+    align-items: center;
+    justify-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+.invite {
+    display: grid;
+    justify-items: center;
+}
+
+.invite-button {
+    display: block;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.beatmap-settings dt {
+    float: left;
+    clear: left;
+    width: 35%;
+}
+
+.beatmap-settings dd {
+    color: #536482;
+    margin-bottom: 5px;
+    line-height: 25px;
+}
+
+.beatmap-settings dd textarea {
+    max-width: 190px;
+    max-height: 600px;
+}
+
+.bat-diffs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    margin-bottom: 10px;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.bat-diffs div {
+    text-align: center;
+    display: grid;
+    margin: 2px;
+}
+
+.bat-diffs select {
+    text-align: center;
+}
+
+.bat-diffs dt {
+    width: auto;
+}

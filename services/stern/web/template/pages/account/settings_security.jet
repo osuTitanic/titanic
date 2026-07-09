@@ -1,0 +1,184 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Security</title>
+<meta property="og:title" content="Security - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/security">
+<link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
+{{ end }}
+
+{{ block body() }}
+{{ include "/components/settings_sidebar.jet" . }}
+<div class="main-settings">
+    <h1>Security</h1>
+    {{ if .ErrorMessage != "" }}
+    <div><div id="error" class="section">{{ .ErrorMessage }}</div></div>
+    {{ end }}
+    {{ if .InfoMessage != "" }}
+    <div><div id="info" class="section">{{ .InfoMessage }}</div></div>
+    {{ end }}
+    {{ yield personalDetailsSection() }}
+    {{ yield previousLoginsSection() }}
+    {{ yield ircSection() }}
+    {{ yield dataExportSection() }}
+    {{ yield dataDeletionSection() }}
+</div>
+{{ yield securityScripts() }}
+{{ end }}
+
+{{ block personalDetailsSection() }}
+<div id="edit">
+    <h2>Personal Details</h2>
+    {{ yield passwordForm() }}
+    {{ yield emailForm() }}
+</div>
+{{ end }}
+
+{{ block passwordForm() }}
+<form class="profile-section section" action="/account/security" method="post">
+    <dl>
+        <div class="inner-section">
+            <dt><label for="new-password">New Password:</label></dt>
+            <dd><input name="new-password" type="password"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="password-confirm">Confirm Password:</label></dt>
+            <dd><input name="password-confirm" type="password"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="current-password">Current Password:</label></dt>
+            <dd><input name="current-password" type="password" required></dd>
+        </div>
+
+        <dd><input class="submit-button" type="submit" name="submit" value="Update"></dd>
+    </dl>
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}
+
+{{ block emailForm() }}
+<form class="profile-section section" action="/account/security" method="post">
+    <dl>
+        <div class="inner-section">
+            <dt><label for="new-email">E-Mail Address:</label></dt>
+            <dd><input name="new-email" type="email"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="email-confirm">Confirm E-Mail Address:</label></dt>
+            <dd><input name="email-confirm" type="email"></dd>
+        </div>
+
+        <div class="inner-section">
+            <dt><label for="current-password">Current Password:</label></dt>
+            <dd><input name="current-password" type="password" required></dd>
+        </div>
+
+        <div class="inner-section" style="margin: 14px 4px;">
+            By changing your email address, you will be required to verify the new email address.
+            You will not be able to use this account, until you have verified it.
+        </div>
+
+        <dd><input class="submit-button" type="submit" name="submit" value="Update"></dd>
+    </dl>
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}
+
+{{ block previousLoginsSection() }}
+<div id="logins">
+    <h2>Previous Logins</h2>
+    <dl class="login-details section">
+        {{ if len(.Logins) == 0 }}
+            You have not logged in yet
+        {{ else }}
+            {{ range _, login := .Logins }}
+            {{ yield loginItem() login }}
+            {{ end }}
+        {{ end }}
+    </dl>
+</div>
+{{ end }}
+
+{{ block loginItem() }}
+{{ if .IsWebIrc }}
+<dt>{{ .Time.Format("01/02/2006, 15:04:05") }}</dt>
+<dd>Login from Website Chat</dd>
+{{ else }}
+<dt>{{ .Time.Format("01/02/2006, 15:04:05") }}</dt>
+<dd>
+    Login from {{ .Country }}
+    (<span class="censored-ip">{{ .Ip }}</span>) with {{ .Version }}
+</dd>
+{{ end }}
+{{ end }}
+
+{{ block ircSection() }}
+<div id="irc">
+    <h2>IRC</h2>
+    <dl class="login-details section">
+        <dt>Server</dt>
+        <dd>irc.{{ .Config.DomainName }}</dd>
+        <dt>Port</dt>
+        <dd>6667 (6697 for SSL)</dd>
+        <dt>Username</dt>
+        <dd>{{ .IrcUsername }}</dd>
+        <dt>Server Password</dt>
+        <dd id="irc-token-container">
+            <a href="#irc" onclick="showIrcTokenInSettings('view')">View</a> /
+            <a href="#irc" onclick="showIrcTokenInSettings('generate')">Regenerate</a>
+        </dd>
+    </dl>
+</div>
+{{ end }}
+
+{{ block dataExportSection() }}
+<div id="data-export">
+    <h2>Data Export</h2>
+    <dl class="section">
+        <dt>
+            You can request an export of all data related to your account by clicking the button below.
+            Please keep in mind that you can only request a data export once every 24 hours.
+        </dt>
+        <dt style="margin-top: 5px">
+            <input id="data-export-password" type="password" placeholder="Current Password" required>
+            <input id="data-export-button" class="submit-button" type="submit" name="submit" value="Export" onclick="dataExport()">
+            <input type="hidden" id="recaptcha-response" name="recaptcha_response" value="">
+        </dt>
+    </dl>
+</div>
+{{ end }}
+
+{{ block dataDeletionSection() }}
+<div id="data-deletion">
+    <h2>Data Deletion</h2>
+    <dl class="section">
+        <dt>
+            If you want to delete your account and all data related to it, please contact us via email at
+            <a href="mailto:{{ .Config.EmailSender }}">{{ .Config.EmailSender }}</a>.
+            Please note that after account deletion, creating a new account is against our <a href="/wiki/en/Rules">Rules</a>.
+            <br>
+            You may also request deletion of specific data related to your account, such as past logins, chat messages, etc.
+        </dt>
+    </dl>
+</div>
+{{ end }}
+
+{{ block securityScripts() }}
+<script src="{{ cachedUrl("/js/irc.js") }}"></script>
+<script src="{{ cachedUrl("/js/settings.js") }}"></script>
+{{ if .Config.RecaptchaSiteKey != "" }}
+<script src="https://www.google.com/recaptcha/api.js?render={{ .Config.RecaptchaSiteKey }}"></script>
+<script>
+    grecaptcha.ready(function () {
+        grecaptcha.execute('{{ .Config.RecaptchaSiteKey }}', { action: 'export' }).then(function (token) {
+            var recaptchaResponse = document.getElementById('recaptcha-response');
+            recaptchaResponse.value = token;
+        });
+    });
+</script>
+{{ end }}
+{{ end }}

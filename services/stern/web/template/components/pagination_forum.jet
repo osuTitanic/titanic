@@ -1,0 +1,39 @@
+{{ block paginationForum() }}
+{{ if .Total > 0 }}
+<tr>
+    {{ yield paginationForumLeft() }}
+    {{ yield paginationForumRight() }}
+</tr>
+{{ end }}
+{{ end }}
+
+{{ block paginationForumLeft() }}
+<td align="left">
+    Page <strong>{{ .CurrentPage|formatNumber }}</strong> of <strong>{{ .TotalPages|formatNumber }}</strong>
+    [ {{ .Total|formatNumber }} topics ]
+</td>
+{{ end }}
+
+{{  block paginationForumRight() }}
+<td align="right">
+    <a onclick="jumpToPage();">Jump</a> |
+
+    {{ if .HasPrevious }}
+        <a href="{{ .PreviousUrl }}">Previous</a>
+    {{ end }}
+
+    {{ range .Items }}
+        {{ if .Ellipsis }}
+            ...
+        {{ else if .Current }}
+            <b>{{ .Label }}</b>
+        {{ else }}
+            <a href="{{ .Url }}">{{ .Label }}</a>
+        {{ end }}
+    {{ end }}
+
+    {{ if .HasNext }}
+        <a href="{{ .NextUrl }}">Next</a>
+    {{ end }}
+</td>
+{{ end }}

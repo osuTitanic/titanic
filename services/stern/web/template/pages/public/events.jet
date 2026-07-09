@@ -1,0 +1,30 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Activity Feed</title>
+<meta property="og:title" content="Activity Feed - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/events">
+<meta property="og:description" content="Keep up with what's going on in Titanic!">
+<link rel="stylesheet" href="{{ cachedUrl("/css/events.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    <h1>Activity Feed</h1>
+    <p>
+        Keep up with what's going on in Titanic!
+        Inspired by the <a href="https://osu.ppy.sh/p/events">original page</a>.
+    </p>
+</div>
+{{ if !.IsAuthenticated() }}
+<p id="status-text">Please log in to view the activity feed!</p>
+{{ else }}
+<p id="status-text">Loading...</p>
+<div id="activity-feed-container" data-ws-endpoint="{{ .Config.EventsWebsocket() }}"></div>
+<noscript>
+    <p id="status-text">Please enable JavaScript to view the activity feed!</p>
+</noscript>
+<script src="{{ cachedUrl("/js/events.js") }}"></script>
+{{ end }}
+{{ end }}

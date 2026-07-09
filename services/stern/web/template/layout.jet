@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html class="ie ie6" lang="en"><![endif]-->
+<!--[if IE 7]><html class="ie ie7" lang="en"><![endif]-->
+<!--[if IE 8]><html class="ie ie8" lang="en"><![endif]-->
+<!--[if IE 9]><html class="ie ie9" lang="en"><![endif]-->
+<!--[if gt IE 9]><!--><html lang="en"><!--<![endif]-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, user-scalable=yes">
+    <meta name="msapplication-TileColor" content="#603cba">
+    <meta name="theme-color" content="rgba(96, 60, 186, 1)">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ cachedUrl("/images/logo/apple-touch-icon.png") }}">
+    <link rel="apple-touch-icon" href="{{ cachedUrl("/images/logo/icon-192.png") }}">
+    <link rel="dns-prefetch" href="{{ .Config.ApiBaseUrl() }}">
+    <link rel="preconnect" href="{{ .Config.ApiBaseUrl() }}" crossorigin>
+
+    <link rel="stylesheet" href="{{ cachedUrl("/css/main.css") }}">
+    <meta property="og:site_name" content="Titanic!">
+    <meta property="og:type" content="website">
+    {{ if .Config.EnableSsl }}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{{ end }}
+    {{ yield head() }}
+
+    <link rel="preload" href="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" as="image" fetchpriority="high">
+    <link rel="stylesheet" href="{{ cachedUrl("/lib/font-awesome.min.css") }}">
+    <script>
+        var apiBaseurl = "{{ .Config.ApiBaseUrl() }}";
+        var osuBaseurl = "{{ .Config.OsuBaseUrl() }}";
+        var staticBaseurl = "{{ .Config.StaticBaseUrl() }}";
+        var approvedRewards = {{ .Config.ApprovedMapRewards }};
+        var currentUser = {{ if .CurrentUser }}{{ .CurrentUser.Id }}{{ else }}null{{ end }};
+        var currentUsername = "{{ if .CurrentUser }}{{ .CurrentUser.Name }}{{ end }}";
+        var csrfToken = "{{ .CSRFToken }}";
+    </script>
+    {{ if .IsModernBrowser }}
+    <script src="{{ cachedUrl("/lib/instant.page.js") }}" type="module" defer></script>
+    {{ end }}
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="{{ cachedUrl("/lib/font-awesome-ie7.min.css") }}">
+    <![endif]-->
+</head>
+<body id="titanic">
+    {{ if .CurrentUser && .CurrentUser.Restricted }}
+    <div class="alert-header">
+        <h1 style="margin-top: 0; color: white;">Your account was <strong>restricted</strong>!</h1>
+        <div>
+            You won't have be able to engage with other users or submit scores. If you wish to appeal your restriction, please <a href="mailto:{{ .Config.EmailSender }}" style="color:white; font-weight: bold;">contact the administration team</a>.
+        </div>
+    </div><br>
+    {{ end }}
+    <div class="main">
+        <a id="top_support" class="top_button" href="https://ko-fi.com/lekuru"></a>
+        <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
+        <a id="top_discord" class="top_button" href="https://discord.gg/qupv72e7YH"></a>
+        <a href="/" aria-label="Home">
+            {{ if .IsIE }}
+            <img src="{{ cachedUrl("/images/logo/main-low.png") }}" class="logo" width="140" height="140" alt="">
+            {{ else }}
+            <img src="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
+            {{ end }}
+        </a>
+        <div class="nav">
+            <ul class="nav-list">
+                <li class="nav-element">
+                    <a href="/">Home</a>
+                </li>
+                <li class="nav-element">
+                    <a href="/download/">Download</a>
+                </li>
+                <li class="nav-element nav-element-dropdown">
+                    <a href="/beatmapsets/">
+                        Beatmaps
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
+                    </a>
+                    <ul class="nav-dropdown">
+                        <li>
+                            <a href="/beatmapsets/?category=2" data-instant>Ranked</a>
+                            <a href="/beatmapsets/?category=5" data-instant>Approved</a>
+                            <a href="/beatmapsets/?category=4" data-instant>Loved</a>
+                            <a href="/beatmapsets/packs/">Beatmap Packs</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-element nav-element-dropdown">
+                    <a href="/rankings/{{ .PreferredModeAlias() }}/performance">
+                        Rankings
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
+                    </a>
+                    <ul class="nav-dropdown">
+                        <li>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/performance">Performance</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/country">Countries</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/rscore">Ranked Score</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/tscore">Total Score</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/ppv1">PPv1</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/clears">Clears</a>
+                            <a href="/rankings/{{ .PreferredModeAlias() }}/leader">First Places</a>
+                            <a href="/rankings/kudosu">Kudosu</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-element nav-element-dropdown">
+                    <a href="/forum/">
+                        Community
+                        <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
+                    </a>
+                    <ul class="nav-dropdown">
+                        <li>
+                            <a href="/forum/">Forums</a>
+                            <a href="/account/chat">Chat</a>
+                            <a href="https://discord.gg/qupv72e7YH">Discord</a>
+                            <a href="/wiki/">Wiki</a>
+                            <a href="/wiki/en/Rules">Rules</a>
+                            <a href="/events">Activity Feed</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="bancho-stats">
+            <b>{{ formatNumber(.Stats.TotalUsers) }}</b> users, <b>{{ formatNumber(.Stats.OnlineUsers()) }}</b> online now.<br>
+            A total of <b>{{ formatNumber(.Stats.TotalScores) }}</b> plays!
+        </div>
+        <div class="content">
+            <div class="top">
+                <div class="search-container">
+                    <form class="search-form" onsubmit="return userSearch()">
+                        <input class="nav-search" type="text" id="user-search" name="users" placeholder="User" autocomplete="off">
+                    </form>
+                    <form class="search-form" onsubmit="return beatmapSearch()">
+                        <input class="nav-search" type="text" id="beatmap-search" name="beatmaps" placeholder="Beatmap" autocomplete="off">
+                    </form>
+                </div>
+                <div class="login-container">
+                    {{ if .CurrentUser }}
+                        <span class="nav-login" id="welcome-text">
+                            Welcome, <b><a href="/u/{{ .CurrentUser.Id }}">{{ .CurrentUser.Name }}</a></b>
+                        </span>
+                        <a href="/account/profile#avatar" style="height: 25px">
+                            <img class="small-avatar" src="{{ .CurrentUser.AvatarUrl() }}" alt="">
+                        </a>
+                        <a href="/account/"><i class="icon-gear" style="color: #808080;"></i> Settings</a>
+                        <a href="/account/#notifications">
+                            <i class="icon-bell-alt" style="color: #808080;"></i>
+                            {{ if .NotificationCount > 0 }}
+                                {{ .NotificationCount }} notification{{ if .NotificationCount != 1 }}s{{ end }}
+                            {{ else }}
+                                No notifications
+                            {{ end }}
+                        </a>
+                        <a href="#" onclick="document.getElementById('logout-form').submit()" class="nav-login" id="logout-text">
+                            <i class="icon-power-off" style="color: #808080;"></i> Logout
+                        </a>
+                        <form action="/account/logout" id="logout-form" method="post" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+                            <input type="hidden" name="redirect" value="{{ .CurrentURI }}"/>
+                        </form>
+                    {{ else }}
+                        {{ if .CurrentPath != "/account/login" }}
+                        <span class="nav-login" id="welcome-text">Welcome, guest!</span>
+                        <a onclick="showLoginForm()" class="nav-login" id="login-text">
+                            <i class="icon-caret-down"></i>
+                            Login
+                        </a>
+                        <a href="/account/register" class="nav-login" id="register-text">
+                            <i class="icon-magic"></i>
+                            I'm new!
+                        </a>
+                        {{ end }}
+                    {{ end }}
+                </div>
+            </div>
+            <div class="login-dropdown" style="display: none;">
+                <form action="/account/login" method="post">
+                    {{ if .CurrentPath }}
+                    <input type="hidden" name="redirect" value="{{ .CurrentPath }}">
+                    {{ else }}
+                    <input type="hidden" name="redirect" value="/">
+                    {{ end }}
+                    Please enter your credentials:
+                    <br>
+                    <input id="username-field" class="post" type="text" name="username" placeholder="Username" maxlength="30" value="" tabindex="0" autocomplete="off">
+                    <br>
+                    <input id="password-field" class="post" type="password" name="password" placeholder="Password" tabindex="0" autocomplete="off">
+                    <br>
+                    <div>
+                        <input id="remember" class="radio" type="checkbox" name="remember"><label for="remember">Remember Me</label>
+                        <input class="login-button" type="submit" name="login" value="Login" tabindex="5">
+                    </div>
+                    <div class="login-bottom-text">
+                        <a id="forgot-password-text" href="/account/reset">
+                            Forgot your password?
+                        </a>
+                    </div>
+                    <div class="login-bottom-text">
+                        <a id="register-text" href="/account/register">
+                            Create new account!
+                        </a>
+                    </div>
+                    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+                </form>
+            </div>
+            <script src="{{ cachedUrl("/lib/jquery.min.js") }}"></script>
+            <script src="{{ cachedUrl("/lib/jquery.migrate.min.js") }}" defer></script>
+            <script src="{{ cachedUrl("/lib/jquery.timeago.js") }}" defer></script>
+            <script src="{{ cachedUrl("/lib/jquery.marquee.js") }}" defer></script>
+            <script src="{{ cachedUrl("/js/main.js") }}" fetchpriority="high"></script>
+            <div class="page">
+                {{ yield body() }}
+                <div style="clear: both;"></div>
+            </div>
+            <div class="gradient"></div>
+            <script src="{{ cachedUrl("/js/editor.js") }}" fetchpriority="low" defer></script>
+        </div>
+    </div>
+</body>
+</html>

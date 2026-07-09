@@ -1,9 +1,29 @@
 .idea
+.vscode
+.zed
 .data
 .env
 
 # Custom configuration for ssl
 docker-compose.ssl.yml
 
-# Stern static folder
+# Legacy/local Stern static folder
 www/
+
+# Go build and test output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+go.work
+go.work.sum
+tmp/
+bin/
+dist/
+
+# Python references
+references/

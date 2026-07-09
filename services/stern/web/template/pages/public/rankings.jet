@@ -1,0 +1,286 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+{{ if .Type != "country" }}
+    <title>{{ .Type }} Rankings</title>
+    <meta property="og:title" content="{{ .Type }} Rankings for {{ .Location }} - Titanic!">
+    <meta property="og:description" content="View Titanic! {{ .Type }} rankings for {{ .Location }}.">
+{{ else }}
+    <title>Country Rankings</title>
+    <meta property="og:title" content="Country Rankings - Titanic!">
+    <meta property="og:description" content="Compare Titanic! player rankings by country.">
+{{ end }}
+
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/rankings/{{ .Mode.Alias() }}/{{ .Type.Alias() }}">
+<link rel="stylesheet" href="{{ cachedUrl("/css/rankings.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="heading">
+    {{ yield rankingsHeader() }}
+    {{ yield rankingsInfoText() }}
+</div>
+
+{{ include "/components/pagination.jet" .Pagination }}
+
+{{ if .Type != "country" }}
+<div class="centered">
+    {{ yield countryFlag() }}
+    {{ yield countrySelect() }}
+</div>
+{{ end }}
+
+{{ yield modeSelection() }}
+
+{{ if .Type != "country" }}
+    {{ yield playerListing() }}
+{{ else }}
+    {{ yield countryListing() }}
+{{ end }}
+
+{{ include "/components/pagination.jet" .Pagination }}
+<br>
+{{ end }}
+
+{{ block rankingsHeader() }}
+    {{ if .Type != "country" }}
+    <h1>
+        {{ .Type }} Rankings for {{ .Location }}
+        ({{ .Mode }})
+    </h1>
+    {{ else }}
+    <h1>
+        Country Ranking
+        ({{ .Mode }})
+    </h1>
+    {{ end }}
+{{ end }}
+
+{{ block rankingsInfoText() }}
+    {{ if .Type == "ppv1" }}
+    <p class="rankings-info">
+        This is an attempt at recreating the original ppv1 system from back in the day.
+        You can find an explanation of the old system <a href="https://osu.ppy.sh/wiki/en/Performance_points/ppv1">here</a>.
+        Expect inaccuracies to the original system. This is not a perfect recreation.
+    </p>
+    {{ else if .Type == "country" }}
+    <p class="rankings-info">
+        Country rankings combine the score of all players in each country group.
+        Click a specific country's name to get a breakdown of all players from that location.
+    </p>
+    {{ end }}
+{{ end }}
+
+{{ block countryFlag() }}
+    {{ if .Country }}
+    <div class="country">
+        <img class="flag-large" src="/images/flags/large/{{ .Country }}.png" alt="" height="80px">
+        <a href="?">Reset country filter</a>
+    </div>
+    {{ end }}
+{{ end }}
+
+{{ block countrySelect() }}
+<div class="country-select">
+    {{ range .TopCountries[:20] }}
+    <a href="?country={{ . }}">
+        <img src="/images/flags/{{ . }}.gif" alt="" loading="eager">
+    </a>
+    {{ end }}
+    <a href="./country">...</a>
+</div>
+{{ end }}
+
+{{ block modeSelection() }}
+<div class="tab-list">
+    {{ rankingTypeAlias := .Type.Alias() }}
+    {{ countryString := "" }}
+    {{ if .Country }}
+        {{ countryString = "?country=" + .Country }}
+    {{ end }}
+    <ul>
+        <li class="tab-item">
+            <a href="/rankings/osu/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 0 }}active{{ end }}">
+                osu! Standard
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/taiko/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 1 }}active{{ end }}">
+                Taiko
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/fruits/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 2 }}active{{ end }}">
+                Catch The Beat
+            </a>
+        </li>
+        <li class="tab-item">
+            <a href="/rankings/mania/{{ rankingTypeAlias }}{{ countryString }}" class="tab-link {{ if .Mode == 3 }}active{{ end }}">
+                osu!mania
+            </a>
+        </li>
+    </ul>
+</div>
+{{ end }}
+
+{{ block playerListing() }}
+<table class="listing player-listing">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Player Name</th>
+            <th>Accuracy</th>
+            <th>Play Count</th>
+            <th>
+                {{ .Type }}
+            </th>
+            <th>
+                <img src="{{ cachedUrl("/images/grades/X_small.png") }}" alt="">
+                <img src="{{ cachedUrl("/images/grades/XH_small.png") }}" alt="">
+            </th>
+            <th>
+                <img src="{{ cachedUrl("/images/grades/S_small.png") }}" alt="">
+                <img src="{{ cachedUrl("/images/grades/SH_small.png") }}" alt="">
+            </th>
+            <th>
+                <img src="{{ cachedUrl("/images/grades/A_small.png") }}" alt="">
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    {{ modeAlias := .Mode.Alias() }}
+    {{ typeAlias := .Type.Alias() }}
+
+    {{ range i, entry := .Entries }}
+        {{ if .JumpTo != "" && .JumpTo == entry.User.Name }}
+        {* Highlight the jump-to player *}
+        <tr class="row-jumpto" id="jumpto">
+        {{ else if .CurrentUser && .CurrentUser.Id == entry.User.Id }}
+        {* Highlight ourselves *}
+        <tr class="row-self">
+        {{ else if entry.IsFriend }}
+        {* Highlight friends *}
+        <tr class="row-friend">
+        {{ else }}
+        {* Switch between dark/light rows *}
+        <tr class="{{ i % 2 == 1 ? "row-dark" : "row-light" }}">
+        {{ end }}
+            {{ stats := entry.User.Stats[.Mode] }}
+            {* Rank *}
+            <td>
+                <b>#{{ entry.Rank | formatNumber }}</b>
+            </td>
+            {* Player Name *}
+            <td>
+                <a class="ranking-flag-link" href="/rankings/{{ modeAlias }}/{{ typeAlias }}?country={{ entry.User.Country | lower }}">
+                    <img src="/images/flags/{{ entry.User.Country | lower }}.gif" class="flag" alt="" loading="eager">
+                </a>
+                <a href="/u/{{ entry.User.Id }}">{{ entry.User.Name }}</a>
+            </td>
+            {* Accuracy *}
+            <td>
+                {{ stats.Acc * 100 | formatFloat(2) }}%
+            </td>
+            {* Play Count *}
+            <td>
+                <span>{{ stats.Playcount | formatNumber }} (lv.{{ stats.Level() }})</span>
+            </td>
+            {* Score *}
+            <td>
+                <span style="font-weight: bold;">
+                    {{ if .Type == "performance" }}
+                        {{ stats.PP | round | formatNumber }}pp
+                    {{ else if .Type == "rscore" }}
+                        {{ stats.Rscore | formatNumber }}
+                    {{ else if .Type == "ppv1" }}
+                        {{ stats.PPv1 | round | formatNumber }}pp
+                    {{ else if .Type == "tscore" }}
+                        {{ stats.Tscore | formatNumber }}
+                    {{ else if .Type == "clears" }}
+                        {{ stats.Clears() | formatNumber }} / {{ .TotalBeatmaps | formatNumber }}
+                    {{ else }}
+                        {{ entry.Score | formatNumber }}
+                    {{ end }}
+                </span>
+            </td>
+            {* XH / X *}
+            <td style="text-align: center;">
+                {{ stats.CountX + stats.CountXH | formatNumber }}
+            </td>
+            {* SH / S *}
+            <td style="text-align: center;">
+                {{ stats.CountS + stats.CountSH | formatNumber }}
+            </td>
+            {* A *}
+            <td style="text-align: center;">
+                {{ stats.CountA | formatNumber }}
+            </td>
+        </tr>
+    {{ end }}
+    </tbody>
+</table>
+
+<br>
+<div class="centered" style="margin-bottom: 0;">
+    <a href="javascript:void(0);" onclick="jumpToPlayer();">Jump</a> to a player.
+</div>
+{{ end }}
+
+{{ block countryListing() }}
+<table class="listing country-listing">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Country</th>
+            <th>Active Users</th>
+            <th>Ranked Score</th>
+            <th>Total Score</th>
+            <th>Performance Points</th>
+            <th>Average Performance</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{ modeAlias := .Mode.Alias() }}
+
+    {{ range i, entry := .Entries }}
+        {* Switch between dark/light rows *}
+        <tr class="{{ i % 2 == 1 ? "row-dark" : "row-light" }}">
+            {* Rank *}
+            <td>
+                {* hacky but works *}
+                {{ rank := i + (.Pagination.PageSize * (.Pagination.CurrentPage - 1)) }}
+                <b>#{{ rank+1 | formatNumber }}</b>
+            </td>
+            {* Country *}
+            <td>
+                <img src="/images/flags/{{ entry.Name | lower }}.gif" class="flag" alt="{{ entry.Name | countryName }} Flag">
+                <a href="/rankings/{{ modeAlias }}/performance?country={{ entry.Name | lower }}">
+                    {{ entry.Name | countryName }}
+                </a>
+            </td>
+            {* Active Users *}
+            <td>
+                {{ entry.TotalUsers | formatNumber }}
+            </td>
+            {* Ranked Score *}
+            <td>
+                {{ entry.TotalRscore | round | formatNumber }}
+            </td>
+            {* Total Score *}
+            <td>
+                {{ entry.TotalTscore | round | formatNumber }}
+            </td>
+            {* Performance Points *}
+            <td>
+                <b>{{ entry.TotalPerformance | round | formatNumber }}pp</b>
+            </td>
+            {* Average Performance *}
+            <td>
+                {{ entry.AveragePP | round | formatNumber }}pp
+            </td>
+        </tr>
+    {{ end }}
+    </tbody>
+</table>
+{{ end }}

@@ -1,0 +1,24 @@
+{
+    "services": [
+        {
+            "name": "jobs",
+            "description": "A collection of background-tasks for titanic",
+            "go_build_path": "./services/jobs/cmd/cli",
+            "dockerfile": "./services/jobs/Dockerfile",
+            "docker_context": ".",
+            "image": "ghcr.io/osutitanic/jobs",
+            "platforms": ["linux/amd64", "linux/arm64", "linux/arm/v7"],
+            "push_folders": ["go.mod", "go.sum", ".dockerignore", ".github/services.json", "internal/", "services/jobs/"]
+        },
+        {
+            "name": "stern",
+            "description": "The main web-frontend for titanic",
+            "go_build_path": "./services/stern/cmd/web",
+            "dockerfile": "./services/stern/Dockerfile",
+            "docker_context": ".",
+            "image": "ghcr.io/osutitanic/stern",
+            "platforms": ["linux/amd64", "linux/arm64", "linux/arm/v7"],
+            "push_folders": ["go.mod", "go.sum", ".dockerignore", ".github/services.json", "internal/", "services/stern/"]
+        }
+    ]
+}

@@ -1,0 +1,222 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run integration tests
+        run: go test -tags=integration -count=1 -p 1 ./...
+
+  prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      build_matrix: ${{ steps.matrix.outputs.build_matrix }}
+      publish_matrix: ${{ steps.matrix.outputs.publish_matrix }}
+      publish_enabled: ${{ steps.matrix.outputs.publish_enabled }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Prepare service matrices
+        id: matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          build_matrix="$(
+            jq -c '
+              {
+                include: [
+                  .services[] as $service
+                  | $service.platforms[] as $platform
+                  | ($platform | capture("(?<goos>[^/]+)/(?<goarch>[^/]+)(?:/v(?<goarm>[0-9]+))?")) as $target
+                  | {
+                      service: $service.name,
+                      go_build_path: $service.go_build_path,
+                      platform: $platform,
+                      goos: $target.goos,
+                      goarch: $target.goarch,
+                      goarm: ($target.goarm // "")
+                    }
+                ]
+              }
+            ' .github/services.json
+          )"
+
+          changed_files="$(mktemp)"
+          if [ "$EVENT_NAME" = "push" ]; then
+            zero_sha="0000000000000000000000000000000000000000"
+
+            if [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "$zero_sha" ]; then
+              git diff --name-only --no-renames "$BEFORE_SHA" "$CURRENT_SHA" > "$changed_files"
+            else
+              git diff-tree --no-commit-id --name-only --no-renames -r "$CURRENT_SHA" > "$changed_files"
+            fi
+          fi
+
+          publish_matrix="$(
+            jq -c --rawfile changed_files "$changed_files" '
+              ($changed_files | split("\n") | map(select(. != ""))) as $changed
+              | {
+                include: [
+                  .services[]
+                  | select(
+                      any((.push_folders // [])[]; . as $folder
+                        | any($changed[]; startswith($folder)))
+                    )
+                  | {
+                      service: .name,
+                      dockerfile: .dockerfile,
+                      docker_context: .docker_context,
+                      image: .image,
+                      description: .description,
+                      platforms: (.platforms | join(","))
+                    }
+                ]
+              }
+            ' .github/services.json
+          )"
+
+          publish_enabled="$(
+            jq -r '.include | length > 0' <<< "$publish_matrix"
+          )"
+
+          echo "build_matrix=$build_matrix" >> "$GITHUB_OUTPUT"
+          echo "publish_matrix=$publish_matrix" >> "$GITHUB_OUTPUT"
+          echo "publish_enabled=$publish_enabled" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs:
+      - test
+      - integration-test
+      - prepare
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.build_matrix) }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Cross-compile service
+        env:
+          CGO_ENABLED: "0"
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+        run: |
+          suffix=""
+          if [ -n "$GOARM" ]; then
+            suffix="-v$GOARM"
+          fi
+
+          output="/tmp/${{ matrix.service }}-$GOOS-$GOARCH$suffix"
+          go build -trimpath -o "$output" "${{ matrix.go_build_path }}"
+
+  publish:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.prepare.outputs.publish_enabled == 'true' }}
+    needs:
+      - build
+      - prepare
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.publish_matrix) }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ matrix.image }}
+          tags: |
+            type=raw,value=main
+            type=raw,value=latest
+            type=sha,format=short,prefix=sha-
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.description=${{ matrix.description }}
+
+      - name: Build and publish image
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.docker_context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: ${{ matrix.platforms }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}

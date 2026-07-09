@@ -1,0 +1,17 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>User Not Found - Titanic!</title>
+<link rel="stylesheet" href="{{ cachedUrl("/css/error.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="description">
+    <h1>The user you are looking for was not found!</h1>
+    <p>There are a couple of possible reasons for this:</p>
+    <ul>
+        <li>The user may have been banned for unethical behaviour (cheating / multi-accounting / abusing others).</li>
+        <li>You may have made a typo!</li>
+    </ul>
+</div>
+{{ end }}

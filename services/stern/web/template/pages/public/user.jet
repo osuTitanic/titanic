@@ -1,0 +1,1117 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .User.Name }} - Player Info</title>
+<meta property="og:title" content="{{ .User.Name }} - Player Info - Titanic!">
+<meta property="og:description" content="Rank ({{ .Mode }}): Global: #{{ .PPRank > 0 ? .PPRank : "-" }} | Country: #{{ .PPRankCountry > 0 ? .PPRankCountry : "-" }}">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}{{ .User.AvatarUrl() }}">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/u/{{ .User.Id }}">
+<link rel="canonical" href="/u/{{ .User.Id }}">
+<link rel="stylesheet" href="{{ cachedUrl("/css/user.css") }}">
+<link rel="stylesheet" href="{{ cachedUrl("/lib/nv.d3.min.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="profile-left">
+    {{ yield profileUserCard() . }}
+    {{ yield profileFriendStatus() . }}
+    {{ yield profileDetails() . }}
+    {{ yield profilePlaystyles() . }}
+    {{ if .Permissions.IsModerator() }}
+        {{ yield userModerationPanel() . }}
+    {{ end }}
+</div>
+<div class="profile-right">
+    {{ yield profileUserpage() . }}
+    {{ yield profileGamemodes() . }}
+    {{ yield profileTabs() . }}
+</div>
+<script>
+    var userId = {{ .User.Id }};
+    var mode = {{ .Mode.Value() }};
+    var modeName = '{{ .Mode.Alias() }}';
+    var superFriendly = {{ .SuperFriendly }};
+
+    // Current ranks, used as the "now" data for the rank history graph
+    var globalRank = {{ .General.PPRank }};
+    var countryRank = {{ .General.PPRankCountry }};
+    var scoreRank = {{ .General.ScoreRank }};
+    var ppv1Rank = {{ .General.PPv1Rank }};
+</script>
+<script src="{{ cachedUrl("/js/user.js") }}" defer></script>
+<script src="{{ cachedUrl("/lib/d3.v3.min.js") }}" defer></script>
+<script src="{{ cachedUrl("/lib/nv.d3.min.js") }}" defer></script>
+{{ if .Permissions.IsModerator() }}
+<script src="{{ cachedUrl("/js/moderation.js") }}" defer></script>
+{{ end }}
+{{ end }}
+
+{{ block profileUserCard() }}
+<div class="profile-user-card">
+    {{ if .User.AvatarHash }}
+        {{ if .IsOwnProfile() }}
+            <a href="/account/profile#edit">
+                <div class="avatar avatar-frame">
+                    <img src="{{ .User.AvatarUrl() }}" alt="" width="128" height="128" fetchpriority="high" />
+                </div>
+            </a>
+        {{ else }}
+            <div class="avatar avatar-frame">
+                <img src="{{ .User.AvatarUrl() }}" alt="" width="128" height="128" fetchpriority="high" />
+            </div>
+        {{ end }}
+    {{ end }}
+
+    <div class="profile-username-container">
+        {* Difference from osu!: All past names are shown, instead of only the most recent change *}
+        {{ names := .User.PreviousNames() }}
+        <div
+            class="profile-username"
+            style="color: {{ .User.DisplayColor() != "" ? .User.DisplayColor() : "#000" }};"
+            {{ if len(names) > 0 }}title="Previously known as {{ range i, name := names }}{{ if i > 0 }}, {{ end }}{{ name }}{{ end }}"{{ end }}
+        >
+            {{ .User.Name }}
+        </div>
+    </div>
+
+    {{ if .User.Title }}
+        <div>
+            <b>{{ .User.Title }}</b>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Added group icons. The Donator group is hidden here and shown as an icon below. *}
+    {{ visibleGroups := .User.VisibleGroups() }}
+    {{ if len(visibleGroups) > 0 }}
+        <div class="groups">
+            {{ range _, group := visibleGroups }}
+                <a class="group" href="/g/{{ group.Id }}" style="color: {{ group.Color }}; border: 1px solid {{ group.Color }};">
+                    {{ group.ShortName | upper }}
+                </a>
+            {{ end }}
+        </div>
+    {{ end }}
+
+    {{ range _, badge := .User.Badges }}
+        <div class="badge" {{ if badge.Description }}title="{{ badge.Description }}"{{ end }}>
+            {* Difference from osu!: Added optional links on badges *}
+            {{ if badge.Url }}
+                <a href="{{ badge.Url }}">
+                    <img src="{{ badge.Icon }}" alt="" />
+                </a>
+            {{ else }}
+                <img src="{{ badge.Icon }}" alt="" />
+            {{ end }}
+        </div>
+    {{ end }}
+
+    <div style="padding: 3px;">
+        <center>
+            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country | lower }}&jumpto_id={{ .User.Id }}#jumpto">
+                <img
+                    class="flag"
+                    title="{{ countryName(.User.Country) }}"
+                    src="/images/flags/{{ .User.Country | lower }}.gif"
+                    alt="{{ .User.Country | upper }}"
+                />
+            </a>
+
+            {{ if .IsOtherProfile() }}
+                <a href="/account/chat?target={{ .User.Id }}">
+                    <img src="{{ cachedUrl("/images/icons/user/contact.png") }}" title="Send private message" alt="DM" />
+                </a>
+            {{ end }}
+
+            {{ if .User.IsDonator() }}
+                <a href="/g/6" class="donator"></a>
+            {{ end }}
+        </center>
+    </div>
+
+    {{ if .User.Restricted && .Permissions.IsModerator() }}
+        <div class="banned-container">
+            <img src="{{ cachedUrl("/images/banned-new.png") }}" alt="Banned" />
+        </div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block profileFriendStatus() }}
+{{ if .IsOtherProfile() }}
+    {{ if !.IsBlocked }}
+        <div id="friend-status" class="friend-current-{{ .CurrentAdded }}-target-{{ .TargetAdded }}">
+            <a href="#" onclick="return removeFriend()">
+                <i class="icon-heart"></i> Mutual Friend
+            </a>
+            <a href="#" onclick="return removeFriend()">
+                <i class="icon-star"></i> Friend
+            </a>
+            {* Difference from osu!: Added "Add as Mutual Friend" state *}
+            <a href="#" onclick="return addFriend()">
+                <i class="icon-plus-sign"></i> Add as Mutual Friend
+            </a>
+            <a href="#" onclick="return addFriend()">
+                <i class="icon-plus-sign"></i> Add as Friend
+            </a>
+        </div>
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block profileDetails() }}
+<div class="profile-details">
+    {{ if .User.Location }}
+        <div title="Location">
+            <i class="icon-map-marker"></i>
+            <div>{{ .User.Location }}</div>
+        </div>
+    {{ end }}
+
+    {{ if .User.Interests }}
+        <div title="Interests">
+            <i class="icon-heart-empty"></i>
+            <div>{{ .User.Interests }}</div>
+        </div>
+    {{ end }}
+
+    {* Separator *}
+    <div></div>
+
+    {{ if .User.Website }}
+        <div title="Website">
+            <i class="icon-globe"></i>
+            <div>
+                <a href="{{ .User.Website }}">{{ .User.Website }}</a>
+            </div>
+        </div>
+    {{ end }}
+
+    {{ if .User.Twitter }}
+        <div title="Twitter">
+            <i class="icon-twitter"></i>
+            <div>
+                <a href="{{ .User.Twitter }}">{{ .User.Twitter }}</a>
+            </div>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Added Discord *}
+    {{ if .User.Discord }}
+        <div title="Discord">
+            <i class="icon-discord"></i>
+            <div>{{ .User.Discord }}</div>
+        </div>
+    {{ end }}
+
+    {* Separator *}
+    <div></div>
+
+    <div title="Arrived">
+        <i class="icon-signin"></i>
+        <div>
+            <time class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></time>
+        </div>
+    </div>
+
+    <div title="Last Active">
+        {* Difference from osu!: Special online variant *}
+        {{ if .IsOnline }}
+            <i class="icon-signout online"></i>
+            <div>Online</div>
+        {{ else }}
+            <i class="icon-signout"></i>
+            <div>
+                <time class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></time>
+            </div>
+        {{ end }}
+    </div>
+
+    {* Difference from osu!: Added follower count *}
+    {{ if .Followers > 0 }}
+        <div title="Followers">
+            <i class="icon-star"></i>
+            <div>{{ .Followers|formatNumber }} follower{{ .Followers != 1 ? "s" : "" }}</div>
+        </div>
+    {{ end }}
+
+    {* Difference from osu!: Doesn't link to user's post history *}
+    {{ if .TotalPosts > 0 }}
+        <div title="Posts">
+            <i class="icon-edit"></i>
+            <div>{{ .TotalPosts|formatNumber }} post{{ .TotalPosts != 1 ? "s" : "" }}</div>
+        </div>
+    {{ end }}
+
+    {{ if .IsOwnProfile() }}
+        <a class="edit-profile" href="/account/profile#edit">Edit</a>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block profilePlaystyles() }}
+<div class="playstyle-container">
+    {* long boi, i'm sorry *}
+    <div id="Mouse" class="playstyle playstyle-mouse{{ if .User.PlaysWithMouse() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Keyboard" class="playstyle playstyle-keyboard{{ if .User.PlaysWithKeyboard() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Tablet" class="playstyle playstyle-tablet{{ if .User.PlaysWithTablet() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+    <div id="Touch" class="playstyle playstyle-touch{{ if .User.PlaysWithTouch() }} playstyle-using{{ end }}{{ if .IsOwnProfile() }} playstyle-toggleable{{ end }}" {{ if .IsOwnProfile() }}onclick="updatePlaystyleElement(this)"{{ end }}></div>
+</div>
+{{ end }}
+
+{{ block profileUserpage() }}
+{{ if .IsOwnProfile() }}
+    {{ if .User.Userpage }}
+        <a class="edit-button" href="/account/profile#userpage">Edit</a>
+        <br>
+        <div class="userpage">
+            <div class="bbcode">
+            {{ .User.UserpageText() | bbcode | raw }}
+            </div>
+        </div>
+    {{ else }}
+        <a href="/account/profile#userpage">Click to make your user page!</a>
+        <br>
+    {{ end }}
+{{ else }}
+    {{ if .User.Userpage }}
+        <div class="userpage">
+            <div class="bbcode">
+            {{ .User.UserpageText() | bbcode | raw }}
+            </div>
+        </div>
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block profileGamemodes() }}
+<div class="gamemode-container">
+    <a id="gm-0" class="gamemode-button {{ .Mode == 0 ? "active-mode" : "" }}" href="?mode=0">osu!</a>
+    <a id="gm-1" class="gamemode-button {{ .Mode == 1 ? "active-mode" : "" }}" href="?mode=1">Taiko</a>
+    <a id="gm-2" class="gamemode-button {{ .Mode == 2 ? "active-mode" : "" }}" href="?mode=2">CatchTheBeat</a>
+    <a id="gm-3" class="gamemode-button {{ .Mode == 3 ? "active-mode" : "" }}" href="?mode=3">osu!mania</a>
+</div>
+{{ end }}
+
+{{ block profileTabs() }}
+{*
+    Tab contents are left empty for now. They will later be loaded through
+    server-side HTML partials on interaction with the tab, similar to how
+    I did it with the homepage chat partial.
+*}
+<table class="profile-table">
+    <tbody>
+        <tr>
+            <td style="padding: 0;">
+                <table class="profile-tabs">
+                    <tbody>
+                        <td onclick="expandProfileTab('general', true)">General</td>
+                        <td onclick="expandProfileTab('leader', true)">Top Plays</td>
+                        <td onclick="expandProfileTab('history', true)">Historical</td>
+                        <td onclick="expandProfileTab('beatmaps', true)">Beatmaps</td>
+                        <td onclick="expandProfileTab('kudosu', true)">Kudosu!</td>
+                        <td onclick="expandProfileTab('achievements', true)">Achievements</td>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr onclick="expandProfileTab('general')">
+            <td id="tab-general" class="tab-heading">General</td>
+        </tr>
+        <td>
+            {* The general tab is always pre-loaded server-side *}
+            <div id="general" class="tab-content" data-loaded="true" style="opacity: 1; filter: none; display: none; height: 0px;">
+                {{ yield userGeneralTab() .General }}
+            </div>
+        </td>
+
+        <tr onclick="expandProfileTab('leader')">
+            <td id="tab-leader" class="tab-heading">Top Plays</td>
+        </tr>
+        <td>
+            <div id="leader" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/leader" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+
+        <tr onclick="expandProfileTab('history')">
+            <td id="tab-history" class="tab-heading">Historical</td>
+        </tr>
+        <td>
+            <div id="history" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/history" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+
+        <tr onclick="expandProfileTab('beatmaps')">
+            <td id="tab-beatmaps" class="tab-heading">Beatmaps</td>
+        </tr>
+        <td>
+            <div id="beatmaps" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/beatmaps" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+
+        <tr onclick="expandProfileTab('kudosu')">
+            <td id="tab-kudosu" class="tab-heading">Kudosu!</td>
+        </tr>
+        <td>
+            <div id="kudosu" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/kudosu" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+
+        <tr onclick="expandProfileTab('achievements')">
+            <td id="tab-achievements" class="tab-heading">Achievements</td>
+        </tr>
+        <td>
+            <div id="achievements" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/achievements" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
+        </td>
+    </tbody>
+</table>
+{{ end }}
+
+{{ block userGeneralTab() }}
+<div class="tab-spacing">
+{{ if .HasStats() }}
+    <div class="profile-performance">
+        <h2>
+            <strong {{ if .Stats.PeakRank > 0 }}title="Peaked at #{{ .Stats.PeakRank|formatNumber }}"{{ end }}>
+                <a href="https://osu.ppy.sh/help/wiki/Performance_Points">Performance</a>:
+                <span>{{ .Stats.PP|round|formatNumber }}pp</span>
+                {{ if .Stats.PP > 0 }}(#{{ .PPRank }}){{ else }}(#-){{ end }}
+            </strong>
+        </h2>
+        {{ if .PPRankCountry > 0 }}
+            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country|upper }}">
+                <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country|upper }}">
+            </a>
+            {{ if .Stats.PP > 0 }}#{{ .PPRankCountry }}{{ else }}#-{{ end }}
+        {{ end }}
+    </div>
+
+    <div class="profile-graph" id="rank-graph">
+        <svg></svg>
+    </div>
+
+    <div class="profile-recent">
+        <h3 class="profile-stats-header">Recent Activity</h3>
+        <table>
+            <tbody id="profile-recent-rows">
+                {{ yield userActivityRows() .Activity }}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="profile-detailed-stats">
+        <h3 class="profile-stats-header">Detailed Stats</h3>
+        <h4 class="profile-stats-element {{ if .ScoreRank > 0 && .ScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Ranked Score consists of all your highest passing scores you have achieved. If you beat a score, only the difference between them will be added.">
+            <b>Ranked Score</b>: {{ .Stats.Rscore|formatNumber }} {{ if .ScoreRank > 0 }} (#{{ .ScoreRank|formatNumber }}) {{ end }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Accuracy is calculated as a pp-weighted average of every beatmap you have achieved a passing score in, with each difficulty counting separately.">
+            <b>Hit Accuracy</b>: {{ formatFloat(.Stats.Accuracy(), 2) }}%
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Total number of ranked beatmap plays. This includes both passes and fails.">
+            <b>Play Count</b>: {{ .Stats.Playcount|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Total time spent playing.">
+            <b>Play Time</b>: {{ formatFloat(.Stats.PlaytimeHours(), 1) }} hours
+        </h4>
+        <br>
+        <h4 class="profile-stats-element {{ if .TotalScoreRank > 0 && .TotalScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Total points scored in all ranked beatmap plays. This includes both passes and fails.">
+            <b>Total Score</b>: {{ .Stats.Tscore|formatNumber }} {{ if .TotalScoreRank > 0 }} (#{{ .TotalScoreRank|formatNumber }}) {{ end }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Your level is based on your total accumulated score. You will gradually increase your level just by playing the game!">
+            <b>Current Level</b>: {{ .Stats.Level() }}
+        </h4>
+        <br>
+        <table class="level-bar">
+            <tbody>
+                <tr>
+                    <td class="level-bar-percent" style="width: {{ .Stats.LevelBarWidth() }}px;">{{ .Stats.LevelProgress() }}%</td>
+                    <td style="background-color: white;"></td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+        <h4 class="profile-stats-element" title="Total notes hit.">
+            <b>Total Hits</b>: {{ .Stats.TotalHits|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Highest combo achieved (hits in a row without a miss).">
+            <b>Maximum Combo</b>: {{ .Stats.MaxCombo|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="Based on how much of a contribution the user has made to beatmap moderation.">
+            <b>Total Kudosu Earned</b>: {{ .TotalKudosu|formatNumber }}
+        </h4>
+        <br>
+        <h4 class="profile-stats-element" title="The total number of times this user's replays have been watched.">
+            <b>Replays Watched by Others</b>: {{ .Stats.ReplayViews|formatNumber }} time{{ .Stats.ReplayViews != 1 ? "s" : "" }}
+        </h4>
+        {{ if len(.User.Stamps) > 0 }}
+        <br>
+        <h4 class="profile-stats-element" title="Participate in events to receive stamps!"><b>Stamps</b></h4>
+        <table class="profile-centered-space">
+            <tbody>
+            {{ range _, stamp := .User.Stamps }}
+                <td>
+                    <a href="{{ stamp.Url ? stamp.Url : "#" }}" title="{{ stamp.Description }}">
+                        <img src="{{ stamp.Icon }}" style="height: 64px;" alt="Stamp" class="stamp">
+                    </a>
+                </td>
+            {{ end }}
+            </tbody>
+        </table>
+        {{ end }}
+        <br>
+        <h4 class="profile-stats-element"><b>Ranks</b></h4>
+        <table class="profile-centered-space">
+            <tbody>
+                <tr>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/XH.png") }}" height="42" alt="XH"></td>
+                    <td style="width: 50px;">{{ .Stats.CountXH }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/X.png") }}" height="42" alt="X"></td>
+                    <td style="width: 50px;">{{ .Stats.CountX }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/SH.png") }}" height="42" alt="SH"></td>
+                    <td style="width: 50px;">{{ .Stats.CountSH }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/S.png") }}" height="42" alt="S"></td>
+                    <td style="width: 50px;">{{ .Stats.CountS }}</td>
+                </tr>
+                <tr>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/A.png") }}" height="42" alt="A"></td>
+                    <td style="width: 50px;">{{ .Stats.CountA }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/B.png") }}" height="42" alt="B"></td>
+                    <td style="width: 50px;">{{ .Stats.CountB }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/C.png") }}" height="42" alt="C"></td>
+                    <td style="width: 50px;">{{ .Stats.CountC }}</td>
+                    <td style="width: 42px;"><img loading="lazy" src="{{ cachedUrl("/images/grades/D.png") }}" height="50" alt="D"></td>
+                    <td style="width: 50px;">{{ .Stats.CountD }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{ else }}
+    <h3 class="profile-stats-header">No information recorded</h3>
+    This user has not yet played any ranked maps in {{ .Mode }} mode.
+{{ end }}
+</div>
+{{ end }}
+
+{*
+    Renders one page of recent activity rows, plus a "Show me more"
+    link that loads the next page & replaces itself.
+*}
+{{ block userActivityRows() }}
+{{ range _, item := .Rows }}
+    <tr>
+        <td style="width: 20%;"><span class="timeago" datetime="{{ item.Time.Format("2006-01-02T15:04:05Z07:00") }}"></span></td>
+        <td>{{ item | formatActivity | raw }}</td>
+    </tr>
+{{ else }}
+    {{ if .IsFirstPage() }}
+    <tr>
+        <td>This user hasn't done anything notable recently!</td>
+    </tr>
+    {{ end }}
+{{ end }}
+{{ if .HasMore }}
+    <tr class="activity-more-row">
+        <td colspan="2">
+            <a href="javascript:void(0);" onclick="return loadMoreActivity(this, {{ .NextOffset }})">Show me more...</a>
+        </td>
+    </tr>
+{{ end }}
+{{ end }}
+
+{*
+    Renders the three sections of the Top Plays tab:
+    pinned scores, the best pp scores & the user's first place ranks
+*}
+{{ block userTopPlaysTab() }}
+<div class="tab-spacing">
+    <div id="pinned-scores">
+        <h2>Pinned Scores{{ if .Pinned.Total > 0 }} ({{ .Pinned.Total|formatNumber }}){{ end }}</h2>
+        {{ yield userScoreList() .Pinned }}
+    </div>
+    <div id="top-scores">
+        <h2>Best Performance{{ if .Best.Total > 0 }} ({{ .Best.Total|formatNumber }}){{ end }}</h2>
+        {{ yield userScoreList() .Best }}
+    </div>
+    <div id="leader-scores">
+        <h2>First Place Ranks{{ if .First.Total > 0 }} ({{ .First.Total|formatNumber }}){{ if .FirstsRank > 0 }} - #{{ .FirstsRank|formatNumber }}{{ end }}{{ end }}</h2>
+        {{ yield userScoreList() .First }}
+    </div>
+</div>
+{{ end }}
+
+{*
+    Renders a list of score entries, plus a "Show me more"
+    link that loads the next page & replaces itself.
+*}
+{{ block userScoreList() }}
+{{ page := . }}
+{{ range index, score := page.Scores }}
+    {{ loved := !page.ApprovedRewards && score.Beatmap.Status > 2 }}
+    <div class="score" id="score-{{ page.Section }}-{{ page.Offset + index }}" onclick="return scoreClicked(event, {{ score.Id }})">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="score-left">
+                        <div>
+                            <img loading="lazy" src="/images/grades/{{ score.Grade }}_small.png" alt="{{ score.Grade }}">
+                            <b>
+                                <a href="/b/{{ score.BeatmapId }}?mode={{ score.Mode.Value() }}">{{ score.Beatmap.Name() }}</a>
+                                {{ modString := score.Mods.String() }}
+                                {{ if modString != "NM" }}<b>+{{ modString }}</b>{{ end }}
+                            </b>
+                            ({{ formatFloat(score.Acc * 100, 2) }}%)
+                        </div>
+                        <div class="score-bottom">
+                            <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                            {{ if score.ClientString }}<div class="score-version"> &mdash; on <span class="score-version-number">{{ score.ClientString }}</span></div>{{ end }}
+                        </div>
+                    </td>
+                    <td class="score-right">
+                        <div class="pp-display">
+                            {{ if loved }}
+                                <i class="icon-heart" title="{{ score.PP|round|formatNumber }}pp (if ranked)"></i>
+                            {{ else }}
+                                <b>{{ score.PP|round|formatNumber }}pp</b>
+                            {{ end }}
+                        </div>
+                        <div class="pp-display-weight">
+                            {{ if page.ShowWeight() }}weighted <b>{{ loved ? 0 : round(scoreWeight(page.Offset + index) * 100) }}%</b> ({{ loved ? 0 : round(score.PP * scoreWeight(page.Offset + index)) }}pp){{ end }}
+                            <div class="score-icon-container">
+                                <a href="/scores/{{ score.Id }}/download" class="score-replay" title="Download Replay" target="_blank" onclick="stopScoreClick(event)"><i class="icon-download-alt"></i></a>
+                                {{ if page.IsOwner }}<i class="icon-star score-pin-{{ score.Id }} {{ score.Pinned ? "score-pinned-icon" : "score-pin-icon" }}" title="{{ score.Pinned ? "Unpin Score" : "Pin Score" }}" onclick="return togglePin(event, this, {{ score.Id }}, {{ score.Pinned }})"></i>{{ end }}
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{{ else }}
+    {{ if page.IsFirstPage() }}
+        {{ if page.Section == "pinned" }}
+            <p>This player has not pinned any scores yet :(</p>
+        {{ else if page.Section == "best" }}
+            <p>No awesome performance records yet :(</p>
+        {{ else }}
+            <p>No first place records currently :(</p>
+        {{ end }}
+    {{ end }}
+{{ end }}
+{{ if page.HasMore }}
+    <div class="score show-more">
+        <a href="javascript:void(0);" onclick="return loadMoreScores(this, '{{ page.Section }}', {{ page.NextOffset }})"><b>Show me more!</b></a>
+    </div>
+{{ end }}
+{{ end }}
+
+{*
+    The Historical tab includes play history,
+    most played beatmaps & recent plays
+*}
+{{ block userHistoryTab() }}
+<div class="tab-spacing">
+    <div class="play-history">
+        <h2 class="profile-stats-header">Play History</h2>
+        {* Loaded client-side from the api *}
+        <div class="profile-graph" id="play-graph">
+            <svg></svg>
+        </div>
+    </div>
+
+    <div class="most-played">
+        <h2 class="profile-stats-header">Most Played Beatmaps</h2>
+        <div id="plays-container">
+            {{ range index, item := .MostPlayed }}
+                {{ if item.Beatmap }}
+                <div style="font-size: {{ round(180 * scoreWeight(index + 1)) }}%; margin: 2.5px;">
+                    {{ item.Count|formatNumber }} plays - <a href="/b/{{ item.BeatmapId }}">{{ item.Beatmap.Name() }}</a>
+                </div>
+                {{ end }}
+            {{ else }}
+            <p>This player has not played anything yet :(</p>
+            {{ end }}
+        </div>
+    </div>
+
+    <div class="recent-plays">
+        <h2 class="profile-stats-header">Recent Plays</h2>
+        <div id="recent-container">
+            {{ range _, score := .Recent }}
+                {{ if score.Beatmap }}
+                <div style="margin: 2.5px;">
+                    <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                    - <a href="/b/{{ score.BeatmapId }}">{{ score.Beatmap.Name() }}</a>
+                    {{ score.PP|round|formatNumber }}pp ({{ score.Grade }})
+                    {{ modString := score.Mods.String() }}{{ if modString != "NM" }}+{{ modString }}{{ end }}
+                </div>
+                {{ end }}
+            {{ else }}
+            <p>No recent scores set by this player :(</p>
+            {{ end }}
+        </div>
+    </div>
+
+    <div class="replays-watched">
+        <h2 class="profile-stats-header">Replays Watched History</h2>
+        {* Loaded client-side from the api *}
+        <div class="profile-graph" id="replay-graph">
+            <svg></svg>
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{*
+    The Beatmaps tab includes the user's favourite beatmaps,
+    created beatmap groups, collaborations & nominations
+*}
+{{ block userBeatmapsTab() }}
+<div class="tab-spacing">
+    <p>Click any of the following categories to expand them.</p>
+    {{ yield beatmapFavourites() . }}
+    {{ yield beatmapCreatedGroups() . }}
+    {{ yield beatmapCollaborations() . }}
+    {{ yield beatmapNominations() . }}
+</div>
+{{ end }}
+
+{{ block beatmapFavourites() }}
+{{ tab := . }}
+<div class="favourites">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Favourite Beatmaps (<span class="beatmaps-count">{{ tab.Favourites|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, fav := tab.Favourites }}
+            {{ if fav.Beatmapset }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="{{ fav.Beatmapset.Link() }}" class="profile-beatmap-description"><b>{{ fav.Beatmapset.Name() }}</b></a>
+                            <br>
+                            <a href="{{ fav.Beatmapset.CreatorLink() }}">mapped by {{ fav.Beatmapset.CreatorName() }}</a>
+                            {{ if tab.IsOwner }}
+                            <br>
+                            <div style="float: right; text-align: right; padding-right: 2.5px;">
+                                <a onclick="return removeFavourite({{ fav.SetId }})">delete</a>
+                            </div>
+                            {{ end }}
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="{{ fav.Beatmapset.ThumbnailUrl() }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ else }}
+            <p style="margin: 5px;">This player has no favourite beatmaps :(</p>
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+
+{{ block beatmapCreatedGroups() }}
+{{ range _, group := .Created }}
+<div class="created-beatmaps">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            {{ group.Name }} Beatmaps (<span class="beatmaps-count">{{ group.Beatmapsets|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" id="user-beatmaps-{{ group.Key }}" style="display: none;">
+        {{ range _, set := group.Beatmapsets }}
+        <table class="profile-beatmap">
+            <tbody>
+                <tr>
+                    <td>
+                        <a href="{{ set.Link() }}" class="profile-beatmap-description"><b>{{ set.Name() }}</b></a>
+                        <br>
+                        <a href="{{ set.CreatorLink() }}">mapped by {{ set.CreatorName() }}</a>
+                        {{ if group.CanEdit }}
+                        <br>
+                        <div>
+                            <div style="float: right; text-align: right; padding-right: 2.5px;">
+                                <a onclick="return deleteBeatmap({{ set.Id }})">delete</a>
+                            </div>
+                            {{ if group.Revivable }}
+                            <div style="float: right; text-align: right; margin-right: 5px;">
+                                <a onclick="return reviveBeatmap({{ set.Id }})">revive</a>
+                            </div>
+                            {{ end }}
+                        </div>
+                        {{ end }}
+                    </td>
+                    <td style="width: 80px; height: 60px;">
+                        <img src="{{ set.ThumbnailUrl() }}" alt="" loading="lazy">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+{{ end }}
+
+{{ block beatmapCollaborations() }}
+{{ if len(.Collaborations) > 0 }}
+<div class="collaborations">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Guest Participation Beatmaps (<span class="beatmaps-count">{{ .Collaborations|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, collab := .Collaborations }}
+            {{ if collab.Beatmap }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="/b/{{ collab.Beatmap.Id }}" class="profile-beatmap-description"><b>{{ collab.Beatmap.Name() }}</b></a>
+                            {{ if collab.Beatmap.Beatmapset }}
+                            <br>
+                            <a href="{{ collab.Beatmap.Beatmapset.CreatorLink() }}">created by {{ collab.Beatmap.Beatmapset.CreatorName() }}</a>
+                            {{ end }}
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="/mt/{{ collab.Beatmap.SetId }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+{{ end }}
+
+{{ block beatmapNominations() }}
+{{ if len(.Nominations) > 0 }}
+<div class="nominations">
+    <h2 class="profile-stats-header">
+        <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
+            Nominated Beatmaps (<span class="beatmaps-count">{{ .Nominations|len }}</span>)
+        </a>
+    </h2>
+    <div class="profile-beatmaps-container" style="display: none;">
+        {{ range _, nom := .Nominations }}
+            {{ if nom.Beatmapset }}
+            <table class="profile-beatmap">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="{{ nom.Beatmapset.Link() }}" class="profile-beatmap-description"><b>{{ nom.Beatmapset.Name() }}</b></a>
+                            <br>
+                            <a href="{{ nom.Beatmapset.CreatorLink() }}">mapped by {{ nom.Beatmapset.CreatorName() }}</a>
+                        </td>
+                        <td style="width: 80px; height: 60px;">
+                            <img src="{{ nom.Beatmapset.ThumbnailUrl() }}" alt="" loading="lazy">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ end }}
+        {{ end }}
+        <div style="clear: both;"></div>
+    </div>
+</div>
+{{ end }}
+{{ end }}
+
+{*
+    Kudosu! Tab ... idk what to add to this
+*}
+{{ block userKudosuTab() }}
+<div class="tab-spacing">
+{{ if len(.Entries) == 0 }}
+    <p>This user has not earned any kudosu yet.</p>
+{{ else }}
+    <h4 class="profile-stats-element"><b>Total Kudosu Earned</b>: {{ .TotalKudosu|formatNumber }}</h4>
+    <h3 class="profile-stats-header">Recent Kudosu History</h3>
+    {{ range _, entry := .Entries }}
+        <time class="timeago" datetime="{{ entry.Time.Format("2006-01-02T15:04:05Z07:00") }}"></time> -
+        <a href="/u/{{ entry.ActorId }}">{{ entry.ActorName }}</a>
+        {{ entry.Status }}
+        <b>{{ entry.Amount }} kudos</b> {{ entry.Preposition }} a post by
+        <a href="/u/{{ entry.OtherId }}">{{ entry.OtherName }}</a>
+        in <a href="/forum/p/{{ entry.PostId }}">{{ entry.TopicTitle }}</a><br>
+    {{ end }}
+{{ end }}
+</div>
+{{ end }}
+
+{{ block userAchievementsTab() }}
+<div class="tab-spacing">
+{{ if .UnlockedCount == 0 }}
+    This user has not achieved anything yet.
+{{ else }}
+    {{ range _, category := .Categories }}
+    <h2 class="profile-achievement-header">{{ category.Name }}</h2>
+    <div class="achievement-category">
+        {{ range _, achievement := category.Achievements }}
+        <div class="achievement">
+            {{ if achievement.Unlocked }}
+            <img
+                src="/images/achievements/{{ achievement.Filename }}"
+                title="Unlocked {{ achievement.UnlockedAt.Format("2006-01-02 15:04:05") }} UTC"
+                loading="lazy"
+                alt="Achievement Image"
+            >
+            {{ else }}
+            <img src="{{ cachedUrl("/images/achievements/unknown.png") }}" alt="Unknown Achievement" loading="lazy">
+            {{ end }}
+            <br>
+            <b>{{ achievement.Name }}</b>
+        </div>
+        {{ end }}
+    </div>
+    {{ end }}
+{{ end }}
+</div>
+{{ end }}
+
+{*
+    Moderator-only sidebar for user management.
+    Includes profile edits, badges, stamps, and infringements.
+*}
+{{ block userModerationPanel() }}
+{{ user := .User }}
+<div class="moderation-container">
+    <h1 class="moderation-header">Moderation</h1>
+
+    {* Edit profile *}
+    <button type="button" onclick="document.getElementById('moderation-edit-profile').showModal()">
+        <i class="icon-edit"></i> Edit profile details
+    </button>
+    <dialog id="moderation-edit-profile" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false;">
+            <h2 class="moderation-dialog-title"><i class="icon-edit"></i> Edit profile details</h2>
+            <div class="moderation-dialog-content">
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" id="mod-email" value="{{ user.Email }}" />
+                </div>
+                <div class="form-row">
+                    <label>Country</label>
+                    <input type="text" id="mod-country" maxlength="2" value="{{ user.Country | upper }}" />
+                </div>
+                <div class="form-row">
+                    <label>Discord ID</label>
+                    <input type="text" id="mod-discord-id" value="{{ user.DiscordId ? user.DiscordId : "" }}" />
+                </div>
+                <div class="form-row">
+                    <label>Title</label>
+                    <input type="text" id="mod-title" value="{{ user.TitleText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Website</label>
+                    <input type="text" id="mod-website" value="{{ user.WebsiteText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Twitter</label>
+                    <input type="text" id="mod-twitter" value="{{ user.TwitterText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Discord</label>
+                    <input type="text" id="mod-discord" value="{{ user.DiscordText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Location</label>
+                    <input type="text" id="mod-location" value="{{ user.LocationText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Interests</label>
+                    <input type="text" id="mod-interests" value="{{ user.InterestsText() }}" />
+                </div>
+                <div class="form-row">
+                    <label>Userpage</label>
+                    <textarea id="mod-userpage" rows="6">{{ user.UserpageText() }}</textarea>
+                </div>
+                <div class="form-row">
+                    <label>Signature</label>
+                    <textarea id="mod-signature" rows="3">{{ user.SignatureText() }}</textarea>
+                </div>
+                <div class="form-row">
+                    <label>Activated</label>
+                    <input type="checkbox" id="mod-activated" {{ if user.Activated }}checked{{ end }} />
+                </div>
+                <div class="form-row">
+                    <label>Bot account</label>
+                    <input type="checkbox" id="mod-is-bot" {{ if user.IsBot }}checked{{ end }} />
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="confirm-button" onclick="moderationSaveProfile({{ user.Id }})">Save</button>
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-edit-profile').close()">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Badges *}
+    <button type="button" onclick="document.getElementById('moderation-badges').showModal()">
+        <i class="icon-star"></i> Edit badges
+    </button>
+    <dialog id="moderation-badges" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false">
+            <h2 class="moderation-dialog-title"><i class="icon-star"></i> Edit badges</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-badges-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Icon URL</th>
+                                <th style="width: 20%">Redirect URL</th>
+                                <th style="width: 55%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 5%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range _, badge := user.Badges }}
+                            <tr data-badge-id="{{ badge.Id }}">
+                                <td><input type="text" id="badge-icon-{{ badge.Id }}" value="{{ badge.Icon }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-url-{{ badge.Id }}" value="{{ badge.Url }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-desc-{{ badge.Id }}" value="{{ badge.Description }}" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateBadge({{ user.Id }}, {{ badge.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="if(confirm('Delete this badge?')) moderationDeleteBadge({{ user.Id }}, {{ badge.Id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ end }}
+                            <tr id="badge-new-row" class="moderation-new-row">
+                                <td><input type="text" id="badge-new-icon" placeholder="/images/badges/example.png" style="width:100%" /></td>
+                                <td><input type="text" id="badge-new-url" placeholder="https://... (optional)" style="width:100%" /></td>
+                                <td><input type="text" id="badge-new-desc" placeholder="Description (optional)" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddBadge({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-badges').close()">Close</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Stamps *}
+    <button type="button" onclick="document.getElementById('moderation-stamps').showModal()">
+        <i class="icon-bookmark"></i> Edit stamps
+    </button>
+    <dialog id="moderation-stamps" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false">
+            <h2 class="moderation-dialog-title"><i class="icon-bookmark"></i> Edit stamps</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-stamps-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 20%">Icon URL</th>
+                                <th style="width: 20%">Redirect URL</th>
+                                <th style="width: 55%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 5%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range _, stamp := user.Stamps }}
+                            <tr data-stamp-id="{{ stamp.Id }}">
+                                <td><input type="text" id="stamp-icon-{{ stamp.Id }}" value="{{ stamp.Icon }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-url-{{ stamp.Id }}" value="{{ stamp.Url }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-desc-{{ stamp.Id }}" value="{{ stamp.Description }}" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateStamp({{ user.Id }}, {{ stamp.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="if(confirm('Delete this stamp?')) moderationDeleteStamp({{ user.Id }}, {{ stamp.Id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ end }}
+                            <tr id="stamp-new-row" class="moderation-new-row">
+                                <td><input type="text" id="stamp-new-icon" placeholder="/images/stamps/example.png" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-new-url" placeholder="https://... (optional)" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-new-desc" placeholder="Description (optional)" style="width:100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddStamp({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-stamps').close()">Close</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Infringements (rows populated dynamically via js) *}
+    <button type="button" onclick="moderationOpenInfringements({{ user.Id }})">
+        <i class="icon-warning-sign"></i> Edit infringements
+    </button>
+    <dialog id="moderation-infringements" class="popup moderation-dialog">
+        <form method="dialog" onsubmit="return false;">
+            <h2 class="moderation-dialog-title"><i class="icon-warning-sign"></i> Edit infringements</h2>
+            <div class="moderation-dialog-content">
+                <div class="moderation-table-wrap">
+                    <table id="moderation-infringements-table" class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%">Time</th>
+                                <th style="width: 15%">Action</th>
+                                <th style="width: 15%">Duration (mins)</th>
+                                <th style="width: 15%">Permanent</th>
+                                <th style="width: 30%">Description</th>
+                                <th class="moderation-actions-cell" style="width: 10%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="moderation-infringements-body">
+                            <tr id="infringement-new-row" class="moderation-new-row">
+                                <td></td>
+                                <td>
+                                    <select id="infringement-new-action" style="width: 100%">
+                                        <option value="0">Restrict</option>
+                                        <option value="1">Silence</option>
+                                    </select>
+                                </td>
+                                <td><input type="number" id="infringement-new-duration" min="0" value="0" style="width: 100%" /></td>
+                                <td class="moderation-checkbox-cell"><input type="checkbox" id="infringement-new-permanent" /></td>
+                                <td><input type="text" id="infringement-new-desc" placeholder="Description (optional)" style="width: 100%" /></td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" class="confirm-button" onclick="moderationAddInfringement({{ user.Id }})">Add</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-infringements').close()">Close</button>
+                    <div id="moderation-loader" class="loader" style="display: none"></div>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Quick actions *}
+    <button type="button" class="warning-button" onclick="moderationRemoveUserAvatar({{ user.Id }})">
+        <i class="icon-remove-sign"></i> Remove Avatar
+    </button>
+    <button type="button" class="danger-button" onclick="moderationClearUserProfile({{ user.Id }})">
+        <i class="icon-trash"></i> Clear Profile
+    </button>
+    <button type="button" class="danger-button" onclick="moderationWipeUserScores({{ user.Id }})">
+        <i class="icon-ban-circle"></i> Wipe Scores
+    </button>
+    <button type="button" class="restore-button" onclick="moderationRestoreUserScores({{ user.Id }})">
+        <i class="icon-repeat"></i> Restore Scores
+    </button>
+</div>
+{{ end }}

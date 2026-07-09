@@ -1,15 +1,51 @@
-
 <p align="center">
   <img width="350" alt="logo" src="https://raw.githubusercontent.com/Lekuruu/titanic/main/.github/images/logo-vector.min.svg">
 </p>
 
 # Titanic
 
-Titanic is an osu! private server designed to be compatible with every osu! stable client out there (2007–2025).
+Titanic is an osu! private server designed to be compatible with every osu! stable client out there (2007-2025).
 The goal of this project was to gain deeper insights into the inner workings of Bancho and how it has evolved over the years.
 
 You can play on it, by [registering on our website](https://osu.titanic.sh/account/register), and [downloading](https://osu.titanic.sh/download/) a client.
 For more questions, feel free to join our Discord server: https://discord.gg/qupv72e7YH
+
+## Services
+
+This repository combines the main deployment, database migrations, Python service submodules, and Go service rewrites.
+
+- `services/bancho`: Bancho game server, from the `anchor` submodule.
+- `services/deck`: Score server submodule.
+- `services/bot`: Discord bot submodule.
+- `services/keel`: API submodule.
+- `services/stern`: Go website/frontend.
+- `services/jobs`: Go background task runner.
+
+Most shared Go application code lives in [State](internal/state/README.md). Go services should generally start with `state.NewState(".env")` instead of creating config, database, Redis, storage, and repositories manually.
+
+## Development
+
+Docker remains the recommended way to run the full stack. See [SETUP.md](SETUP.md) for the normal Docker setup and [MANUAL.md](MANUAL.md) for manual service startup notes.
+
+To work on the Go services, install [Go](https://go.dev/doc/install), configure PostgreSQL and Redis through the root `.env`, and run commands from the repository root:
+
+```sh
+go test ./...
+go build ./services/stern/cmd/web
+go build ./services/jobs/cmd/cli
+```
+
+```sh
+go run ./services/stern/cmd/web
+go run ./services/jobs/cmd/cli
+```
+
+Service images are also built from the repository root:
+
+```sh
+docker build -f ./services/stern/Dockerfile -t osutitanic/stern .
+docker build -f ./services/jobs/Dockerfile -t osutitanic/jobs .
+```
 
 ## Contributing
 

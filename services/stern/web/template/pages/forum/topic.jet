@@ -1,0 +1,260 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Topic.Title }} - Forum</title>
+<meta property="og:title" content="{{ .Topic.Title }} - Titanic!">
+<meta property="og:description" content="{{ .MetaDescription }}">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/">
+<meta property="og:image" content="{{ .MetaImage }}">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<style>
+    .page { margin: 0 }
+    .header-text { margin: 10px 10px 5px 10px }
+</style>
+{{ yield forumTopicLocation() }}
+<div>
+    {{ include "/components/pagination_topic.jet" .Pagination }}
+    {{ yield forumTopicBar() }}
+    {{ yield forumTopicPosts() }}
+    {{ yield forumTopicReply() }}
+    {{ include "/components/pagination_topic.jet" .Pagination }}
+    {{ yield forumTopicReplyButton() }}
+    {{ yield forumTopicActiveUsers() }}
+</div>
+<script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
+{{ end }}
+
+{{ block forumTopicLocation() }}
+<h1 class="header-text">
+    <a href="/forum" style="color:#5a5399">Index</a> »
+    {{ range _, parent := .Parents }}
+        <a href="/forum/{{ parent.Id }}">{{ parent.Name }}</a> »
+    {{ end }}
+    <a href="/forum/{{ .Forum.Id }}">{{ .Forum.Name }}</a> »
+    <a href="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/">{{ .Topic.Title }}</a>
+</h1>
+{{ end }}
+
+{{ block forumTopicBar() }}
+<table width="100%" cellspacing="0" class="bar">
+    <td>
+    {{ if .CurrentUser }}
+        {{ if .IsSubscribed }}
+        <a onclick="removeSubscription({{ .Topic.Id }})" id="subscribe-button">Unsubscribe topic</a>
+        {{ else }}
+        <a onclick="addSubscription({{ .Topic.Id }})" id="subscribe-button">Subscribe topic</a>
+        {{ end }}
+        |
+        {{ if .IsBookmarked }}
+        <a onclick="removeBookmark({{ .Topic.Id }})" id="bookmark-button">Remove Bookmark</a>
+        {{ else }}
+        <a onclick="addBookmark({{ .Topic.Id }})" id="bookmark-button">Bookmark topic</a>
+        {{ end }}
+        {{ if .Forum.IsBeatmapRequestsForum() && .Permissions.Has("forum.topics.link_beatmapset") }}
+            |
+            {{ if !.HasBeatmapset() }}
+            <a onclick="linkTopicToBeatmap()">
+                Link to Beatmapset
+            </a>
+            {{ else }}
+            <a onclick="unlinkTopicFromBeatmap()">
+                Unlink Beatmapset
+            </a>
+            {{ end }}
+        {{ end }}
+    {{ end }}
+    </td>
+</table>
+{{ end }}
+
+{{ block forumTopicPosts() }}
+{{ if len(.Posts) == 0 }}
+<p style="margin-top: 10px; margin-left: 5px;">
+    Hmmm... seems like nothing was posted here?
+</p>
+{{ else }}
+    {{ range index, post := .Posts }}
+    <div class="post-spacing"></div>
+    {{ if .HasBeatmapset() && index == 0 }}
+    <div class="beatmapset-link-info">
+        This topic is linked to a beatmapset.
+        Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
+    </div>
+    {{ end }}
+    {{ yield forumTopicPost() post }}
+    {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block forumTopicPost() }}
+<table class="post-table" width="100%" cellspacing="0" cellpadding="0">
+    <tbody><tr>
+        <td class="post-profile">
+            <div class="post-username">
+                <a href="/u/{{ .Post.User.Id }}" style="color: {{ .Post.User.DisplayColor() != "" ? .Post.User.DisplayColor() : "#000" }}">
+                    {{ .Post.User.Name }}
+                </a>
+            </div>
+            {{ if .Post.User.AvatarHash }}
+            <a href="/u/{{ .Post.User.Id }}">
+                <div class="post-avatar avatar-frame">
+                    <img src="{{ .Post.User.AvatarUrl() }}" alt="" loading="lazy">
+                </div>
+            </a>
+            {{ end }}
+            <div>
+                <div class="post-user-title">{{ .AuthorTitle }}</div>
+                <div class="post-user-stats">{{ .PostCount|formatNumber }} posts</div>
+                {{ groups := .Post.User.VisibleGroups() }}
+                {{ if len(groups) > 0 }}
+                <div class="groups">
+                    {{ range _, group := groups }}
+                    <a class="group" href="/g/{{ group.Id }}" style="color: {{ group.Color }}; border: 1px solid {{ group.Color }};">
+                        {{ group.ShortName | upper }}
+                    </a>
+                    {{ end }}
+                </div>
+                {{ end }}
+                <div>
+                    <img src="/images/flags/{{ .Post.User.Country | lower }}.gif" alt="{{ .Post.User.Country }} Flag" class="flag">
+                    {{ if .Post.User.IsDonator() }}
+                    <a href="/g/6" class="donator"></a>
+                    {{ end }}
+                </div>
+            </div>
+            <br>
+            {{ if .ShowKudosuBox }}
+            {{ yield forumKudosuBox() }}
+            {{ end }}
+        </td>
+        <td class="post-content-wrapper">
+            <div style="background-color: #ebe8ff;">
+                <div class="post-time">
+                    <a href="#post-{{ .Post.Id }}" title="{{ .Post.CreatedAt.Format("2006-01-02 15:04:05") }} UTC" style="line-height: 18px">
+                        <time class="timeago" datetime="{{ .Post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                    </a>
+                    {{ if .Icon }}
+                    <img src="{{ .Icon.Location }}" alt="{{ .Icon.Name }}" style="float: right; margin-left: 4px" width="15">
+                    {{ end }}
+                </div>
+                <div class="post-content" id="post-{{ .Post.Id }}">
+                    {{ if .Post.Deleted }}
+                    [ Deleted ]
+                    {{ else }}
+                    <div class="bbcode">
+                    {{ .Post.Render() | unsafe }}
+                    </div>
+                    {{ end }}
+                </div>
+                {{ if .Post.EditCount > 0 }}
+                <div style="margin-top: 15px; margin-left: 5px; float: left; overflow-wrap: anywhere;">
+                    Last edited by <a href="/u/{{ .Post.User.Id }}">{{ .Post.User.Name }}</a>
+                    <time class="timeago" datetime="{{ .Post.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>,
+                    edited {{ .Post.EditCount }} time{{ .Post.EditCount != 1 ? "s" : "" }} in total.
+                </div>
+                {{ end }}
+                {{ if .CanDelete || .CanEdit || .CanQuote }}
+                <div class="post-buttons hover-button">
+                    {{ if .CanDelete }}
+                    <a class="button-red" onclick="deletePost({{ .Post.Id }})">Delete</a>
+                    {{ end }}
+                    {{ if .CanEdit }}
+                    <a class="button-blue" href="./post?action=edit&id={{ .Post.Id }}">Edit</a>
+                    {{ end }}
+                    {{ if .CanQuote }}
+                    <a class="button-blue" href="./post?action=quote&id={{ .Post.Id }}">Quote</a>
+                    {{ end }}
+                </div>
+                {{ end }}
+            </div>
+            {{ if .Post.User.SignatureText() != "" }}
+            <div class="post-signature">
+                <div class="bbcode">
+                {{ .Post.User.SignatureText() | bbcode | unsafe }}
+                </div>
+            </div>
+            {{ end }}
+        </td>
+    </tr></tbody>
+</table>
+{{ end }}
+
+{{ block forumTopicReply() }}
+<br>
+{{ if .CanReply }}
+<form action="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post"
+      method="post"
+      class="quick-reply">
+    <textarea name="bbcode"
+              placeholder="Quick Reply: Type your message here and hit Ctrl+Enter to send!"></textarea>
+    {{ if .Topic.IconId }}
+    <input type="hidden" name="icon" value="{{ .Topic.IconId }}">
+    {{ end }}
+    <input type="hidden" name="user_id" value="{{ .CurrentUserId() }}">
+    <input type="hidden" name="action" value="post">
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+</form>
+{{ end }}
+{{ end }}
+
+{{ block forumTopicReplyButton() }}
+{{ if .CurrentUser }}
+<div class="post-buttons-large" id="post-bottom">
+    {{ if !.TopicLocked() }}
+        {{ if .CanCreatePosts }}
+        <a href="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post?action=post" class="button-blue"><i class="fa icon-comment"></i> Reply</a>
+        {{ end }}
+    {{ else }}
+        {{ if .CanReply }}
+        <a href="/forum/{{ .Forum.Id }}/t/{{ .Topic.Id }}/post?action=post" class="button-grey"><i class="fa icon-comment"></i> Reply (Locked)</a>
+        {{ else }}
+        <a href="#post-bottom" class="button-grey" title="This topic is locked.">Locked</a>
+        {{ end }}
+    {{ end }}
+</div>
+{{ end }}
+{{ end }}
+
+{{ block forumTopicActiveUsers() }}
+<div class="forum-active-users" style="margin-left: 8px">
+    Users browsing this forum:
+    {{ if len(.ActiveUsers) <= 0 }}
+        None
+    {{ else }}
+        {{ range i, user := .ActiveUsers }}
+            <a href="/u/{{ user.Id }}">{{ user.Name }}</a>{{ if i < len(.ActiveUsers) - 1 }}, {{ end }}
+        {{ end }}
+    {{ end }}
+</div>
+<br>
+{{ end }}
+
+{{ block forumKudosuBox() }}
+    {{ kudosu := .LatestKudosu }}
+    <div class="kudosu-box">
+        <p style="color: {{ .KudosuStatusColor() }}" id="kudosu-status-{{ .Post.Id }}">
+            {{ if .KudosuTotal > 0 }}
+            Earned {{ .KudosuTotal|formatNumber }} kudosu.
+            {{ else if .KudosuTotal == 0 }}
+            No kudosu yet.
+            {{ else }}
+            Lost {{ .AbsoluteKudosuTotal()|formatNumber }} kudosu.
+            {{ end }}
+        </p>
+        {{ if .CanManageKudosu }}
+            {{ if kudosu && kudosu.Amount > 0 && .CanRevokeKudosu }}
+                {* BATs can revoke existing kudosu *}
+                <a onclick="revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a>
+            {{ else if kudosu && .CanResetKudosu }}
+                {* Kudosu was revoked -> BATs have the option to reset it *}
+                <a onclick="resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a>
+            {{ else if !kudosu }}
+                {* Eligible posts without kudosu can be rewarded *}
+                <a onclick="giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a>
+            {{ end }}
+        {{ end }}
+    </div>
+{{ end }}

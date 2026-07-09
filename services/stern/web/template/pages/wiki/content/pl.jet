@@ -1,0 +1,47 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>{{ .Title }}</title>
+<meta name="description" content="{{ .SiteDescription }}">
+<meta property="og:title" content="{{ .SiteTitle }}">
+{{ if .SiteUrl }}<meta property="og:url" content="{{ .SiteUrl }}">{{ end }}
+<meta property="og:description" content="{{ .SiteDescription }}">
+{{ if .CanonicalUrl }}<link rel="canonical" href="{{ .CanonicalUrl }}">{{ end }}
+<link rel="stylesheet" href="{{ cachedUrl("/css/wiki.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="wiki-navigation">
+    <div class="left-navigation">
+        <a href="#" class="current">Strona</a>
+        <a href="{{ .DiscussionUrl }}">Dyskusja</a>
+    </div>
+    <div class="right-navigation">
+        <a href="#" class="current">Czytaj</a>
+        <a href="{{ .SourceUrl }}">Wyświetl źródło</a>
+        <a href="{{ .HistoryUrl }}">Zobacz historię</a>
+        <div class="wiki-search">
+            <form action="/wiki/pl/search" method="get">
+                <input type="text" name="query" placeholder="Wyszukaj..." value="{{ .SearchQuery }}">
+                <button type="submit">Szukaj</button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="wiki-sidebar"></div>
+{{ if .Language != .RequestedLanguage }}
+<div class="wiki-warning">
+    <p>
+        Ta strona nie jest dostępna w Twoim języku.
+        Możesz ją <a href="{{ .TranslationUrl }}">przetłumaczyć</a>, aby była dostępna.
+    </p>
+</div>
+{{ end }}
+<div class="wiki-content">
+    {{ yield wikiContent() }}
+    {{ .Content | unsafe }}
+    <br>
+</div>
+{{ end }}
+
+{{ block wikiContent() }}{{ end }}

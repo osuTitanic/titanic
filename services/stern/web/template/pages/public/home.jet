@@ -1,0 +1,190 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Titanic!</title>
+<meta property="og:title" content="Reviving old osu! - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}">
+<meta property="og:description" content="Relive the early days of osu! with Titanic.">
+<link rel="stylesheet" href="{{ cachedUrl("/css/home.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="content-wrapper">
+    <div class="left-side">
+        {{ yield homeWelcome() }}
+        {{ yield homeNews() .News }}
+
+        <div class="bottom-stats">
+            {{ yield homeOnlineUsers() }}
+            {{ yield homeChat() .ChatMessages }}
+        </div>
+    </div>
+
+    <div class="right-side">
+        {{ yield homeActionButtons() }}
+        {{ yield homeFeaturedVideo() }}
+        {{ yield homeMostPlayed() .MostPlayedBeatmaps }}
+    </div>
+</div>
+<script defer>registerPartial("#chat", "/partials/home/chat #chat > *", 30000)</script>
+{{ end }}
+
+{{ block homeWelcome() }}
+<div class="about-wrapper">
+    <div class="blurb-box">
+        <h1 class="blurb-text" id="about-header">
+            Welcome to <b>Titanic!</b>
+        </h1>
+        <div class="blurb-text">
+            Titanic is a private server for <a href="https://osu.ppy.sh">osu!</a>, dedicated to preserving the nostalgia of osu!'s earlier days, offering players the opportunity to experience the game using client versions from 2008 to 2015.
+            It's also a community-driven project that is fully open source and open to all kinds of contribution. Even just a simple suggestion can make a big change. So, welcome on board, and enjoy your stay!
+        </div>
+    </div>
+</div>
+{{ end }}
+
+{{ block homeNews() }}
+<div class="news-wrapper">
+    <h2 class="headers">News</h2>
+    {{ range i, message := . }}
+    <div class="news">
+        <div class="blurb-heading">
+            {{ message.CreatedAt.Format("2.1.2006") }} <a href="{{ message.Link() }}"><b>{{ message.Topic.Title }}</b></a> ({{ message.User.Name }})
+        </div>
+        <div class="news-blurb-box">
+            <div class="blurb-text">
+                {{ homeRenderNewsText(message) | unsafe }}
+            </div>
+        </div>
+        <div class="blurb-readmore">
+            <a href="{{ message.Link() }}">Read More / Comment...</a>
+        </div>
+    </div>
+    {{ else }}
+    <div class="news">
+        <div class="blurb-box">
+            No news available at the moment.
+        </div>
+    </div>
+    {{ end }}
+    {{ if len(.) > 0 }}
+    <div style="margin-bottom: 350px"></div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block homeOnlineUsers() }}
+<div class="stats-wrapper">
+    <h2 class="headers">Online Users<span>Over the last 24 hours</span></h2>
+    <img src="/charts/activity" alt="Activity" loading="lazy" height="70">
+</div>
+{{ end }}
+
+{{ block homeChat() }}
+<div id="chat" class="chat-wrapper">
+    <h2 class="headers">
+        Chat <span>also connect from <a href="/account/security#irc">irc</a></span>
+    </h2>
+    <table class="styled-table styled-table-chat">
+        <tbody>
+        {{ range i, message := . }}
+            <tr class="{{ if i % 2 == 1 }}row-dark{{ else }}row-light{{ end }}">
+                <td class="chat-time">{{ message.Time.Format("15:04:05") }}</td>
+                <td class="chat-message">{{ message.Sender }}: {{ message.Message }}</td>
+            </tr>
+        {{ end }}
+        </tbody>
+    </table>
+</div>
+{{ end }}
+
+{{ block homeActionButtons() }}
+<a href="/download">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/download-button.png") }}" alt="Download" loading="lazy">
+</a>
+<a href="https://github.com/osuTitanic/">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/contribute-button.png") }}" alt="Contribute" loading="lazy">
+</a>
+<a href="https://ko-fi.com/lekuru">
+    <img height="55" width="356" src="{{ cachedUrl("/images/buttons/support-button.png") }}" alt="Support" loading="lazy">
+</a>
+{{ end }}
+
+{{ block homeFeaturedVideo() }}
+<div class="featured" id="featured-video">
+    <h2 class="headers">Featured Video</h2>
+    <div class="featured-video-placeholder" id="featured-video-placeholder">
+        <div class="featured-video-info">
+            This browser may not be able to play the embedded video.
+        </div>
+        <a href="https://www.youtube.com/@osuTitanic" target="_blank" rel="noopener">
+            Open on YouTube
+        </a>
+    </div>
+    <!--[if !IE]><!-->
+    <script defer>
+        function loadYoutubeIframe() {
+            var featuredVideo = document.getElementById('featured-video');
+            var placeholder = document.getElementById('featured-video-placeholder');
+
+            if (!featuredVideo) {
+                return;
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+
+            var iframe = document.createElement('iframe');
+            iframe.title = "Featured";
+            iframe.width = "356";
+            iframe.height = "278";
+            iframe.type = "text/html";
+            iframe.style.border = "0";
+            iframe.src = "https://www.youtube-nocookie.com/embed?listType=playlist&list=UUir7A_JJa1Vhg_84ejh6Ung&mute=1&autoplay=1&controls=0&rel=0";
+            iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+            iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+            iframe.loading = "lazy";
+            iframe.allowFullscreen = true;
+            featuredVideo.appendChild(iframe);
+        }
+
+        $(function() { loadYoutubeIframe() });
+    </script>
+    <!--<![endif]-->
+</div>
+{{ end }}
+
+{{ block homeMostPlayed() }}
+<div class="most-played">
+    <h2 class="headers">
+        Most Played Beatmaps
+        <span>Over the last week</span>
+    </h2>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th scope="col">Plays</th>
+                <th scope="col" style="text-align: center;">Artist / Title</th>
+                <th scope="col">Creator</th>
+            </tr>
+        </thead>
+        <tbody>
+        {{ range i, item := homeIterateMostPlayed(.) }}
+            <tr class="{{ if i % 2 == 0 }}row-dark{{ else }}row-light{{ end }}">
+                <td>{{ formatNumber(item.Count) }}</td>
+                <td>
+                    <img src="/mt/{{ item.Beatmap.SetId }}" loading="lazy" alt="" width="80" height="60">
+                    <a href="{{ item.Beatmap.Link() }}">
+                        {{ item.Beatmap.Name() }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ item.Beatmap.Beatmapset.CreatorLink() }}">{{ item.Beatmap.Beatmapset.CreatorName() }}</a>
+                </td>
+            </tr>
+        {{ end }}
+        </tbody>
+    </table>
+</div>
+{{ end }}

@@ -1,0 +1,111 @@
+.account-form, .reset-form, .login-form {
+    padding-left: 10px;
+}
+
+.login-form {
+    text-align: center;
+}
+
+.account-form-section {
+    -webkit-box-shadow: 0px 0px 50px #ffffff;
+    -moz-box-shadow: 0px 0px 50px #ffffff;
+    box-shadow: 0px 0px 50px #ffffff;
+    background-color: #efeafc;
+    display: inline-block;
+    border-radius: 5px;
+    line-height: 30px;
+    padding: 10px;
+    margin: 12px;
+    width: 775px;
+}
+
+.account-form-control,
+.account-form-button {
+    border: 1px solid #90ace7;
+    vertical-align: middle;
+    display: inline-block;
+    width: 300px;
+    height: 30px;
+    border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.ie .account-form-control {
+    float: left;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form input[type="email"] {
+    -webkit-border-radius: 3px;
+    border: 1px solid #90ace7;
+    border-radius: 3px;
+    width: 300px;
+}
+
+.input-description {
+    vertical-align: middle;
+    line-height: 18px;
+    font-size: 95%;
+    float: right;
+    width: 58%;
+}
+
+.account-form-actions,
+.register-submit,
+.reset-submit {
+    text-align: center;
+}
+
+.account-form-error {
+    background-color: #eab9d6;
+}
+
+.account-form-panel {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+}
+
+.account-form-panel .input-description {
+    float: none;
+    width: 100%;
+    margin-top: 15px;
+}
+
+.account-form-info {
+    display: block;
+    line-height: 18px;
+    text-align: center;
+}
+
+.account-form-button:hover,
+.register-button:hover, .reset-button:hover {
+    text-shadow: 0px 0px 5px #ffffff;
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+}
+
+.account-form-button {
+    background-color: rgb(138,138,138);
+    transition: all 200ms ease-in-out;
+    border-radius: 5px !important;
+    color: white;
+}
+
+.login-form h1 {
+    margin-bottom: 5px;
+}
+
+.login-form div input[type="submit"] {
+    line-height: 21px;
+    margin-top: 8px;
+    width: 90px;
+}
+
+.login-form .error {
+    color: red;
+    font-size: 90%;
+    margin-top: 14px;
+}

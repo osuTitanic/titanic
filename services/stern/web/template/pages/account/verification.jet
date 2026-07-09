@@ -1,0 +1,103 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Account Verification</title>
+<meta property="og:title" content="Verify your Account - Titanic!">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/verification">
+<meta property="og:description" content="Verify your Titanic account.">
+<link rel="stylesheet" href="{{ cachedUrl("/css/verification.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="left">
+    <img src="{{ cachedUrl("/images/art/awp.png") }}" alt="" height="400px">
+</div>
+<div class="right">
+    {{ if .Success }}
+        {{ yield verificationSuccess() }}
+    {{ else if .Reset }}
+        {{ yield passwordResetForm() }}
+    {{ else }}
+        {{ yield verificationPending() }}
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block verificationSuccess() }}
+    {{ if .Verification.IsPassword() }}
+        <h1>Password Reset</h1>
+        <div>
+            Your password has been successfully reset. Please log in, using your new credentials!
+        </div>
+        <div>
+            Feel free to contact our support on the <a href="https://discord.gg/qupv72e7YH">discord server</a>
+            or via <a href="mailto:{{ .Config.EmailSender }}">email</a>, if you have any issues.
+        </div>
+    {{ else }}
+        <h1>Account Verified</h1>
+        <div>
+            You can now download one of the available clients <a href="/download">here</a>, and log in.
+            Have fun playing on this server!
+        </div>
+    {{ end }}
+{{ end }}
+
+{{ block passwordResetForm() }}
+    <h1>Password Reset</h1>
+    <form action="/account/reset" method="post" class="password-reset-form">
+        <div>
+            <input type="password" name="password" autocomplete="off" autocapitalize="none" placeholder="Password">
+        </div>
+        <div>
+            <input type="password" name="password_match" autocomplete="off" autocapitalize="none" placeholder="Repeat Password">
+        </div>
+        <div>
+            <input class="reset-button" type="submit" name="login" value="Reset">
+        </div>
+        <input name="token" type="hidden" value="{{ .Verification.Token }}">
+        <div style="display: block;">
+            Need further assistance? Contact us on our <a href="https://discord.gg/qupv72e7YH">discord</a> or via <a href="mailto:{{ .Config.EmailSender }}">email</a>.
+            Please don't forget your password this time!
+        </div>
+        <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
+    </form>
+    {{ if .ErrorMessage }}
+    <div style="background-color: #eab9d6;">
+        {{ .ErrorMessage }}
+    </div>
+    {{ end }}
+{{ end }}
+
+{{ block verificationPending() }}
+    {{ if .Verification.IsPassword() }}
+        <h1>Password Reset</h1>
+        <div>
+            <span>We have sent you an email with a verification link, to reset your password. Please check your inbox and follow the instructions!</span>
+            <span>Make sure to check your spam folder, if you can't find the email!</span>
+        </div>
+    {{ else }}
+        <h1>Account Verification</h1>
+        <div>
+            <span>We have sent you an email with a verification link. Please check your inbox and follow the instructions!</span>
+            <span>Make sure to check your spam folder, if you can't find the email!</span>
+        </div>
+    {{ end }}
+    <div>
+        If you can't access your email or have forgotten what you used, please send an email to
+        <a href="mailto:{{ .Config.EmailSender }}">{{ .Config.EmailSender }}</a> to recover your account.
+    </div>
+    {{ if .InfoMessage }}
+    <div style="background-color: #e1f1fa;">
+        {{ .InfoMessage }}
+    </div>
+    {{ end }}
+    {{ if .ErrorMessage }}
+    <div style="background-color: #eab9d6;">
+        {{ .ErrorMessage }}
+    </div>
+    {{ end }}
+    {{ if .Verification }}
+    <a href="/account/verification/resend?id={{ .Verification.Id }}">Resend Verification Email</a>
+    {{ end }}
+{{ end }}

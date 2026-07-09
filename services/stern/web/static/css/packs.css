@@ -1,0 +1,40 @@
+.pack-container {
+    background: #f9f7fe;
+    border: 1px solid #e1dfe7;
+    padding: 10px;
+}
+
+.pack-container h2 {
+    font-size: 110%;
+    margin-bottom: 10px;
+    text-shadow: #efcfe1 0px 0px 2px;
+    font-weight: 100;
+    color: #e15fac;
+}
+
+.pack-container p {
+    font-size: 85%;
+}
+
+.pack-listing {
+    font-size: 80%;
+}
+
+.pack-listing thead {
+    padding: 0;
+    margin: 0;
+}
+
+.pack-listing td {
+    padding-bottom: 1px;
+    padding-top: 1px;
+}
+
+.pack-listing [id^="pack-"] {
+    overflow: hidden;
+    z-index: 0;
+}
+
+.pack-listing .expanded {
+    position: relative;
+}
