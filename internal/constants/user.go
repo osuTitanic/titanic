@@ -45,27 +45,43 @@ func (p Playstyle) String() string {
 type UserActivity int
 
 const (
-	ActivityRanksGained            UserActivity = 1
-	ActivityNumberOne              UserActivity = 2
-	ActivityBeatmapLeaderboardRank UserActivity = 3
-	ActivityLostFirstPlace         UserActivity = 4
-	ActivityPPRecord               UserActivity = 5
-	ActivityTopPlay                UserActivity = 6
-	ActivityAchievementUnlocked    UserActivity = 7
-	ActivityScoreSubmitted         UserActivity = 8
-	ActivityBeatmapUploaded        UserActivity = 9
-	ActivityBeatmapUpdated         UserActivity = 10
-	ActivityBeatmapRevived         UserActivity = 11
-	ActivityBeatmapFavouriteAdded  UserActivity = 12
-	ActivityBeatmapFavouriteRemove UserActivity = 13
-	ActivityBeatmapRated           UserActivity = 14
-	ActivityBeatmapCommented       UserActivity = 15
-	ActivityBeatmapDownloaded      UserActivity = 16
-	ActivityBeatmapStatusUpdated   UserActivity = 17
-	ActivityBeatmapNominated       UserActivity = 18
-	ActivityForumTopicCreated      UserActivity = 19
-	ActivityForumPostCreated       UserActivity = 20
-	ActivityBeatmapNuked           UserActivity = 37
+	ActivityRanksGained             UserActivity = 1
+	ActivityNumberOne               UserActivity = 2
+	ActivityBeatmapLeaderboardRank  UserActivity = 3
+	ActivityLostFirstPlace          UserActivity = 4
+	ActivityPPRecord                UserActivity = 5
+	ActivityTopPlay                 UserActivity = 6
+	ActivityAchievementUnlocked     UserActivity = 7
+	ActivityScoreSubmitted          UserActivity = 8
+	ActivityBeatmapUploaded         UserActivity = 9
+	ActivityBeatmapUpdated          UserActivity = 10
+	ActivityBeatmapRevived          UserActivity = 11
+	ActivityBeatmapFavouriteAdded   UserActivity = 12
+	ActivityBeatmapFavouriteRemoved UserActivity = 13
+	ActivityBeatmapRated            UserActivity = 14
+	ActivityBeatmapCommented        UserActivity = 15
+	ActivityBeatmapDownloaded       UserActivity = 16
+	ActivityBeatmapStatusUpdated    UserActivity = 17
+	ActivityBeatmapNominated        UserActivity = 18
+	ActivityForumTopicCreated       UserActivity = 19
+	ActivityForumPostCreated        UserActivity = 20
+	ActivityForumSubscribed         UserActivity = 21
+	ActivityForumUnsubscribed       UserActivity = 22
+	ActivityForumBookmarked         UserActivity = 23
+	ActivityForumUnbookmarked       UserActivity = 24
+	ActivityOsuCoinsReceived        UserActivity = 25
+	ActivityOsuCoinsUsed            UserActivity = 26
+	ActivityFriendAdded             UserActivity = 27
+	ActivityFriendRemoved           UserActivity = 28
+	ActivityReplayWatched           UserActivity = 29
+	ActivityScreenshotUploaded      UserActivity = 30
+	ActivityUserRegistration        UserActivity = 31
+	ActivityUserLogin               UserActivity = 32
+	ActivityUserChatMessage         UserActivity = 33
+	ActivityUserMatchCreated        UserActivity = 34
+	ActivityUserMatchJoined         UserActivity = 35
+	ActivityUserMatchLeft           UserActivity = 36
+	ActivityBeatmapNuked            UserActivity = 37
 )
 
 var DisallowedUsernameSubstrings = []string{

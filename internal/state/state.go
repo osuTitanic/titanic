@@ -8,6 +8,7 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/database"
+	"github.com/osuTitanic/titanic-go/internal/discord"
 	"github.com/osuTitanic/titanic-go/internal/email"
 	"github.com/osuTitanic/titanic-go/internal/location"
 	"github.com/osuTitanic/titanic-go/internal/logging"
@@ -32,6 +33,7 @@ type State struct {
 	Redis      *redis.Client
 	Storage    storage.Storage
 	Email      email.Email
+	Officer    *discord.Officer
 	Location   location.Provider
 	Extensions map[string]any
 
@@ -130,6 +132,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Storage:         storageProvider,
 		Logger:          logger,
 		Email:           mailer,
+		Officer:         discord.NewOfficerFromConfig(cfg),
 		Location:        geolocation,
 		Redis:           redisClient,
 		Repositories:    repos,

@@ -56,6 +56,22 @@ if err := webhook.Post(); err != nil {
 }
 ```
 
+## Officer
+
+Officer is a webhook dispatcher for staff notifications. Configure `OFFICER_WEBHOOK_URL` for the staff webhook.
+Officer calls accept tags already, but all tags currently use this same webhook URL. In the future, we may support multiple webhooks for different tags, so that notifications go in different channels based on the tag.
+
+Use the shared state instance from service code:
+
+```go
+err := app.Officer.Call(discord.OfficerTagScoreSubmission, "Suspicious score submitted")
+if err != nil {
+	return err
+}
+```
+
+If `OFFICER_WEBHOOK_URL` is not configured, calls are ignored.
+
 ## Testing
 
 The webhook tests are integration tests. They are skipped unless you provide a Discord webhook URL with the `-webhook-url` flag.

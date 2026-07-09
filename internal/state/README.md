@@ -13,6 +13,7 @@ Most services should start here instead of manually creating each dependency.
 - `Redis` for the shared Redis client
 - `Storage` for app storage
 - `Email` for email delivery
+- `Officer` for staff webhook notifications
 - `Repositories` for actual database access
 - `Extensions` for service-specific dependencies
 - `Rankings` for ranking services

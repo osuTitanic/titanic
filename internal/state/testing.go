@@ -13,6 +13,7 @@ import (
 	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/config"
 	"github.com/osuTitanic/titanic-go/internal/database"
+	"github.com/osuTitanic/titanic-go/internal/discord"
 	"github.com/osuTitanic/titanic-go/internal/email"
 	"github.com/osuTitanic/titanic-go/internal/location"
 	"github.com/osuTitanic/titanic-go/internal/performance"
@@ -108,6 +109,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		Redis:           redisClient,
 		Storage:         storage,
 		Email:           email.NewNoopEmail(cfg.EmailSender),
+		Officer:         discord.NewOfficerFromConfig(cfg),
 		Location:        geolocation,
 		Resources:       beatmapResources,
 		Repositories:    repositories,

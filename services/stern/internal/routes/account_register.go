@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/activity"
 	"github.com/osuTitanic/titanic-go/internal/authentication"
 	"github.com/osuTitanic/titanic-go/internal/constants"
+	"github.com/osuTitanic/titanic-go/internal/discord"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/internal/state"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
@@ -147,8 +149,8 @@ func AccountRegister(ctx *server.Context) {
 		RenderRegisterPage(ctx, "An error occured on the server side. Please try again!")
 		return
 	}
-	// TODO: Send officer webhook notification for new registrations
-	// TODO: Send user registration event through activity module when its available
+	notifyOfficerAboutRegistration(ctx, result.User)
+	broadcastRegistrationActivity(ctx, result.User)
 
 	if err := sendWelcomeEmail(ctx, result.Verification); err != nil {
 		ctx.Logger.Error("Failed to send registration verification email", "user_id", result.User.Id, "verification_id", result.Verification.Id, "error", err)
@@ -260,6 +262,50 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 		return nil, err
 	}
 	return result, nil
+}
+
+func notifyOfficerAboutRegistration(ctx *server.Context, user *schemas.User) {
+	if ctx.State == nil {
+		return
+	}
+
+	title := "New registration"
+	description := fmt.Sprintf(
+		"[%s](%s/u/%d) registered an account.",
+		user.Name,
+		strings.TrimRight(ctx.State.Config.OsuBaseUrl(), "/"),
+		user.Id,
+	)
+	timestamp := time.Now()
+	color := 0x66CCFF
+
+	embed := discord.Embed{
+		Title:       &title,
+		Description: &description,
+		Color:       &color,
+		Timestamp:   &timestamp,
+	}
+	embed.AddField("User ID", fmt.Sprintf("`%d`", user.Id), true)
+	embed.AddField("Username", fmt.Sprintf("`%s`", user.Name), true)
+	embed.AddField("Country", fmt.Sprintf("`%s`", user.Country), true)
+	embed.AddField("IP", fmt.Sprintf("||`%s`||", ctx.IP()), true)
+
+	if err := ctx.State.Officer.Call(discord.OfficerTagRegistration, "", embed); err != nil {
+		ctx.Logger.Warn("Failed to send registration officer notification", "user_id", user.Id, "error", err)
+	}
+}
+
+func broadcastRegistrationActivity(ctx *server.Context, user *schemas.User) {
+	err := activity.Submit(
+		ctx.State, user.Id, nil,
+		constants.ActivityUserRegistration,
+		map[string]any{"username": user.Name},
+		false, // should not be broadcasted, i.e. only shown in activity websocket
+		true,  // should not be stored in db
+	)
+	if err != nil {
+		ctx.Logger.Warn("Failed to record registration activity", "user_id", user.Id, "error", err)
+	}
 }
 
 func hasTooManyRegistrations(ctx *server.Context) (bool, error) {
