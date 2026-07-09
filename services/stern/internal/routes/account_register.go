@@ -296,9 +296,6 @@ func notifyOfficerAboutRegistration(ctx *server.Context, user *schemas.User) {
 }
 
 func broadcastRegistrationActivity(ctx *server.Context, user *schemas.User) {
-	if ctx.State == nil {
-		return
-	}
 	err := activity.Submit(
 		ctx.State, user.Id, nil,
 		constants.ActivityUserRegistration,

@@ -6,7 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osuTitanic/titanic-go/internal/activity"
 	"github.com/osuTitanic/titanic-go/internal/authentication"
+	"github.com/osuTitanic/titanic-go/internal/constants"
 	"github.com/osuTitanic/titanic-go/internal/schemas"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/server"
 	"github.com/osuTitanic/titanic-go/services/stern/internal/templates"
@@ -133,9 +135,26 @@ func AccountLogin(ctx *server.Context) {
 	if err := ctx.State.Logins.Create(login); err != nil {
 		ctx.Logger.Warn("Failed to record website login", "user_id", user.Id, "error", err)
 	}
+	broadcastLoginActivity(ctx, user)
 
 	ctx.CSRFToken = token
 	ctx.Redirect(http.StatusSeeOther, redirectTarget)
+}
+
+func broadcastLoginActivity(ctx *server.Context, user *schemas.User) {
+	err := activity.Submit(
+		ctx.State, user.Id, nil,
+		constants.ActivityUserLogin,
+		map[string]any{
+			"username": user.Name,
+			"location": "website",
+		},
+		false, // should not be broadcasted, i.e. only shown in activity websocket
+		true,  // should not be stored in db
+	)
+	if err != nil {
+		ctx.Logger.Warn("Failed to record website login activity", "user_id", user.Id, "error", err)
+	}
 }
 
 func resolveWebsiteSessionLifetime(remember bool) (time.Duration, bool) {
