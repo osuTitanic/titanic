@@ -129,6 +129,7 @@ jobs:
           echo "publish_enabled=$publish_enabled" >> "$GITHUB_OUTPUT"
 
   build:
+    if: ${{ github.event_name != 'push' || github.ref != 'refs/heads/main' }}
     needs:
       - test
       - integration-test
@@ -167,7 +168,8 @@ jobs:
   publish:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.prepare.outputs.publish_enabled == 'true' }}
     needs:
-      - build
+      - test
+      - integration-test
       - prepare
     runs-on: ubuntu-latest
 
