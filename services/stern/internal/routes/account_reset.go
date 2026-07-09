@@ -150,7 +150,7 @@ func completePasswordReset(ctx *server.Context, token string) {
 	err = ctx.State.DatabaseTransaction(func(repos *state.Repositories) error {
 		_, err := repos.Users.Update(
 			&schemas.User{Id: verification.UserId, Bcrypt: hashedPassword},
-			"bcrypt",
+			"pw",
 		)
 		if err != nil {
 			return err
