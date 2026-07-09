@@ -114,13 +114,17 @@ func (post *ForumPost) Render() string {
 func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
 	for line := range strings.SplitSeq(post.Content, "\n") {
 		content := strings.TrimSpace(line)
+		contentLower := strings.ToLower(content)
+		if strings.Contains(contentLower, "[heading]") || strings.Contains(contentLower, "[img]") {
+			continue
+		}
 		for _, regex := range ignoreTags {
 			content = regex.ReplaceAllString(content, "")
 		}
+		content = strings.TrimSpace(content)
 
-		content = strings.TrimSpace(bbcode.RenderHtml(content))
 		if content != "" {
-			return content
+			return bbcode.RenderHtml(content)
 		}
 	}
 	return ""
