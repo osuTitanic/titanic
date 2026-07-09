@@ -26,6 +26,13 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 		embedfs.NewLoader("template", web.Templates),
 		jet.DevelopmentMode(cfg.Reload),
 	)
+	staticFiles, err := web.StaticFS("/")
+	if err != nil {
+		return nil, err
+	}
+	staticURLs := newStaticUrlCache(staticFiles)
+
+	set.AddGlobalFunc("cachedUrl", staticURLs.cachedUrl)
 	set.AddGlobalFunc("formatNumber", formatNumber)
 	set.AddGlobalFunc("formatFloat", formatFloat)
 	set.AddGlobalFunc("formatDateShort", formatDateShort)
