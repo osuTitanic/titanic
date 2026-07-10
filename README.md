@@ -12,7 +12,7 @@ For more questions, feel free to join our [Discord server](https://discord.gg/qu
 
 ## Services
 
-This repository combines the docker deployment, database migrations, Python service submodules, and Go service rewrites. This makes the project a bit of a weird amalgamation of different languages. The goal is to have everything in Go eventually, but that is going to take some time since I am not use the "make no mistakes" approach here.
+This repository combines the docker deployment, database migrations, Python service submodules, and Go service rewrites. This makes the project a bit of a weird amalgamation of different languages. The goal is to have everything in Go eventually, but that is going to take some time since I am not using the "make no mistakes" approach here.
 
 - `services/bancho`: Bancho game server (Python)
 - `services/deck`: Score server (Python)
