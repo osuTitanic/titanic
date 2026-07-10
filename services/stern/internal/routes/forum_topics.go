@@ -132,6 +132,9 @@ func ForumTopicView(ctx *server.Context) {
 	topicLocked := topic.LockedAt != nil
 	showActions := authenticated && (!topicLocked || canBypassTopicLock)
 
+	kudosuTotals, latestKudosu := fetchKudosuForPosts(
+		postIds, linkedBeatmapset, ctx,
+	)
 	previews := make([]*templates.ForumPostPreview, 0, len(posts))
 	for _, post := range posts {
 		isOwn := authenticated && ctx.CurrentUser.Id == post.UserId
@@ -142,9 +145,6 @@ func ForumTopicView(ctx *server.Context) {
 		canDelete := (isOwn && canDeleteOwn) || (!isOwn && canDeleteOthers)
 		canEdit := (isOwn && canEditOwn) || (!isOwn && canEditOthers)
 
-		kudosuTotals, latestKudosu := fetchKudosuForPosts(
-			postIds, linkedBeatmapset, ctx,
-		)
 		preview := &templates.ForumPostPreview{
 			Post:         post,
 			Icon:         post.Icon,
