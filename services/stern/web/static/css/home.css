@@ -1,13 +1,20 @@
+html.ie5 .right-side,
 html.ie6 .right-side {
     margin-right: -60px;
 }
 
+html.ie5 .most-played,
 html.ie6 .most-played {
     width: 81.8%;
 }
 
+html.ie5 .chat-wrapper,
 html.ie6 .chat-wrapper {
     width: 182%;
+}
+
+html.ie5 .content-wrapper {
+    height: 890px;
 }
 
 .page h2 {

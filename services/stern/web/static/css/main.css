@@ -95,13 +95,20 @@ html[data-darkreader-mode="dynamic"] {
     background: linear-gradient(#2a314d, #000000 180px) !important;
 }
 
-/* ie is not a browser */
+/* Legacy IE layout fallbacks */
+
+html.ie5 .nav-element a,
+html.ie5 .nav-element a:visited {
+    /* IE5 includes horizontal padding in the declared width. */
+    width: 81px;
+}
 
 html.ie6 .nav-element a,
 html.ie6 .nav-element a:visited {
     width: 35px;
 }
 
+html.ie5 .nav-list,
 html.ie6 .nav-list {
     margin-left: 85px;
 }
@@ -110,6 +117,63 @@ html.ie6 .bancho-stats {
     width: 220px;
     top: -17px;
     right: -1px;
+}
+
+html.ie5 .bancho-stats {
+    width: 235px;
+    top: -17px;
+    right: -1px;
+}
+
+html.ie5 body {
+    text-align: center;
+}
+
+html.ie5 .main {
+    text-align: left;
+}
+
+html.ie5 .nav {
+    width: 680px;
+}
+
+html.ie5 .nav-list {
+    width: 530px;
+}
+
+html.ie5 .content {
+    height: 500px;
+}
+
+html.ie5 .gradient {
+    background: #e8d2ff;
+}
+
+html.ie5 .login-container,
+html.ie5 .post-buttons,
+html.ie5 .post-buttons-large,
+html.ie5 .bbcode-toolbar {
+    display: block;
+}
+
+html.ie5 .login-container {
+    line-height: 18px;
+}
+
+html.ie5 .bbcode-toolbar {
+    text-align: center;
+}
+
+html.ie5 .login-button {
+    background-color: #5b5399;
+    border: 1px solid #8f8f9d;
+    color: white;
+    padding: 3px 8px;
+}
+
+html.ie5 .login-form .login-button {
+    height: 25px;
+    width: 90px;
 }
 
 input:focus {

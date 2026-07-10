@@ -60,6 +60,7 @@
     text-align: left;
 }
 
+.ie5 .client img,
 .ie6 .client img {
     height: 200px;
 }
