@@ -1,12 +1,15 @@
 package server
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"log/slog"
+	"net"
 	"net/http"
 	"path"
 	"strconv"
@@ -338,12 +341,68 @@ func (rc *ResponseContext) Header() http.Header {
 }
 
 func (rc *ResponseContext) Write(b []byte) (int, error) {
+	rc.WriteImplicitStatus()
 	return rc.w.Write(b)
 }
 
 func (rc *ResponseContext) WriteHeader(status int) {
+	// "Informational" responses do not contain the actual response status
+	if status >= 100 && status < 200 && status != http.StatusSwitchingProtocols {
+		rc.w.WriteHeader(status)
+		return
+	}
+	if rc.s != 0 {
+		return
+	}
 	rc.s = status
 	rc.w.WriteHeader(status)
+}
+
+func (rc *ResponseContext) Unwrap() http.ResponseWriter {
+	return rc.w
+}
+
+func (rc *ResponseContext) Flush() {
+	rc.FlushError()
+}
+
+func (rc *ResponseContext) FlushError() error {
+	rc.WriteImplicitStatus()
+	return http.NewResponseController(rc.w).Flush()
+}
+
+func (rc *ResponseContext) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	return http.NewResponseController(rc.w).Hijack()
+}
+
+func (rc *ResponseContext) Push(target string, options *http.PushOptions) error {
+	writer := rc.w
+	for {
+		if pusher, ok := writer.(http.Pusher); ok {
+			return pusher.Push(target, options)
+		}
+		unwrapper, ok := writer.(interface{ Unwrap() http.ResponseWriter })
+		if !ok {
+			return http.ErrNotSupported
+		}
+		writer = unwrapper.Unwrap()
+	}
+}
+
+func (rc *ResponseContext) ReadFrom(reader io.Reader) (int64, error) {
+	rc.WriteImplicitStatus()
+	if readerFrom, ok := rc.w.(io.ReaderFrom); ok {
+		return readerFrom.ReadFrom(reader)
+	}
+
+	// Hide ReadFrom from io.Copy to avoid recursively calling this method.
+	return io.Copy(struct{ io.Writer }{rc}, reader)
+}
+
+func (rc *ResponseContext) WriteImplicitStatus() {
+	if rc.s == 0 {
+		rc.s = http.StatusOK
+	}
 }
 
 func (rc *ResponseContext) Status() int {
