@@ -182,10 +182,11 @@ services:
       migrations:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
-      interval: 30s
+      test: ["CMD", "/app/stern", "healthcheck", "http://127.0.0.1:80/"]
+      start_period: 30s
+      interval: 5m
       timeout: 5s
-      retries: 10
+      retries: 5
 
   jobs:
     image: ghcr.io/osutitanic/jobs:latest

@@ -166,6 +166,11 @@ func InitializeStaticRoutes(server *server.Server) {
 }
 
 func main() {
+	// Run a healthcheck if passed as an argument, e.g. for docker
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		os.Exit(runHealthcheck(os.Args[2:]))
+	}
+
 	app, err := state.NewState(".env")
 	if err != nil {
 		slog.Error("Failed to initialize application", "error", err)
