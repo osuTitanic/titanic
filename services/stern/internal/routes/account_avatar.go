@@ -110,9 +110,17 @@ func AccountAvatarUpdate(ctx *server.Context) {
 }
 
 func invalidateAvatarCaches(ctx *server.Context, userId int) {
-	keys := []string{fmt.Sprintf("bancho:avatar_hash:%d", userId)}
+	keys := []string{
+		fmt.Sprintf("bancho:avatar_hash:%d", userId),
+		fmt.Sprintf("avatar:%d", userId),
+	}
 	for size := range allowedAvatarSizes {
 		keys = append(keys, fmt.Sprintf("avatar:%d:%d", userId, size))
 	}
-	ctx.State.Redis.Del(context.Background(), keys...)
+
+	for _, key := range keys {
+		if err := ctx.State.Redis.Del(context.Background(), key).Err(); err != nil {
+			ctx.Logger.Warn("Failed to invalidate avatar cache", "user", userId, "key", key, "error", err)
+		}
+	}
 }
