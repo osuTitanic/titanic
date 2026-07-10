@@ -248,13 +248,15 @@ var forumDraftSave = null;
 function setupDraftAutosave() {
     // Periodically save forum post drafts in the background, so users don't lose
     // progress if they navigate away or something dies
-    var form = document.querySelector("form[data-draft-url]");
+    var forms = $("form[data-draft-url]");
+    var form = forms.length > 0 ? forms[0] : null;
     if (!form) {
         return;
     }
 
     var draftUrl = form.getAttribute("data-draft-url");
-    var textarea = form.querySelector("textarea[name='bbcode']");
+    var textareas = $(form).find("textarea[name='bbcode']");
+    var textarea = textareas.length > 0 ? textareas[0] : null;
     if (!draftUrl || !textarea) {
         return;
     }

@@ -562,10 +562,14 @@ function convertFormToJson(formElement) {
 function loadBBCodePreview(element) {
     var parentElement = $(element).parent()[0];
     var bbcodeWrapper = $(parentElement).parent()[0];
-    var bbcodeEditor = bbcodeWrapper.querySelector("textarea");
+    var bbcodeEditor = $(bbcodeWrapper).find("textarea")[0];
+
+    if (!bbcodeEditor) {
+        return false;
+    }
 
     // Remove old previews
-    var previews = document.querySelectorAll(".bbcode-preview");
+    var previews = $(".bbcode-preview");
     for (var i = 0; i < previews.length; i++) {
         previews[i].parentNode.removeChild(previews[i]);
     }
@@ -630,15 +634,10 @@ function applyCsrfToForms() {
 }
 
 function renderTimeagoElements() {
-    var times = [];
-    if (document.getElementsByClassName) {
-        times = document.getElementsByClassName("timeago");
-    } else if (document.querySelectorAll) {
-        times = document.querySelectorAll(".timeago");
-    }
+    var times = $(".timeago");
 
     for (var i = 0; i < times.length; i++) {
-        times[i].innerText = jQuery.timeago(times[i].getAttribute("datetime"));
+        $(times[i]).text(jQuery.timeago(times[i].getAttribute("datetime")));
     }
 }
 

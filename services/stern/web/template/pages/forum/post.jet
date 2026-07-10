@@ -27,9 +27,10 @@
 <br>
 {* Ctrl+Enter -> Submit forum post *}
 <script>
-    document.addEventListener('keydown', function(event) {
-        if (event.ctrlKey && event.key === 'Enter') {
-            var submitButton = document.querySelector('.post-buttons input[type="submit"]');
+    $(document).on("keydown", function(event) {
+        var keyCode = event.which || event.keyCode;
+        if (event.ctrlKey && keyCode === 13) {
+            var submitButton = $('.post-buttons input[type="submit"]')[0];
             if (submitButton) {
                 submitButton.click();
                 submitButton.disabled = true;

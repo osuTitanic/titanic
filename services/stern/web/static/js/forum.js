@@ -4,7 +4,7 @@ function addSubscription(topicId) {
         button.onclick = function () {
             removeSubscription(topicId);
         };
-        button.innerText = "Unsubscribe topic";
+        $(button).text("Unsubscribe topic");
     });
     return false;
 }
@@ -15,7 +15,7 @@ function removeSubscription(topicId) {
         button.onclick = function () {
             addSubscription(topicId);
         };
-        button.innerText = "Subscribe topic";
+        $(button).text("Subscribe topic");
     });
     return false;
 }
@@ -26,7 +26,7 @@ function addBookmark(topicId) {
         button.onclick = function () {
             removeBookmark(topicId);
         };
-        button.innerText = "Remove Bookmark";
+        $(button).text("Remove Bookmark");
     });
     return false;
 }
@@ -37,7 +37,7 @@ function removeBookmark(topicId) {
         button.onclick = function () {
             addBookmark(topicId);
         };
-        button.innerText = "Bookmark topic";
+        $(button).text("Bookmark topic");
     });
     return false;
 }
@@ -55,10 +55,10 @@ function deletePost(postId) {
             var post = document.getElementById("post-" + postId);
             post.innerHTML = "[ Deleted ]";
 
-            var buttons = post.parentElement.getElementsByClassName("post-buttons");
+            var buttons = $(post).parent().find(".post-buttons");
             if (buttons) {
                 for (var i = 0; i < buttons.length; i++) {
-                    buttons[i].remove();
+                    buttons[i].parentNode.removeChild(buttons[i]);
                 }
             }
         },
@@ -84,7 +84,7 @@ function giveKudos(postId, beatmapsetId) {
                 kudosuActions[0].parentNode.removeChild(kudosuActions[0]);
             }
 
-            kudosuStatus.innerText = "Earned " + data.amount + " kudosu.";
+            $(kudosuStatus).text("Earned " + data.amount + " kudosu.");
             kudosuStatus.style.color = "green";
         },
         function (xhr) {
@@ -108,7 +108,7 @@ function revokeKudos(postId, beatmapsetId) {
                 kudosuActions[0].parentNode.removeChild(kudosuActions[0]);
             }
 
-            kudosuStatus.innerText = "Successfully revoked kudosu.";
+            $(kudosuStatus).text("Successfully revoked kudosu.");
             kudosuStatus.style.color = "red";
         },
         function (xhr) {
@@ -132,7 +132,7 @@ function resetKudos(postId, beatmapsetId) {
                 kudosuActions[0].parentNode.removeChild(kudosuActions[0]);
             }
 
-            kudosuStatus.innerText = "Successfully reset kudosu.";
+            $(kudosuStatus).text("Successfully reset kudosu.");
             kudosuStatus.style.color = "blue";
         },
         function (xhr) {
@@ -153,16 +153,18 @@ function jumpToPage() {
     }
 }
 
-$(document).on("keydown", document, function (event) {
-    if (event.ctrlKey && event.key === "Enter") {
-        var form = document.querySelector(".quick-reply");
+$(document).on("keydown", function (event) {
+    var keyCode = event.which || event.keyCode;
+
+    if (event.ctrlKey && keyCode === 13) {
+        var form = $(".quick-reply")[0];
         if (!form) return;
 
-        var textarea = form.querySelector("textarea");
+        var textarea = $(form).find("textarea")[0];
         if (!textarea) return;
 
         // Focus textarea if no message was written
-        if (textarea.value.trim() === "") {
+        if (trimString(textarea.value) === "") {
             textarea.focus();
             return;
         }
