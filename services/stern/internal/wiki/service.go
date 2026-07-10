@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/osuTitanic/titanic/internal/caching"
 	"github.com/osuTitanic/titanic/internal/config"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
@@ -23,7 +23,7 @@ type Service struct {
 	logger *slog.Logger
 	client *http.Client
 	urls   URLs
-	cache  MarkdownCache
+	cache  *caching.Cache[string, CachedMarkdown]
 }
 
 type PageResult struct {
@@ -34,12 +34,6 @@ type PageResult struct {
 type CachedMarkdown struct {
 	content string
 	found   bool
-	expires time.Time
-}
-
-type MarkdownCache struct {
-	mutex   sync.Mutex
-	entries map[string]CachedMarkdown
 }
 
 func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logger) *Service {
@@ -51,11 +45,8 @@ func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logg
 		repos:  repos,
 		logger: logger.With("component", "wiki"),
 		client: &http.Client{Timeout: 15 * time.Second},
+		cache:  caching.New[string, CachedMarkdown](markdownCacheTTL),
 		urls:   BuildURLs(cfg),
-		cache: MarkdownCache{
-			entries: make(map[string]CachedMarkdown),
-			mutex:   sync.Mutex{},
-		},
 	}
 }
 
@@ -143,30 +134,11 @@ func (s *Service) FetchPage(path, language string) (*PageResult, error) {
 
 func (s *Service) FetchMarkdownCached(path, language string) (string, bool) {
 	cacheKey := s.MarkdownUrl(path, language)
-	now := time.Now()
-
-	// Check the cache first & if the entry has expired
-	s.cache.mutex.Lock()
-	entry, ok := s.cache.entries[cacheKey]
-	if ok && now.Before(entry.expires) {
-		s.cache.mutex.Unlock()
-		return entry.content, entry.found
-	}
-	s.cache.mutex.Unlock()
-
-	// Entry was not found or has expired -> fetch the markdown from the source
-	content, found := s.FetchMarkdown(path, language)
-
-	// Persist the result in the cache
-	s.cache.mutex.Lock()
-	s.cache.entries[cacheKey] = CachedMarkdown{
-		content: content,
-		found:   found,
-		expires: now.Add(markdownCacheTTL),
-	}
-	s.cache.mutex.Unlock()
-
-	return content, found
+	entry := s.cache.GetOrCompute(cacheKey, func() CachedMarkdown {
+		content, found := s.FetchMarkdown(path, language)
+		return CachedMarkdown{content: content, found: found}
+	})
+	return entry.content, entry.found
 }
 
 func (s *Service) FetchMarkdown(path, language string) (string, bool) {
