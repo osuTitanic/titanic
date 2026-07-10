@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/routes"
@@ -188,8 +191,14 @@ func main() {
 	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
 	state.RegisterExtension(app, "wiki", wikiService)
 
-	server := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
-	InitializeWebRoutes(server)
-	InitializeStaticRoutes(server)
-	server.Serve()
+	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
+	InitializeWebRoutes(stern)
+	InitializeStaticRoutes(stern)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := stern.Serve(ctx); err != nil {
+		slog.Error("HTTP server stopped unexpectedly", "error", err)
+	}
 }

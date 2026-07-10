@@ -157,6 +157,7 @@ services:
       context: .
       dockerfile: ./services/stern/Dockerfile
     restart: unless-stopped
+    stop_grace_period: 35s
     env_file:
       - ".env"
     environment:

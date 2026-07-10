@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,6 +19,12 @@ import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
+)
+
+const (
+	httpReadHeaderTimeout = 5 * time.Second
+	httpIdleTimeout       = 2 * time.Minute
+	httpShutdownTimeout   = 30 * time.Second
 )
 
 // Server is the main struct that holds the state for an http server.
@@ -272,24 +279,51 @@ func (ctx *Context) RenderJson(status int, data any) error {
 	return err
 }
 
-// Serve starts the HTTP server and listens for incoming requests.
-func (server *Server) Serve() {
-	bind := fmt.Sprintf(
-		"%s:%d",
-		server.Host,
-		server.Port,
-	)
+// Serve starts the server and gracefully shuts it down when ctx is cancelled.
+func (server *Server) Serve(ctx context.Context) error {
+	httpServer := &http.Server{
+		Addr:              fmt.Sprintf("%s:%d", server.Host, server.Port),
+		Handler:           server.LoggingMiddleware(server.Router),
+		ReadHeaderTimeout: httpReadHeaderTimeout,
+		IdleTimeout:       httpIdleTimeout,
+	}
 	server.Logger.Info(
 		"Listening for requests",
 		"host", server.Host,
 		"port", server.Port,
 	)
 
-	err := http.ListenAndServe(bind, server.LoggingMiddleware(server.Router))
-	if err != nil {
-		server.Logger.Error("Failed to start server", "error", err)
-		return
+	serveErrors := make(chan error, 1)
+	go func() {
+		serveErrors <- httpServer.ListenAndServe()
+	}()
+
+	select {
+	case err := <-serveErrors:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return err
+	case <-ctx.Done():
+		server.Logger.Info("Shutting down server")
 	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
+	defer cancel()
+
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		// Shutdown leaves active connections open when its deadline expires
+		// -> close them before returning
+		httpServer.Close()
+		<-serveErrors
+		return fmt.Errorf("gracefully shut down HTTP server: %w", err)
+	}
+
+	err := <-serveErrors
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
 }
 
 // ResponseContext is a wrapper around http.ResponseWriter that
