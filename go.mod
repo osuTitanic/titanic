@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/CloudyKit/jet/v6 v6.3.2
-	github.com/Lekuruu/bbgo v0.0.0-20260514150256-b3a9835059ee
+	github.com/Lekuruu/bbgo v0.0.0-20260710164313-591de6889cb1
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/caarlos0/env/v11 v11.4.1

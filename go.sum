@@ -9,8 +9,8 @@ github.com/CloudyKit/fastprinter v0.0.0-20251202014920-1725d2651bd4 h1:DQ1+lDdBv
 github.com/CloudyKit/fastprinter v0.0.0-20251202014920-1725d2651bd4/go.mod h1:eauGmjfZG874MOAEPVeqg21mZCbTOLW+tFe8F7NpfnY=
 github.com/CloudyKit/jet/v6 v6.3.2 h1:BPaX0lnXTZ9TniICiiK/0iJqzeGJ2ibvB4DjAqLMBSM=
 github.com/CloudyKit/jet/v6 v6.3.2/go.mod h1:lf8ksdNsxZt7/yH/3n4vJQWA9RUq4wpaHtArHhGVMOw=
-github.com/Lekuruu/bbgo v0.0.0-20260514150256-b3a9835059ee h1:qicb1h69z/Ud6npokTmqG05FU91nCZqMfQ4caYuyUik=
-github.com/Lekuruu/bbgo v0.0.0-20260514150256-b3a9835059ee/go.mod h1:BRKU1vxbnPtJBr+gGHQONX0DF7QwiFVCQstnQ0TC3d8=
+github.com/Lekuruu/bbgo v0.0.0-20260710164313-591de6889cb1 h1:dO8JwPxqpA5WPsZLfsXhPAhy6TM98zC2k4M00RaSOLk=
+github.com/Lekuruu/bbgo v0.0.0-20260710164313-591de6889cb1/go.mod h1:BRKU1vxbnPtJBr+gGHQONX0DF7QwiFVCQstnQ0TC3d8=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735 h1:AwbABgwDVM0koi2RBrNC1/YVSGkgEsROlmpg1wQaAMQ=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735/go.mod h1:rUO3pVDrDhmuYLR+TrHig7IadSJwO4he5Q9904z5Mnc=
 github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034 h1:XgWmskBCaNGxp7KWMQPsB0GmS4as1hvsXfUO98IzLtk=
