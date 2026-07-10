@@ -1,3 +1,18 @@
+// Some browsers (cough cough IE) don't have a console object
+if (!window.console) {
+    window.console = {};
+}
+
+(function () {
+    var methods = ["log", "info", "warn", "error", "debug"];
+
+    for (var i = 0; i < methods.length; i++) {
+        if (!window.console[methods[i]]) {
+            window.console[methods[i]] = function () {};
+        }
+    }
+})();
+
 var Mods = {
     NoMod: 0,
     NoFail: 1 << 0,
@@ -424,7 +439,7 @@ function performApiRequest(method, path, data, callbackSuccess, callbackError) {
     var contentType = null;
     var requestData = data;
 
-    if (data instanceof FormData) {
+    if (typeof FormData !== "undefined" && data instanceof FormData) {
         contentType = null;
         requestData = data;
     } else if (typeof data === "object" && data !== null) {
