@@ -40,7 +40,6 @@ func NewEngine(cfg *config.Config) (*Engine, error) {
 	set.AddGlobalFunc("floor", floor)
 	set.AddGlobalFunc("countryName", countryName)
 	set.AddGlobalFunc("homeRenderNewsText", homeRenderNewsText)
-	set.AddGlobalFunc("homeIterateMostPlayed", homeIterateMostPlayed)
 	set.AddGlobalFunc("beatmapDifficultySort", beatmapDifficultySort)
 	set.AddGlobalFunc("beatmapGenres", beatmapGenres)
 	set.AddGlobalFunc("beatmapLanguages", beatmapLanguages)

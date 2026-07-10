@@ -65,7 +65,12 @@ type HomeView struct {
 	DefaultView
 	News               []*schemas.ForumPost
 	ChatMessages       []*schemas.Message
-	MostPlayedBeatmaps map[int]*schemas.Beatmap
+	MostPlayedBeatmaps []BeatmapWithCountItem
+}
+
+type BeatmapWithCountItem struct {
+	Beatmap *schemas.Beatmap
+	Count   int
 }
 
 type LoginView struct {

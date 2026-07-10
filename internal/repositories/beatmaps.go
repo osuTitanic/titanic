@@ -12,6 +12,11 @@ type BeatmapRepository struct {
 	db *gorm.DB
 }
 
+type BeatmapPlayCount struct {
+	Beatmap *schemas.Beatmap
+	Count   int
+}
+
 func NewBeatmapRepository(db *gorm.DB) *BeatmapRepository {
 	return &BeatmapRepository{db: db}
 }
@@ -86,19 +91,18 @@ func (r *BeatmapRepository) GetCountGroupedByStatus(mode int) (map[int]int, erro
 	return counts, err
 }
 
-func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) (map[int]*schemas.Beatmap, error) {
-	type result struct {
+func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, preload ...string) ([]BeatmapPlayCount, error) {
+	var results []struct {
 		BeatmapId int
 		PlayCount int
 	}
-
-	var results []result
 	err := r.db.Model(&schemas.Score{}).
 		Select("scores.beatmap_id, COUNT(scores.id) AS play_count").
 		Where("scores.submitted_at >= ?", since).
 		Where("scores.hidden = ?", false).
 		Group("scores.beatmap_id").
 		Order("play_count DESC").
+		Order("scores.beatmap_id ASC").
 		Limit(limit).
 		Scan(&results).Error
 	if err != nil {
@@ -120,13 +124,16 @@ func (r *BeatmapRepository) FetchMostPlayedSince(since time.Time, limit int, pre
 		beatmapsById[beatmap.Id] = beatmap
 	}
 
-	mostPlayed := make(map[int]*schemas.Beatmap, len(results))
+	mostPlayed := make([]BeatmapPlayCount, 0, len(results))
 	for _, result := range results {
 		beatmap, ok := beatmapsById[result.BeatmapId]
 		if !ok {
 			continue
 		}
-		mostPlayed[result.PlayCount] = beatmap
+		mostPlayed = append(mostPlayed, BeatmapPlayCount{
+			Beatmap: beatmap,
+			Count:   result.PlayCount,
+		})
 	}
 
 	return mostPlayed, nil

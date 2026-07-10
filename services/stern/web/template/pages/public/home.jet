@@ -170,7 +170,7 @@
             </tr>
         </thead>
         <tbody>
-        {{ range i, item := homeIterateMostPlayed(.) }}
+        {{ range i, item := . }}
             <tr class="{{ if i % 2 == 0 }}row-dark{{ else }}row-light{{ end }}">
                 <td>{{ formatNumber(item.Count) }}</td>
                 <td>
