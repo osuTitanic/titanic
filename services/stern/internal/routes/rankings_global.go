@@ -74,6 +74,16 @@ func RankingsGlobal(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
+	totalBeatmaps := 0
+
+	if rankingType == constants.RankingTypeClears {
+		totalBeatmaps, err = resolveTotalBeatmaps(ctx, mode)
+		if err != nil {
+			ctx.Logger.Error("Failed to resolve total ranked beatmaps", "error", err)
+			InternalServerError(ctx)
+			return
+		}
+	}
 
 	pagination := templates.NewPagination(templates.PaginationOptions{
 		Path:        fmt.Sprintf("/rankings/%s/%s", mode.Alias(), rankingTypeString),
@@ -83,16 +93,17 @@ func RankingsGlobal(ctx *server.Context) {
 		PageSize:    RankingsEntriesPerPage,
 	})
 	view := templates.RankingsView{
-		DefaultView:  buildDefaultView(ctx),
-		Pagination:   pagination,
-		CountryName:  countryName,
-		Country:      strings.ToLower(country),
-		Location:     location,
-		Type:         rankingType,
-		Mode:         mode,
-		TopCountries: topCountries,
-		Entries:      entries,
-		JumpTo:       jumpTo,
+		DefaultView:   buildDefaultView(ctx),
+		Pagination:    pagination,
+		CountryName:   countryName,
+		Country:       strings.ToLower(country),
+		Location:      location,
+		Type:          rankingType,
+		Mode:          mode,
+		TopCountries:  topCountries,
+		Entries:       entries,
+		JumpTo:        jumpTo,
+		TotalBeatmaps: totalBeatmaps,
 	}
 	ctx.RenderTemplate(200, "pages/public/rankings", view)
 }
@@ -230,6 +241,42 @@ func resolveJumpPage(rankFor func(userId int) (int, error), userId int, fallback
 		return fallbackPage, nil
 	}
 	return (rank-1)/RankingsEntriesPerPage + 1, nil
+}
+
+func resolveTotalBeatmaps(ctx *server.Context, mode constants.Mode) (int, error) {
+	statuses := []constants.BeatmapStatus{
+		constants.BeatmapStatusRanked,
+		constants.BeatmapStatusApproved,
+		constants.BeatmapStatusQualified,
+		constants.BeatmapStatusLoved,
+	}
+	keys := make([]string, len(statuses))
+	for i, status := range statuses {
+		keys[i] = fmt.Sprintf("bancho:totalbeatmaps:%d:%d", mode.Value(), status.Value())
+	}
+
+	counts, err := ctx.State.Redis.MGet(ctx.Request.Context(), keys...).Result()
+	if err != nil {
+		return 0, err
+	}
+
+	total := 0
+	for i, value := range counts {
+		if value == nil {
+			continue
+		}
+
+		valueString, ok := value.(string)
+		if !ok {
+			return 0, fmt.Errorf("unexpected value for %s", keys[i])
+		}
+		count, ok := parseInt(valueString)
+		if !ok {
+			return 0, fmt.Errorf("invalid value for %s: %q", keys[i], valueString)
+		}
+		total += count
+	}
+	return total, nil
 }
 
 func filterQuery(query url.Values, exclude ...string) url.Values {

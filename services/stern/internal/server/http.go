@@ -395,7 +395,7 @@ func (rc *ResponseContext) ReadFrom(reader io.Reader) (int64, error) {
 		return readerFrom.ReadFrom(reader)
 	}
 
-	// Hide ReadFrom from io.Copy to avoid recursively calling this method.
+	// Hide ReadFrom from io.Copy to avoid recursively calling this method
 	return io.Copy(struct{ io.Writer }{rc}, reader)
 }
 
