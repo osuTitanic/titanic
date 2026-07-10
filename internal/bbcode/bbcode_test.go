@@ -12,6 +12,7 @@ func TestRenderHtml(t *testing.T) {
 		{"code is raw", "[code][b]hello[/b][/code]", `<b>Code:</b><br><div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">[b]hello[/b]</div>`},
 		{"url value", "[url=example.com]Example[/url]", `<a href="http://example.com" target="_blank">Example</a>`},
 		{"url body", "[url]https://example.com[/url]", `<a href="https://example.com" target="_blank">https://example.com</a>`},
+		{"url value with apostrophe", "[url=http://osu.titanic.sh/web/maps/009%20Sound%20System%20-%20Trinity%20(Cut%20Version)%20(Mahogany)%20%5bAdi's%20Nostalgia%5d.osu]Adi's Nostalgia[/url]", `<a href="http://osu.titanic.sh/web/maps/009%20Sound%20System%20-%20Trinity%20(Cut%20Version)%20(Mahogany)%20%5bAdi&#39;s%20Nostalgia%5d.osu" target="_blank">Adi&#39;s Nostalgia</a>`},
 		{"email", "[email]test@example.com[/email]", `<a href="mailto:test@example.com">test@example.com</a>`},
 		{"invalid email", "[email]invalid[/email]", "invalid"},
 		{"spoiler", "[spoiler]spoiler content[/spoiler]", `<span style="background-color: black;">spoiler content</span>`},
