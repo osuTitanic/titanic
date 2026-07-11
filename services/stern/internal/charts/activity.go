@@ -124,7 +124,7 @@ func peakDot(x float64, y float64) chart.ContinuousSeries {
 func peakLabel(x float64, y float64, peak float64) chart.AnnotationSeries {
 	return chart.AnnotationSeries{
 		Annotations: []chart.Value2{{
-			XValue: x,
+			XValue: min(x, 1150),
 			YValue: max(y, 1),
 			Label:  fmt.Sprintf("Peak: %d users", int(peak)),
 			Style: chart.Style{
