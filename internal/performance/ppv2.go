@@ -12,8 +12,15 @@ type IPPv2Service interface {
 }
 
 type DifficultyAttributes struct {
+	Mode       constants.Mode
+	IsConvert  bool
 	StarRating float64
-	// TODO: Add more stuff
+	Aim        float64
+	Speed      float64
+	Flashlight float64
+	Stamina    float64
+	Rhythm     float64
+	Color      float64
+	Reading    float64
+	MaxCombo   uint32
 }
-
-// TODO: Find pp systems that work with golang & implement them
