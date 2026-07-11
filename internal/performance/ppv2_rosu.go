@@ -33,8 +33,6 @@ func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (floa
 	defer mods.Free()
 
 	calculator := beatmap.Calculator()
-	defer calculator.Free()
-
 	calculator.
 		Mods(mods).
 		Lazer(false).
@@ -62,12 +60,14 @@ func (service *PPv2ServiceRosu) CalculateDifficulty(beatmapId int, mode constant
 	}
 	defer beatmap.Free()
 
+	if !beatmap.Safe() {
+		return nil, fmt.Errorf("calculate difficulty for beatmap %d: beatmap is too suspicious", beatmapId)
+	}
+
 	rosuMods := rosu.ModsFromBits(uint32(mods))
 	defer rosuMods.Free()
 
 	calculator := rosu.NewDifficulty()
-	defer calculator.Free()
-
 	attributes, err := calculator.
 		Mods(rosuMods).
 		Lazer(false).
