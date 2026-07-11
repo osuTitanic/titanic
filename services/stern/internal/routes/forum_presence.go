@@ -65,8 +65,8 @@ func forumGetActiveUsers(ctx *server.Context, forumId int) []int {
 	// Then, fetch the remaining users that have been active in the last 5 minutes
 	members, err := ctx.State.Redis.ZRangeArgs(context, redis.ZRangeArgs{
 		Key:     key,
-		Start:   fmt.Sprintf("(%d", cutoff),
-		Stop:    "+inf",
+		Start:   "+inf",
+		Stop:    fmt.Sprintf("(%d", cutoff),
 		ByScore: true,
 		Rev:     true,
 	}).Result()
