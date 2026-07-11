@@ -8,6 +8,7 @@ require (
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/caarlos0/env/v11 v11.4.1
+	github.com/calemy/rosu-pp-go v0.0.0-20260711105005-990597814e4c
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.2.1
@@ -28,7 +29,6 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/calemy/rosu-pp-go v0.0.0-20260711050121-f001e40281b7 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect

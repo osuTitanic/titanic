@@ -25,6 +25,8 @@ github.com/caarlos0/env/v11 v11.4.1 h1:fYwH0sWEsBSMPG7t4e/PEfTFzrWrpjyygXyUnWiSw
 github.com/caarlos0/env/v11 v11.4.1/go.mod h1:qupehSf/Y0TUTsxKywqRt/vJjN5nz6vauiYEUUr8P4U=
 github.com/calemy/rosu-pp-go v0.0.0-20260711050121-f001e40281b7 h1:PaS92AXA6ngvCB33BFQoBukZ8TOqxL4IuXBjFruSMTg=
 github.com/calemy/rosu-pp-go v0.0.0-20260711050121-f001e40281b7/go.mod h1:92vrVwg5vdw7LonQ9KEiLUuU8Iq30QYtO0DS4/pzTvs=
+github.com/calemy/rosu-pp-go v0.0.0-20260711105005-990597814e4c h1:984pq6uh34frak0fzCCv+q6RmiOYiwPN8T2gMPjMZU0=
+github.com/calemy/rosu-pp-go v0.0.0-20260711105005-990597814e4c/go.mod h1:92vrVwg5vdw7LonQ9KEiLUuU8Iq30QYtO0DS4/pzTvs=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
