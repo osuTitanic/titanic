@@ -25,6 +25,25 @@
     {{ yield forumTopicActiveUsers() }}
 </div>
 <script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
+<script src="{{ cachedUrl("/js/bat.js") }}" defer></script>
+<script>
+function linkTopicToBeatmap() {
+    var beatmapsetId = prompt("Enter the beatmapset ID to link this topic to:");
+    if (beatmapsetId === null || isNaN(beatmapsetId))
+        return;
+
+    linkBeatmapsetToTopic(beatmapsetId, {{ .Topic.Id }});
+}
+
+{{ if .Beatmapset }}
+function unlinkTopicFromBeatmap() {
+    if (!confirm("Are you sure you want to unlink the beatmapset from this topic?"))
+        return;
+
+    unlinkBeatmapsetFromTopic({{ .Beatmapset.Id }});
+}
+{{ end }}
+</script>
 {{ end }}
 
 {{ block forumTopicLocation() }}
