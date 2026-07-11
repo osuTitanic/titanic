@@ -181,10 +181,10 @@ function unlinkTopicFromBeatmap() {
                     <a class="button-red" onclick="deletePost({{ .Post.Id }})">Delete</a>
                     {{ end }}
                     {{ if .CanEdit }}
-                    <a class="button-blue" href="./post?action=edit&id={{ .Post.Id }}">Edit</a>
+                    <a class="button-blue" href="/forum/{{ .Post.ForumId }}/t/{{ .Post.TopicId }}/post?action=edit&id={{ .Post.Id }}">Edit</a>
                     {{ end }}
                     {{ if .CanQuote }}
-                    <a class="button-blue" href="./post?action=quote&id={{ .Post.Id }}">Quote</a>
+                    <a class="button-blue" href="/forum/{{ .Post.ForumId }}/t/{{ .Post.TopicId }}/post?action=quote&id={{ .Post.Id }}">Quote</a>
                     {{ end }}
                 </div>
                 {{ end }}
