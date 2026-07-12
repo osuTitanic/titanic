@@ -18,10 +18,15 @@ import (
 
 type PPv2ServiceNative struct {
 	provider resources.BeatmapResourceProvider
+	cache    PPv2CacheLayer
 }
 
 func NewPPv2Service(provider resources.BeatmapResourceProvider) (IPPv2Service, error) {
 	return &PPv2ServiceNative{provider: provider}, nil
+}
+
+func (service *PPv2ServiceNative) SetCacheLayer(cache PPv2CacheLayer) {
+	service.cache = cache
 }
 
 func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (float64, error) {

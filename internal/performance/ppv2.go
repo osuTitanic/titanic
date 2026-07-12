@@ -9,6 +9,7 @@ import (
 type IPPv2Service interface {
 	CalculatePerformance(score *schemas.Score) (float64, error)
 	CalculateDifficulty(beatmapId int, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error)
+	SetCacheLayer(cache PPv2CacheLayer)
 }
 
 type DifficultyAttributes struct {

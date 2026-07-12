@@ -121,6 +121,11 @@ func (service *PPv2ServiceRosu) LoadBeatmap(beatmapId int) (*rosu.Beatmap, error
 	return beatmap, nil
 }
 
+func (service *PPv2ServiceRosu) SetCacheLayer(cache PPv2CacheLayer) {
+	// TODO: Add difficulty attributes caching for rosu-pp
+	// 		 This is perhaps not even needed due to how fast rosu-pp is in general
+}
+
 func toUint32(value int) uint32 {
 	if value <= 0 {
 		return 0
