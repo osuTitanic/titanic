@@ -12,8 +12,8 @@ import (
 
 type PPv2ServiceDummy struct{}
 
-func NewPPv2Service(provider resources.BeatmapResourceProvider) (IPPv2Service, error) {
-	return &PPv2ServiceDummy{}, nil
+func NewPPv2Service(provider resources.BeatmapResourceProvider) IPPv2Service {
+	return &PPv2ServiceDummy{}
 }
 
 func (service *PPv2ServiceDummy) CalculatePerformance(score *schemas.Score) (float64, error) {

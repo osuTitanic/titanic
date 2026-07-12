@@ -22,8 +22,8 @@ type PPv2ServiceNative struct {
 	cache    PPv2CacheLayer
 }
 
-func NewPPv2Service(provider resources.BeatmapResourceProvider) (IPPv2Service, error) {
-	return &PPv2ServiceNative{provider: provider}, nil
+func NewPPv2Service(provider resources.BeatmapResourceProvider) IPPv2Service {
+	return &PPv2ServiceNative{provider: provider}
 }
 
 func (service *PPv2ServiceNative) SetCacheLayer(cache PPv2CacheLayer) {

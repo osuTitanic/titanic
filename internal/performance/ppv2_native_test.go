@@ -12,10 +12,7 @@ import (
 
 func TestPPv2ServiceNative(t *testing.T) {
 	provider := &testProvider{}
-	service, err := NewPPv2Service(provider)
-	if err != nil {
-		t.Fatalf("create service: %v", err)
-	}
+	service := NewPPv2Service(provider)
 
 	difficulty, err := service.CalculateDifficulty(75, constants.ModeOsu, constants.NoMod)
 	if err != nil {
