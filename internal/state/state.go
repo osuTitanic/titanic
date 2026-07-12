@@ -42,6 +42,7 @@ type State struct {
 	Resources   resources.BeatmapResourceProvider
 	Rankings    *rankings.RankingsService
 	PPv1        *performance.PPv1Service
+	PPv2        performance.IPPv2Service
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -140,6 +141,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Extensions:      make(map[string]any),
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
+		PPv2:            performance.NewPPv2Service(beatmapResources), // TODO: set caching layer
 		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),

@@ -34,6 +34,7 @@ type Score struct {
 	TotalScore    int64                 `gorm:"column:total_score"`
 	MaxCombo      int                   `gorm:"column:max_combo"`
 	Mods          constants.Mods        `gorm:"column:mods"`
+	Touchscreen   bool                  `gorm:"column:touchscreen"`
 	Perfect       bool                  `gorm:"column:perfect"`
 	Count300      int                   `gorm:"column:n300"`
 	Count100      int                   `gorm:"column:n100"`
@@ -83,6 +84,70 @@ func (score *Score) RequiresPPv1Update() bool {
 	} else {
 		// For everything else we can update it every 10 days
 		return timeSinceSubmission > 24*time.Hour*10
+	}
+}
+
+// TotalHits returns the number of successful note hits in the score.
+func (score *Score) TotalHits() int {
+	if score == nil {
+		return 0
+	}
+	// For osu! & catch modes
+	total := score.Count50 + score.Count100 + score.Count300
+
+	// For mania & taiko modes
+	if score.Mode == constants.ModeMania || score.Mode == constants.ModeTaiko {
+		total += score.CountGeki + score.CountKatu
+	}
+	return total
+}
+
+// TotalObjects returns the number of passed objects used to calculate accuracy.
+func (score *Score) TotalObjects() int {
+	if score == nil {
+		return 0
+	}
+	// Base total, for taiko & osu!
+	total := score.Count50 + score.Count100 + score.Count300 + score.CountMiss
+
+	switch score.Mode {
+	case constants.ModeOsu, constants.ModeTaiko:
+		return total
+	case constants.ModeCatch:
+		return total + score.CountKatu
+	default:
+		return total + score.CountGeki + score.CountKatu
+	}
+}
+
+// Accuracy returns the score's normalized accuracy in the range [0, 1].
+func (score *Score) Accuracy() float64 {
+	if score == nil {
+		return 0
+	}
+
+	totalObjects := float64(score.TotalObjects())
+	if totalObjects == 0 {
+		return 0
+	}
+
+	count300 := float64(score.Count300)
+	count100 := float64(score.Count100)
+	count50 := float64(score.Count50)
+	countGeki := float64(score.CountGeki)
+	countKatu := float64(score.CountKatu)
+
+	switch score.Mode {
+	case constants.ModeOsu:
+		return (300*count300 + 100*count100 + 50*count50) / (300 * totalObjects)
+	case constants.ModeTaiko:
+		return (count300 + 0.5*count100) / totalObjects
+	case constants.ModeCatch:
+		return (count300 + count100 + count50) / totalObjects
+	case constants.ModeMania:
+		return (300*(countGeki+count300) + 200*countKatu + 100*count100 + 50*count50) / (300 * totalObjects)
+	default:
+		return 0
 	}
 }
 
