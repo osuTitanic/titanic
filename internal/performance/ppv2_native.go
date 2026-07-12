@@ -52,16 +52,20 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	}
 	defer mods.Close()
 
-	difficultyCalculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
-	if err != nil {
-		return 0, fmt.Errorf("create difficulty calculator for beatmap %d: %w", score.BeatmapId, err)
-	}
-	defer difficultyCalculator.Close()
+	// Attempt to resolve difficulty attributes from cache layer, if we have set one
+	difficulty, err := service.FromCacheOrCompute(score.BeatmapId, func() (any, error) {
+		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
+		if err != nil {
+			return nil, fmt.Errorf("create difficulty calculator for beatmap %d: %w", score.BeatmapId, err)
+		}
+		defer calculator.Close()
 
-	difficulty, err := difficultyCalculator.Calculate(mods)
-	if err != nil {
-		return 0, fmt.Errorf("calculate difficulty for beatmap %d: %w", score.BeatmapId, err)
-	}
+		attributes, err := calculator.Calculate(mods)
+		if err != nil {
+			return nil, fmt.Errorf("calculate difficulty for beatmap %d: %w", score.BeatmapId, err)
+		}
+		return attributes, nil
+	})
 
 	performanceCalculator, err := osunative.CreatePerformanceCalculator(ruleset)
 	if err != nil {
@@ -102,22 +106,46 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	}
 	defer nativeMods.Close()
 
-	calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
-	if err != nil {
-		return nil, fmt.Errorf("create difficulty calculator for beatmap %d: %w", beatmapId, err)
-	}
-	defer calculator.Close()
+	// Attempt to resolve difficulty attributes from cache layer, if we have set one
+	attributes, err := service.FromCacheOrCompute(beatmapId, func() (any, error) {
+		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
+		if err != nil {
+			return nil, fmt.Errorf("create difficulty calculator for beatmap %d: %w", beatmapId, err)
+		}
+		defer calculator.Close()
 
-	attributes, err := calculator.Calculate(nativeMods)
-	if err != nil {
-		return nil, fmt.Errorf("calculate difficulty for beatmap %d: %w", beatmapId, err)
-	}
+		attributes, err := calculator.Calculate(nativeMods)
+		if err != nil {
+			return nil, fmt.Errorf("calculate difficulty for beatmap %d: %w", beatmapId, err)
+		}
+		return attributes, nil
+	})
 
 	result, err := newDifficultyAttributes(mode, mode != beatmapMode, attributes)
 	if err != nil {
 		return nil, fmt.Errorf("calculate difficulty for beatmap %d: %w", beatmapId, err)
 	}
 	return result, nil
+}
+
+func (service *PPv2ServiceNative) FromCacheOrCompute(beatmapId int, calculator func() (any, error)) (any, error) {
+	if service.cache == nil {
+		// No caching layer added for this service
+		return calculator()
+	}
+
+	if attributes, ok := service.cache.FromCache(beatmapId); ok {
+		// Difficulty attributes were cached
+		return attributes, nil
+	}
+
+	attributes, err := calculator()
+	if err != nil {
+		return attributes, err
+	}
+
+	service.cache.ToCache(beatmapId, attributes)
+	return attributes, nil
 }
 
 func (service *PPv2ServiceNative) LoadBeatmap(beatmapId int) (*osunative.Beatmap, constants.Mode, error) {
