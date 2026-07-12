@@ -20,6 +20,10 @@ func NewPPv2Service(provider resources.BeatmapResourceProvider) IPPv2Service {
 	return &PPv2ServiceRosu{provider: provider}
 }
 
+func (service *PPv2ServiceRosu) Available() bool {
+	return true
+}
+
 func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (float64, error) {
 	if score == nil {
 		return 0, nil

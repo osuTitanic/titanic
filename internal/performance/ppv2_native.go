@@ -26,6 +26,10 @@ func NewPPv2Service(provider resources.BeatmapResourceProvider) IPPv2Service {
 	return &PPv2ServiceNative{provider: provider}
 }
 
+func (service *PPv2ServiceNative) Available() bool {
+	return true
+}
+
 func (service *PPv2ServiceNative) SetCacheLayer(cache PPv2CacheLayer) {
 	service.cache = cache
 }

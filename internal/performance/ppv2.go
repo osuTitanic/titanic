@@ -7,6 +7,7 @@ import (
 
 // IPPv2Service defines an interface for calculating performance points (v2) for scores.
 type IPPv2Service interface {
+	Available() bool
 	CalculatePerformance(score *schemas.Score) (float64, error)
 	CalculateDifficulty(beatmapId int, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error)
 	SetCacheLayer(cache PPv2CacheLayer)

@@ -16,6 +16,10 @@ func NewPPv2Service(provider resources.BeatmapResourceProvider) IPPv2Service {
 	return &PPv2ServiceDummy{}
 }
 
+func (service *PPv2ServiceDummy) Available() bool {
+	return false
+}
+
 func (service *PPv2ServiceDummy) CalculatePerformance(score *schemas.Score) (float64, error) {
 	return 0, errors.New("ppv2 service is not available")
 }
