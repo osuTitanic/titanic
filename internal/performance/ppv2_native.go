@@ -53,7 +53,11 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	defer mods.Close()
 
 	// Attempt to resolve difficulty attributes from cache layer, if we have set one
-	difficulty, err := service.FromCacheOrCompute(score.BeatmapId, func() (any, error) {
+	difficulty, err := service.FromCacheOrCompute(PPv2CacheKey{
+		BeatmapId: score.BeatmapId,
+		Mode:      score.Mode,
+		Mods:      score.Mods,
+	}, func() (any, error) {
 		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
 		if err != nil {
 			return nil, fmt.Errorf("create difficulty calculator for beatmap %d: %w", score.BeatmapId, err)
@@ -107,7 +111,11 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	defer nativeMods.Close()
 
 	// Attempt to resolve difficulty attributes from cache layer, if we have set one
-	attributes, err := service.FromCacheOrCompute(beatmapId, func() (any, error) {
+	attributes, err := service.FromCacheOrCompute(PPv2CacheKey{
+		BeatmapId: beatmapId,
+		Mode:      mode,
+		Mods:      mods,
+	}, func() (any, error) {
 		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
 		if err != nil {
 			return nil, fmt.Errorf("create difficulty calculator for beatmap %d: %w", beatmapId, err)
@@ -128,13 +136,13 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	return result, nil
 }
 
-func (service *PPv2ServiceNative) FromCacheOrCompute(beatmapId int, calculator func() (any, error)) (any, error) {
+func (service *PPv2ServiceNative) FromCacheOrCompute(key PPv2CacheKey, calculator func() (any, error)) (any, error) {
 	if service.cache == nil {
 		// No caching layer added for this service
 		return calculator()
 	}
 
-	if attributes, ok := service.cache.FromCache(beatmapId); ok {
+	if attributes, ok := service.cache.FromCache(key); ok {
 		// Difficulty attributes were cached
 		return attributes, nil
 	}
@@ -144,7 +152,7 @@ func (service *PPv2ServiceNative) FromCacheOrCompute(beatmapId int, calculator f
 		return attributes, err
 	}
 
-	service.cache.ToCache(beatmapId, attributes)
+	service.cache.ToCache(key, attributes)
 	return attributes, nil
 }
 
