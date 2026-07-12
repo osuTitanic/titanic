@@ -5,6 +5,7 @@ package performance
 import (
 	"bufio"
 	"bytes"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"strconv"
@@ -33,6 +34,17 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	if score == nil {
 		return 0, nil
 	}
+	adjustedMods := score.Mods
+
+	// NoVideo has the same value as TouchDevice, so in return, pp systems
+	// might interpret NoVideo as being TouchDevice which we don't want.
+	if adjustedMods.Has(constants.NoVideo) && score.ClientVersion < 20140000 {
+		adjustedMods &^= constants.NoVideo
+	}
+	// We have our own server-side algorithm to determine if a score was using a touchscreen.
+	if score.Touchscreen {
+		adjustedMods |= constants.TouchDevice
+	}
 
 	beatmap, _, err := service.LoadBeatmap(score.BeatmapId)
 	if err != nil {
@@ -46,7 +58,7 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	}
 	defer ruleset.Close()
 
-	mods, err := newNativeMods(score.Mods)
+	mods, err := newNativeMods(adjustedMods)
 	if err != nil {
 		return 0, fmt.Errorf("create mods for beatmap %d: %w", score.BeatmapId, err)
 	}
@@ -56,7 +68,7 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	difficulty, err := service.FromCacheOrCompute(PPv2CacheKey{
 		BeatmapId: score.BeatmapId,
 		Mode:      score.Mode,
-		Mods:      score.Mods,
+		Mods:      adjustedMods,
 	}, func() (any, error) {
 		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
 		if err != nil {
@@ -180,8 +192,9 @@ func (service *PPv2ServiceNative) LoadBeatmap(beatmapId int) (*osunative.Beatmap
 	if err != nil {
 		return nil, constants.ModeOsu, fmt.Errorf("read beatmap %d: %w", beatmapId, err)
 	}
+	// TODO: Ensure this handling UTF-8-BOM properly
+	// 		 We could use dimchansky/utfbom for this -> io.ReadAll(utfbom.SkipOnly(stream))
 
-	// TODO: Ensure this is decoded as utf-8-bom
 	beatmap, err := osunative.NewBeatmapFromText(string(data))
 	if err != nil {
 		return nil, constants.ModeOsu, fmt.Errorf("parse beatmap %d: %w", beatmapId, err)

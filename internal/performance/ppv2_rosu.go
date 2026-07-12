@@ -24,6 +24,17 @@ func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (floa
 	if score == nil {
 		return 0, nil
 	}
+	adjustedMods := score.Mods
+
+	// NoVideo has the same value as TouchDevice, so in return, pp systems
+	// might interpret NoVideo as being TouchDevice which we don't want.
+	if adjustedMods.Has(constants.NoVideo) && score.ClientVersion < 20140000 {
+		adjustedMods &^= constants.NoVideo
+	}
+	// We have our own server-side algorithm to determine if a score was using a touchscreen.
+	if score.Touchscreen {
+		adjustedMods |= constants.TouchDevice
+	}
 	// TODO: rosu-pp-ffi doesn't support converts at the moment
 
 	beatmap, err := service.LoadBeatmap(score.BeatmapId)
@@ -32,7 +43,7 @@ func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (floa
 	}
 	defer beatmap.Free()
 
-	mods := rosu.ModsFromBits(uint32(score.Mods))
+	mods := rosu.ModsFromBits(uint32(adjustedMods))
 	defer mods.Free()
 
 	calculator := beatmap.Calculator()
