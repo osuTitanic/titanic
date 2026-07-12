@@ -1,4 +1,4 @@
-//go:build !rosu
+//go:build !rosu && !native
 
 package performance
 
