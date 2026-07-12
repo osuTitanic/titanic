@@ -3,13 +3,13 @@ module github.com/osuTitanic/titanic
 go 1.26
 
 require (
-	github.com/7mochi/osu-native-go v0.0.0-20260711221638-cd86bdb7b7ac
+	github.com/7mochi/osu-native-go v0.0.0-20260712161809-ca07ea11dc5e
 	github.com/CloudyKit/jet/v6 v6.3.2
 	github.com/Lekuruu/bbgo v0.0.0-20260710164313-591de6889cb1
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/caarlos0/env/v11 v11.4.1
-	github.com/calemy/rosu-pp-go v0.0.0-20260711105005-990597814e4c
+	github.com/calemy/rosu-pp-go v0.0.0-20260712072956-76a9c6b69f7c
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.2.1
@@ -18,7 +18,7 @@ require (
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.43.0
 	github.com/testcontainers/testcontainers-go/modules/redis v0.43.0
 	github.com/wcharczuk/go-chart/v2 v2.1.2
-	github.com/yuin/goldmark v1.8.2
+	github.com/yuin/goldmark v1.8.4
 	golang.org/x/crypto v0.54.0
 	golang.org/x/image v0.44.0
 	golang.org/x/text v0.40.0
