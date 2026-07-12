@@ -9,6 +9,13 @@ function bindBeatmapAudio() {
         if (!audio) {
             return;
         }
+        if (!audio.getAttribute("src")) {
+            var source = audio.getAttribute("data-src");
+            if (!source) {
+                return;
+            }
+            audio.setAttribute("src", source);
+        }
 
         $(".beatmap-preview-audio")
             .not(audio)
