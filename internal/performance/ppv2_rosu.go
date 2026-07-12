@@ -1,3 +1,5 @@
+//go:build rosu
+
 package performance
 
 import (
@@ -14,8 +16,8 @@ type PPv2ServiceRosu struct {
 	provider resources.BeatmapResourceProvider
 }
 
-func NewPPv2ServiceRosu(provider resources.BeatmapResourceProvider) IPPv2Service {
-	return &PPv2ServiceRosu{provider: provider}
+func NewPPv2Service(provider resources.BeatmapResourceProvider) (IPPv2Service, error) {
+	return &PPv2ServiceRosu{provider: provider}, nil
 }
 
 func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (float64, error) {

@@ -1,3 +1,5 @@
+//go:build rosu
+
 package performance
 
 import (
@@ -21,7 +23,10 @@ var beatmapDataFreedomDive []byte
 
 func TestPPv2ServiceRosu(t *testing.T) {
 	provider := &testProvider{}
-	service := NewPPv2ServiceRosu(provider)
+	service, err := NewPPv2Service(provider)
+	if err != nil {
+		t.Fatalf("initializing ppv2: %v", err)
+	}
 
 	difficulty, err := service.CalculateDifficulty(75, constants.ModeOsu, constants.NoMod)
 	if err != nil {
