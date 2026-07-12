@@ -7,7 +7,6 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ScoreRepository struct {
@@ -126,57 +125,53 @@ func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constant
 }
 
 func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode constants.Mode) (int, error) {
+	// RANK() is one plus the number of rows with a strictly higher score
+	// Counting those rows directly preserves ties without ranking the full leaderboard
 	rankQuery := `
-		SELECT ranked.rank
-		FROM (
-			SELECT
-				id,
-				RANK() OVER (ORDER BY total_score DESC) AS rank
-			FROM scores
-			WHERE beatmap_id = ?
-				AND mode = ?
-				AND hidden = FALSE
-				AND status_score = 3
-		) AS ranked
-		WHERE ranked.id = ?
-		LIMIT 1
+		SELECT COUNT(better.id) + 1 AS rank
+		FROM scores AS target
+		LEFT JOIN scores AS better
+			ON better.beatmap_id = target.beatmap_id
+			AND better.mode = target.mode
+			AND better.hidden = FALSE
+			AND better.status_score = ?
+			AND better.total_score > target.total_score
+		WHERE target.id = ?
+			AND target.beatmap_id = ?
+			AND target.mode = ?
+			AND target.hidden = FALSE
+			AND target.status_score = ?
+		GROUP BY target.id
 	`
 	var rank int
-	err := r.db.Raw(rankQuery, beatmapId, mode, scoreId).Scan(&rank).Error
+	err := r.db.Raw(
+		rankQuery,
+		constants.ScoreStatusBest,
+		scoreId,
+		beatmapId,
+		mode,
+		constants.ScoreStatusBest,
+	).Scan(&rank).Error
 	if err != nil {
 		return 0, err
 	}
-
 	return rank, nil
 }
 
 func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, beatmapId int, mode constants.Mode) (int, error) {
-	var closestScore schemas.Score
+	// This score may not be stored yet, so calculate its prospective rank directly
+	var higherScores int64
 	err := r.db.Model(&schemas.Score{}).
-		Where("total_score > ?", totalScore).
 		Where("beatmap_id = ?", beatmapId).
 		Where("mode = ?", mode).
-		Where("status_score = 3").
-		Where("hidden = FALSE").
-		Order(clause.Expr{SQL: "ABS(total_score - ?)", Vars: []any{totalScore}}).
-		Order("id ASC").
-		First(&closestScore).Error
-
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 1, nil
-		}
-		return 0, err
-	}
-
-	rank, err := r.FetchScoreIndexById(closestScore.Id, beatmapId, mode)
+		Where("hidden = ?", false).
+		Where("status_score = ?", constants.ScoreStatusBest).
+		Where("total_score > ?", totalScore).
+		Count(&higherScores).Error
 	if err != nil {
 		return 0, err
 	}
-	if rank == 0 {
-		return 1, nil
-	}
-	return rank + 1, nil
+	return int(higherScores) + 1, nil
 }
 
 func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
