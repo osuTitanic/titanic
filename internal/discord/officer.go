@@ -66,7 +66,7 @@ func (o *Officer) CallContext(ctx context.Context, tag OfficerTag, content strin
 
 	var contentPointer *string
 	if content != "" {
-		contentPointer = stringPointer(content)
+		contentPointer = new(content)
 	}
 
 	webhook := &Webhook{
@@ -93,8 +93,4 @@ func normalizeOfficerTag(tag OfficerTag) OfficerTag {
 		return OfficerTagGeneral
 	}
 	return OfficerTag(value)
-}
-
-func stringPointer(value string) *string {
-	return &value
 }

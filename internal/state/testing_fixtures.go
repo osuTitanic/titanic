@@ -228,11 +228,11 @@ func (data *TestData) CreateBeatmapset(creator *schemas.User, opts ...FixtureOpt
 	tags := "real stream"
 
 	beatmapset := &schemas.Beatmapset{
-		Title:          stringPointer(title),
-		Artist:         stringPointer(artist),
-		Creator:        stringPointer(creator.Name),
-		Description:    stringPointer(description),
-		Tags:           stringPointer(tags),
+		Title:          new(title),
+		Artist:         new(artist),
+		Creator:        new(creator.Name),
+		Description:    new(description),
+		Tags:           new(tags),
 		Status:         constants.BeatmapStatusRanked,
 		Server:         constants.BeatmapServerTitanic,
 		DownloadServer: constants.BeatmapServerTitanic,
@@ -338,7 +338,7 @@ func (data *TestData) CreateGroup(opts ...FixtureOption[schemas.Group]) *schemas
 	group := &schemas.Group{
 		Name:        fmt.Sprintf("Test Group %d", sequence),
 		ShortName:   fmt.Sprintf("TG%d", sequence),
-		Description: stringPointer("cool people"),
+		Description: new("cool people"),
 		Color:       "#3366cc",
 	}
 	applyFixtureOptions(group, opts)
@@ -510,8 +510,4 @@ func applyFixtureOptions[T any](value *T, opts []FixtureOption[T]) {
 
 func testDataTime(sequence int) time.Time {
 	return time.Date(2012, 1, 1, 12, 0, 0, 0, time.UTC).Add(time.Duration(sequence) * time.Minute)
-}
-
-func stringPointer(value string) *string {
-	return &value
 }
