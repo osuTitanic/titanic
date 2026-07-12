@@ -34,6 +34,7 @@ type Score struct {
 	TotalScore    int64                 `gorm:"column:total_score"`
 	MaxCombo      int                   `gorm:"column:max_combo"`
 	Mods          constants.Mods        `gorm:"column:mods"`
+	Touchscreen   bool                  `gorm:"column:touchscreen"`
 	Perfect       bool                  `gorm:"column:perfect"`
 	Count300      int                   `gorm:"column:n300"`
 	Count100      int                   `gorm:"column:n100"`
