@@ -280,17 +280,13 @@ var nativeModAcronyms = []struct {
 
 func newNativeScoreInfo(score *schemas.Score) *osunative.ScoreInfo {
 	totalScore := score.TotalScore
-
-	// TODO: Is this the right mapping????
 	return &osunative.ScoreInfo{
 		Accuracy:         score.Accuracy(),
 		MaxCombo:         score.MaxCombo,
-		CountMiss:        score.CountMiss,
-		CountMeh:         score.Count50,
-		CountOk:          score.Count100,
-		CountGood:        score.CountKatu,
 		CountGreat:       score.Count300,
-		CountPerfect:     score.CountGeki,
+		CountOk:          score.Count100,
+		CountMeh:         score.Count50,
+		CountMiss:        score.CountMiss,
 		LegacyTotalScore: &totalScore,
 	}
 }
