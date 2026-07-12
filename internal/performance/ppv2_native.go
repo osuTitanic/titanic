@@ -234,6 +234,7 @@ var nativeModAcronyms = []struct {
 }{
 	{constants.NoFail, "NF"},
 	{constants.Easy, "EZ"},
+	{constants.TouchDevice, "TD"},
 	{constants.Hidden, "HD"},
 	{constants.HardRock, "HR"},
 	{constants.SuddenDeath, "SD"},

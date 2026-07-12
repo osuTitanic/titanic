@@ -9,6 +9,7 @@ const (
 	NoFail      Mods = 1 << 0
 	Easy        Mods = 1 << 1
 	NoVideo     Mods = 1 << 2
+	TouchDevice Mods = 1 << 2
 	Hidden      Mods = 1 << 3
 	HardRock    Mods = 1 << 4
 	SuddenDeath Mods = 1 << 5
