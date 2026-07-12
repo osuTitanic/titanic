@@ -4,9 +4,19 @@ This module calculates [performance points](https://osu.ppy.sh/wiki/en/Performan
 
 ## ppv2
 
-ppv2 is currently a *work-in-progress*. No calculator is implemented or added into the state system yet.
+ppv2 is currently a *work-in-progress* and is not added to the state system yet.
 
-A compatible pp system still needs to be found & integrated before ppv2 can be used. A good contender is [diffcalcy](https://github.com/Syriiin/difficalcy) by [Syriiin](https://github.com/Syriiin), which would act as an external http service for pp calculations. There are still some modifications required to make this work though.
+The pp implementation is selected with a Go build tag:
+
+- `rosu` uses [rosu-pp-go](https://github.com/calemy/rosu-pp-go).
+- `native` uses [osu-native-go](https://github.com/7mochi/osu-native-go).
+
+Without either tag, `NewPPv2Service` returns an error.
+
+```bash
+go build -tags=rosu ./...
+go build -tags=native ./...
+```
 
 ## ppv1
 
