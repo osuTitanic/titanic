@@ -94,6 +94,7 @@ DROP INDEX IF EXISTS idx_events_time;
 DROP INDEX IF EXISTS idx_name_history_trgm;
 DROP INDEX IF EXISTS idx_name_history_user_id;
 DROP INDEX IF EXISTS idx_notifications_user_id_time;
+DROP INDEX IF EXISTS idx_notifications_user_id_time_unread;
 DROP INDEX IF EXISTS idx_plays_beatmap_count;
 DROP INDEX IF EXISTS idx_plays_beatmap_count_desc;
 DROP INDEX IF EXISTS idx_plays_beatmap_id_set_id;

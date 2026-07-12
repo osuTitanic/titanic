@@ -128,6 +128,7 @@ CREATE INDEX IF NOT EXISTS idx_name_history_user_id ON name_history USING btree 
 
 -- notifications
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id_time ON notifications USING btree (user_id, "time" DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id_time_unread ON notifications USING btree (user_id, "time" DESC) WHERE (read = false);
 
 -- plays
 CREATE INDEX IF NOT EXISTS idx_plays_beatmap_count ON plays USING btree (beatmap_id, count);
