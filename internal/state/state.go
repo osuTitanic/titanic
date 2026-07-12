@@ -42,6 +42,7 @@ type State struct {
 	Resources   resources.BeatmapResourceProvider
 	Rankings    *rankings.RankingsService
 	PPv1        *performance.PPv1Service
+	PPv2        performance.IPPv2Service
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -126,6 +127,12 @@ func NewState(environmentFiles ...string) (*State, error) {
 		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)
 	}
 
+	ppv2, err := performance.NewPPv2Service(beatmapResources)
+	if err != nil {
+		database.CloseSession(db)
+		return nil, fmt.Errorf("state: failed to setup ppv2 service: %w", err)
+	}
+
 	return &State{
 		Config:          cfg,
 		Database:        db,
@@ -140,6 +147,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Extensions:      make(map[string]any),
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
+		PPv2:            ppv2,
 		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),
