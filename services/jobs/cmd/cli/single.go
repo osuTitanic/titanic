@@ -7,21 +7,23 @@ import (
 	"github.com/osuTitanic/titanic/services/jobs/internal/scheduler"
 )
 
-func RunSingleTask(app *state.State, name string, interval int, intervalAt string) error {
-	taskFunc, ok := availableTasks[name]
-	if !ok {
-		return fmt.Errorf("unknown task: %s", name)
-	}
-
+func RunSingleTask(app *state.State, name string, interval int, intervalAt string, args []string) error {
 	if interval > 0 {
 		s := scheduler.New()
-		ScheduleTask(app, s, name, interval, intervalAt)
+		if err := ScheduleTask(app, s, name, interval, intervalAt, args); err != nil {
+			return err
+		}
 		StartSchedulerAndWait(app, s)
 		return nil
 	}
 
+	taskFunc, err := availableTasks.Build(name, args)
+	if err != nil {
+		return err
+	}
+
 	app.Logger.Info("Running task", "name", name)
-	if err := taskFunc(app, app.Logger); err != nil {
+	if err = taskFunc(app, app.Logger); err != nil {
 		return fmt.Errorf("task failed: %w", err)
 	}
 

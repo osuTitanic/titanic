@@ -13,9 +13,10 @@ import (
 )
 
 type SchedulerConfig struct {
-	Name       string  `json:"name"`
-	Interval   *int    `json:"interval"` // 0 -> run once on startup, >0 -> recurring interval in seconds
-	IntervalAt *string `json:"interval_at"`
+	Name       string   `json:"name"`
+	Interval   *int     `json:"interval"` // 0 -> run once on startup, >0 -> recurring interval in seconds
+	IntervalAt *string  `json:"interval_at"`
+	Args       []string `json:"args,omitempty"`
 }
 
 func RunSchedulerFile(app *state.State, filename string) error {
@@ -41,7 +42,7 @@ func RunSchedulerFile(app *state.State, filename string) error {
 			intervalAt = *config.IntervalAt
 		}
 
-		if err := ScheduleTask(app, s, config.Name, *config.Interval, intervalAt); err != nil {
+		if err := ScheduleTask(app, s, config.Name, *config.Interval, intervalAt, config.Args); err != nil {
 			app.Logger.Error("Failed to schedule task", "name", config.Name, "error", err)
 		}
 	}
@@ -50,10 +51,10 @@ func RunSchedulerFile(app *state.State, filename string) error {
 	return nil
 }
 
-func ScheduleTask(app *state.State, s *scheduler.Scheduler, name string, interval int, intervalAt string) error {
-	taskFunc, ok := availableTasks[name]
-	if !ok {
-		return fmt.Errorf("unknown task: %s", name)
+func ScheduleTask(app *state.State, s *scheduler.Scheduler, name string, interval int, intervalAt string, args []string) error {
+	taskFunc, err := availableTasks.Build(name, args)
+	if err != nil {
+		return err
 	}
 
 	schedule, err := scheduleFromConfig(interval, intervalAt)
