@@ -70,6 +70,9 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 		}
 		return attributes, nil
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	performanceCalculator, err := osunative.CreatePerformanceCalculator(ruleset)
 	if err != nil {
@@ -128,6 +131,9 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 		}
 		return attributes, nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := newDifficultyAttributes(mode, mode != beatmapMode, attributes)
 	if err != nil {
@@ -363,4 +369,13 @@ func nativeBeatmapMode(data []byte) constants.Mode {
 		break
 	}
 	return mode
+}
+
+func init() {
+	// Register structs in gob for cache layer
+	gob.Register(&osunative.PerformanceAttributes{})
+	gob.Register(&osunative.OsuDifficultyAttributes{})
+	gob.Register(&osunative.TaikoDifficultyAttributes{})
+	gob.Register(&osunative.CatchDifficultyAttributes{})
+	gob.Register(&osunative.ManiaDifficultyAttributes{})
 }

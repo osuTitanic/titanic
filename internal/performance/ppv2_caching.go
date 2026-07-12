@@ -25,7 +25,7 @@ type PPv2CacheKey struct {
 	Mods      constants.Mods
 }
 
-func (key *PPv2CacheKey) String() string {
+func (key PPv2CacheKey) String() string {
 	return fmt.Sprintf("%d-%d-%d", key.BeatmapId, key.Mode, key.Mods)
 }
 
@@ -55,23 +55,31 @@ func NewPPv2RedisCache(client *redis.Client) *PPv2RedisCache {
 }
 
 func (c *PPv2RedisCache) ToCache(key PPv2CacheKey, data any) bool {
+	if c.client == nil {
+		return false
+	}
+
 	buffer := bytes.NewBuffer([]byte{})
 	encoder := gob.NewEncoder(buffer)
-	if err := encoder.Encode(data); err != nil {
+	if err := encoder.Encode(&data); err != nil {
 		return false
 	}
 
 	status := c.client.Set(context.Background(), key.String(), buffer.Bytes(), ppv2CacheExpiry)
-	return status.Err() != nil
+	return status.Err() == nil
 }
 
 func (c *PPv2RedisCache) FromCache(key PPv2CacheKey) (result any, ok bool) {
+	if c.client == nil {
+		return nil, false
+	}
+
 	data, err := c.client.Get(context.Background(), key.String()).Bytes()
 	if err != nil {
 		return nil, false
 	}
 
 	reader := bytes.NewReader(data)
-	err = gob.NewDecoder(reader).Decode(result)
-	return result, err != nil
+	err = gob.NewDecoder(reader).Decode(&result)
+	return result, err == nil
 }
