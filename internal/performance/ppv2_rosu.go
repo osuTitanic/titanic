@@ -24,6 +24,7 @@ func (service *PPv2ServiceRosu) CalculatePerformance(score *schemas.Score) (floa
 	if score == nil {
 		return 0, nil
 	}
+	// TODO: rosu-pp-ffi doesn't support converts at the moment
 
 	beatmap, err := service.LoadBeatmap(score.BeatmapId)
 	if err != nil {
