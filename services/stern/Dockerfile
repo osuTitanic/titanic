@@ -3,7 +3,7 @@
 # NOTE: This assumes you are running the build from the root, e.g.:
 #       docker build -f ./services/stern/Dockerfile -t osutitanic/stern .
 
-FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
