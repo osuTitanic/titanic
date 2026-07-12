@@ -12,8 +12,8 @@ ARG TARGETVARIANT
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         gcc \
-        gcc-aarch64-linux-gnu \
-        gcc-arm-linux-gnueabihf && \
+        crossbuild-essential-arm64 \
+        crossbuild-essential-armhf && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
