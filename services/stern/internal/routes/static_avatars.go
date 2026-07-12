@@ -78,6 +78,7 @@ func DefaultAvatar(ctx *server.Context) {
 		ctx.Response.WriteHeader(404)
 		return
 	}
+	defer defaultAvatar.Close()
 
 	ctx.Response.Header().Set("Content-Type", "image/png")
 	ctx.Response.WriteHeader(200)

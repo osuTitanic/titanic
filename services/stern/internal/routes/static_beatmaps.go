@@ -100,6 +100,7 @@ func BeatmapDownload(ctx *server.Context) {
 		ctx.Response.WriteHeader(404)
 		return
 	}
+	defer oszStream.Close()
 
 	oszFilename := fmt.Sprintf("%d %s.osz", beatmapset.Id, beatmapset.Name())
 	if noVideo {
