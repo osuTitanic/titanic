@@ -4,14 +4,14 @@ This module calculates [performance points](https://osu.ppy.sh/wiki/en/Performan
 
 ## ppv2
 
-ppv2 is currently a *work-in-progress* and is not added to the state system yet.
+ppv2 is available through the state system as `state.PPv2` when the binary is built with one of the supported implementation tags. The Docker image uses the `native` implementation.
 
 The pp implementation is selected with a Go build tag:
 
 - `rosu` uses [rosu-pp-go](https://github.com/calemy/rosu-pp-go).
 - `native` uses [osu-native-go](https://github.com/7mochi/osu-native-go).
 
-Without either tag, `NewPPv2Service` returns an error.
+Without either tag, `NewPPv2Service` returns an unavailable stub. PPv2 tasks check this before changing any score data.
 
 ```bash
 go build -tags=rosu ./...
