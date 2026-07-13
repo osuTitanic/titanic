@@ -34,6 +34,7 @@ type DefaultView struct {
 	NotificationCount int
 	IsModernBrowser   bool
 	IsIE              bool
+	IsTextBrowser     bool
 }
 
 func (v DefaultView) IsAuthenticated() bool {

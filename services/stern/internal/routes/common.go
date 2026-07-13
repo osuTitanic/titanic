@@ -30,6 +30,7 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 		CurrentURI:        currentURI,
 		NotificationCount: fetchNotificationCount(ctx),
 		IsModernBrowser:   server.IsModernBrowser(userAgent),
+		IsTextBrowser:     server.IsTextBrowser(userAgent),
 		IsIE:              server.IsInternetExplorer(userAgent),
 	}
 }

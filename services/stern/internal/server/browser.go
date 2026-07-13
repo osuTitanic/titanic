@@ -42,3 +42,12 @@ func IsInternetExplorer(userAgent string) bool {
 	userAgent = strings.ToLower(userAgent)
 	return strings.Contains(userAgent, "msie") || strings.Contains(userAgent, "trident/")
 }
+
+// IsTextBrowser checks for browsers that primarily render html as terminal text, e.g. lynx
+func IsTextBrowser(userAgent string) bool {
+	userAgent = strings.ToLower(userAgent)
+	return strings.Contains(userAgent, "lynx/") ||
+		strings.Contains(userAgent, "w3m/") ||
+		strings.Contains(userAgent, "elinks/") ||
+		strings.Contains(userAgent, "links (")
+}
