@@ -111,10 +111,35 @@ const beatmapsetPlayedCondition = `EXISTS (
 	AND plays.user_id = ?
 )`
 
+// Mode-specific variant of beatmapsetPlayedCondition.
+const beatmapsetPlayedInModeCondition = `EXISTS (
+	SELECT 1 FROM beatmaps AS played_maps
+	WHERE played_maps.set_id = beatmapsets.id
+	AND played_maps.mode = ?
+	AND EXISTS (
+		SELECT 1 FROM plays
+		WHERE plays.beatmap_id = played_maps.id
+		AND plays.user_id = ?
+	)
+)`
+
 // A set is cleared when all of its beatmaps have a submitted score from the user.
 const beatmapsetClearedCondition = `NOT EXISTS (
 	SELECT 1 FROM beatmaps AS clear_maps
 	WHERE clear_maps.set_id = beatmapsets.id
+	AND NOT EXISTS (
+		SELECT 1 FROM scores AS clear_scores
+		WHERE clear_scores.beatmap_id = clear_maps.id
+		AND clear_scores.user_id = ?
+		AND clear_scores.status >= ?
+	)
+)`
+
+// Mode-specific variant of beatmapsetClearedCondition.
+const beatmapsetClearedInModeCondition = `NOT EXISTS (
+	SELECT 1 FROM beatmaps AS clear_maps
+	WHERE clear_maps.set_id = beatmapsets.id
+	AND clear_maps.mode = ?
 	AND NOT EXISTS (
 		SELECT 1 FROM scores AS clear_scores
 		WHERE clear_scores.beatmap_id = clear_maps.id
@@ -242,25 +267,34 @@ func applyBeatmapsetUserFilters(query *gorm.DB, options BeatmapsetSearchOptions)
 	if options.UserId == nil {
 		return query
 	}
+
+	playedCondition := beatmapsetPlayedCondition
+	playedArgs := []any{*options.UserId}
+	clearedCondition := beatmapsetClearedCondition
+	clearedArgs := []any{*options.UserId, constants.ScoreStatusSubmitted}
+
+	// If a mode is specified, the cleared/uncleared conditions have to change as well
+	// e.g. a beatmap has 2 osu!standard diffs and 3 osu!taiko diffs
+	// 		a user plays only both osu!standard diffs & filters by uncleared + osu!standard
+	// 		in that scenario, we want the set to be marked as "cleared"
+	if options.Mode != nil {
+		playedCondition = beatmapsetPlayedInModeCondition
+		playedArgs = []any{*options.Mode, *options.UserId}
+		clearedCondition = beatmapsetClearedInModeCondition
+		clearedArgs = []any{*options.Mode, *options.UserId, constants.ScoreStatusSubmitted}
+	}
+
 	if options.Played {
-		query = query.Where(beatmapsetPlayedCondition, *options.UserId)
+		query = query.Where(playedCondition, playedArgs...)
 	}
 	if options.Unplayed {
-		query = query.Where("NOT "+beatmapsetPlayedCondition, *options.UserId)
+		query = query.Where("NOT ("+playedCondition+")", playedArgs...)
 	}
 	if options.Cleared {
-		query = query.Where(
-			beatmapsetClearedCondition,
-			*options.UserId,
-			constants.ScoreStatusSubmitted,
-		)
+		query = query.Where(clearedCondition, clearedArgs...)
 	}
 	if options.Uncleared {
-		query = query.Where(
-			"NOT ("+beatmapsetClearedCondition+")",
-			*options.UserId,
-			constants.ScoreStatusSubmitted,
-		)
+		query = query.Where("NOT ("+clearedCondition+")", clearedArgs...)
 	}
 	return query
 }
