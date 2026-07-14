@@ -123,28 +123,33 @@ const beatmapsetPlayedInModeCondition = `EXISTS (
 	)
 )`
 
-// A set is cleared when all of its beatmaps have a submitted score from the user.
-const beatmapsetClearedCondition = `NOT EXISTS (
-	SELECT 1 FROM beatmaps AS clear_maps
-	WHERE clear_maps.set_id = beatmapsets.id
-	AND NOT EXISTS (
-		SELECT 1 FROM scores AS clear_scores
-		WHERE clear_scores.beatmap_id = clear_maps.id
-		AND clear_scores.user_id = ?
-		AND clear_scores.status >= ?
+// A set is cleared when the user has a submitted score on each of its beatmaps.
+const beatmapsetClearedCondition = `beatmapsets.id IN (
+	SELECT scored_maps.set_id
+	FROM scores AS clear_scores
+	JOIN beatmaps AS scored_maps ON scored_maps.id = clear_scores.beatmap_id
+	WHERE clear_scores.user_id = ?
+	AND clear_scores.status >= ?
+	GROUP BY scored_maps.set_id
+	HAVING COUNT(DISTINCT scored_maps.id) = (
+		SELECT COUNT(*) FROM beatmaps AS all_maps
+		WHERE all_maps.set_id = scored_maps.set_id
 	)
 )`
 
 // Mode-specific variant of beatmapsetClearedCondition.
-const beatmapsetClearedInModeCondition = `NOT EXISTS (
-	SELECT 1 FROM beatmaps AS clear_maps
-	WHERE clear_maps.set_id = beatmapsets.id
-	AND clear_maps.mode = ?
-	AND NOT EXISTS (
-		SELECT 1 FROM scores AS clear_scores
-		WHERE clear_scores.beatmap_id = clear_maps.id
-		AND clear_scores.user_id = ?
-		AND clear_scores.status >= ?
+const beatmapsetClearedInModeCondition = `beatmapsets.id IN (
+	SELECT scored_maps.set_id
+	FROM scores AS clear_scores
+	JOIN beatmaps AS scored_maps ON scored_maps.id = clear_scores.beatmap_id
+	WHERE scored_maps.mode = ?
+	AND clear_scores.user_id = ?
+	AND clear_scores.status >= ?
+	GROUP BY scored_maps.set_id
+	HAVING COUNT(DISTINCT scored_maps.id) = (
+		SELECT COUNT(*) FROM beatmaps AS all_maps
+		WHERE all_maps.set_id = scored_maps.set_id
+		AND all_maps.mode = ?
 	)
 )`
 
@@ -219,7 +224,7 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 	var joins searchJoins
 
 	query = query.Where("EXISTS (SELECT 1 FROM beatmaps WHERE beatmaps.set_id = beatmapsets.id)")
-	query, joins.beatmaps = applyBeatmapsetCriteria(query, options)
+	query = applyBeatmapsetCriteria(query, options)
 	query = applyBeatmapsetSearchCategory(query, options.Category)
 
 	query, updatedSearchQuery, filtersRequireBeatmaps := applyBeatmapsetSearchFilters(
@@ -238,8 +243,7 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 	return query, updatedSearchQuery
 }
 
-func applyBeatmapsetCriteria(query *gorm.DB, options BeatmapsetSearchOptions) (*gorm.DB, bool) {
-	joinBeatmaps := false
+func applyBeatmapsetCriteria(query *gorm.DB, options BeatmapsetSearchOptions) *gorm.DB {
 	if options.Genre != nil && *options.Genre != constants.BeatmapGenreAny {
 		query = query.Where("beatmapsets.genre_id = ?", *options.Genre)
 	}
@@ -257,10 +261,9 @@ func applyBeatmapsetCriteria(query *gorm.DB, options BeatmapsetSearchOptions) (*
 	}
 	if options.Mode != nil {
 		// Keep mode independent from any joined beatmap used by another filter
-		joinBeatmaps = true
 		query = query.Where(beatmapsetModeCondition, *options.Mode)
 	}
-	return query, joinBeatmaps
+	return query
 }
 
 func applyBeatmapsetUserFilters(query *gorm.DB, options BeatmapsetSearchOptions) *gorm.DB {
@@ -281,7 +284,7 @@ func applyBeatmapsetUserFilters(query *gorm.DB, options BeatmapsetSearchOptions)
 		playedCondition = beatmapsetPlayedInModeCondition
 		playedArgs = []any{*options.Mode, *options.UserId}
 		clearedCondition = beatmapsetClearedInModeCondition
-		clearedArgs = []any{*options.Mode, *options.UserId, constants.ScoreStatusSubmitted}
+		clearedArgs = []any{*options.Mode, *options.UserId, constants.ScoreStatusSubmitted, *options.Mode}
 	}
 
 	if options.Played {
