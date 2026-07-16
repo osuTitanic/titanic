@@ -109,7 +109,9 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		}
 
 		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
-		assertForumSearchPost(t, body, data.post, false)
+		assertForumSearchPost(t, body, data.post, true)
+		assertForumSearchPost(t, body, matchingPost, false)
+		assertForumSearchPost(t, body, unrelatedPost, false)
 
 		body = renderForumSearch(t, router, url.Values{"query": {"lorem ipsum"}})
 		assertForumSearchPost(t, body, data.post, true)
@@ -215,20 +217,24 @@ func newWebsiteTestState(t *testing.T) *state.State {
 		&schemas.BeatmapPlays{},
 		&schemas.Release{},
 	))
-	enableForumPostSearchVector(t, app)
+	enableForumSearchVectors(t, app)
 	return app
 }
 
-func enableForumPostSearchVector(t *testing.T, app *state.State) {
+func enableForumSearchVectors(t *testing.T, app *state.State) {
 	t.Helper()
 
 	// Gorm migrations don't do this automatically
-	statement := `
-		ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
-		GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED
-	`
-	if err := app.Database.Exec(statement).Error; err != nil {
-		t.Fatalf("failed to add forum post search vector: %v", err)
+	statements := []string{
+		`ALTER TABLE forum_topics ADD COLUMN search_vector tsvector
+		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(title, ''))) STORED`,
+		`ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
+		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED`,
+	}
+	for _, statement := range statements {
+		if err := app.Database.Exec(statement).Error; err != nil {
+			t.Fatalf("failed to add forum search vector: %v", err)
+		}
 	}
 }
 
