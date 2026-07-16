@@ -3,7 +3,6 @@ package repositories
 import (
 	"slices"
 	"strings"
-	"unicode"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -380,24 +379,4 @@ func applyBeatmapsetTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
 	)`
 
 	return query.Where(subquery, slices.Concat(args, args)...)
-}
-
-func fuzzyTsQuery(query string) string {
-	words := strings.FieldsFunc(strings.ToLower(query), func(r rune) bool {
-		return !unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_'
-	})
-
-	for i := range words {
-		words[i] += ":*"
-	}
-	return strings.Join(words, " & ")
-}
-
-// clampSearchOffset ensures that the offset for pagination does not exceed the total number of results
-func clampSearchOffset(offset, limit int, total int64) int {
-	if total == 0 || int64(offset) < total {
-		return offset
-	}
-	last := total - 1
-	return int(last - last%int64(limit))
 }
