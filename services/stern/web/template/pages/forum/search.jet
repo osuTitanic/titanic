@@ -12,24 +12,24 @@
 
 {{ block body() }}
 <div class="forum-search-page">
-    <h1 class="header-text">
-        <a href="/forum" style="color:#5a5399">Index</a> » Search
-    </h1>
+    <div class="forum-search-header">
+        <h1 class="header-text">
+            <a href="/forum" style="color:#5a5399">Index</a> » Search
+        </h1>
 
-    <form class="forum-search-form" action="/forum/search" method="get">
-        {{ range searchHiddenInputs(.Query, "user,forum") }}
-        <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
-        {{ end }}
+        <form class="forum-search-form" action="/forum/search" method="get">
+            {{ range searchHiddenInputs(.Query, "user,forum") }}
+            <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+            {{ end }}
 
-        <div class="forum-search-query-row">
             <input name="query" type="search" placeholder="Search topic titles and posts..." value="{{ .Query.Get("query") }}" aria-label="Search text">
             <input type="submit" value="Search">
-        </div>
-        {*
-            TODO: We are able to filter by user & forum, but there's currently no UI for that
-                  I would also like to have a way of excluding certain forums from the search results
-        *}
-    </form>
+        </form>
+    </div>
+    {*
+        TODO: We are able to filter by user & forum, but there's currently no UI for that
+              I would also like to have a way of excluding certain forums from the search results
+    *}
 
     {{ if .CurrentUser }}
     <div class="forum-search-options">
