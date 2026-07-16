@@ -38,10 +38,27 @@ func ForumSearch(ctx *server.Context) {
 	for _, topic := range result.Topics {
 		topicIds = append(topicIds, topic.Id)
 	}
-	lastPosts, err := ctx.State.ForumPosts.FetchLastForTopics(topicIds, "User", "User.Groups.Group")
+
+	// Fetch preview posts for the topics
+	// For search results with a search query, we want to query for posts
+	// that match the given query the best, otherwise we fall back to the last post
+
+	var previewPosts map[int]*schemas.ForumPost
+	if result.Options.QueryString == "" {
+		previewPosts, err = ctx.State.ForumPosts.FetchLastForTopics(
+			topicIds,
+			"User", "User.Groups.Group",
+		)
+	} else {
+		previewPosts, err = ctx.State.ForumPosts.FetchSearchMatches(
+			topicIds,
+			result.Options.QueryString,
+			"User", "User.Groups.Group",
+		)
+	}
 	if err != nil {
-		ctx.Logger.Error("Failed to fetch last posts for forum search", "error", err)
-		lastPosts = map[int]*schemas.ForumPost{}
+		ctx.Logger.Error("Failed to fetch preview posts for forum search", "error", err)
+		previewPosts = map[int]*schemas.ForumPost{}
 	}
 
 	currentUserIdValue := 0
@@ -57,7 +74,7 @@ func ForumSearch(ctx *server.Context) {
 
 	previews := buildTopicPreviews(
 		result.Topics,
-		lastPosts,
+		previewPosts,
 		forumTopicReadStatuses(ctx, result.Topics),
 		averageViews,
 		hasCustomIcons,

@@ -333,7 +333,7 @@ func (v ForumView) HasTopics() bool {
 
 type ForumTopicPreview struct {
 	Topic          *schemas.ForumTopic
-	LastPost       *schemas.ForumPost
+	PreviewPost    *schemas.ForumPost
 	StatusIcon     string
 	PageCount      int
 	Index          int

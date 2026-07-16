@@ -240,7 +240,7 @@ func mergeForumTopics(pinned, recent []*schemas.ForumTopic) []*schemas.ForumTopi
 
 func buildTopicPreviews(
 	topics []*schemas.ForumTopic,
-	lastPosts map[int]*schemas.ForumPost,
+	previewPosts map[int]*schemas.ForumPost,
 	readStatuses map[int]bool,
 	averageViews float64,
 	hasCustomIcons bool,
@@ -251,7 +251,7 @@ func buildTopicPreviews(
 	for index, topic := range topics {
 		previews = append(previews, &templates.ForumTopicPreview{
 			Topic:          topic,
-			LastPost:       lastPosts[topic.Id],
+			PreviewPost:    previewPosts[topic.Id],
 			StatusIcon:     topicStatusIcon(topic, readStatuses[topic.Id], averageViews),
 			PageCount:      (topic.PostCount + forumPostsPerPage - 1) / forumPostsPerPage,
 			Index:          index,

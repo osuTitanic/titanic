@@ -104,6 +104,39 @@ func (r *ForumTopicRepository) SearchPage(options ForumTopicSearchOptions, prelo
 	}, nil
 }
 
+func (r *ForumPostRepository) FetchSearchMatches(topicIds []int, textQuery string, preload ...string) (map[int]*schemas.ForumPost, error) {
+	postsByTopic := make(map[int]*schemas.ForumPost, len(topicIds))
+	textQuery = strings.TrimSpace(textQuery)
+	if len(topicIds) == 0 || textQuery == "" {
+		return postsByTopic, nil
+	}
+
+	rankExpression, rankArgs := forumSearchVectorRankExpression(
+		"forum_posts.search_vector",
+		textQuery,
+	)
+	var posts []*schemas.ForumPost
+
+	err := Preloaded(r.db.Model(&schemas.ForumPost{}), preload).
+		Select("DISTINCT ON (forum_posts.topic_id) forum_posts.*").
+		Where("forum_posts.topic_id IN ?", topicIds).
+		Where("forum_posts.hidden = ?", false).
+		Where("forum_posts.draft = ?", false).
+		Where("forum_posts.deleted = ?", false).
+		Order(clause.OrderBy{Expression: clause.Expr{
+			SQL:  "forum_posts.topic_id ASC, " + rankExpression + " DESC, forum_posts.id ASC",
+			Vars: rankArgs,
+		}}).
+		Find(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, post := range posts {
+		postsByTopic[post.TopicId] = post
+	}
+	return postsByTopic, nil
+}
+
 func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, options ForumTopicSearchOptions) *gorm.DB {
 	query = query.
 		Where("forum_topics.hidden = ?", false).
@@ -199,52 +232,30 @@ func applyForumTopicSearchSort(query *gorm.DB, options ForumTopicSearchOptions) 
 }
 
 func forumTopicRankExpression(textQuery string) (string, []any) {
-	// This allows a partial term such as "serv" to match words beginning with
-	// that prefix, such as "server" or "servers"
-	fuzzyQuery := fuzzyTsQuery(textQuery)
+	topicRank, topicArgs := forumSearchVectorRankExpression("forum_topics.search_vector", textQuery)
+	postRank, postArgs := forumSearchVectorRankExpression("search_rank_posts.search_vector", textQuery)
 
-	// fuzzyTsQuery returns an empty string when the input contains no usable words
-	// In that case, avoid passing an empty query to to_tsquery()
-	if fuzzyQuery == "" {
-		return `(
-			-- Rank matches found directly in the topic's search vector
-			2 * ts_rank(forum_topics.search_vector, plainto_tsquery('english', ?))
-			-- Add the score of the single best matching post in the topic
-			+ COALESCE((
-				SELECT MAX(ts_rank(search_rank_posts.search_vector, plainto_tsquery('english', ?)))
-				FROM forum_posts AS search_rank_posts
-				-- Restrict the subquery to posts belonging to the current topic
-				WHERE search_rank_posts.topic_id = forum_topics.id
-				-- Exclude posts that should not be visible inside the search results
-				AND search_rank_posts.hidden = false
-				AND search_rank_posts.draft = false
-				AND search_rank_posts.deleted = false
-			), 0)
-		)`, []any{textQuery, textQuery}
-	}
-
-	// When a prefix query is available, calculate both:
-	// - A normal full-text search rank using plainto_tsquery()
-	// - A prefix-search rank using to_tsquery()
 	return `(
-		-- Calculate the topic's own relevance score (word-based & prefix-based)
-		2 * GREATEST(
-			ts_rank(forum_topics.search_vector, plainto_tsquery('english', ?)),
-			ts_rank(forum_topics.search_vector, to_tsquery('english', ?)) * 0.5
-		)
-		-- Add the relevance score of the topic's best matching eligible post
+		2 * (` + topicRank + `)
 		+ COALESCE((
-			SELECT MAX(GREATEST(
-				ts_rank(search_rank_posts.search_vector, plainto_tsquery('english', ?)),
-				ts_rank(search_rank_posts.search_vector, to_tsquery('english', ?)) * 0.5
-			))
+			SELECT MAX(` + postRank + `)
 			FROM forum_posts AS search_rank_posts
-			-- Restrict the subquery to posts belonging to the current topic
 			WHERE search_rank_posts.topic_id = forum_topics.id
-			-- Exclude posts that should not be visible inside the search results
 			AND search_rank_posts.hidden = false
 			AND search_rank_posts.draft = false
 			AND search_rank_posts.deleted = false
 		), 0)
-	)`, []any{textQuery, fuzzyQuery, textQuery, fuzzyQuery}
+	)`, slices.Concat(topicArgs, postArgs)
+}
+
+func forumSearchVectorRankExpression(searchVector, textQuery string) (string, []any) {
+	fuzzyQuery := fuzzyTsQuery(textQuery)
+	if fuzzyQuery == "" {
+		return "ts_rank(" + searchVector + ", plainto_tsquery('english', ?))", []any{textQuery}
+	}
+
+	return `GREATEST(
+		ts_rank(` + searchVector + `, plainto_tsquery('english', ?)),
+		ts_rank(` + searchVector + `, to_tsquery('english', ?)) * 0.5
+	)`, []any{textQuery, fuzzyQuery}
 }

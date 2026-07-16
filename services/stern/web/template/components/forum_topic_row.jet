@@ -43,15 +43,15 @@
     </td>
 
     <td align="center">
-        {{ if .LastPost }}
+        {{ if .PreviewPost }}
             <p>
-                {{ forumUserLink(.LastPost.User, .CurrentUserId) | unsafe }}
-                <a href="/forum/{{ .ForumId }}/p/{{ .LastPost.Id }}/">
+                {{ forumUserLink(.PreviewPost.User, .CurrentUserId) | unsafe }}
+                <a href="/forum/{{ .ForumId }}/p/{{ .PreviewPost.Id }}/">
                     <i class="icon-arrow-right" style="color: #ababab"></i>
                 </a>
             </p>
             <p>
-                <time class="timeago" datetime="{{ .LastPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                <time class="timeago" datetime="{{ .PreviewPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
             </p>
         {{ else }}
             <p>No posts</p>
