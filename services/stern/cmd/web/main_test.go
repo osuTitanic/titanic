@@ -67,7 +67,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "forum view", path: fmt.Sprintf("/forum/%d", data.forum.Id)},
 		{name: "forum topic", path: fmt.Sprintf("/forum/%d/t/%d", data.forum.Id, data.topic.Id)},
 		{name: "forum search", path: "/forum/search"},
-		{name: "forum search filters", path: fmt.Sprintf("/forum/search?forum=%d&username=%s&sort=3&order=1", data.forum.Id, url.QueryEscape(data.user.Name))},
+		{name: "forum search filters", path: fmt.Sprintf("/forum/search?forum=%d&username=%s&sort=1&order=1", data.forum.Id, url.QueryEscape(data.user.Name))},
 		{name: "group", path: fmt.Sprintf("/g/%d", data.group.Id)},
 		{name: "user profile", path: fmt.Sprintf("/u/%d", data.user.Id)},
 		{name: "beatmap search", path: "/beatmapsets"},
@@ -85,8 +85,29 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	})
 
 	t.Run("forum search filters", func(t *testing.T) {
-		fixtures.CreateForumPost(data.topic, data.friend)
-		assertForumSearchResult(t, router, url.Values{"username": {data.friend.Name}}, data.topic.Title, true)
+		matchingPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
+			post.Content = "Details about digital client"
+		})
+		unrelatedPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
+			post.Content = "An unrelated reply"
+		})
+
+		body := renderForumSearch(t, router, url.Values{"username": {data.friend.Name}})
+		assertForumSearchPost(t, body, matchingPost, true)
+		assertForumSearchPost(t, body, unrelatedPost, true)
+
+		body = renderForumSearch(t, router, url.Values{
+			"username": {data.friend.Name},
+			"query":    {"digital client"},
+		})
+		assertForumSearchPost(t, body, matchingPost, true)
+		assertForumSearchPost(t, body, unrelatedPost, false)
+
+		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
+		assertForumSearchPost(t, body, data.post, false)
+
+		body = renderForumSearch(t, router, url.Values{"query": {"lorem ipsum"}})
+		assertForumSearchPost(t, body, data.post, true)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -130,7 +151,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	})
 }
 
-func assertForumSearchResult(t *testing.T, router http.Handler, query url.Values, topicTitle string, want bool) {
+func renderForumSearch(t *testing.T, router http.Handler, query url.Values) string {
 	t.Helper()
 
 	recorder := httptest.NewRecorder()
@@ -139,15 +160,22 @@ func assertForumSearchResult(t *testing.T, router http.Handler, query url.Values
 	router.ServeHTTP(recorder, request)
 
 	assertStatus(t, recorder, http.StatusOK)
-	if got := strings.Contains(recorder.Body.String(), topicTitle); got != want {
-		t.Errorf("forum search contains topic %q = %t, want %t", topicTitle, got, want)
+	return recorder.Body.String()
+}
+
+func assertForumSearchPost(t *testing.T, body string, post *schemas.ForumPost, want bool) {
+	t.Helper()
+
+	postUrl := fmt.Sprintf("/forum/%d/p/%d/", post.ForumId, post.Id)
+	if got := strings.Contains(body, postUrl); got != want {
+		t.Errorf("forum search contains post %d = %t, want %t", post.Id, got, want)
 	}
 }
 
 func newWebsiteTestState(t *testing.T) *state.State {
 	t.Helper()
 
-	return state.NewTestState(t, state.WithTestMigrations(
+	app := state.NewTestState(t, state.WithTestMigrations(
 		&schemas.User{},
 		&schemas.Stats{},
 		&schemas.Login{},
@@ -182,6 +210,21 @@ func newWebsiteTestState(t *testing.T) *state.State {
 		&schemas.BeatmapPlays{},
 		&schemas.Release{},
 	))
+	enableForumPostSearchVector(t, app)
+	return app
+}
+
+func enableForumPostSearchVector(t *testing.T, app *state.State) {
+	t.Helper()
+
+	// Gorm migrations don't do this automatically
+	statement := `
+		ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
+		GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED
+	`
+	if err := app.Database.Exec(statement).Error; err != nil {
+		t.Fatalf("failed to add forum post search vector: %v", err)
+	}
 }
 
 func newTestRouter(t *testing.T, app *state.State) http.Handler {

@@ -411,11 +411,18 @@ func (v ForumTopicView) HasBeatmapset() bool {
 type ForumSearchView struct {
 	DefaultView
 	ForumJump   ForumJumpView
-	Topics      []*ForumTopicPreview
+	Posts       []*ForumSearchPostPreview
 	SearchSort  string
 	SearchOrder string
 	DefaultSort string
 	Pagination  PaginationView
+}
+
+type ForumSearchPostPreview struct {
+	Post          *schemas.ForumPost
+	Excerpt       string
+	Index         int
+	CurrentUserId int
 }
 
 type ForumPostPreview struct {

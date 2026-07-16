@@ -1,10 +1,9 @@
 {{ extends "/layout.jet" }}
-{{ import "/components/forum_topic_row.jet" }}
 
 {{ block head() }}
 <title>Forum Search</title>
 <meta property="og:title" content="Forum Search - Titanic!">
-<meta property="og:description" content="Search topics and posts across the Titanic! forums.">
+<meta property="og:description" content="Search posts across the Titanic! forums.">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/search">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
@@ -22,7 +21,7 @@
             <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
             {{ end }}
 
-            <input name="query" type="search" placeholder="Search topic titles and posts..." value="{{ .Query.Get("query") }}" aria-label="Search text">
+            <input name="query" type="search" placeholder="Search forum posts..." value="{{ .Query.Get("query") }}" aria-label="Search text">
             <input type="submit" value="Search">
         </form>
     </div>
@@ -51,7 +50,7 @@
         {{ end }}
 
         <dl>
-            <dt><label for="forum-search-user">User:</label></dt>
+            <dt><label for="forum-search-user">Author:</label></dt>
             <dd>
                 <form class="forum-search-user-filter" action="/forum/search" method="get">
                     <input id="forum-search-user" name="username" type="text" placeholder="Enter a username..." value="{{ .Query.Get("username") }}" autocomplete="off">
@@ -80,7 +79,7 @@
 
     {{ include "/components/pagination.jet" .Pagination }}
     {{ yield selectionOrder() }}
-    {{ yield topicResults() }}
+    {{ yield postResults() }}
     {{ include "/components/pagination.jet" .Pagination }}
 </div>
 {{ end }}
@@ -90,9 +89,7 @@
     <thead>
         <tr>
             {{ yield orderElement(id="0", value="Relevance") }}
-            {{ yield orderElement(id="1", value="Created") }}
-            {{ yield orderElement(id="2", value="Views") }}
-            {{ yield orderElement(id="3", value="Posts") }}
+            {{ yield orderElement(id="1", value="Posted") }}
         </tr>
     </thead>
 </table>
@@ -125,18 +122,61 @@
 </a>
 {{ end }}
 
-{{ block topicResults() }}
-{{ if len(.Topics) > 0 }}
+{{ block postResults() }}
+{{ if len(.Posts) > 0 }}
 <table width="100%" class="topics-table forum-search-results">
+    <thead>
+        <tr>
+            <th>Posts</th>
+            <th>Author</th>
+            <th>Posted</th>
+        </tr>
+    </thead>
     <tbody>
-        {{ range _, preview := .Topics }}
-            {{ yield forumTopicRow() preview }}
+        {{ range _, preview := .Posts }}
+            {{ yield postResultRow() preview }}
         {{ end }}
     </tbody>
 </table>
 {{ else }}
 <div class="forum-search-empty">
-    No topics matched your search.
+    No posts matched your search.
 </div>
 {{ end }}
+{{ end }}
+
+{{ block postResultRow() }}
+{{ post := .Post }}
+{{ topic := post.Topic }}
+<tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
+    <td class="forum-search-content">
+        <p class="forum-search-title">
+            {{ if topic.Pinned }}
+            <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
+            {{ end }}
+            <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/">{{ topic.Title }}</a>
+        </p>
+        {{ if .Excerpt != "" }}
+        {* TODO: Highlight matching words in bold *}
+        <p class="forum-search-excerpt">{{ .Excerpt }}</p>
+        {{ end }}
+        {{ if topic.Forum }}
+        <p class="topic-forum-name">in <a href="/forum/{{ topic.Forum.Id }}">{{ topic.Forum.Name }}</a></p>
+        {{ end }}
+    </td>
+
+    <td align="center">
+        {{ forumUserLink(post.User, .CurrentUserId) | unsafe }}
+    </td>
+
+    <td align="center">
+        <p>
+            <time class="timeago" datetime="{{ post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+            <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/" aria-label="View post">
+                <i class="icon-arrow-right" style="color: #ababab"></i>
+            </a>
+        </p>
+        <p class="forum-search-id">#{{ post.Id }}</p>
+    </td>
+</tr>
 {{ end }}

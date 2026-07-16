@@ -5,7 +5,10 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
+	"github.com/osuTitanic/titanic/internal/bbcode"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/repositories"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -13,7 +16,8 @@ import (
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 )
 
-const forumSearchTopicsPerPage = 25
+const forumSearchPostsPerPage = 25
+const forumSearchExcerptLength = 200
 
 func ForumSearch(ctx *server.Context) {
 	query := ctx.Request.URL.Query()
@@ -23,13 +27,13 @@ func ForumSearch(ctx *server.Context) {
 		currentUserId = &ctx.CurrentUser.Id
 	}
 
-	options := buildForumTopicSearchOptions(query, currentUserId)
-	result, err := ctx.State.ForumTopics.SearchPage(
+	options := buildForumPostSearchOptions(query, currentUserId)
+	result, err := ctx.State.ForumPosts.SearchPage(
 		options,
-		"Forum", "Icon", "Creator", "Creator.Groups.Group",
+		"Topic", "Topic.Forum", "User", "User.Groups.Group",
 	)
 	if err != nil {
-		ctx.Logger.Error("Failed to search forum topics", "options", options, "error", err)
+		ctx.Logger.Error("Failed to search forum posts", "options", options, "error", err)
 		InternalServerError(ctx)
 		return
 	}
@@ -38,22 +42,12 @@ func ForumSearch(ctx *server.Context) {
 	if currentUserId != nil {
 		currentUserIdValue = *currentUserId
 	}
-
-	hasCustomIcons := topicsHaveCustomIcons(result.Topics)
-	averageViews := 0.0
-	if len(result.Topics) > 0 {
-		averageViews = forumAverageTopicViews(ctx)
-	}
-
-	previews := buildTopicPreviews(
-		result.Topics,
-		fetchForumSearchPreviewPosts(ctx, result.Topics, result.Options.QueryString, result.Options.Creator),
-		forumTopicReadStatuses(ctx, result.Topics),
-		averageViews,
-		hasCustomIcons,
+	previews := buildForumPostSearchPreviews(
+		result.Posts,
+		result.Options.QueryString,
 		currentUserIdValue,
-		true,
 	)
+
 	page := result.Options.Offset/result.Options.Limit + 1
 	normalizeForumSearchQuery(query, result.Options, page)
 
@@ -67,10 +61,10 @@ func ForumSearch(ctx *server.Context) {
 	view := templates.ForumSearchView{
 		DefaultView: defaultView,
 		ForumJump:   buildForumJumpView(ctx, selectedForumId),
-		Topics:      previews,
+		Posts:       previews,
 		SearchSort:  strconv.Itoa(int(result.Options.Sort)),
 		SearchOrder: strconv.Itoa(int(result.Options.Order)),
-		DefaultSort: strconv.Itoa(int(defaultForumTopicSearchSort(result.Options.QueryString))),
+		DefaultSort: strconv.Itoa(int(defaultSearchSort(result.Options.QueryString))),
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        "/forum/search",
 			Query:       query,
@@ -82,22 +76,22 @@ func ForumSearch(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/forum/search", view)
 }
 
-func buildForumTopicSearchOptions(query url.Values, currentUserId *int) repositories.ForumTopicSearchOptions {
-	options := repositories.ForumTopicSearchOptions{
+func buildForumPostSearchOptions(query url.Values, currentUserId *int) repositories.ForumPostSearchOptions {
+	options := repositories.ForumPostSearchOptions{
 		QueryString: query.Get("query"),
 		Order:       constants.SearchOrderDescending,
-		Sort:        defaultForumTopicSearchSort(query.Get("query")),
-		Limit:       forumSearchTopicsPerPage,
+		Sort:        defaultSearchSort(query.Get("query")),
+		Limit:       forumSearchPostsPerPage,
 	}
 
 	if forumId, ok := parseInt(query.Get("forum")); ok && forumId > 0 {
 		options.ForumId = &forumId
 	}
 	if username := strings.TrimSpace(query.Get("username")); username != "" {
-		options.Creator = username
+		options.Author = username
 	}
 	if sortValue, ok := parseInt(query.Get("sort")); ok {
-		options.Sort = repositories.ForumTopicSearchSort(sortValue)
+		options.Sort = repositories.ForumSearchSort(sortValue)
 	}
 	if order, ok := parseInt(query.Get("order")); ok {
 		options.Order = constants.SearchOrder(order)
@@ -121,33 +115,80 @@ func buildForumTopicSearchOptions(query url.Values, currentUserId *int) reposito
 	return options
 }
 
-func fetchForumSearchPreviewPosts(
-	ctx *server.Context,
-	topics []*schemas.ForumTopic,
+func buildForumPostSearchPreviews(
+	posts []*schemas.ForumPost,
 	textQuery string,
-	creator string,
-) map[int]*schemas.ForumPost {
-	topicIds := make([]int, 0, len(topics))
-	for _, topic := range topics {
-		topicIds = append(topicIds, topic.Id)
+	currentUserId int,
+) []*templates.ForumSearchPostPreview {
+	previews := make([]*templates.ForumSearchPostPreview, 0, len(posts))
+	for _, post := range posts {
+		if post.Topic == nil {
+			continue
+		}
+		previews = append(previews, &templates.ForumSearchPostPreview{
+			Post:          post,
+			Excerpt:       forumPostSearchExcerpt(post.Content, textQuery),
+			Index:         len(previews),
+			CurrentUserId: currentUserId,
+		})
 	}
-
-	posts, err := ctx.State.ForumPosts.FetchSearchPreviews(
-		topicIds,
-		textQuery,
-		creator,
-		"User", "User.Groups.Group",
-	)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch preview posts for forum search", "error", err)
-		return map[int]*schemas.ForumPost{}
-	}
-	return posts
+	return previews
 }
 
-func normalizeForumSearchQuery(query url.Values, options repositories.ForumTopicSearchOptions, page int) {
+func forumPostSearchExcerpt(content, textQuery string) string {
+	// We want to strip out bbcode & collapse whitespace
+	text := strings.Join(strings.Fields(bbcode.Strip(content, false)), " ")
+	runes := []rune(text)
+	if len(runes) <= forumSearchExcerptLength {
+		// The text is short enough that we don't need to create an excerpt
+		return text
+	}
+
+	// Find the earliest occurrence of any search term in the text, and create an excerpt around it
+	start := forumPostSearchExcerptStart(text, textQuery, len(runes))
+	end := min(start+forumSearchExcerptLength, len(runes))
+	excerpt := string(runes[start:end])
+
+	if start > 0 {
+		excerpt = "..." + excerpt
+	}
+	if end < len(runes) {
+		excerpt += "..."
+	}
+	return excerpt
+}
+
+func forumPostSearchExcerptStart(text, textQuery string, textLength int) int {
+	lowerText := strings.ToLower(text)
+	firstMatch := -1
+
+	// We want to find the earliest occurrence of any search term in the text,
+	// so we split the query into terms and check each one
+	for term := range strings.FieldsSeq(strings.ToLower(textQuery)) {
+		term = strings.TrimFunc(term, func(r rune) bool {
+			// We want to ignore punctuation and whitespace when matching terms
+			return !unicode.IsLetter(r) && !unicode.IsNumber(r)
+		})
+		if term == "" {
+			continue
+		}
+		// We use Index instead of Contains to find the position of the term in the text
+		if index := strings.Index(lowerText, term); index >= 0 && (firstMatch < 0 || index < firstMatch) {
+			firstMatch = index
+		}
+	}
+	if firstMatch < 0 {
+		return 0
+	}
+
+	matchOffset := utf8.RuneCountInString(lowerText[:firstMatch])
+	start := max(0, matchOffset-forumSearchExcerptLength/3)
+	return min(start, textLength-forumSearchExcerptLength)
+}
+
+func normalizeForumSearchQuery(query url.Values, options repositories.ForumPostSearchOptions, page int) {
 	setSearchQueryValue(query, "query", options.QueryString)
-	setSearchQueryValue(query, "username", options.Creator)
+	setSearchQueryValue(query, "username", options.Author)
 
 	if options.ForumId == nil {
 		query.Del("forum")
@@ -187,9 +228,9 @@ func setSearchQueryValue(query url.Values, key, value string) {
 	query.Set(key, value)
 }
 
-func defaultForumTopicSearchSort(query string) repositories.ForumTopicSearchSort {
+func defaultSearchSort(query string) repositories.ForumSearchSort {
 	if strings.TrimSpace(query) == "" {
-		return repositories.ForumTopicSearchSortCreated
+		return repositories.ForumSearchSortCreated
 	}
-	return repositories.ForumTopicSearchSortRelevance
+	return repositories.ForumSearchSortRelevance
 }

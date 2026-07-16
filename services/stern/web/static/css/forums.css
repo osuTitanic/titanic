@@ -540,6 +540,28 @@
     margin-top: 5px;
 }
 
+.forum-search-content {
+    width: 65%;
+    padding: 5px !important;
+}
+
+.forum-search-title {
+    font-size: 105%;
+}
+
+.forum-search-excerpt {
+    margin-top: 2px;
+    color: #4f5355;
+    font-size: 85%;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+}
+
+.forum-search-id {
+    color: #868686;
+    font-size: 75%;
+}
+
 .topic-forum-name {
     margin-top: 1px;
     color: #868686;
