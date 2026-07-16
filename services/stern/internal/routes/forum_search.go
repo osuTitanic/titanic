@@ -23,18 +23,7 @@ func ForumSearch(ctx *server.Context) {
 		currentUserId = &ctx.CurrentUser.Id
 	}
 
-	options, page := buildForumTopicSearchOptions(query, currentUserId)
-	if options.ForumId == nil {
-		query.Del("forum")
-	} else {
-		query.Set("forum", strconv.Itoa(*options.ForumId))
-	}
-	if options.Creator != "" {
-		query.Set("username", options.Creator)
-	} else {
-		query.Del("username")
-	}
-
+	options := buildForumTopicSearchOptions(query, currentUserId)
 	result, err := ctx.State.ForumTopics.SearchPage(
 		options,
 		"Forum", "Icon", "Creator", "Creator.Groups.Group",
@@ -43,33 +32,6 @@ func ForumSearch(ctx *server.Context) {
 		ctx.Logger.Error("Failed to search forum topics", "options", options, "error", err)
 		InternalServerError(ctx)
 		return
-	}
-
-	topicIds := make([]int, 0, len(result.Topics))
-	for _, topic := range result.Topics {
-		topicIds = append(topicIds, topic.Id)
-	}
-
-	// Fetch preview posts for the topics
-	// For search results with a search query, we want to query for posts
-	// that match the given query the best, otherwise we fall back to the last post
-
-	var previewPosts map[int]*schemas.ForumPost
-	if result.Options.QueryString == "" {
-		previewPosts, err = ctx.State.ForumPosts.FetchLastForTopics(
-			topicIds,
-			"User", "User.Groups.Group",
-		)
-	} else {
-		previewPosts, err = ctx.State.ForumPosts.FetchSearchMatches(
-			topicIds,
-			result.Options.QueryString,
-			"User", "User.Groups.Group",
-		)
-	}
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch preview posts for forum search", "error", err)
-		previewPosts = map[int]*schemas.ForumPost{}
 	}
 
 	currentUserIdValue := 0
@@ -85,14 +47,16 @@ func ForumSearch(ctx *server.Context) {
 
 	previews := buildTopicPreviews(
 		result.Topics,
-		previewPosts,
+		fetchForumSearchPreviewPosts(ctx, result.Topics, result.Options.QueryString),
 		forumTopicReadStatuses(ctx, result.Topics),
 		averageViews,
 		hasCustomIcons,
 		currentUserIdValue,
 		true,
 	)
-	page = result.Options.Offset/result.Options.Limit + 1
+	page := result.Options.Offset/result.Options.Limit + 1
+	normalizeForumSearchQuery(query, result.Options, page)
+
 	selectedForumId := 0
 	if result.Options.ForumId != nil {
 		selectedForumId = *result.Options.ForumId
@@ -101,13 +65,12 @@ func ForumSearch(ctx *server.Context) {
 	defaultView.Query = query
 
 	view := templates.ForumSearchView{
-		DefaultView:    defaultView,
-		ForumJump:      buildForumJumpView(ctx, selectedForumId),
-		Topics:         previews,
-		HasCustomIcons: hasCustomIcons,
-		SearchSort:     strconv.Itoa(int(result.Options.Sort)),
-		SearchOrder:    strconv.Itoa(int(result.Options.Order)),
-		DefaultSort:    strconv.Itoa(int(defaultForumTopicSearchSort(query.Get("query")))),
+		DefaultView: defaultView,
+		ForumJump:   buildForumJumpView(ctx, selectedForumId),
+		Topics:      previews,
+		SearchSort:  strconv.Itoa(int(result.Options.Sort)),
+		SearchOrder: strconv.Itoa(int(result.Options.Order)),
+		DefaultSort: strconv.Itoa(int(defaultForumTopicSearchSort(result.Options.QueryString))),
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        "/forum/search",
 			Query:       query,
@@ -119,7 +82,7 @@ func ForumSearch(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/forum/search", view)
 }
 
-func buildForumTopicSearchOptions(query url.Values, currentUserId *int) (repositories.ForumTopicSearchOptions, int) {
+func buildForumTopicSearchOptions(query url.Values, currentUserId *int) repositories.ForumTopicSearchOptions {
 	options := repositories.ForumTopicSearchOptions{
 		QueryString: query.Get("query"),
 		Order:       constants.SearchOrderDescending,
@@ -155,7 +118,82 @@ func buildForumTopicSearchOptions(query url.Values, currentUserId *int) (reposit
 	}
 	options.Offset = (page - 1) * options.Limit
 
-	return options, page
+	return options
+}
+
+func fetchForumSearchPreviewPosts(
+	ctx *server.Context,
+	topics []*schemas.ForumTopic,
+	textQuery string,
+) map[int]*schemas.ForumPost {
+	topicIds := make([]int, 0, len(topics))
+	for _, topic := range topics {
+		topicIds = append(topicIds, topic.Id)
+	}
+
+	var (
+		posts map[int]*schemas.ForumPost
+		err   error
+	)
+	if textQuery == "" {
+		posts, err = ctx.State.ForumPosts.FetchLastForTopics(
+			topicIds,
+			"User", "User.Groups.Group",
+		)
+	} else {
+		posts, err = ctx.State.ForumPosts.FetchSearchMatches(
+			topicIds,
+			textQuery,
+			"User", "User.Groups.Group",
+		)
+	}
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch preview posts for forum search", "error", err)
+		return map[int]*schemas.ForumPost{}
+	}
+	return posts
+}
+
+func normalizeForumSearchQuery(query url.Values, options repositories.ForumTopicSearchOptions, page int) {
+	setSearchQueryValue(query, "query", options.QueryString)
+	setSearchQueryValue(query, "username", options.Creator)
+
+	if options.ForumId == nil {
+		query.Del("forum")
+	} else {
+		query.Set("forum", strconv.Itoa(*options.ForumId))
+	}
+
+	if options.BookmarkedByUserId == nil {
+		query.Del("bookmarked")
+	} else {
+		query.Set("bookmarked", "1")
+	}
+	if options.SubscribedByUserId == nil {
+		query.Del("subscribed")
+	} else {
+		query.Set("subscribed", "1")
+	}
+
+	if _, present := query["sort"]; present {
+		query.Set("sort", strconv.Itoa(int(options.Sort)))
+	}
+	if _, present := query["order"]; present {
+		query.Set("order", strconv.Itoa(int(options.Order)))
+	}
+	if page <= 1 {
+		query.Del("page")
+	} else {
+		query.Set("page", strconv.Itoa(page))
+	}
+}
+
+func setSearchQueryValue(query url.Values, key, value string) {
+	if value == "" {
+		query.Del(key)
+		return
+	}
+	query.Set(key, value)
 }
 
 func defaultForumTopicSearchSort(query string) repositories.ForumTopicSearchSort {

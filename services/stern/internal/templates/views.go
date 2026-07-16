@@ -338,7 +338,6 @@ type ForumTopicPreview struct {
 	StatusIcon     string
 	PageCount      int
 	Index          int
-	ForumId        int
 	HasCustomIcons bool
 	CurrentUserId  int
 	ShowForum      bool
@@ -411,13 +410,12 @@ func (v ForumTopicView) HasBeatmapset() bool {
 
 type ForumSearchView struct {
 	DefaultView
-	ForumJump      ForumJumpView
-	Topics         []*ForumTopicPreview
-	HasCustomIcons bool
-	SearchSort     string
-	SearchOrder    string
-	DefaultSort    string
-	Pagination     PaginationView
+	ForumJump   ForumJumpView
+	Topics      []*ForumTopicPreview
+	SearchSort  string
+	SearchOrder string
+	DefaultSort string
+	Pagination  PaginationView
 }
 
 type ForumPostPreview struct {

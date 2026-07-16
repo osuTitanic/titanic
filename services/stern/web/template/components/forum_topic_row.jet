@@ -2,7 +2,7 @@
 {{ topic := .Topic }}
 <tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
     <td align="center" width="4%">
-        <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">
+        <a href="/forum/{{ topic.ForumId }}/t/{{ topic.Id }}/">
             <img src="{{ .StatusIcon }}" width="20" alt="Topic status">
         </a>
     </td>
@@ -20,7 +20,7 @@
         {{ if topic.Pinned }}
             <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
         {{ end }}
-            <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">{{ topic.Title }}</a>
+            <a href="/forum/{{ topic.ForumId }}/t/{{ topic.Id }}/">{{ topic.Title }}</a>
         {{ if topic.StatusTextValue() != "" }}
             <p class="topic-status-text">{{ topic.StatusTextValue() }}</p>
         {{ end }}
@@ -46,7 +46,7 @@
         {{ if .PreviewPost }}
             <p>
                 {{ forumUserLink(.PreviewPost.User, .CurrentUserId) | unsafe }}
-                <a href="/forum/{{ .ForumId }}/p/{{ .PreviewPost.Id }}/">
+                <a href="/forum/{{ topic.ForumId }}/p/{{ .PreviewPost.Id }}/">
                     <i class="icon-arrow-right" style="color: #ababab"></i>
                 </a>
             </p>

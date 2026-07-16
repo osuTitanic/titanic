@@ -51,6 +51,9 @@ func (options *ForumTopicSearchOptions) Normalize() {
 	if options.Sort < ForumTopicSearchSortRelevance || options.Sort > ForumTopicSearchSortPosts {
 		options.Sort = ForumTopicSearchSortRelevance
 	}
+	if options.Sort == ForumTopicSearchSortRelevance && options.QueryString == "" {
+		options.Sort = ForumTopicSearchSortCreated
+	}
 	if options.Limit < 1 {
 		options.Limit = 25
 	}
@@ -151,19 +154,17 @@ func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, option
 	}
 	if options.Creator != "" {
 		query = query.Where(`EXISTS (
-			SELECT 1 FROM users AS search_creators
-			WHERE search_creators.safe_name = ?
+			SELECT 1 FROM users AS search_users
+			WHERE search_users.safe_name = ?
 			AND (
-				-- The user is the creator of the topic or
-				-- the user has made at least one post in the topic
-				search_creators.id = forum_topics.creator_id
+				search_users.id = forum_topics.creator_id
 				OR EXISTS (
-					SELECT 1 FROM forum_posts AS search_creator_posts
-					WHERE search_creator_posts.topic_id = forum_topics.id
-					AND search_creator_posts.user_id = search_creators.id
-					AND search_creator_posts.hidden = false
-					AND search_creator_posts.draft = false
-					AND search_creator_posts.deleted = false
+					SELECT 1 FROM forum_posts AS search_user_posts
+					WHERE search_user_posts.topic_id = forum_topics.id
+					AND search_user_posts.user_id = search_users.id
+					AND search_user_posts.hidden = false
+					AND search_user_posts.draft = false
+					AND search_user_posts.deleted = false
 				)
 			)
 		)`, schemas.ResolveSafeName(options.Creator))

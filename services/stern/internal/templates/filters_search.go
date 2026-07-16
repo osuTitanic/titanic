@@ -128,6 +128,14 @@ func searchHiddenInputs(a jet.Arguments) reflect.Value {
 			inputs = append(inputs, SearchHiddenInput{Name: name, Value: value})
 		}
 	}
+
+	// Sort the inputs by name and then by value for consistent ordering
+	sort.Slice(inputs, func(i, j int) bool {
+		if inputs[i].Name == inputs[j].Name {
+			return inputs[i].Value < inputs[j].Value
+		}
+		return inputs[i].Name < inputs[j].Name
+	})
 	return reflect.ValueOf(inputs)
 }
 

@@ -256,7 +256,6 @@ func buildTopicPreviews(
 			StatusIcon:     topicStatusIcon(topic, readStatuses[topic.Id], averageViews),
 			PageCount:      (topic.PostCount + forumPostsPerPage - 1) / forumPostsPerPage,
 			Index:          index,
-			ForumId:        topic.ForumId,
 			HasCustomIcons: hasCustomIcons,
 			CurrentUserId:  currentUserId,
 			ShowForum:      showForum,
