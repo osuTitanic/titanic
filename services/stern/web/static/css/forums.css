@@ -417,6 +417,12 @@
     border-radius: 5px;
     font-size: 95%;
     vertical-align: middle;
+    transition: all 0.2s;
+}
+
+.forum-search-form input[type="submit"]:hover {
+    text-shadow: 1px 1px 8px #afb7ff;
+    color: white;
 }
 
 .forum-search-id-filters {
