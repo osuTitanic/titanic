@@ -102,6 +102,11 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		})
 		assertForumSearchPost(t, body, matchingPost, true)
 		assertForumSearchPost(t, body, unrelatedPost, false)
+		for _, term := range []string{"digital", "client"} {
+			if !strings.Contains(body, "<strong>"+term+"</strong>") {
+				t.Errorf("forum search does not highlight %q", term)
+			}
+		}
 
 		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
 		assertForumSearchPost(t, body, data.post, false)

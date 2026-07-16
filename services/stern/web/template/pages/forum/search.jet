@@ -156,9 +156,8 @@
             {{ end }}
             <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/">{{ topic.Title }}</a>
         </p>
-        {{ if .Excerpt != "" }}
-        {* TODO: Highlight matching words in bold *}
-        <p class="forum-search-excerpt">{{ .Excerpt }}</p>
+        {{ if len(.Excerpt) > 0 }}
+        <p class="forum-search-excerpt">{{ range .Excerpt }}{{ if .Matched }}<strong>{{ .Text }}</strong>{{ else }}{{ .Text }}{{ end }}{{ end }}</p>
         {{ end }}
         {{ if topic.Forum }}
         <p class="topic-forum-name">in <a href="/forum/{{ topic.Forum.Id }}">{{ topic.Forum.Name }}</a></p>
@@ -176,7 +175,6 @@
                 <i class="icon-arrow-right" style="color: #ababab"></i>
             </a>
         </p>
-        <p class="forum-search-id">#{{ post.Id }}</p>
     </td>
 </tr>
 {{ end }}

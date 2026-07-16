@@ -420,9 +420,14 @@ type ForumSearchView struct {
 
 type ForumSearchPostPreview struct {
 	Post          *schemas.ForumPost
-	Excerpt       string
+	Excerpt       []ForumSearchExcerptPart
 	Index         int
 	CurrentUserId int
+}
+
+type ForumSearchExcerptPart struct {
+	Text    string
+	Matched bool
 }
 
 type ForumPostPreview struct {

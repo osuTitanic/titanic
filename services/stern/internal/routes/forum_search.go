@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/osuTitanic/titanic/internal/bbcode"
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -115,77 +114,6 @@ func buildForumPostSearchOptions(query url.Values, currentUserId *int) repositor
 	return options
 }
 
-func buildForumPostSearchPreviews(
-	posts []*schemas.ForumPost,
-	textQuery string,
-	currentUserId int,
-) []*templates.ForumSearchPostPreview {
-	previews := make([]*templates.ForumSearchPostPreview, 0, len(posts))
-	for _, post := range posts {
-		if post.Topic == nil {
-			continue
-		}
-		previews = append(previews, &templates.ForumSearchPostPreview{
-			Post:          post,
-			Excerpt:       forumPostSearchExcerpt(post.Content, textQuery),
-			Index:         len(previews),
-			CurrentUserId: currentUserId,
-		})
-	}
-	return previews
-}
-
-func forumPostSearchExcerpt(content, textQuery string) string {
-	// We want to strip out bbcode & collapse whitespace
-	text := strings.Join(strings.Fields(bbcode.Strip(content, false)), " ")
-	runes := []rune(text)
-	if len(runes) <= forumSearchExcerptLength {
-		// The text is short enough that we don't need to create an excerpt
-		return text
-	}
-
-	// Find the earliest occurrence of any search term in the text, and create an excerpt around it
-	start := forumPostSearchExcerptStart(text, textQuery, len(runes))
-	end := min(start+forumSearchExcerptLength, len(runes))
-	excerpt := string(runes[start:end])
-
-	if start > 0 {
-		excerpt = "..." + excerpt
-	}
-	if end < len(runes) {
-		excerpt += "..."
-	}
-	return excerpt
-}
-
-func forumPostSearchExcerptStart(text, textQuery string, textLength int) int {
-	lowerText := strings.ToLower(text)
-	firstMatch := -1
-
-	// We want to find the earliest occurrence of any search term in the text,
-	// so we split the query into terms and check each one
-	for term := range strings.FieldsSeq(strings.ToLower(textQuery)) {
-		term = strings.TrimFunc(term, func(r rune) bool {
-			// We want to ignore punctuation and whitespace when matching terms
-			return !unicode.IsLetter(r) && !unicode.IsNumber(r)
-		})
-		if term == "" {
-			continue
-		}
-		// We use Index instead of Contains to find the position of the term in the text
-		if index := strings.Index(lowerText, term); index >= 0 && (firstMatch < 0 || index < firstMatch) {
-			firstMatch = index
-		}
-	}
-	if firstMatch < 0 {
-		return 0
-	}
-
-	matchOffset := utf8.RuneCountInString(lowerText[:firstMatch])
-	start := max(0, matchOffset-forumSearchExcerptLength/3)
-	return min(start, textLength-forumSearchExcerptLength)
-}
-
 func normalizeForumSearchQuery(query url.Values, options repositories.ForumPostSearchOptions, page int) {
 	setSearchQueryValue(query, "query", options.QueryString)
 	setSearchQueryValue(query, "username", options.Author)
@@ -233,4 +161,123 @@ func defaultSearchSort(query string) repositories.ForumSearchSort {
 		return repositories.ForumSearchSortCreated
 	}
 	return repositories.ForumSearchSortRelevance
+}
+
+func buildForumPostSearchPreviews(
+	posts []*schemas.ForumPost,
+	textQuery string,
+	currentUserId int,
+) []*templates.ForumSearchPostPreview {
+	previews := make([]*templates.ForumSearchPostPreview, 0, len(posts))
+	for _, post := range posts {
+		if post.Topic == nil {
+			continue
+		}
+		previews = append(previews, &templates.ForumSearchPostPreview{
+			Post:          post,
+			Excerpt:       forumPostSearchExcerpt(post.Content, textQuery),
+			Index:         len(previews),
+			CurrentUserId: currentUserId,
+		})
+	}
+	return previews
+}
+
+func forumPostSearchExcerpt(content, textQuery string) []templates.ForumSearchExcerptPart {
+	// We want to strip out bbcode & collapse whitespace
+	text := strings.Join(strings.Fields(bbcode.Strip(content, false)), " ")
+	if text == "" {
+		return nil
+	}
+
+	terms := forumSearchTerms(textQuery)
+	runes := []rune(text)
+
+	if len(runes) <= forumSearchExcerptLength {
+		// The text is short enough that we don't need to create an excerpt
+		return forumPostSearchExcerptParts(text, terms)
+	}
+
+	// Find the earliest occurrence of any search term in the text, and create an excerpt around it
+	start := forumPostSearchExcerptStart(runes, terms)
+	end := min(start+forumSearchExcerptLength, len(runes))
+	excerpt := string(runes[start:end])
+
+	if start > 0 {
+		excerpt = "..." + excerpt
+	}
+	if end < len(runes) {
+		excerpt += "..."
+	}
+	return forumPostSearchExcerptParts(excerpt, terms)
+}
+
+func forumSearchTerms(textQuery string) map[string]struct{} {
+	// Split on every non-letter & remove duplicate terms
+	terms := make(map[string]struct{})
+	for _, term := range strings.FieldsFunc(strings.ToLower(textQuery), func(r rune) bool {
+		return !isForumSearchWordRune(r)
+	}) {
+		terms[term] = struct{}{}
+	}
+	return terms
+}
+
+func forumPostSearchExcerptStart(text []rune, terms map[string]struct{}) int {
+	if len(terms) == 0 {
+		return 0
+	}
+
+	for start := 0; start < len(text); {
+		if !isForumSearchWordRune(text[start]) {
+			// Skip non-word characters
+			start++
+			continue
+		}
+		end := start + 1
+		for end < len(text) && isForumSearchWordRune(text[end]) {
+			// Find the end of the current word
+			end++
+		}
+
+		// Check if the current word matches any of the search terms
+		if _, matched := terms[strings.ToLower(string(text[start:end]))]; matched {
+			// We found a match, so we want to create an excerpt that starts a bit before the match
+			excerptStart := max(0, start-forumSearchExcerptLength/3)
+			return min(excerptStart, len(text)-forumSearchExcerptLength)
+		}
+		start = end
+	}
+	return 0
+}
+
+func forumPostSearchExcerptParts(text string, terms map[string]struct{}) []templates.ForumSearchExcerptPart {
+	runes := []rune(text)
+	parts := make([]templates.ForumSearchExcerptPart, 0)
+
+	// We want to split the text into alternating sequences of "word" and "non-word"
+	// characters, so we can highlight only the whole-word matches
+
+	for start := 0; start < len(runes); {
+		isWord := isForumSearchWordRune(runes[start])
+		end := start + 1
+		for end < len(runes) && isForumSearchWordRune(runes[end]) == isWord {
+			// Keep going until we reach the end of the current word or non-word sequence
+			end++
+		}
+
+		part := templates.ForumSearchExcerptPart{Text: string(runes[start:end])}
+		if isWord {
+			// Only exact, whole-word matches should be highlighted
+			_, part.Matched = terms[strings.ToLower(part.Text)]
+		}
+		parts = append(parts, part)
+		start = end
+	}
+	return parts
+}
+
+func isForumSearchWordRune(r rune) bool {
+	// We only want to match letters and numbers as part of search terms
+	return unicode.IsLetter(r) || unicode.IsNumber(r)
 }
