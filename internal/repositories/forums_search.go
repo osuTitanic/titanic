@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -145,8 +146,30 @@ func (r *ForumPostRepository) buildForumPostSearchQuery(query *gorm.DB, options 
 }
 
 func applyForumPostTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
-	condition, args := forumSearchVectorMatchCondition("forum_posts.search_vector", textQuery)
-	return query.Where("("+condition+")", args...)
+	postCondition, postArgs := forumSearchVectorMatchCondition("search_posts.search_vector", textQuery)
+	topicCondition, topicArgs := forumSearchVectorMatchCondition("search_title_topics.search_vector", textQuery)
+
+	// Search each indexed table separately, then combine matching
+	// posts with the initial post from every matching topic.
+	condition := `forum_posts.id IN (
+		SELECT search_posts.id
+		FROM forum_posts AS search_posts
+		WHERE (` + postCondition + `)
+		UNION
+		SELECT search_initial_posts.id
+		FROM forum_topics AS search_title_topics
+		CROSS JOIN LATERAL (
+			-- Get the initial post for each matching topic title
+			SELECT search_title_posts.id
+			FROM forum_posts AS search_title_posts
+			WHERE search_title_posts.topic_id = search_title_topics.id
+			ORDER BY search_title_posts.id ASC
+			LIMIT 1
+		) AS search_initial_posts
+		WHERE (` + topicCondition + `)
+	)`
+
+	return query.Where(condition, slices.Concat(postArgs, topicArgs)...)
 }
 
 func forumSearchVectorMatchCondition(searchVector, textQuery string) (string, []any) {
@@ -163,7 +186,7 @@ func applyForumPostSearchSort(query *gorm.DB, options ForumPostSearchOptions) *g
 	descending := options.Order != constants.SearchOrderAscending
 
 	if options.Sort == ForumSearchSortRelevance && options.QueryString != "" {
-		expression, args := forumSearchVectorRankExpression("forum_posts.search_vector", options.QueryString)
+		expression, args := forumPostSearchRankExpression(options.QueryString)
 		return applySearchRankOrder(query, expression, args, descending, "forum_posts.id")
 	}
 
@@ -173,6 +196,23 @@ func applyForumPostSearchSort(query *gorm.DB, options ForumPostSearchOptions) *g
 			Desc:   descending,
 		}).
 		Order("forum_posts.id DESC")
+}
+
+func forumPostSearchRankExpression(textQuery string) (string, []any) {
+	postRank, postArgs := forumSearchVectorRankExpression("forum_posts.search_vector", textQuery)
+	topicRank, topicArgs := forumSearchVectorRankExpression("search_topics.search_vector", textQuery)
+
+	// Only the initial post receives relevance from its topic title
+	return `GREATEST(
+		` + postRank + `,
+		CASE WHEN forum_posts.id = (
+			SELECT search_rank_initial_posts.id
+			FROM forum_posts AS search_rank_initial_posts
+			WHERE search_rank_initial_posts.topic_id = forum_posts.topic_id
+			ORDER BY search_rank_initial_posts.id ASC
+			LIMIT 1
+		) THEN 2 * (` + topicRank + `) ELSE 0 END
+	)`, slices.Concat(postArgs, topicArgs)
 }
 
 func forumSearchVectorRankExpression(searchVector, textQuery string) (string, []any) {
