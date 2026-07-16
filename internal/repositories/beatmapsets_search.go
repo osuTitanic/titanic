@@ -323,21 +323,15 @@ func applyBeatmapsetSearchSort(query *gorm.DB, options BeatmapsetSearchOptions, 
 	textQuery = strings.TrimSpace(textQuery)
 
 	if options.Sort == constants.BeatmapSortRelevance && textQuery != "" {
-		direction := "ASC"
-		if desc {
-			direction = "DESC"
-		}
-
 		// When sorting by relevance, we use the ts_rank of the full-text
 		// search vector against the query as the primary sort key
-		return query.
-			Order(clause.OrderBy{
-				Expression: clause.Expr{
-					SQL:  "ts_rank(beatmapsets.search, plainto_tsquery('simple', ?)) " + direction,
-					Vars: []any{textQuery},
-				},
-			}).
-			Order("beatmapsets.id DESC")
+		return applySearchRankOrder(
+			query,
+			"ts_rank(beatmapsets.search, plainto_tsquery('simple', ?))",
+			[]any{textQuery},
+			desc,
+			"beatmapsets.id",
+		)
 	}
 
 	// By default, we sort by approved/ranked date

@@ -181,19 +181,8 @@ func applyForumTopicSearchSort(query *gorm.DB, options ForumTopicSearchOptions) 
 
 	// Only allow relevance if there's a search query present
 	if options.Sort == ForumTopicSearchSortRelevance && options.QueryString != "" {
-		// TODO: why does ASC/DESC not do anyhting
-		direction := "ASC"
-		if descending {
-			direction = "DESC"
-		}
-
 		expression, args := forumTopicRankExpression(options.QueryString)
-		return query.
-			Order(clause.OrderBy{Expression: clause.Expr{
-				SQL:  expression + " " + direction,
-				Vars: args,
-			}}).
-			Order("forum_topics.id DESC")
+		return applySearchRankOrder(query, expression, args, descending, "forum_topics.id")
 	}
 
 	// Use "created" by default and allow specified sort expressions to override it
