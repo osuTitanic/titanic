@@ -23,7 +23,7 @@
     {{ include "/components/pagination_topic.jet" .Pagination }}
     {{ yield forumTopicReplyButton() }}
     {{ yield forumTopicActiveUsers() }}
-    {{ include "/components/forum_search_shortcut.jet" }}
+    {{ include "/components/forum_shortcuts.jet" }}
     <br>
 </div>
 <script src="{{ cachedUrl("/js/forum.js") }}" defer></script>

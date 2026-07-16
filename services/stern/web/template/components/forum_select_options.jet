@@ -1,0 +1,4 @@
+{{ currentForumId := .CurrentForumId }}
+{{ range _, option := .Options }}
+<option value="{{ option.Id }}" {{ if option.Id == currentForumId }}selected{{ end }}>{{ option.Label }}</option>
+{{ end }}

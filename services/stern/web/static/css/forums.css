@@ -62,14 +62,15 @@
     margin-right: 3px;
 }
 
-.forum-jumpbox select {
+.forum-select {
     max-width: 250px;
     height: 18px;
     border: 1px solid rgb(185, 197, 236);
     vertical-align: middle;
 }
 
-.forum-jumpbox input[type="submit"] {
+.forum-jumpbox input[type="submit"],
+.forum-search-forum-filter input[type="submit"] {
     margin-left: 3px;
     padding: 1px 6px;
     vertical-align: middle;
@@ -482,8 +483,13 @@
 }
 
 .forum-search-options {
+    clear: both;
     margin-bottom: 5px;
     font-size: 78%;
+}
+
+.forum-search-forum-filter {
+    margin: 0;
 }
 
 .forum-search-options dl {

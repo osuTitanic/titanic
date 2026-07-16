@@ -22,7 +22,11 @@ func ForumSearch(ctx *server.Context) {
 	if ctx.CurrentUser != nil {
 		currentUserId = &ctx.CurrentUser.Id
 	}
+
 	options, page := buildForumTopicSearchOptions(query, currentUserId)
+	if options.ForumId == nil {
+		query.Del("forum")
+	}
 
 	result, err := ctx.State.ForumTopics.SearchPage(
 		options,
@@ -82,8 +86,16 @@ func ForumSearch(ctx *server.Context) {
 		true,
 	)
 	page = result.Options.Offset/result.Options.Limit + 1
+	selectedForumId := 0
+	if result.Options.ForumId != nil {
+		selectedForumId = *result.Options.ForumId
+	}
+	defaultView := buildDefaultView(ctx)
+	defaultView.Query = query
+
 	view := templates.ForumSearchView{
-		DefaultView:    buildDefaultView(ctx),
+		DefaultView:    defaultView,
+		ForumJump:      buildForumJumpView(ctx, selectedForumId),
 		Topics:         previews,
 		HasCustomIcons: hasCustomIcons,
 		SearchSort:     strconv.Itoa(int(result.Options.Sort)),

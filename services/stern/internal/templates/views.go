@@ -411,6 +411,7 @@ func (v ForumTopicView) HasBeatmapset() bool {
 
 type ForumSearchView struct {
 	DefaultView
+	ForumJump      ForumJumpView
 	Topics         []*ForumTopicPreview
 	HasCustomIcons bool
 	SearchSort     string

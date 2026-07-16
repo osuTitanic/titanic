@@ -16,12 +16,9 @@
                 {* Using viewforum.php to make ?f=<id> work *}
                 <form class="forum-jumpbox" action="/forum/viewforum.php" method="get">
                     <label for="forum-jump-target">Jump to:</label>
-                    <select id="forum-jump-target" name="f">
+                    <select class="forum-select" id="forum-jump-target" name="f">
                         <option value="">Select a forum</option>
-                        {{ currentForumId := .ForumJump.CurrentForumId }}
-                        {{ range _, option := .ForumJump.Options }}
-                        <option value="{{ option.Id }}" {{ if option.Id == currentForumId }}selected{{ end }}>{{ option.Label }}</option>
-                        {{ end }}
+                        {{ include "/components/forum_select_options.jet" .ForumJump }}
                     </select>
                     <input type="submit" value="Go">
                 </form>
