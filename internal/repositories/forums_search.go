@@ -104,30 +104,37 @@ func (r *ForumTopicRepository) SearchPage(options ForumTopicSearchOptions, prelo
 	}, nil
 }
 
-func (r *ForumPostRepository) FetchSearchMatches(topicIds []int, textQuery string, preload ...string) (map[int]*schemas.ForumPost, error) {
+func (r *ForumPostRepository) FetchSearchPreviews(topicIds []int, textQuery, creator string, preload ...string) (map[int]*schemas.ForumPost, error) {
 	postsByTopic := make(map[int]*schemas.ForumPost, len(topicIds))
 	textQuery = strings.TrimSpace(textQuery)
-	if len(topicIds) == 0 || textQuery == "" {
+	if len(topicIds) == 0 {
 		return postsByTopic, nil
 	}
 
-	rankExpression, rankArgs := forumSearchVectorRankExpression(
-		"forum_posts.search_vector",
-		textQuery,
-	)
-	var posts []*schemas.ForumPost
-
-	err := Preloaded(r.db.Model(&schemas.ForumPost{}), preload).
+	query := Preloaded(r.db.Model(&schemas.ForumPost{}), preload).
 		Select("DISTINCT ON (forum_posts.topic_id) forum_posts.*").
 		Where("forum_posts.topic_id IN ?", topicIds).
 		Where("forum_posts.hidden = ?", false).
 		Where("forum_posts.draft = ?", false).
-		Where("forum_posts.deleted = ?", false).
-		Order(clause.OrderBy{Expression: clause.Expr{
-			SQL:  "forum_posts.topic_id ASC, " + rankExpression + " DESC, forum_posts.id ASC",
-			Vars: rankArgs,
-		}}).
-		Find(&posts).Error
+		Where("forum_posts.deleted = ?", false)
+	query = applyForumPostPreviewCreatorFilter(query, creator, textQuery)
+
+	orderExpression := "forum_posts.topic_id ASC, forum_posts.id DESC"
+	var orderArgs []any
+	if textQuery != "" {
+		rankExpression, rankArgs := forumSearchVectorRankExpression(
+			"forum_posts.search_vector",
+			textQuery,
+		)
+		orderExpression = "forum_posts.topic_id ASC, " + rankExpression + " DESC, forum_posts.id ASC"
+		orderArgs = rankArgs
+	}
+
+	var posts []*schemas.ForumPost
+	err := query.Order(clause.OrderBy{Expression: clause.Expr{
+		SQL:  orderExpression,
+		Vars: orderArgs,
+	}}).Find(&posts).Error
 	if err != nil {
 		return nil, err
 	}
@@ -153,21 +160,7 @@ func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, option
 		query = query.Where("forum_topics.forum_id = ?", *options.ForumId)
 	}
 	if options.Creator != "" {
-		query = query.Where(`EXISTS (
-			SELECT 1 FROM users AS search_users
-			WHERE search_users.safe_name = ?
-			AND (
-				search_users.id = forum_topics.creator_id
-				OR EXISTS (
-					SELECT 1 FROM forum_posts AS search_user_posts
-					WHERE search_user_posts.topic_id = forum_topics.id
-					AND search_user_posts.user_id = search_users.id
-					AND search_user_posts.hidden = false
-					AND search_user_posts.draft = false
-					AND search_user_posts.deleted = false
-				)
-			)
-		)`, schemas.ResolveSafeName(options.Creator))
+		query = applyForumTopicCreatorFilter(query, options.Creator, options.QueryString)
 	}
 
 	if options.BookmarkedByUserId != nil {
@@ -188,16 +181,66 @@ func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, option
 	return query
 }
 
-func applyForumTopicTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
-	topicCondition := "search_topics.search_vector @@ plainto_tsquery('english', ?)"
-	postCondition := "search_posts.search_vector @@ plainto_tsquery('english', ?)"
-	args := []any{textQuery}
-
-	if fuzzyQuery := fuzzyTsQuery(textQuery); fuzzyQuery != "" {
-		topicCondition += " OR search_topics.search_vector @@ to_tsquery('english', ?)"
-		postCondition += " OR search_posts.search_vector @@ to_tsquery('english', ?)"
-		args = append(args, fuzzyQuery)
+func applyForumTopicCreatorFilter(query *gorm.DB, creator, textQuery string) *gorm.DB {
+	postMatchCondition := ""
+	args := []any{schemas.ResolveSafeName(creator)}
+	if textQuery != "" {
+		condition, conditionArgs := forumSearchVectorMatchCondition("search_user_posts.search_vector", textQuery)
+		postMatchCondition = " AND (" + condition + ")"
+		args = append(args, conditionArgs...)
 	}
+
+	condition := `EXISTS (
+		SELECT 1 FROM users AS search_users
+		WHERE search_users.safe_name = ?
+		AND (
+			search_users.id = forum_topics.creator_id
+			OR EXISTS (
+				SELECT 1 FROM forum_posts AS search_user_posts
+				WHERE search_user_posts.topic_id = forum_topics.id
+				AND search_user_posts.user_id = search_users.id
+				AND search_user_posts.hidden = false
+				AND search_user_posts.draft = false
+				AND search_user_posts.deleted = false` + postMatchCondition + `
+			)
+		)
+	)`
+	return query.Where(condition, args...)
+}
+
+func applyForumPostPreviewCreatorFilter(query *gorm.DB, creator, textQuery string) *gorm.DB {
+	creator = strings.TrimSpace(creator)
+	if creator == "" {
+		return query
+	}
+
+	postMatchCondition := ""
+	args := []any{schemas.ResolveSafeName(creator)}
+	if textQuery != "" {
+		condition, conditionArgs := forumSearchVectorMatchCondition("forum_posts.search_vector", textQuery)
+		postMatchCondition = " AND (" + condition + ")"
+		args = append(args, conditionArgs...)
+	}
+
+	condition := `EXISTS (
+		SELECT 1
+		FROM users AS search_preview_users
+		JOIN forum_topics AS search_preview_topics
+		ON search_preview_topics.id = forum_posts.topic_id
+		WHERE search_preview_users.safe_name = ?
+		AND (
+			search_preview_users.id = search_preview_topics.creator_id
+			OR (
+				search_preview_users.id = forum_posts.user_id` + postMatchCondition + `
+			)
+		)
+	)`
+	return query.Where(condition, args...)
+}
+
+func applyForumTopicTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
+	topicCondition, topicArgs := forumSearchVectorMatchCondition("search_topics.search_vector", textQuery)
+	postCondition, postArgs := forumSearchVectorMatchCondition("search_posts.search_vector", textQuery)
 
 	// Separate subqueries let PostgreSQL use both GIN indexes before
 	// combining post and topic matches into one result
@@ -214,7 +257,17 @@ func applyForumTopicTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
 		AND (` + postCondition + `)
 	)`
 
-	return query.Where(condition, slices.Concat(args, args)...)
+	return query.Where(condition, slices.Concat(topicArgs, postArgs)...)
+}
+
+func forumSearchVectorMatchCondition(searchVector, textQuery string) (string, []any) {
+	condition := searchVector + " @@ plainto_tsquery('english', ?)"
+	args := []any{textQuery}
+	if fuzzyQuery := fuzzyTsQuery(textQuery); fuzzyQuery != "" {
+		condition += " OR " + searchVector + " @@ to_tsquery('english', ?)"
+		args = append(args, fuzzyQuery)
+	}
+	return condition, args
 }
 
 var forumTopicSortExpressions = map[ForumTopicSearchSort]string{

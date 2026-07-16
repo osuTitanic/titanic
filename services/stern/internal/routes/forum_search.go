@@ -47,7 +47,7 @@ func ForumSearch(ctx *server.Context) {
 
 	previews := buildTopicPreviews(
 		result.Topics,
-		fetchForumSearchPreviewPosts(ctx, result.Topics, result.Options.QueryString),
+		fetchForumSearchPreviewPosts(ctx, result.Topics, result.Options.QueryString, result.Options.Creator),
 		forumTopicReadStatuses(ctx, result.Topics),
 		averageViews,
 		hasCustomIcons,
@@ -125,28 +125,19 @@ func fetchForumSearchPreviewPosts(
 	ctx *server.Context,
 	topics []*schemas.ForumTopic,
 	textQuery string,
+	creator string,
 ) map[int]*schemas.ForumPost {
 	topicIds := make([]int, 0, len(topics))
 	for _, topic := range topics {
 		topicIds = append(topicIds, topic.Id)
 	}
 
-	var (
-		posts map[int]*schemas.ForumPost
-		err   error
+	posts, err := ctx.State.ForumPosts.FetchSearchPreviews(
+		topicIds,
+		textQuery,
+		creator,
+		"User", "User.Groups.Group",
 	)
-	if textQuery == "" {
-		posts, err = ctx.State.ForumPosts.FetchLastForTopics(
-			topicIds,
-			"User", "User.Groups.Group",
-		)
-	} else {
-		posts, err = ctx.State.ForumPosts.FetchSearchMatches(
-			topicIds,
-			textQuery,
-			"User", "User.Groups.Group",
-		)
-	}
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch preview posts for forum search", "error", err)
 		return map[int]*schemas.ForumPost{}
