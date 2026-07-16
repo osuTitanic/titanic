@@ -66,6 +66,8 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "forum home", path: "/forum"},
 		{name: "forum view", path: fmt.Sprintf("/forum/%d", data.forum.Id)},
 		{name: "forum topic", path: fmt.Sprintf("/forum/%d/t/%d", data.forum.Id, data.topic.Id)},
+		{name: "forum search", path: "/forum/search"},
+		{name: "forum search filters", path: fmt.Sprintf("/forum/search?forum=%d&username=%s&sort=3&order=1", data.forum.Id, url.QueryEscape(data.user.Name))},
 		{name: "group", path: fmt.Sprintf("/g/%d", data.group.Id)},
 		{name: "user profile", path: fmt.Sprintf("/u/%d", data.user.Id)},
 		{name: "beatmap search", path: "/beatmapsets"},
@@ -80,6 +82,11 @@ func TestWebsiteRoutesRender(t *testing.T) {
 
 	t.Run("public", func(t *testing.T) {
 		assertWebsiteRoutesRender(t, router, publicRoutes, nil)
+	})
+
+	t.Run("forum search filters", func(t *testing.T) {
+		fixtures.CreateForumPost(data.topic, data.friend)
+		assertForumSearchResult(t, router, url.Values{"username": {data.friend.Name}}, data.topic.Title, true)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -121,6 +128,20 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	t.Run("post flows", func(t *testing.T) {
 		assertWebsitePostFlows(t, app, router, fixtures, data)
 	})
+}
+
+func assertForumSearchResult(t *testing.T, router http.Handler, query url.Values, topicTitle string, want bool) {
+	t.Helper()
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/forum/search?"+query.Encode(), nil)
+	request.Header.Set("User-Agent", "Mozilla/5.0")
+	router.ServeHTTP(recorder, request)
+
+	assertStatus(t, recorder, http.StatusOK)
+	if got := strings.Contains(recorder.Body.String(), topicTitle); got != want {
+		t.Errorf("forum search contains topic %q = %t, want %t", topicTitle, got, want)
+	}
 }
 
 func newWebsiteTestState(t *testing.T) *state.State {
