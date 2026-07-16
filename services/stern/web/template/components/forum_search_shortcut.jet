@@ -1,0 +1,5 @@
+<form class="forum-search-shortcut" action="/forum/search" method="get">
+    <label for="forum-search-query">Search for:</label>
+    <input id="forum-search-query" name="query" type="search">
+    <input type="submit" value="Go">
+</form>

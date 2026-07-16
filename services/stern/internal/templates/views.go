@@ -340,6 +340,7 @@ type ForumTopicPreview struct {
 	ForumId        int
 	HasCustomIcons bool
 	CurrentUserId  int
+	ShowForum      bool
 }
 
 func (p ForumTopicPreview) PreviewTruncated() bool {
@@ -394,6 +395,16 @@ func (v ForumTopicView) TopicLocked() bool {
 
 func (v ForumTopicView) HasBeatmapset() bool {
 	return v.Beatmapset != nil
+}
+
+type ForumSearchView struct {
+	DefaultView
+	Topics         []*ForumTopicPreview
+	HasCustomIcons bool
+	SearchSort     string
+	SearchOrder    string
+	DefaultSort    string
+	Pagination     PaginationView
 }
 
 type ForumPostPreview struct {

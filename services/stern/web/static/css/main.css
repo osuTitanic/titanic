@@ -272,7 +272,7 @@ input[type="url"], input[type="search"] {
     justify-content: flex-start;
     margin-top: 2px;
     margin-left: 6px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 .post-buttons a,

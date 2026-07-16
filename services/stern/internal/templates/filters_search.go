@@ -60,19 +60,32 @@ func searchFlagUrl(a jet.Arguments) reflect.Value {
 }
 
 func searchSortUrl(a jet.Arguments) reflect.Value {
-	a.RequireNumOfArguments("searchSortUrl", 3, 3)
+	a.RequireNumOfArguments("searchSortUrl", 3, 5)
 
 	current, _ := a.Get(0).Interface().(url.Values)
 	path, _ := a.Get(1).Interface().(string)
 	sort, _ := a.Get(2).Interface().(string)
 
+	defaultSort := "4"
+	defaultOrder := "0"
+	if a.NumOfArguments() > 3 {
+		defaultSort, _ = a.Get(3).Interface().(string)
+	}
+	if a.NumOfArguments() > 4 {
+		defaultOrder, _ = a.Get(4).Interface().(string)
+	}
+
+	return reflect.ValueOf(buildSearchSortUrl(current, path, sort, defaultSort, defaultOrder))
+}
+
+func buildSearchSortUrl(current url.Values, path, sort, defaultSort, defaultOrder string) string {
 	currentSort := current.Get("sort")
 	if currentSort == "" {
-		currentSort = "4"
+		currentSort = defaultSort
 	}
 	currentOrder := current.Get("order")
 	if currentOrder == "" {
-		currentOrder = "0"
+		currentOrder = defaultOrder
 	}
 
 	query := cloneQuery(current)
@@ -86,19 +99,29 @@ func searchSortUrl(a jet.Arguments) reflect.Value {
 			query.Set("order", "0")
 		}
 	} else {
-		query.Set("order", "0")
+		query.Set("order", defaultOrder)
 	}
-	return reflect.ValueOf(searchUrl(path, query))
+	return searchUrl(path, query)
 }
 
 func searchHiddenInputs(a jet.Arguments) reflect.Value {
-	a.RequireNumOfArguments("searchHiddenInputs", 1, 1)
+	a.RequireNumOfArguments("searchHiddenInputs", 1, 2)
+
+	inputs := make([]SearchHiddenInput, 0)
+	excluded := map[string]bool{"query": true, "page": true}
+	if a.NumOfArguments() > 1 {
+		extra, _ := a.Get(1).Interface().(string)
+		for name := range strings.SplitSeq(extra, ",") {
+			name = strings.TrimSpace(name)
+			if name != "" {
+				excluded[name] = true
+			}
+		}
+	}
 
 	current, _ := a.Get(0).Interface().(url.Values)
-	inputs := make([]SearchHiddenInput, 0)
-
 	for name, values := range current {
-		if name == "query" || name == "page" {
+		if excluded[name] {
 			continue
 		}
 		for _, value := range values {

@@ -1,0 +1,107 @@
+{{ extends "/layout.jet" }}
+{{ import "/components/forum_topic_row.jet" }}
+
+{{ block head() }}
+<title>Forum Search</title>
+<meta property="og:title" content="Forum Search - Titanic!">
+<meta property="og:description" content="Search topics and posts across the Titanic! forums.">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/search">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="forum-search-page">
+    <h1 class="header-text">
+        <a href="/forum" style="color:#5a5399">Index</a> » Search
+    </h1>
+
+    <form class="forum-search-form" action="/forum/search" method="get">
+        {{ range searchHiddenInputs(.Query, "user,forum") }}
+        <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+        {{ end }}
+
+        <div class="forum-search-query-row">
+            <input name="query" type="search" placeholder="Search topic titles and posts..." value="{{ .Query.Get("query") }}" aria-label="Search text">
+            <input type="submit" value="Search">
+        </div>
+        {*
+            TODO: We are able to filter by user & forum, but there's currently no UI for that
+                  I would also like to have a way of excluding certain forums from the search results
+        *}
+    </form>
+
+    {{ if .CurrentUser }}
+    <div class="forum-search-options">
+        <dl>
+            <dt>Saved topics:</dt>
+            <dd>
+                {{ yield filterFlag(id="bookmarked", value="Bookmarked") }}
+                {{ yield filterFlag(id="subscribed", value="Subscribed") }}
+            </dd>
+        </dl>
+    </div>
+    {{ end }}
+
+    {{ include "/components/pagination.jet" .Pagination }}
+    {{ yield selectionOrder() }}
+    {{ yield topicResults() }}
+    {{ include "/components/pagination.jet" .Pagination }}
+</div>
+{{ end }}
+
+{{ block selectionOrder() }}
+<table class="forum-search-order">
+    <thead>
+        <tr>
+            {{ yield orderElement(id="0", value="Relevance") }}
+            {{ yield orderElement(id="1", value="Created") }}
+            {{ yield orderElement(id="2", value="Views") }}
+            {{ yield orderElement(id="3", value="Posts") }}
+        </tr>
+    </thead>
+</table>
+{{ end }}
+
+{{ block orderElement(id, value) }}
+<th>
+    <a href="{{ searchSortUrl(.Query, "/forum/search", id, .DefaultSort, "0") }}">{{ value }}</a>
+    {{ if .SearchSort == id }}
+        {{ if .SearchOrder == "0" }}
+        <img src="{{ cachedUrl("/images/down.gif") }}" alt="Descending">
+        {{ else }}
+        <img src="{{ cachedUrl("/images/up.gif") }}" alt="Ascending">
+        {{ end }}
+    {{ end }}
+</th>
+{{ end }}
+
+{{ block filterElement(id, value, collection) }}
+    {{ if .Query.Get(collection) == id }}
+    <a href="{{ searchParamUrl(.Query, "/forum/search", collection, id) }}" class="selected">{{ value }}</a>
+    {{ else }}
+    <a href="{{ searchParamUrl(.Query, "/forum/search", collection, id) }}">{{ value }}</a>
+    {{ end }}
+{{ end }}
+
+{{ block filterFlag(id, value) }}
+<a href="{{ searchFlagUrl(.Query, "/forum/search", id, "") }}" {{ if .Query.Get(id) != "" }}class="selected"{{ end }}>
+    {{ value }}
+</a>
+{{ end }}
+
+{{ block topicResults() }}
+{{ if len(.Topics) > 0 }}
+<table width="100%" class="topics-table forum-search-results">
+    <tbody>
+        {{ range _, preview := .Topics }}
+            {{ yield forumTopicRow() preview }}
+        {{ end }}
+    </tbody>
+</table>
+{{ else }}
+<div class="forum-search-empty">
+    No topics matched your search.
+</div>
+{{ end }}
+{{ end }}
