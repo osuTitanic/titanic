@@ -491,7 +491,10 @@
     width: 100%;
     margin: 10px auto 5px;
     border-radius: 5px;
-    font-size: 80%;
+}
+
+.forum-search-order a {
+    font-size: 95%;
 }
 
 .forum-search-order th {
