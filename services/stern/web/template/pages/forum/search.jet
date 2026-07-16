@@ -1,0 +1,180 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Forum Search</title>
+<meta property="og:title" content="Forum Search - Titanic!">
+<meta property="og:description" content="Search posts across the Titanic! forums.">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/forum/search">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<div class="forum-search-page">
+    <div class="forum-search-header">
+        <h1 class="header-text">
+            <a href="/forum" style="color:#5a5399">Index</a> » Search
+        </h1>
+
+        <form class="forum-search-form" action="/forum/search" method="get">
+            {{ range searchHiddenInputs(.Query) }}
+            <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+            {{ end }}
+
+            <input name="query" type="search" placeholder="Search forum posts..." value="{{ .Query.Get("query") }}" aria-label="Search text">
+            <input type="submit" value="Search">
+        </form>
+    </div>
+
+    <div class="forum-search-options">
+        {{ if len(.ForumJump.Options) > 0 }}
+        <dl>
+            <dt><label for="forum-search-forum">Forum:</label></dt>
+            <dd>
+                <form class="forum-search-forum-filter" action="/forum/search" method="get">
+                    {{ if .Query.Get("query") != "" }}
+                    <input type="hidden" name="query" value="{{ .Query.Get("query") }}">
+                    {{ end }}
+                    {{ range searchHiddenInputs(.Query, "forum") }}
+                    <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+                    {{ end }}
+
+                    <select class="forum-select" id="forum-search-forum" name="forum">
+                        <option value="">All forums</option>
+                        {{ include "/components/forum_select_options.jet" .ForumJump }}
+                    </select>
+                    <input type="submit" value="Go">
+                </form>
+            </dd>
+        </dl>
+        {{ end }}
+
+        <dl>
+            <dt><label for="forum-search-user">Author:</label></dt>
+            <dd>
+                <form class="forum-search-user-filter" action="/forum/search" method="get">
+                    <input id="forum-search-user" name="username" type="text" placeholder="Enter a username..." value="{{ .Query.Get("username") }}" autocomplete="off">
+                    <input type="submit" value="Go">
+
+                    {{ if .Query.Get("query") != "" }}
+                    <input type="hidden" name="query" value="{{ .Query.Get("query") }}">
+                    {{ end }}
+                    {{ range searchHiddenInputs(.Query, "username") }}
+                    <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+                    {{ end }}
+                </form>
+            </dd>
+        </dl>
+
+        {{ if .CurrentUser }}
+        <dl>
+            <dt>Saved topics:</dt>
+            <dd>
+                {{ yield filterFlag(id="bookmarked", value="Bookmarked") }}
+                {{ yield filterFlag(id="subscribed", value="Subscribed") }}
+            </dd>
+        </dl>
+        {{ end }}
+    </div>
+
+    {{ include "/components/pagination.jet" .Pagination }}
+    {{ yield selectionOrder() }}
+    {{ yield postResults() }}
+    {{ include "/components/pagination.jet" .Pagination }}
+</div>
+{{ end }}
+
+{{ block selectionOrder() }}
+<table class="forum-search-order">
+    <thead>
+        <tr>
+            {{ yield orderElement(id="0", value="Relevance") }}
+            {{ yield orderElement(id="1", value="Posted") }}
+        </tr>
+    </thead>
+</table>
+{{ end }}
+
+{{ block orderElement(id, value) }}
+<th>
+    <a href="{{ searchSortUrl(.Query, "/forum/search", id, .DefaultSort, "0") }}">{{ value }}</a>
+    {{ if .SearchSort == id }}
+        {{ if .SearchOrder == "0" }}
+        <img src="{{ cachedUrl("/images/down.gif") }}" alt="Descending">
+        {{ else }}
+        <img src="{{ cachedUrl("/images/up.gif") }}" alt="Ascending">
+        {{ end }}
+    {{ end }}
+</th>
+{{ end }}
+
+{{ block filterElement(id, value, collection) }}
+    {{ if .Query.Get(collection) == id }}
+    <a href="{{ searchParamUrl(.Query, "/forum/search", collection, id) }}" class="selected">{{ value }}</a>
+    {{ else }}
+    <a href="{{ searchParamUrl(.Query, "/forum/search", collection, id) }}">{{ value }}</a>
+    {{ end }}
+{{ end }}
+
+{{ block filterFlag(id, value) }}
+<a href="{{ searchFlagUrl(.Query, "/forum/search", id, "") }}" {{ if .Query.Get(id) != "" }}class="selected"{{ end }}>
+    {{ value }}
+</a>
+{{ end }}
+
+{{ block postResults() }}
+{{ if len(.Posts) > 0 }}
+<table width="100%" class="topics-table forum-search-results">
+    <thead>
+        <tr>
+            <th>Posts</th>
+            <th>Author</th>
+            <th>Posted</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ range _, preview := .Posts }}
+            {{ yield postResultRow() preview }}
+        {{ end }}
+    </tbody>
+</table>
+{{ else }}
+<div class="forum-search-empty">
+    No posts matched your search.
+</div>
+{{ end }}
+{{ end }}
+
+{{ block postResultRow() }}
+{{ post := .Post }}
+{{ topic := post.Topic }}
+<tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
+    <td class="forum-search-content">
+        <p class="forum-search-title">
+            {{ if topic.Pinned }}
+            <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
+            {{ end }}
+            <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/">{{ topic.Title }}</a>
+        </p>
+        {{ if len(.Excerpt) > 0 }}
+        <p class="forum-search-excerpt">{{ range .Excerpt }}{{ if .Matched }}<strong>{{ .Text }}</strong>{{ else }}{{ .Text }}{{ end }}{{ end }}</p>
+        {{ end }}
+        {{ if topic.Forum }}
+        <p class="topic-forum-name">in <a href="/forum/{{ topic.Forum.Id }}">{{ topic.Forum.Name }}</a></p>
+        {{ end }}
+    </td>
+
+    <td align="center">
+        {{ forumUserLink(post.User, .CurrentUserId) | unsafe }}
+    </td>
+
+    <td align="center">
+        <p>
+            <time class="timeago" datetime="{{ post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+            <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/" aria-label="View post">
+                <i class="icon-arrow-right" style="color: #ababab"></i>
+            </a>
+        </p>
+    </td>
+</tr>
+{{ end }}

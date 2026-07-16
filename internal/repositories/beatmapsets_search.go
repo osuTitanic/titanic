@@ -3,7 +3,6 @@ package repositories
 import (
 	"slices"
 	"strings"
-	"unicode"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -324,21 +323,15 @@ func applyBeatmapsetSearchSort(query *gorm.DB, options BeatmapsetSearchOptions, 
 	textQuery = strings.TrimSpace(textQuery)
 
 	if options.Sort == constants.BeatmapSortRelevance && textQuery != "" {
-		direction := "ASC"
-		if desc {
-			direction = "DESC"
-		}
-
 		// When sorting by relevance, we use the ts_rank of the full-text
 		// search vector against the query as the primary sort key
-		return query.
-			Order(clause.OrderBy{
-				Expression: clause.Expr{
-					SQL:  "ts_rank(beatmapsets.search, plainto_tsquery('simple', ?)) " + direction,
-					Vars: []any{textQuery},
-				},
-			}).
-			Order("beatmapsets.id DESC")
+		return applySearchRankOrder(
+			query,
+			"ts_rank(beatmapsets.search, plainto_tsquery('simple', ?))",
+			[]any{textQuery},
+			desc,
+			"beatmapsets.id",
+		)
 	}
 
 	// By default, we sort by approved/ranked date
@@ -380,24 +373,4 @@ func applyBeatmapsetTextSearch(query *gorm.DB, textQuery string) *gorm.DB {
 	)`
 
 	return query.Where(subquery, slices.Concat(args, args)...)
-}
-
-func fuzzyTsQuery(query string) string {
-	words := strings.FieldsFunc(strings.ToLower(query), func(r rune) bool {
-		return !unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_'
-	})
-
-	for i := range words {
-		words[i] += ":*"
-	}
-	return strings.Join(words, " & ")
-}
-
-// clampSearchOffset ensures that the offset for pagination does not exceed the total number of results
-func clampSearchOffset(offset, limit int, total int64) int {
-	if total == 0 || int64(offset) < total {
-		return offset
-	}
-	last := total - 1
-	return int(last - last%int64(limit))
 }

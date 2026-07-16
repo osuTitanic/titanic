@@ -186,6 +186,7 @@ func ForumTopicView(ctx *server.Context) {
 	view := templates.ForumTopicView{
 		DefaultView:     buildDefaultViewWithPermissions(ctx),
 		Forum:           topic.Forum,
+		ForumJump:       buildForumJumpView(ctx, topic.ForumId),
 		Topic:           topic,
 		Parents:         fetchForumParents(ctx, topic.Forum),
 		Posts:           previews,

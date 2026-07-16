@@ -48,6 +48,15 @@ func (r *ForumRepository) FetchSubForums(parentId int, preload ...string) ([]*sc
 	return forums, err
 }
 
+func (r *ForumRepository) FetchAllVisible() ([]*schemas.Forum, error) {
+	var forums []*schemas.Forum
+	err := r.db.
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Find(&forums).Error
+	return forums, err
+}
+
 func (r *ForumRepository) ById(id int, preload ...string) (*schemas.Forum, error) {
 	var forum schemas.Forum
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&forum).Error

@@ -17,6 +17,10 @@
     {{ yield forumSubforums() }}
     {{ yield forumTopics() }}
     {{ yield forumFooter() }}
+    <div style="margin-left: -5px;"> {* this is lazy yes i know but i dont really care *}
+        {{ yield forumActiveUsers() }}
+        {{ include "/components/forum_shortcuts.jet" }}
+    </div>
 </div>
 <script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
 {{ end }}
@@ -120,13 +124,74 @@
             {{ end }}
         </tbody>
     </table>
-    {{ yield forumActiveUsers() }}
     {{ else }}
     <p style="margin-top: 10px; margin-left: 2.5px;">
         Hmmm... seems like nothing was posted here yet.
         {{ if .CurrentUser }}Why not be the first one?{{ end }}
     </p><br>
+{{ end }}
+{{ end }}
+
+{{ block forumTopicRow() }}
+{{ topic := .Topic }}
+<tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
+    <td align="center" width="4%">
+        <a href="/forum/{{ topic.ForumId }}/t/{{ topic.Id }}/">
+            <img src="{{ .StatusIcon }}" width="20" alt="Topic status">
+        </a>
+    </td>
+
+    {{ if .HasCustomIcons }}
+    <td align="center" width="4%">
+        {{ if topic.Icon }}
+        <img src="{{ topic.Icon.Location }}" alt="{{ topic.Icon.Name }}" width="20">
+        {{ end }}
+    </td>
     {{ end }}
+
+    <td>
+        <div>
+        {{ if topic.Pinned }}
+            <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
+        {{ end }}
+            <a href="/forum/{{ topic.ForumId }}/t/{{ topic.Id }}/">{{ topic.Title }}</a>
+        {{ if topic.StatusTextValue() != "" }}
+            <p class="topic-status-text">{{ topic.StatusTextValue() }}</p>
+        {{ end }}
+        {{ if .ShowForum && topic.Forum }}
+            <p class="topic-forum-name">in <a href="/forum/{{ topic.Forum.Id }}">{{ topic.Forum.Name }}</a></p>
+        {{ end }}
+        </div>
+        {{ if !.ShowForum }}
+            {{ include "/components/pagination_topic_preview.jet" . }}
+        {{ end }}
+    </td>
+
+    <td align="center">
+        {{ forumUserLink(topic.Creator, .CurrentUserId) | unsafe }}
+    </td>
+
+    <td width="6%" align="center">
+        <p class="subforum-topiccount">{{ topic.PostCount }}</p>
+        <p class="subforum-postcount">{{ topic.Views }}</p>
+    </td>
+
+    <td align="center">
+        {{ if .PreviewPost }}
+            <p>
+                {{ forumUserLink(.PreviewPost.User, .CurrentUserId) | unsafe }}
+                <a href="/forum/{{ topic.ForumId }}/p/{{ .PreviewPost.Id }}/">
+                    <i class="icon-arrow-right" style="color: #ababab"></i>
+                </a>
+            </p>
+            <p>
+                <time class="timeago" datetime="{{ .PreviewPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+            </p>
+        {{ else }}
+            <p>No posts</p>
+        {{ end }}
+    </td>
+</tr>
 {{ end }}
 
 {{ block forumActiveUsers() }}
@@ -143,7 +208,7 @@
 {{ end }}
 
 {{ block forumFooter() }}
-<table width="100%">
+<table width="100%" style="margin-top: 5px;">
     <tbody>
         <tr>
             {{ if .CanCreateTopic }}
@@ -157,58 +222,4 @@
         </tr>
     </tbody>
 </table>
-{{ end }}
-
-{{ block forumTopicRow() }}
-{{ topic := .Topic }}
-<tr class="{{ if .Index%2 == 1 }}row-light row-soft{{ else }}row-dark row-soft{{ end }}">
-    <td align="center" width="4%">
-        <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">
-            <img src="{{ .StatusIcon }}" width="20">
-        </a>
-    </td>
-    {{ if .HasCustomIcons }}
-    <td align="center" width="4%">
-        {{ if topic.Icon }}
-        <img src="{{ topic.Icon.Location }}" alt="{{ topic.Icon.Name }}" width="20">
-        {{ end }}
-    </td>
-    {{ end }}
-    <td>
-        <div>
-            {{ if topic.Pinned }}
-            <i class="icon-star-of-life" style="font-size: 80%; color: #ababab"></i>
-            {{ end }}
-            <a href="/forum/{{ .ForumId }}/t/{{ topic.Id }}/">{{ topic.Title }}</a>
-            {{ if topic.StatusTextValue() != "" }}
-            <p class="topic-status-text">{{ topic.StatusTextValue() }}</p>
-            {{ end }}
-        </div>
-        {{ include "/components/pagination_topic_preview.jet" . }}
-    </td>
-    <td align="center">
-        {{ forumUserLink(topic.Creator, .CurrentUserId) | unsafe }}
-    </td>
-    <td width="6%" align="center">
-        <p class="subforum-topiccount">{{ topic.PostCount }}</p>
-        <p class="subforum-postcount">{{ topic.Views }}</p>
-    </td>
-    <td align="center">
-        {{ if .LastPost }}
-            <p>
-                {{ forumUserLink(.LastPost.User, .CurrentUserId) | unsafe }}
-                <a href="/forum/{{ .ForumId }}/p/{{ .LastPost.Id }}/">
-                    <i class="icon-arrow-right" style="color: #ababab"></i>
-                </a>
-            </p>
-            <p>
-                <time class="timeago" datetime="{{ .LastPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
-            </p>
-        {{ else }}
-            <p>No posts</p>
-        {{ end }}
-    </td>
-    {* Separator *}
-    <tr></tr>
-</tr>
 {{ end }}

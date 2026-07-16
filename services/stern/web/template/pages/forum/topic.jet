@@ -23,6 +23,8 @@
     {{ include "/components/pagination_topic.jet" .Pagination }}
     {{ yield forumTopicReplyButton() }}
     {{ yield forumTopicActiveUsers() }}
+    {{ include "/components/forum_shortcuts.jet" }}
+    <br>
 </div>
 <script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
 <script src="{{ cachedUrl("/js/bat.js") }}" defer></script>
@@ -238,7 +240,7 @@ function unlinkTopicFromBeatmap() {
 {{ end }}
 
 {{ block forumTopicActiveUsers() }}
-<div class="forum-active-users" style="margin-left: 8px">
+<div class="forum-active-users">
     Users browsing this forum:
     {{ if len(.ActiveUsers) <= 0 }}
         None
@@ -248,7 +250,6 @@ function unlinkTopicFromBeatmap() {
         {{ end }}
     {{ end }}
 </div>
-<br>
 {{ end }}
 
 {{ block forumKudosuBox() }}

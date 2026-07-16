@@ -1,7 +1,7 @@
 {{ if .PageCount > 1 }}
 <div>
     Page:
-    {{ range i, page := .PreviewPages() }}{{ if i != 0 }}, {{ end }}{{ if .PreviewTruncated() && i == 1 }}... {{ end }}<a href="/forum/{{ .ForumId }}/t/{{ .Topic.Id }}/?page={{ page }}">{{ page }}</a>{{ end }}
+    {{ range i, page := .PreviewPages() }}{{ if i != 0 }}, {{ end }}{{ if .PreviewTruncated() && i == 1 }}... {{ end }}<a href="/forum/{{ .Topic.ForumId }}/t/{{ .Topic.Id }}/?page={{ page }}">{{ page }}</a>{{ end }}
     {* unfortunately, this has to be in one line, otherwise we get messed up formatting :/ *}
 </div>
 {{ end }}

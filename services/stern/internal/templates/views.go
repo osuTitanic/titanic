@@ -315,6 +315,7 @@ type ForumSubforum struct {
 type ForumView struct {
 	DefaultView
 	Forum          *schemas.Forum
+	ForumJump      ForumJumpView
 	Parents        []*schemas.Forum
 	Subforums      []*schemas.Forum
 	SubforumRecent map[int]*schemas.ForumPost
@@ -333,13 +334,13 @@ func (v ForumView) HasTopics() bool {
 
 type ForumTopicPreview struct {
 	Topic          *schemas.ForumTopic
-	LastPost       *schemas.ForumPost
+	PreviewPost    *schemas.ForumPost
 	StatusIcon     string
 	PageCount      int
 	Index          int
-	ForumId        int
 	HasCustomIcons bool
 	CurrentUserId  int
+	ShowForum      bool
 }
 
 func (p ForumTopicPreview) PreviewTruncated() bool {
@@ -369,9 +370,20 @@ type ForumActiveUser struct {
 	Name string
 }
 
+type ForumJumpView struct {
+	CurrentForumId int
+	Options        []ForumJumpOption
+}
+
+type ForumJumpOption struct {
+	Id    int
+	Label string
+}
+
 type ForumTopicView struct {
 	DefaultView
 	Forum           *schemas.Forum
+	ForumJump       ForumJumpView
 	Topic           *schemas.ForumTopic
 	Parents         []*schemas.Forum
 	Posts           []*ForumPostPreview
@@ -394,6 +406,28 @@ func (v ForumTopicView) TopicLocked() bool {
 
 func (v ForumTopicView) HasBeatmapset() bool {
 	return v.Beatmapset != nil
+}
+
+type ForumSearchView struct {
+	DefaultView
+	ForumJump   ForumJumpView
+	Posts       []*ForumSearchPostPreview
+	SearchSort  string
+	SearchOrder string
+	DefaultSort string
+	Pagination  PaginationView
+}
+
+type ForumSearchPostPreview struct {
+	Post          *schemas.ForumPost
+	Excerpt       []ForumSearchExcerptPart
+	Index         int
+	CurrentUserId int
+}
+
+type ForumSearchExcerptPart struct {
+	Text    string
+	Matched bool
 }
 
 type ForumPostPreview struct {

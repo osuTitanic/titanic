@@ -82,6 +82,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /wiki/{language}/{path...}", routes.WikiArticle)
 	server.Handle("GET /forum", routes.ForumHome)
 	server.Handle("GET /forum/{$}", routes.ForumHome)
+	server.Handle("GET /forum/search", routes.ForumSearch)
+	server.Handle("GET /forum/search/{$}", routes.ForumSearch)
 	server.Handle("GET /forum/{id}", routes.ForumView)
 	server.Handle("GET /forum/{id}/create", routes.ForumCreateTopicView)
 	server.Handle("POST /forum/{id}/create", routes.ForumCreateTopicAction)

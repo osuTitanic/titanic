@@ -19,6 +19,64 @@
     width: 100%;
 }
 
+.forum-search-shortcut {
+    margin-top: 5px;
+    margin-left: 5px;
+    padding: 3px 2px;
+    text-align: left;
+    font-size: 85%;
+}
+
+.forum-search-shortcut label {
+    margin-right: 3px;
+}
+
+.forum-search-shortcut input[type="search"] {
+    box-sizing: border-box;
+    width: 115px;
+    height: 18px;
+    padding: 1px 2px;
+    vertical-align: middle;
+}
+
+.forum-search-shortcut input[type="submit"] {
+    margin-left: 3px;
+    padding: 1px 6px;
+    vertical-align: middle;
+}
+
+.forum-shortcuts td {
+    vertical-align: middle;
+}
+
+.forum-jumpbox {
+    margin-top: 5px;
+    margin-right: 5px;
+    padding: 3px 2px;
+    white-space: nowrap;
+    text-align: right;
+    font-size: 85%;
+}
+
+.forum-jumpbox label {
+    margin-right: 3px;
+}
+
+.forum-select {
+    max-width: 250px;
+    height: 18px;
+    border: 1px solid rgb(185, 197, 236);
+    vertical-align: middle;
+}
+
+.forum-jumpbox input[type="submit"],
+.forum-search-forum-filter input[type="submit"],
+.forum-search-user-filter input[type="submit"] {
+    margin-left: 3px;
+    padding: 1px 6px;
+    vertical-align: middle;
+}
+
 .forum-home td:hover {
     text-shadow: 1px 1px 8px #afb7ff;
 }
@@ -346,9 +404,173 @@
 }
 
 .forum-active-users {
-    font-size: 90%;
-    margin-bottom: 5px;
+    font-size: 80%;
+    margin-bottom: 10px;
+    margin-left: 5px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.forum-search-header {
+    display: inline;
+    max-height: 25px;
+    vertical-align: middle;
+}
+
+.forum-search-page .header-text {
+    margin-bottom: 10px;
+    float: left;
+}
+
+.forum-search-form {
+    margin: 0 10px 4px 0;
+    padding-top: 8px;
+}
+
+.forum-search-form input[type="search"] {
+    box-sizing: border-box;
+    width: 68%;
+    margin-left: 15px;
+    padding: 5px;
+    border-color: rgb(185, 197, 236);
+    border-style: ridge;
+    border-width: 1.5px;
+    border-radius: 5px;
+    font-size: 95%;
+    vertical-align: middle;
+}
+
+.forum-search-form input[type="submit"] {
+    min-width: 75px;
+    padding: 5px 8px;
+    border-color: rgb(185, 197, 236);
+    border-width: 1.5px;
+    border-radius: 5px;
+    font-size: 95%;
+    vertical-align: middle;
+    transition: all 0.2s;
+}
+
+.forum-search-form input[type="submit"]:hover {
+    text-shadow: 1px 1px 8px #afb7ff;
+    color: white;
+}
+
+.forum-search-user-filter {
+    white-space: nowrap;
+}
+
+.forum-search-user-filter input[type="text"] {
+    box-sizing: border-box;
+    width: 200px;
+    height: 18px;
+    padding: 1px 2px;
+    border: 1px solid rgb(185, 197, 236);
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
+.forum-search-options {
+    clear: both;
+    margin-bottom: 5px;
+    font-size: 78%;
+}
+
+.forum-search-forum-filter,
+.forum-search-user-filter {
+    margin: 0;
+}
+
+.forum-search-options dl {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 30px;
+    padding: 8px 0 3px;
+    border-bottom: 1px dotted #a9a9ff;
+}
+
+.forum-search-options dt {
+    float: left;
+    width: 110px;
+    padding-right: 10px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.forum-search-options a {
+    margin-right: 4px;
+    padding: 3px;
+    color: #3843a6;
+    text-decoration: none;
+}
+
+.forum-search-options a:hover,
+.forum-search-options a.selected {
+    margin: 2px;
+    border-radius: 2px;
+    background-color: #a9a9ff;
+    color: white;
+}
+
+.forum-search-order {
+    width: 100%;
+    margin: 10px auto 5px;
+    border-radius: 5px;
+}
+
+.forum-search-order a {
+    font-size: 95%;
+}
+
+.forum-search-order th {
+    padding: 2px 10px;
+    border-bottom: 1px solid #a79ef3;
+    background-color: #d7d2fb;
+}
+
+.forum-search-order img {
+    display: inline;
+    padding-top: 1px;
+    vertical-align: top;
+    opacity: 0.7;
+}
+
+.forum-search-results {
+    margin-top: 5px;
+}
+
+.forum-search-content {
+    width: 65%;
+    padding: 5px !important;
+}
+
+.forum-search-title {
+    font-size: 105%;
+}
+
+.forum-search-excerpt {
+    margin-top: 2px;
+    color: #4f5355;
+    font-size: 85%;
+    line-height: 1.25;
+    overflow-wrap: break-word;
+}
+
+.topic-forum-name {
+    margin-top: 1px;
+    color: #868686;
+    font-size: 78%;
+}
+
+.forum-search-empty {
+    margin: 20px 10px;
+    text-align: center;
+    color: #686868;
+    font-size: 90%;
+}
+
+.forum-search-page .pagination {
+    margin-right: 10px;
+    margin-left: 10px;
 }

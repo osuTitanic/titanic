@@ -66,6 +66,8 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "forum home", path: "/forum"},
 		{name: "forum view", path: fmt.Sprintf("/forum/%d", data.forum.Id)},
 		{name: "forum topic", path: fmt.Sprintf("/forum/%d/t/%d", data.forum.Id, data.topic.Id)},
+		{name: "forum search", path: "/forum/search"},
+		{name: "forum search filters", path: fmt.Sprintf("/forum/search?forum=%d&username=%s&sort=1&order=1", data.forum.Id, url.QueryEscape(data.user.Name))},
 		{name: "group", path: fmt.Sprintf("/g/%d", data.group.Id)},
 		{name: "user profile", path: fmt.Sprintf("/u/%d", data.user.Id)},
 		{name: "beatmap search", path: "/beatmapsets"},
@@ -80,6 +82,39 @@ func TestWebsiteRoutesRender(t *testing.T) {
 
 	t.Run("public", func(t *testing.T) {
 		assertWebsiteRoutesRender(t, router, publicRoutes, nil)
+	})
+
+	t.Run("forum search filters", func(t *testing.T) {
+		matchingPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
+			post.Content = "Details about digital client"
+		})
+		unrelatedPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
+			post.Content = "An unrelated reply"
+		})
+
+		body := renderForumSearch(t, router, url.Values{"username": {data.friend.Name}})
+		assertForumSearchPost(t, body, matchingPost, true)
+		assertForumSearchPost(t, body, unrelatedPost, true)
+
+		body = renderForumSearch(t, router, url.Values{
+			"username": {data.friend.Name},
+			"query":    {"digital client"},
+		})
+		assertForumSearchPost(t, body, matchingPost, true)
+		assertForumSearchPost(t, body, unrelatedPost, false)
+		for _, term := range []string{"digital", "client"} {
+			if !strings.Contains(body, "<strong>"+term+"</strong>") {
+				t.Errorf("forum search does not highlight %q", term)
+			}
+		}
+
+		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
+		assertForumSearchPost(t, body, data.post, true)
+		assertForumSearchPost(t, body, matchingPost, false)
+		assertForumSearchPost(t, body, unrelatedPost, false)
+
+		body = renderForumSearch(t, router, url.Values{"query": {"lorem ipsum"}})
+		assertForumSearchPost(t, body, data.post, true)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -123,10 +158,31 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	})
 }
 
+func renderForumSearch(t *testing.T, router http.Handler, query url.Values) string {
+	t.Helper()
+
+	recorder := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodGet, "/forum/search?"+query.Encode(), nil)
+	request.Header.Set("User-Agent", "Mozilla/5.0")
+	router.ServeHTTP(recorder, request)
+
+	assertStatus(t, recorder, http.StatusOK)
+	return recorder.Body.String()
+}
+
+func assertForumSearchPost(t *testing.T, body string, post *schemas.ForumPost, want bool) {
+	t.Helper()
+
+	postUrl := fmt.Sprintf("/forum/%d/p/%d/", post.ForumId, post.Id)
+	if got := strings.Contains(body, postUrl); got != want {
+		t.Errorf("forum search contains post %d = %t, want %t", post.Id, got, want)
+	}
+}
+
 func newWebsiteTestState(t *testing.T) *state.State {
 	t.Helper()
 
-	return state.NewTestState(t, state.WithTestMigrations(
+	app := state.NewTestState(t, state.WithTestMigrations(
 		&schemas.User{},
 		&schemas.Stats{},
 		&schemas.Login{},
@@ -161,6 +217,25 @@ func newWebsiteTestState(t *testing.T) *state.State {
 		&schemas.BeatmapPlays{},
 		&schemas.Release{},
 	))
+	enableForumSearchVectors(t, app)
+	return app
+}
+
+func enableForumSearchVectors(t *testing.T, app *state.State) {
+	t.Helper()
+
+	// Gorm migrations don't do this automatically
+	statements := []string{
+		`ALTER TABLE forum_topics ADD COLUMN search_vector tsvector
+		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(title, ''))) STORED`,
+		`ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
+		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED`,
+	}
+	for _, statement := range statements {
+		if err := app.Database.Exec(statement).Error; err != nil {
+			t.Fatalf("failed to add forum search vector: %v", err)
+		}
+	}
 }
 
 func newTestRouter(t *testing.T, app *state.State) http.Handler {

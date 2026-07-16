@@ -165,13 +165,7 @@ func ForumView(ctx *server.Context) {
 	readStatuses := forumTopicReadStatuses(ctx, slices.Concat(announcements, topics))
 	averageViews := forumAverageTopicViews(ctx)
 
-	hasCustomIcons := false
-	for _, topic := range topics {
-		if topic.IconId != nil {
-			hasCustomIcons = true
-			break
-		}
-	}
+	hasCustomIcons := topicsHaveCustomIcons(slices.Concat(announcements, topics))
 
 	subForumIds := make([]int, 0, len(subForums))
 	for _, subForum := range subForums {
@@ -194,11 +188,12 @@ func ForumView(ctx *server.Context) {
 	view := templates.ForumView{
 		DefaultView:    buildDefaultView(ctx),
 		Forum:          forum,
+		ForumJump:      buildForumJumpView(ctx, forum.Id),
 		Subforums:      subForums,
 		SubforumRecent: subforumRecent,
 		Parents:        fetchForumParents(ctx, forum),
-		Announcements:  buildTopicPreviews(announcements, lastPosts, readStatuses, averageViews, forum.Id, hasCustomIcons, currentUserId),
-		Topics:         buildTopicPreviews(topics, lastPosts, readStatuses, averageViews, forum.Id, hasCustomIcons, currentUserId),
+		Announcements:  buildTopicPreviews(announcements, lastPosts, readStatuses, averageViews, hasCustomIcons, currentUserId, false),
+		Topics:         buildTopicPreviews(topics, lastPosts, readStatuses, averageViews, hasCustomIcons, currentUserId, false),
 		ActiveUsers:    fetchActiveForumUsers(ctx, forum.Id),
 		CanCreateTopic: canCreateForumTopic(ctx, forum),
 		HasCustomIcons: hasCustomIcons,
@@ -246,27 +241,36 @@ func mergeForumTopics(pinned, recent []*schemas.ForumTopic) []*schemas.ForumTopi
 
 func buildTopicPreviews(
 	topics []*schemas.ForumTopic,
-	lastPosts map[int]*schemas.ForumPost,
+	previewPosts map[int]*schemas.ForumPost,
 	readStatuses map[int]bool,
 	averageViews float64,
-	forumId int,
 	hasCustomIcons bool,
 	currentUserId int,
+	showForum bool,
 ) []*templates.ForumTopicPreview {
 	previews := make([]*templates.ForumTopicPreview, 0, len(topics))
 	for index, topic := range topics {
 		previews = append(previews, &templates.ForumTopicPreview{
 			Topic:          topic,
-			LastPost:       lastPosts[topic.Id],
+			PreviewPost:    previewPosts[topic.Id],
 			StatusIcon:     topicStatusIcon(topic, readStatuses[topic.Id], averageViews),
 			PageCount:      (topic.PostCount + forumPostsPerPage - 1) / forumPostsPerPage,
 			Index:          index,
-			ForumId:        forumId,
 			HasCustomIcons: hasCustomIcons,
 			CurrentUserId:  currentUserId,
+			ShowForum:      showForum,
 		})
 	}
 	return previews
+}
+
+func topicsHaveCustomIcons(topics []*schemas.ForumTopic) bool {
+	for _, topic := range topics {
+		if topic.IconId != nil {
+			return true
+		}
+	}
+	return false
 }
 
 func topicStatusIcon(topic *schemas.ForumTopic, read bool, averageViews float64) string {
