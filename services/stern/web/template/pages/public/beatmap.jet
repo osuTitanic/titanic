@@ -145,6 +145,9 @@
                 {{ else }}
                 <br>Last Updated:
                 {{ end }}
+                {{ if .Beatmapset.Status == 3 }}
+                <br>{{ .Beatmapset.RankingStatus() }} on:
+                {{ end }}
             </td>
             <td class="beatmap-stats-info">
                 {{ formatDateShort(.Beatmapset.CreatedAt) }}
@@ -152,6 +155,9 @@
                 <br>{{ formatDateShort(.Beatmapset.ApprovedAt) }}
                 {{ else }}
                 <br>{{ formatDateShort(.Beatmapset.LastUpdate) }}
+                {{ end }}
+                {{ if .Beatmapset.Status == 3 }}
+                <br>{{ formatDateShort(.Beatmapset.RankDate()) }}
                 {{ end }}
             </td>
             <td>Average Rating:</td>
