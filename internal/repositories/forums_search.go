@@ -26,7 +26,6 @@ type ForumTopicSearchOptions struct {
 
 	ForumId *int
 	Creator string
-	// TODO: Excluded IDs would be kinda sick
 
 	BookmarkedByUserId *int
 	SubscribedByUserId *int
