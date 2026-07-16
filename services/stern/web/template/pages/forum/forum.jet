@@ -22,7 +22,7 @@
     {{ yield forumFooter() }}
     <div style="margin-left: -5px;"> {* this is lazy yes i know but i dont really care *}
         {{ yield forumActiveUsers() }}
-        {{ include "/components/forum_search_shortcut.jet" }}
+        {{ include "/components/forum_shortcuts.jet" }}
     </div>
 </div>
 <script src="{{ cachedUrl("/js/forum.js") }}" defer></script>
