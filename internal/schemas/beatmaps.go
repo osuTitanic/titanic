@@ -187,6 +187,18 @@ func (b *Beatmapset) RankDate() time.Time {
 	return b.LastUpdate.Add(7 * 24 * time.Hour)
 }
 
+// RankingStatus returns the status a qualified beatmapset will receive after
+// its qualification period.
+// Beatmapsets with a five-minute drain time are approved instead of ranked.
+func (b *Beatmapset) RankingStatus() constants.BeatmapStatus {
+	for _, beatmap := range b.Beatmaps {
+		if beatmap.DrainLength >= 5*60 {
+			return constants.BeatmapStatusApproved
+		}
+	}
+	return constants.BeatmapStatusRanked
+}
+
 func (b *Beatmapset) DisplayDate() time.Time {
 	if b.ApprovedAt != nil {
 		return *b.ApprovedAt

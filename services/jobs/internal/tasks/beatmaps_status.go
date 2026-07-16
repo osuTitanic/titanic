@@ -70,19 +70,9 @@ func handleQualifiedSet(app *state.State, logger *slog.Logger, beatmapset *schem
 		hideScoresForSet(app, beatmapset)
 	}
 
-	maxDrain := 0
-	for _, beatmap := range beatmapset.Beatmaps {
-		if beatmap.DrainLength > maxDrain {
-			maxDrain = beatmap.DrainLength
-		}
-	}
-
 	// Determine status based on drain time
 	// Map will be set to "Approved" if drain time exceeds 5 minutes, otherwise "Ranked"
-	status := constants.BeatmapStatusRanked
-	if maxDrain >= 5*60 {
-		status = constants.BeatmapStatusApproved
-	}
+	status := beatmapset.RankingStatus()
 
 	updateBeatmapIcon(app, beatmapset, status, beatmapset.Status)
 	moveBeatmapTopic(app, beatmapset, status)
