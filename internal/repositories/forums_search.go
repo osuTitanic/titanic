@@ -24,8 +24,8 @@ type ForumTopicSearchOptions struct {
 	Order       constants.SearchOrder
 	Sort        ForumTopicSearchSort
 
-	ForumId   *int
-	CreatorId *int
+	ForumId *int
+	Creator string
 	// TODO: Excluded IDs would be kinda sick
 
 	BookmarkedByUserId *int
@@ -44,6 +44,7 @@ type ForumTopicSearchResult struct {
 // Normalize validates search options & applies defaults
 func (options *ForumTopicSearchOptions) Normalize() {
 	options.QueryString = strings.TrimSpace(options.QueryString)
+	options.Creator = strings.TrimSpace(options.Creator)
 
 	if options.Order != constants.SearchOrderAscending {
 		options.Order = constants.SearchOrderDescending
@@ -63,9 +64,6 @@ func (options *ForumTopicSearchOptions) Normalize() {
 
 	if options.ForumId != nil && *options.ForumId < 1 {
 		options.ForumId = nil
-	}
-	if options.CreatorId != nil && *options.CreatorId < 1 {
-		options.CreatorId = nil
 	}
 	if options.BookmarkedByUserId != nil && *options.BookmarkedByUserId < 1 {
 		options.BookmarkedByUserId = nil
@@ -152,8 +150,13 @@ func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, option
 	if options.ForumId != nil {
 		query = query.Where("forum_topics.forum_id = ?", *options.ForumId)
 	}
-	if options.CreatorId != nil {
-		query = query.Where("forum_topics.creator_id = ?", *options.CreatorId)
+	if options.Creator != "" {
+		// TODO: Filter by post creators as well
+		query = query.Where(`EXISTS (
+			SELECT 1 FROM users AS search_creators
+			WHERE search_creators.id = forum_topics.creator_id
+			AND search_creators.safe_name = ?
+		)`, schemas.ResolveSafeName(options.Creator))
 	}
 
 	if options.BookmarkedByUserId != nil {

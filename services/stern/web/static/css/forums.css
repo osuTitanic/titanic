@@ -70,7 +70,8 @@
 }
 
 .forum-jumpbox input[type="submit"],
-.forum-search-forum-filter input[type="submit"] {
+.forum-search-forum-filter input[type="submit"],
+.forum-search-user-filter input[type="submit"] {
     margin-left: 3px;
     padding: 1px 6px;
     vertical-align: middle;
@@ -456,30 +457,18 @@
     color: white;
 }
 
-.forum-search-id-filters {
-    min-height: 28px;
-    font-size: 78%;
+.forum-search-user-filter {
+    white-space: nowrap;
 }
 
-.forum-search-id-filters label {
-    margin-left: 4px;
-    font-weight: bold;
-}
-
-.forum-search-id-filters label:first-child {
-    margin-left: 0;
-}
-
-.forum-search-id-filters input[type="number"] {
+.forum-search-user-filter input[type="text"] {
     box-sizing: border-box;
-    width: 82px;
-    padding: 2px;
+    width: 200px;
+    height: 18px;
+    padding: 1px 2px;
     border: 1px solid rgb(185, 197, 236);
     border-radius: 3px;
-}
-
-.forum-search-id-filters a {
-    float: right;
+    vertical-align: middle;
 }
 
 .forum-search-options {
@@ -488,7 +477,8 @@
     font-size: 78%;
 }
 
-.forum-search-forum-filter {
+.forum-search-forum-filter,
+.forum-search-user-filter {
     margin: 0;
 }
 

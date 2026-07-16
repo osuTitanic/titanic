@@ -26,6 +26,13 @@ func ForumSearch(ctx *server.Context) {
 	options, page := buildForumTopicSearchOptions(query, currentUserId)
 	if options.ForumId == nil {
 		query.Del("forum")
+	} else {
+		query.Set("forum", strconv.Itoa(*options.ForumId))
+	}
+	if options.Creator != "" {
+		query.Set("username", options.Creator)
+	} else {
+		query.Del("username")
 	}
 
 	result, err := ctx.State.ForumTopics.SearchPage(
@@ -123,8 +130,8 @@ func buildForumTopicSearchOptions(query url.Values, currentUserId *int) (reposit
 	if forumId, ok := parseInt(query.Get("forum")); ok && forumId > 0 {
 		options.ForumId = &forumId
 	}
-	if userId, ok := parseInt(query.Get("user")); ok && userId > 0 {
-		options.CreatorId = &userId
+	if username := strings.TrimSpace(query.Get("username")); username != "" {
+		options.Creator = username
 	}
 	if sortValue, ok := parseInt(query.Get("sort")); ok {
 		options.Sort = repositories.ForumTopicSearchSort(sortValue)

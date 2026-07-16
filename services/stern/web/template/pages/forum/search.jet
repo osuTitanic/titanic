@@ -18,7 +18,7 @@
         </h1>
 
         <form class="forum-search-form" action="/forum/search" method="get">
-            {{ range searchHiddenInputs(.Query, "user") }}
+            {{ range searchHiddenInputs(.Query) }}
             <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
             {{ end }}
 
@@ -26,9 +26,7 @@
             <input type="submit" value="Search">
         </form>
     </div>
-    {* TODO: Add a UI for filtering by user *}
 
-    {{ if len(.ForumJump.Options) > 0 || .CurrentUser }}
     <div class="forum-search-options">
         {{ if len(.ForumJump.Options) > 0 }}
         <dl>
@@ -52,6 +50,23 @@
         </dl>
         {{ end }}
 
+        <dl>
+            <dt><label for="forum-search-user">User:</label></dt>
+            <dd>
+                <form class="forum-search-user-filter" action="/forum/search" method="get">
+                    <input id="forum-search-user" name="username" type="text" placeholder="Enter a username ..." value="{{ .Query.Get("username") }}" autocomplete="off">
+                    <input type="submit" value="Go">
+
+                    {{ if .Query.Get("query") != "" }}
+                    <input type="hidden" name="query" value="{{ .Query.Get("query") }}">
+                    {{ end }}
+                    {{ range searchHiddenInputs(.Query, "username") }}
+                    <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
+                    {{ end }}
+                </form>
+            </dd>
+        </dl>
+
         {{ if .CurrentUser }}
         <dl>
             <dt>Saved topics:</dt>
@@ -62,7 +77,6 @@
         </dl>
         {{ end }}
     </div>
-    {{ end }}
 
     {{ include "/components/pagination.jet" .Pagination }}
     {{ yield selectionOrder() }}
