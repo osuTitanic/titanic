@@ -406,10 +406,17 @@
     border-width: 1.5px;
     border-radius: 5px;
     font-size: 95%;
+    vertical-align: middle;
 }
 
 .forum-search-form input[type="submit"] {
     min-width: 75px;
+    padding: 5px 8px;
+    border-color: rgb(185, 197, 236);
+    border-width: 1.5px;
+    border-radius: 5px;
+    font-size: 95%;
+    vertical-align: middle;
 }
 
 .forum-search-id-filters {
