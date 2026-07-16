@@ -315,6 +315,7 @@ type ForumSubforum struct {
 type ForumView struct {
 	DefaultView
 	Forum          *schemas.Forum
+	ForumJump      ForumJumpView
 	Parents        []*schemas.Forum
 	Subforums      []*schemas.Forum
 	SubforumRecent map[int]*schemas.ForumPost
@@ -370,9 +371,20 @@ type ForumActiveUser struct {
 	Name string
 }
 
+type ForumJumpView struct {
+	CurrentForumId int
+	Options        []ForumJumpOption
+}
+
+type ForumJumpOption struct {
+	Id    int
+	Label string
+}
+
 type ForumTopicView struct {
 	DefaultView
 	Forum           *schemas.Forum
+	ForumJump       ForumJumpView
 	Topic           *schemas.ForumTopic
 	Parents         []*schemas.Forum
 	Posts           []*ForumPostPreview

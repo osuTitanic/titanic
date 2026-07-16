@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -55,6 +56,56 @@ func fetchForumParents(ctx *server.Context, forum *schemas.Forum) []*schemas.For
 		current = parent
 	}
 	return parents
+}
+
+func buildForumJumpView(ctx *server.Context, currentForumId int) templates.ForumJumpView {
+	forums, err := ctx.State.Forums.FetchAllVisible()
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch forums for jump box", "error", err)
+		return templates.ForumJumpView{CurrentForumId: currentForumId}
+	}
+
+	return templates.ForumJumpView{
+		CurrentForumId: currentForumId,
+		Options:        buildForumJumpOptions(forums),
+	}
+}
+
+func buildForumJumpOptions(forums []*schemas.Forum) []templates.ForumJumpOption {
+	// Build a tree of forums to represent the hierarchy
+	children := make(map[int][]*schemas.Forum)
+	roots := make([]*schemas.Forum, 0)
+	for _, forum := range forums {
+		if forum.ParentId == nil {
+			roots = append(roots, forum)
+			continue
+		}
+		children[*forum.ParentId] = append(children[*forum.ParentId], forum)
+	}
+
+	options := make([]templates.ForumJumpOption, 0, len(forums))
+	visited := make(map[int]bool, len(forums))
+
+	// Recursive function to append forums and their children to the options list
+	var appendBranch func(*schemas.Forum, int)
+	appendBranch = func(forum *schemas.Forum, depth int) {
+		if visited[forum.Id] {
+			return
+		}
+		visited[forum.Id] = true
+
+		options = append(options, templates.ForumJumpOption{
+			Id:    forum.Id,
+			Label: strings.Repeat("\u00a0 \u00a0", depth) + forum.Name,
+		})
+		for _, child := range children[forum.Id] {
+			appendBranch(child, depth+1)
+		}
+	}
+	for _, root := range roots {
+		appendBranch(root, 0)
+	}
+	return options
 }
 
 func fetchActiveForumUsers(ctx *server.Context, forumId int) []*templates.ForumActiveUser {

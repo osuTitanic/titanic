@@ -188,6 +188,7 @@ func ForumView(ctx *server.Context) {
 	view := templates.ForumView{
 		DefaultView:    buildDefaultView(ctx),
 		Forum:          forum,
+		ForumJump:      buildForumJumpView(ctx, forum.Id),
 		Subforums:      subForums,
 		SubforumRecent: subforumRecent,
 		Parents:        fetchForumParents(ctx, forum),

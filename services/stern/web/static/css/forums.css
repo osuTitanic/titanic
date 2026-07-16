@@ -45,6 +45,36 @@
     vertical-align: middle;
 }
 
+.forum-shortcuts td {
+    vertical-align: middle;
+}
+
+.forum-jumpbox {
+    margin-top: 5px;
+    margin-right: 5px;
+    padding: 3px 2px;
+    white-space: nowrap;
+    text-align: right;
+    font-size: 85%;
+}
+
+.forum-jumpbox label {
+    margin-right: 3px;
+}
+
+.forum-jumpbox select {
+    max-width: 250px;
+    height: 18px;
+    border: 1px solid rgb(185, 197, 236);
+    vertical-align: middle;
+}
+
+.forum-jumpbox input[type="submit"] {
+    margin-left: 3px;
+    padding: 1px 6px;
+    vertical-align: middle;
+}
+
 .forum-home td:hover {
     text-shadow: 1px 1px 8px #afb7ff;
 }

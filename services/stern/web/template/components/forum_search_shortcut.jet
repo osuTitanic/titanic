@@ -1,5 +1,32 @@
-<form class="forum-search-shortcut" action="/forum/search" method="get">
-    <label for="forum-search-query">Search for:</label>
-    <input id="forum-search-query" name="query" type="search">
-    <input type="submit" value="Go">
-</form>
+<table class="forum-shortcuts" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tbody>
+        <tr>
+            {* Search page shortcuts *}
+            <td align="left">
+                <form class="forum-search-shortcut" action="/forum/search" method="get">
+                    <label for="forum-search-query">Search for:</label>
+                    <input id="forum-search-query" name="query" type="search">
+                    <input type="submit" value="Go">
+                </form>
+            </td>
+
+            {* Forum hierarchy box *}
+            {{ if len(.ForumJump.Options) > 0 }}
+            <td align="right">
+                {* Using viewforum.php to make ?f=<id> work *}
+                <form class="forum-jumpbox" action="/forum/viewforum.php" method="get">
+                    <label for="forum-jump-target">Jump to:</label>
+                    <select id="forum-jump-target" name="f">
+                        <option value="">Select a forum</option>
+                        {{ currentForumId := .ForumJump.CurrentForumId }}
+                        {{ range _, option := .ForumJump.Options }}
+                        <option value="{{ option.Id }}" {{ if option.Id == currentForumId }}selected{{ end }}>{{ option.Label }}</option>
+                        {{ end }}
+                    </select>
+                    <input type="submit" value="Go">
+                </form>
+            </td>
+            {{ end }}
+        </tr>
+    </tbody>
+</table>
