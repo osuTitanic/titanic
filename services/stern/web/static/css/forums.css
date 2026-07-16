@@ -400,7 +400,11 @@
     box-sizing: border-box;
     width: 68%;
     margin-left: 15px;
-    padding: 6px;
+    padding: 5px;
+    border-color: rgb(185, 197, 236);
+    border-style: ridge;
+    border-width: 1.5px;
+    border-radius: 5px;
     font-size: 95%;
 }
 
