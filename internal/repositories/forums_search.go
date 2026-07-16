@@ -151,11 +151,22 @@ func (r *ForumTopicRepository) buildForumTopicSearchQuery(query *gorm.DB, option
 		query = query.Where("forum_topics.forum_id = ?", *options.ForumId)
 	}
 	if options.Creator != "" {
-		// TODO: Filter by post creators as well
 		query = query.Where(`EXISTS (
 			SELECT 1 FROM users AS search_creators
-			WHERE search_creators.id = forum_topics.creator_id
-			AND search_creators.safe_name = ?
+			WHERE search_creators.safe_name = ?
+			AND (
+				-- The user is the creator of the topic or
+				-- the user has made at least one post in the topic
+				search_creators.id = forum_topics.creator_id
+				OR EXISTS (
+					SELECT 1 FROM forum_posts AS search_creator_posts
+					WHERE search_creator_posts.topic_id = forum_topics.id
+					AND search_creator_posts.user_id = search_creators.id
+					AND search_creator_posts.hidden = false
+					AND search_creator_posts.draft = false
+					AND search_creator_posts.deleted = false
+				)
+			)
 		)`, schemas.ResolveSafeName(options.Creator))
 	}
 
