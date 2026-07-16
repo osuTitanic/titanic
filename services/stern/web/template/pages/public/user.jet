@@ -234,11 +234,14 @@
         </div>
     {{ end }}
 
-    {* Difference from osu!: Doesn't link to user's post history *}
     {{ if .TotalPosts > 0 }}
         <div title="Posts">
             <i class="icon-edit"></i>
-            <div>{{ .TotalPosts|formatNumber }} post{{ .TotalPosts != 1 ? "s" : "" }}</div>
+            <div>
+                <a href="/forum/search?username={{ .User.Name }}">
+                    {{ .TotalPosts|formatNumber }} post{{ .TotalPosts != 1 ? "s" : "" }}
+                </a>
+            </div>
         </div>
     {{ end }}
 
