@@ -280,17 +280,29 @@ function setupDraftAutosave() {
         return;
     }
 
+    var enableSmiliesInputs = $(form).find("input[name='enable-smilies'][type='checkbox']");
+    var enableSmiliesInput = enableSmiliesInputs.length > 0 ? enableSmiliesInputs[0] : null;
+
     var lastSaved = "";
+    var lastSmiliesEnabled = null;
     var timer = null;
 
     function saveDraft() {
         var content = textarea.value;
-        if (content === lastSaved || trimString(content).length <= 10) {
+        var smiliesEnabled = enableSmiliesInput ? enableSmiliesInput.checked : true;
+
+        var isSame = (content === lastSaved && smiliesEnabled === lastSmiliesEnabled);
+        var tooShort = trimString(content).length <= 10;
+        if (isSame || tooShort) {
             return;
         }
 
-        performApiRequest("POST", draftUrl, { content: content }, function () {
+        performApiRequest("POST", draftUrl, {
+            content: content,
+            enable_smilies: smiliesEnabled
+        }, function () {
             lastSaved = content;
+            lastSmiliesEnabled = smiliesEnabled;
         });
     }
 
