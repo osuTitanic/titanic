@@ -525,6 +525,8 @@ type ForumEditorContext struct {
 	ShowStatusInput bool
 	StatusText      string
 	NotifyChecked   bool
+	ShowSmilies     bool
+	SmiliesEnabled  bool
 	ShowLockTopic   bool
 	TopicLocked     bool
 	ShowLockPost    bool

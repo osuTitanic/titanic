@@ -19,6 +19,8 @@ import (
 var (
 	defaultRenderer = New(Options{})
 	timecodeRegex   = regexp.MustCompile(`\b(?:osu://edit/)?(\d{2,}):([0-5]\d)[:.](\d{3})(?:\s(\((?:\d+[,|])*\d+\)))?`)
+	smileyIdRegex   = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+	smileyTagRegex  = regexp.MustCompile(`(?i)\[smiley\]([A-Za-z0-9_-]+)\[/smiley\]`)
 )
 
 // Options contains bbcode rendering settings
@@ -111,6 +113,7 @@ func registerLinkTags(parser *bbgo.BBGO, options Options) {
 
 func registerMediaTags(parser *bbgo.BBGO, options Options) {
 	parser.AddFormatter("img", renderImage(options), rawOptions())
+	parser.AddFormatter("smiley", renderSmiley, rawOptions())
 	parser.AddFormatter("video", renderVideo(options), rawOptions())
 	parser.AddFormatter("youtube", renderYoutube, rawOptions())
 }
@@ -181,7 +184,28 @@ func renderColor(ctx bbgo.RenderContext) string {
 
 func renderQuote(parser *bbgo.BBGO) bbgo.RenderFunc {
 	return func(ctx bbgo.RenderContext) string {
-		body := parser.Strip(ctx.Value, false)
+		var smileys []string
+
+		// Rendering smileys inside quotes is a bit tricky
+		// We need to replace smiley tags with temporary markers, then render the rest
+		// of the quote and finally replace the markers with the actual smiley images
+		// I'm sure there's a better way to do this, but this works for now
+
+		value := smileyTagRegex.ReplaceAllStringFunc(ctx.Value, func(tag string) string {
+			// Return the marker to be replaced later
+			match := smileyTagRegex.FindStringSubmatch(tag)
+			marker := fmt.Sprintf("\ue000smiley%d\ue001", len(smileys))
+			smileys = append(smileys, renderSmileyImage(match[1]))
+			return marker
+		})
+
+		body := parser.Strip(value, false)
+		for index, smiley := range smileys {
+			// Replace the marker with the actual smiley image
+			marker := fmt.Sprintf("\ue000smiley%d\ue001", index)
+			body = strings.ReplaceAll(body, marker, smiley)
+		}
+
 		author := ctx.Options.Get("quote")
 		if author == "" {
 			return fmt.Sprintf(`<div class="quotecontent">%s</div>`, body)
@@ -248,6 +272,17 @@ func renderImage(options Options) bbgo.RenderFunc {
 		}
 		return fmt.Sprintf(`<img src="%s" loading="lazy">`, sanitizeInput(source))
 	}
+}
+
+func renderSmiley(ctx bbgo.RenderContext) string {
+	if !smileyIdRegex.MatchString(ctx.Value) {
+		return ""
+	}
+	return renderSmileyImage(ctx.Value)
+}
+
+func renderSmileyImage(id string) string {
+	return fmt.Sprintf(`<img src="/images/icons/smilies/%s.gif">`, id)
 }
 
 func renderVideo(options Options) bbgo.RenderFunc {

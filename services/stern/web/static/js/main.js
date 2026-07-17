@@ -579,6 +579,7 @@ function loadBBCodePreview(element) {
     var parentElement = $(element).parent()[0];
     var bbcodeWrapper = $(parentElement).parent()[0];
     var bbcodeEditor = $(bbcodeWrapper).find("textarea")[0];
+    var enableSmiliesInput = $(bbcodeWrapper).find("input[name='enable-smilies'][type='checkbox']")[0];
 
     if (!bbcodeEditor) {
         return false;
@@ -593,7 +594,10 @@ function loadBBCodePreview(element) {
     performApiRequest(
         "POST",
         "/forum/bbcode",
-        { input: bbcodeEditor.value },
+        {
+            input: bbcodeEditor.value,
+            enable_smilies: enableSmiliesInput ? enableSmiliesInput.checked : false
+        },
         function (xhr) {
             var htmlPreview = xhr.responseText;
             if (!htmlPreview) return;

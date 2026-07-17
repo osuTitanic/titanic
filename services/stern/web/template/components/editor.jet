@@ -58,6 +58,30 @@
         <a href="https://osu.ppy.sh/wiki/en/BBCode">here</a>!
     </p>
     <textarea class="bbcode-editor" name="bbcode" style="resize: vertical; min-height: 200px;"{{ if .FocusBody }} autofocus{{ end }}>{{ .Content }}</textarea>
+    {{ if .ShowSmilies }}
+    <div class="bbcode-smilies" aria-label="Smilies">
+        <button type="button" class="bbcode-smiley" data-smiley=":)" title=":)"><img src="/images/icons/smilies/50.gif" alt=":)"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":D" title=":D"><img src="/images/icons/smilies/242.gif" alt=":D"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=";)" title=";)"><img src="/images/icons/smilies/59.gif" alt=";)"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":o" title=":o"><img src="/images/icons/smilies/57.gif" alt=":o"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=">:(" title=">:("><img src="/images/icons/smilies/51.gif" alt=">:("></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":(" title=":("><img src="/images/icons/smilies/56.gif" alt=":("></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":?" title=":?"><img src="/images/icons/smilies/60.gif" alt=":?"></button>
+        <button type="button" class="bbcode-smiley" data-smiley="8-)" title="8-)"><img src="/images/icons/smilies/248.gif" alt="8-)"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":lol:" title=":lol:"><img src="/images/icons/smilies/262.gif" alt=":lol:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":x" title=":x"><img src="/images/icons/smilies/51.gif" alt=":x"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":P" title=":P"><img src="/images/icons/smilies/58.gif" alt=":P"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":oops:" title=":oops:"><img src="/images/icons/smilies/268.gif" alt=":oops:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":cry:" title=":cry:"><img src="/images/icons/smilies/55.gif" alt=":cry:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":|" title=":|"><img src="/images/icons/smilies/52.gif" alt=":|"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":roll:" title=":roll:"><img src="/images/icons/smilies/269.gif" alt=":roll:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":!:" title=":!:"><img src="/images/icons/smilies/260.gif" alt=":!:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":?:" title=":?:"><img src="/images/icons/smilies/266.gif" alt=":?:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":idea:" title=":idea:"><img src="/images/icons/smilies/261.gif" alt=":idea:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":arrow:" title=":arrow:"><img src="/images/icons/smilies/247.gif" alt=":arrow:"></button>
+        <button type="button" class="bbcode-smiley" data-smiley=":shock:" title=":shock:"><img src="/images/icons/smilies/75.gif" alt=":shock:"></button>
+    </div>
+    {{ end }}
 </div>
 {{ end }}
 
@@ -67,6 +91,14 @@
     <div class="bbcode-editor-control-row">
         Status:
         <input type="text" name="topic-status" value="{{ .StatusText }}" class="nav-search" style="min-width: 300px">
+    </div>
+    {{ end }}
+
+    {{ if .ShowSmilies }}
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="enable-smilies" id="enable-smilies" value="1"{{ if .SmiliesEnabled }} checked{{ end }}>
+        <input type="hidden" name="enable-smilies" value="0">
+        <label for="enable-smilies">Enable smilies</label>
     </div>
     {{ end }}
 

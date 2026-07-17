@@ -21,7 +21,12 @@
     {{ if .Config.EnableSsl }}<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">{{ end }}
     {{ yield head() }}
 
+    {{ if .IsModernBrowser }}
     <link rel="preload" href="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" as="image" fetchpriority="high">
+    {{ else }}
+    <link rel="preload" href="{{ cachedUrl("/images/logo/main-low.png") }}" as="image">
+    {{ end }}
+
     <link rel="stylesheet" href="{{ cachedUrl("/lib/font-awesome.min.css") }}">
     <script>
         var apiBaseurl = "{{ .Config.ApiBaseUrl() }}";
@@ -53,10 +58,10 @@
         <a id="top_follow" class="top_button" href="https://twitter.com/osutitanic"></a>
         <a id="top_discord" class="top_button" href="https://discord.gg/qupv72e7YH"></a>
         <a href="/" aria-label="Home">
-            {{ if .IsIE }}
-            <img src="{{ cachedUrl("/images/logo/main-low.png") }}" class="logo" width="140" height="140" alt="">
-            {{ else }}
+            {{ if .IsModernBrowser }}
             <img src="{{ cachedUrl("/images/logo/main-vector.min.svg") }}" loading="eager" fetchpriority="high" class="logo" width="140" height="140" alt="">
+            {{ else }}
+            <img src="{{ cachedUrl("/images/logo/main-low.png") }}" class="logo" width="140" height="140" alt="">
             {{ end }}
         </a>
         <div class="nav">

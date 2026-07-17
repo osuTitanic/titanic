@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -245,6 +246,8 @@ func ForumCreateTopicView(ctx *server.Context) {
 		ShowIcons:      canEditForumIcon(ctx, forum.AllowIcons),
 		Icons:          buildEditorIcons(fetchForumIcons(ctx), -1),
 		ShowControls:   true,
+		ShowSmilies:    true,
+		SmiliesEnabled: true,
 		ShowTopicTypes: ctx.HasPermission("forum.moderation.topics.set_options"),
 		TopicType:      "global", // TODO: perhaps add an enum for this
 	}
@@ -300,6 +303,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d", forum.Id))
 		return
 	}
+	smiliesEnabled := forumSmileysEnabled(ctx)
 
 	pinned, announcement := resolveTopicType(ctx)
 	canEditIcon := canEditForumIcon(ctx, forum.AllowIcons)
@@ -321,11 +325,12 @@ func ForumCreateTopicAction(ctx *server.Context) {
 	}
 
 	post := &schemas.ForumPost{
-		TopicId: topic.Id,
-		ForumId: forum.Id,
-		UserId:  ctx.CurrentUser.Id,
-		Content: content,
-		IconId:  topic.IconId,
+		TopicId:         topic.Id,
+		ForumId:         forum.Id,
+		UserId:          ctx.CurrentUser.Id,
+		Content:         content,
+		IconId:          topic.IconId,
+		SmiliesDisabled: !smiliesEnabled,
 	}
 	if err := ctx.State.ForumPosts.Create(post); err != nil {
 		ctx.Logger.Error("Failed to create initial post", "error", err, "topic", topic.Id)
@@ -416,4 +421,13 @@ func resolveSubmittedIcon(ctx *server.Context, canEdit bool) *constants.ForumIco
 	}
 	icon := constants.ForumIcon(iconId)
 	return &icon
+}
+
+func forumSmileysEnabled(ctx *server.Context) bool {
+	values, submitted := ctx.Request.PostForm["enable-smilies"]
+	if !submitted {
+		// on by default
+		return true
+	}
+	return slices.Contains(values, "1")
 }
