@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -307,22 +308,57 @@ func sanitizeUrl(text string) string {
 	return text
 }
 
-func validAbsoluteUrl(input string) string {
-	parsed, err := url.Parse(strings.TrimSpace(input))
+func validMediaUrl(input string) (string, *url.URL) {
+	mediaUrl := strings.TrimSpace(input)
+	parsed, err := url.Parse(mediaUrl)
 	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
-		return ""
+		return "", nil
 	}
-	return input
+	if !validMediaScheme(parsed.Scheme) || blockedMediaHost(parsed.Hostname()) {
+		return "", nil
+	}
+	return mediaUrl, parsed
+}
+
+func validMediaScheme(scheme string) bool {
+	switch strings.ToLower(scheme) {
+	case "http", "https":
+		return true
+	default:
+		return false
+	}
+}
+
+func blockedMediaHost(host string) bool {
+	host = strings.TrimSuffix(strings.ToLower(host), ".")
+	if host == "" || host == "localhost" || strings.HasSuffix(host, ".localhost") {
+		return true
+	}
+
+	addr, err := netip.ParseAddr(strings.Trim(host, "[]"))
+	if err != nil {
+		// Assuming that this is a domain
+		return false
+	}
+
+	// Block private, loopback, link-local, multicast, and unspecified addresses
+	addr = addr.Unmap()
+	if !addr.IsGlobalUnicast() || addr.IsPrivate() || addr.IsLoopback() || addr.IsLinkLocalUnicast() || addr.IsMulticast() || addr.IsUnspecified() {
+		return true
+	}
+	return false
 }
 
 func resolveMediaUrl(input string, options Options) string {
-	mediaUrl := validAbsoluteUrl(input)
-	if mediaUrl == "" || options.ImageProxyBaseUrl == "" {
+	mediaUrl, parsed := validMediaUrl(input)
+	if mediaUrl == "" {
+		return ""
+	}
+	if options.ImageProxyBaseUrl == "" {
 		return mediaUrl
 	}
 
-	parsed, err := url.Parse(mediaUrl)
-	if err != nil || trustedImageService(parsed, options.ValidImageServices) {
+	if trustedImageService(parsed, options.ValidImageServices) {
 		return mediaUrl
 	}
 
