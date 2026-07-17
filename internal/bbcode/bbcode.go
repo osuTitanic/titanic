@@ -19,6 +19,7 @@ import (
 var (
 	defaultRenderer = New(Options{})
 	timecodeRegex   = regexp.MustCompile(`\b(?:osu://edit/)?(\d{2,}):([0-5]\d)[:.](\d{3})(?:\s(\((?:\d+[,|])*\d+\)))?`)
+	smileyIdRegex   = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
 )
 
 // Options contains bbcode rendering settings
@@ -111,6 +112,7 @@ func registerLinkTags(parser *bbgo.BBGO, options Options) {
 
 func registerMediaTags(parser *bbgo.BBGO, options Options) {
 	parser.AddFormatter("img", renderImage(options), rawOptions())
+	parser.AddFormatter("smiley", renderSmiley, rawOptions())
 	parser.AddFormatter("video", renderVideo(options), rawOptions())
 	parser.AddFormatter("youtube", renderYoutube, rawOptions())
 }
@@ -248,6 +250,13 @@ func renderImage(options Options) bbgo.RenderFunc {
 		}
 		return fmt.Sprintf(`<img src="%s" loading="lazy">`, sanitizeInput(source))
 	}
+}
+
+func renderSmiley(ctx bbgo.RenderContext) string {
+	if !smileyIdRegex.MatchString(ctx.Value) {
+		return ""
+	}
+	return fmt.Sprintf(`<img src="/images/icons/smilies/%s.gif">`, ctx.Value)
 }
 
 func renderVideo(options Options) bbgo.RenderFunc {

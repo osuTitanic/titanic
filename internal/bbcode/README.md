@@ -47,7 +47,7 @@ The renderer currently supports:
 - containers: `quote`, `box`, `spoilerbox`, `color`, `size`, `list`, `*`
 - raw text: `code`, `c`
 - links: `url`, `email`, `google`, `profile`
-- media: `img`, `video`, `youtube`
+- media: `img`, `smiley`, `video`, `youtube`
 
 Unknown line tags, e.g. `[Header]`, are rendered as beatmap headers. Beatmap timecodes such as `01:23:456` and `osu://edit/01:23:456` are converted into `osu://edit/...` links.
 
