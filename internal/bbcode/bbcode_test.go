@@ -26,6 +26,7 @@ func TestRenderHtml(t *testing.T) {
 		{"size named", "[size=small]small[/size]", `<span style="font-size:85%;">small</span>`},
 		{"quote", "[quote=Alice]hello[/quote]", `<div class="quotetitle">Alice wrote:</div><div class="quotecontent">hello</div>`},
 		{"quote strips bbcode", "[quote=Alice]hello [b]bold[/b] [url=https://example.com]link[/url][/quote]", `<div class="quotetitle">Alice wrote:</div><div class="quotecontent">hello bold link</div>`},
+		{"spoilerbox trims newlines", "[spoilerbox]\n\nhello\nworld\n\n[/spoilerbox]", `<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">SPOILER</div><div class="spoiler-body">hello<br />world</div></div>`},
 		{"list", "[list][*] one[*] two[/list]", "<ul><li> one</li><li> two</li></ul>"},
 		{"unknown line", "[Header]\ntext", `<div class="beatmap-header">Header</div><br />text`},
 		{"timecode", "01:23:456", `<a class="beatmap-timecode" href="osu://edit/01:23:456">01:23:456</a>`},

@@ -94,8 +94,7 @@ func registerRawTags(parser *bbgo.BBGO) {
 
 func registerContainerTags(parser *bbgo.BBGO) {
 	parser.AddSimpleFormatter("*", "<li>%s</li>", sameTagClosesOptions())
-	parser.AddSimpleFormatter("spoilerbox", `<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">SPOILER</div><div class="spoiler-body">%s</div></div>`, embeddedOptions())
-
+	parser.AddFormatter("spoilerbox", renderSpoilerBox, embeddedOptions())
 	parser.AddFormatter("box", renderBox, embeddedOptions())
 	parser.AddFormatter("color", renderColor, embeddedOptions())
 	parser.AddFormatter("size", renderSize, embeddedOptions())
@@ -160,7 +159,11 @@ func renderUnknownLine(tagText string, context bbgo.Context) (string, bool) {
 
 func renderBox(ctx bbgo.RenderContext) string {
 	title := sanitizeInput(ctx.Options.Get("box"))
-	return fmt.Sprintf(`<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">%s</div><div class="spoiler-body">%s</div></div>`, title, ctx.Value)
+	return fmt.Sprintf(`<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">%s</div><div class="spoiler-body">%s</div></div>`, title, strings.Trim(ctx.Value, "\r\n"))
+}
+
+func renderSpoilerBox(ctx bbgo.RenderContext) string {
+	return fmt.Sprintf(`<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">SPOILER</div><div class="spoiler-body">%s</div></div>`, strings.Trim(ctx.Value, "\r\n"))
 }
 
 func renderCode(ctx bbgo.RenderContext) string {
@@ -168,7 +171,7 @@ func renderCode(ctx bbgo.RenderContext) string {
 	if heading := ctx.Options.Get(ctx.TagName); heading != "" {
 		header = fmt.Sprintf("<b>%s</b><br>", sanitizeInput(heading))
 	}
-	return fmt.Sprintf(`%s<div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">%s</div>`, header, ctx.Value)
+	return fmt.Sprintf(`%s<div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">%s</div>`, header, strings.Trim(ctx.Value, "\r\n"))
 }
 
 func renderColor(ctx bbgo.RenderContext) string {
