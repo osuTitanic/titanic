@@ -86,11 +86,9 @@ func registerSimpleTags(parser *bbgo.BBGO) {
 }
 
 func registerRawTags(parser *bbgo.BBGO) {
-	// yeah
-	codeBlockTemplate := `<b>Code:</b><br><div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">%s</div>`
 	options := rawOptions()
-	parser.AddSimpleFormatter("code", codeBlockTemplate, options)
-	parser.AddSimpleFormatter("c", codeBlockTemplate, options)
+	parser.AddFormatter("code", renderCode, options)
+	parser.AddFormatter("c", renderCode, options)
 }
 
 func registerContainerTags(parser *bbgo.BBGO) {
@@ -162,6 +160,14 @@ func renderUnknownLine(tagText string, context bbgo.Context) (string, bool) {
 func renderBox(ctx bbgo.RenderContext) string {
 	title := sanitizeInput(ctx.Options.Get("box"))
 	return fmt.Sprintf(`<div class="spoiler"><div class="spoiler-head" onclick="return toggleSpoiler(this);">%s</div><div class="spoiler-body">%s</div></div>`, title, ctx.Value)
+}
+
+func renderCode(ctx bbgo.RenderContext) string {
+	header := ""
+	if heading := ctx.Options.Get(ctx.TagName); heading != "" {
+		header = fmt.Sprintf("<b>%s</b><br>", sanitizeInput(heading))
+	}
+	return fmt.Sprintf(`%s<div style="direction: ltr; margin: 5px; padding: 3px; border: 1px solid black; font-weight: normal; font-family: Monaco,'Courier New',monospace; background-color: rgb(242, 242, 242); overflow: scroll;">%s</div>`, header, ctx.Value)
 }
 
 func renderColor(ctx bbgo.RenderContext) string {
