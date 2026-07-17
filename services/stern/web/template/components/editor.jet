@@ -94,11 +94,6 @@
     </div>
     {{ end }}
 
-    <div class="bbcode-editor-control-row">
-        <input type="checkbox" class="radio" name="notify" id="notify"{{ if .NotifyChecked }} checked{{ end }}>
-        <label for="notify">Notify me when a reply is posted</label>
-    </div>
-
     {{ if .ShowSmilies }}
     <div class="bbcode-editor-control-row">
         <input type="checkbox" class="radio" name="enable-smilies" id="enable-smilies" value="1"{{ if .SmiliesEnabled }} checked{{ end }}>
@@ -106,6 +101,11 @@
         <label for="enable-smilies">Enable smilies</label>
     </div>
     {{ end }}
+
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="notify" id="notify"{{ if .NotifyChecked }} checked{{ end }}>
+        <label for="notify">Notify me when a reply is posted</label>
+    </div>
 
     {{ if .ShowLockTopic }}
     <div class="bbcode-editor-control-row">
