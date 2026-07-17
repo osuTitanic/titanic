@@ -245,6 +245,8 @@ func ForumCreateTopicView(ctx *server.Context) {
 		ShowIcons:      canEditForumIcon(ctx, forum.AllowIcons),
 		Icons:          buildEditorIcons(fetchForumIcons(ctx), -1),
 		ShowControls:   true,
+		ShowSmilies:    true,
+		SmiliesEnabled: true,
 		ShowTopicTypes: ctx.HasPermission("forum.moderation.topics.set_options"),
 		TopicType:      "global", // TODO: perhaps add an enum for this
 	}
@@ -299,6 +301,9 @@ func ForumCreateTopicAction(ctx *server.Context) {
 	if title == "" || content == "" {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d", forum.Id))
 		return
+	}
+	if forumSmileysEnabled(ctx) {
+		content = normalizeForumPostSmileys(content)
 	}
 
 	pinned, announcement := resolveTopicType(ctx)

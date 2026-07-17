@@ -107,6 +107,8 @@ func ForumPostEditorView(ctx *server.Context) {
 		NoneIconSelected: topic.IconId == nil,
 		Icons:            buildEditorIcons(fetchForumIcons(ctx), selectedIcon),
 		ShowControls:     true,
+		ShowSmilies:      true,
+		SmiliesEnabled:   true,
 		StatusText:       topic.StatusTextValue(),
 		NotifyChecked:    isSubscribed,
 		TopicLocked:      topic.LockedAt != nil,
@@ -293,6 +295,9 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d", topic.ForumId, topic.Id))
 		return
 	}
+	if forumSmileysEnabled(ctx) {
+		content = normalizeForumPostSmileys(content)
+	}
 
 	post := &schemas.ForumPost{
 		TopicId:   topic.Id,
@@ -402,6 +407,9 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	if content == "" {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))
 		return
+	}
+	if forumSmileysEnabled(ctx) {
+		content = normalizeForumPostSmileys(content)
 	}
 
 	notify := ctx.Request.FormValue("notify") != ""
