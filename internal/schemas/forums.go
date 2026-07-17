@@ -78,19 +78,20 @@ func (topic *ForumTopic) StatusTextValue() string {
 }
 
 type ForumPost struct {
-	Id         int64                `gorm:"column:id;primaryKey;autoIncrement"`
-	TopicId    int                  `gorm:"column:topic_id"`
-	ForumId    int                  `gorm:"column:forum_id"`
-	UserId     int                  `gorm:"column:user_id"`
-	IconId     *constants.ForumIcon `gorm:"column:icon_id"`
-	Content    string               `gorm:"column:content"`
-	CreatedAt  time.Time            `gorm:"column:created_at;autoCreateTime"`
-	EditTime   time.Time            `gorm:"column:edit_time;autoCreateTime"`
-	EditCount  int                  `gorm:"column:edit_count;default:0"`
-	EditLocked bool                 `gorm:"column:edit_locked;default:false"`
-	Hidden     bool                 `gorm:"column:hidden;default:false"`
-	Draft      bool                 `gorm:"column:draft;default:false"`
-	Deleted    bool                 `gorm:"column:deleted;default:false"`
+	Id              int64                `gorm:"column:id;primaryKey;autoIncrement"`
+	TopicId         int                  `gorm:"column:topic_id"`
+	ForumId         int                  `gorm:"column:forum_id"`
+	UserId          int                  `gorm:"column:user_id"`
+	IconId          *constants.ForumIcon `gorm:"column:icon_id"`
+	Content         string               `gorm:"column:content"`
+	CreatedAt       time.Time            `gorm:"column:created_at;autoCreateTime"`
+	EditTime        time.Time            `gorm:"column:edit_time;autoCreateTime"`
+	EditCount       int                  `gorm:"column:edit_count;default:0"`
+	EditLocked      bool                 `gorm:"column:edit_locked;default:false"`
+	SmiliesDisabled bool                 `gorm:"column:smilies_disabled;default:false"`
+	Hidden          bool                 `gorm:"column:hidden;default:false"`
+	Draft           bool                 `gorm:"column:draft;default:false"`
+	Deleted         bool                 `gorm:"column:deleted;default:false"`
 
 	Modding []BeatmapModding `gorm:"foreignKey:PostId;references:Id"`
 	User    *User            `gorm:"foreignKey:UserId;references:Id"`
