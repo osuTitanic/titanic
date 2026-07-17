@@ -109,7 +109,11 @@ func (post *ForumPost) Link() string {
 }
 
 func (post *ForumPost) Render() string {
-	return bbcode.RenderHtml(post.Content)
+	content := post.Content
+	if !post.SmiliesDisabled {
+		content = bbcode.NormalizeSmileys(content)
+	}
+	return bbcode.RenderHtml(content)
 }
 
 func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
@@ -125,6 +129,9 @@ func (post *ForumPost) RenderForNews(ignoreTags ...*regexp.Regexp) string {
 		content = strings.TrimSpace(content)
 
 		if content != "" {
+			if !post.SmiliesDisabled {
+				content = bbcode.NormalizeSmileys(content)
+			}
 			return bbcode.RenderHtml(content)
 		}
 	}

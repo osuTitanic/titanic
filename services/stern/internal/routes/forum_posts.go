@@ -88,7 +88,7 @@ func ForumPostEditorView(ctx *server.Context) {
 	editingLatestPost := action == forumActionEdit && latestPost != nil && latestPost.Id == actionId
 
 	isSubscribed, _ := ctx.State.ForumSubscribers.Exists(topic.Id, ctx.CurrentUser.Id)
-	content := resolveEditorContent(ctx, topic, action, referencedPost)
+	content, smiliesEnabled := resolveEditorState(ctx, topic, action, referencedPost)
 	canEditIcon := canEditPostIcon(ctx, topic, action, editingLatestPost)
 
 	selectedIcon := -1
@@ -108,7 +108,7 @@ func ForumPostEditorView(ctx *server.Context) {
 		Icons:            buildEditorIcons(fetchForumIcons(ctx), selectedIcon),
 		ShowControls:     true,
 		ShowSmilies:      true,
-		SmiliesEnabled:   true,
+		SmiliesEnabled:   smiliesEnabled,
 		StatusText:       topic.StatusTextValue(),
 		NotifyChecked:    isSubscribed,
 		TopicLocked:      topic.LockedAt != nil,
@@ -233,13 +233,14 @@ func ForumDraftAction(ctx *server.Context) {
 	clearForumDrafts(ctx, topic.Id)
 
 	draft := &schemas.ForumPost{
-		TopicId:   topic.Id,
-		ForumId:   topic.ForumId,
-		UserId:    ctx.CurrentUser.Id,
-		Content:   content,
-		Draft:     true,
-		Hidden:    true,
-		CreatedAt: time.Now(),
+		TopicId:         topic.Id,
+		ForumId:         topic.ForumId,
+		UserId:          ctx.CurrentUser.Id,
+		Content:         content,
+		SmiliesDisabled: !forumSmileysEnabled(ctx),
+		Draft:           true,
+		Hidden:          true,
+		CreatedAt:       time.Now(),
 	}
 	if err := ctx.State.ForumPosts.Create(draft); err != nil {
 		ctx.Logger.Error("Failed to save draft", "error", err, "topic", topic.Id)
@@ -295,16 +296,15 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d", topic.ForumId, topic.Id))
 		return
 	}
-	if forumSmileysEnabled(ctx) {
-		content = normalizeForumPostSmileys(content)
-	}
+	smiliesEnabled := forumSmileysEnabled(ctx)
 
 	post := &schemas.ForumPost{
-		TopicId:   topic.Id,
-		ForumId:   topic.ForumId,
-		UserId:    ctx.CurrentUser.Id,
-		Content:   content,
-		CreatedAt: time.Now(),
+		TopicId:         topic.Id,
+		ForumId:         topic.ForumId,
+		UserId:          ctx.CurrentUser.Id,
+		Content:         content,
+		SmiliesDisabled: !smiliesEnabled,
+		CreatedAt:       time.Now(),
 	}
 
 	wasChanged, iconUpdate := resolveTopicIconChange(ctx, topic)
@@ -408,9 +408,7 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))
 		return
 	}
-	if forumSmileysEnabled(ctx) {
-		content = normalizeForumPostSmileys(content)
-	}
+	smiliesEnabled := forumSmileysEnabled(ctx)
 
 	notify := ctx.Request.FormValue("notify") != ""
 	updateForumSubscription(ctx, topic.Id, notify)
@@ -420,8 +418,12 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	editingInitialPost := initialPost != nil && initialPost.Id == post.Id
 	editingLatestPost := latestPost != nil && latestPost.Id == post.Id
 
-	updates := &schemas.ForumPost{Id: post.Id, Content: content}
-	columns := []string{"content"}
+	updates := &schemas.ForumPost{
+		Id:              post.Id,
+		Content:         content,
+		SmiliesDisabled: !smiliesEnabled,
+	}
+	columns := []string{"content", "smilies_disabled"}
 
 	// Icons may only be changed while editing the latest post
 	if editingLatestPost {
@@ -509,24 +511,26 @@ func resolveTopicIconChange(ctx *server.Context, topic *schemas.ForumTopic) (boo
 	return true, &icon
 }
 
-func resolveEditorContent(ctx *server.Context, topic *schemas.ForumTopic, action string, post *schemas.ForumPost) string {
-	// Determine the placeholder content for the editor
+func resolveEditorState(ctx *server.Context, topic *schemas.ForumTopic, action string, post *schemas.ForumPost) (string, bool) {
+	// Determine the placeholder content for the editor & whether smilies are enabled
 	// For edit: use the post content
 	// For quote: use the post content wrapped in a quote tag
 	// For new post: use the last saved draft, if any
 	switch action {
 	case forumActionEdit:
 		if post != nil && !post.Deleted {
-			return post.Content
+			return post.Content, !post.SmiliesDisabled
 		}
 	case forumActionQuote:
 		if post != nil && !post.Deleted {
-			return buildQuote(post)
+			return buildQuote(post), true
 		}
 	case forumActionPost:
-		return restoreDraft(ctx, topic.Id)
+		if draft := restoreDraft(ctx, topic.Id); draft != nil {
+			return draft.Content, !draft.SmiliesDisabled
+		}
 	}
-	return ""
+	return "", true
 }
 
 func buildQuote(post *schemas.ForumPost) string {
@@ -552,15 +556,15 @@ func buildQuote(post *schemas.ForumPost) string {
 	return fmt.Sprintf("[quote=%s]%s[/quote]", author, strings.TrimSpace(content))
 }
 
-func restoreDraft(ctx *server.Context, topicId int) string {
+func restoreDraft(ctx *server.Context, topicId int) *schemas.ForumPost {
 	drafts, err := ctx.State.ForumPosts.FetchDrafts(ctx.CurrentUser.Id, topicId)
 	if err != nil || len(drafts) == 0 {
-		return ""
+		return nil
 	}
 	if err := ctx.State.ForumPosts.Delete(drafts[0]); err != nil {
 		ctx.Logger.Warn("Failed to delete restored draft", "error", err, "draft", drafts[0].Id)
 	}
-	return drafts[0].Content
+	return drafts[0]
 }
 
 func applyEditedTopicOptions(ctx *server.Context, topic *schemas.ForumTopic, editingInitialPost bool) {

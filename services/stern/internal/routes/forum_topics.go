@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -302,9 +303,7 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d", forum.Id))
 		return
 	}
-	if forumSmileysEnabled(ctx) {
-		content = normalizeForumPostSmileys(content)
-	}
+	smiliesEnabled := forumSmileysEnabled(ctx)
 
 	pinned, announcement := resolveTopicType(ctx)
 	canEditIcon := canEditForumIcon(ctx, forum.AllowIcons)
@@ -326,11 +325,12 @@ func ForumCreateTopicAction(ctx *server.Context) {
 	}
 
 	post := &schemas.ForumPost{
-		TopicId: topic.Id,
-		ForumId: forum.Id,
-		UserId:  ctx.CurrentUser.Id,
-		Content: content,
-		IconId:  topic.IconId,
+		TopicId:         topic.Id,
+		ForumId:         forum.Id,
+		UserId:          ctx.CurrentUser.Id,
+		Content:         content,
+		IconId:          topic.IconId,
+		SmiliesDisabled: !smiliesEnabled,
 	}
 	if err := ctx.State.ForumPosts.Create(post); err != nil {
 		ctx.Logger.Error("Failed to create initial post", "error", err, "topic", topic.Id)
@@ -421,4 +421,13 @@ func resolveSubmittedIcon(ctx *server.Context, canEdit bool) *constants.ForumIco
 	}
 	icon := constants.ForumIcon(iconId)
 	return &icon
+}
+
+func forumSmileysEnabled(ctx *server.Context) bool {
+	values, submitted := ctx.Request.PostForm["enable-smilies"]
+	if !submitted {
+		// on by default
+		return true
+	}
+	return slices.Contains(values, "1")
 }

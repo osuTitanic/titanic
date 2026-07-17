@@ -1,15 +1,12 @@
-package routes
+package bbcode
 
 import (
 	"regexp"
-	"slices"
 	"strings"
-
-	"github.com/osuTitanic/titanic/services/stern/internal/server"
 )
 
 var (
-	forumSmileyUrlRegex = regexp.MustCompile(
+	forumSmileyURLRegex = regexp.MustCompile(
 		// Copied from bbgo, we need this to avoid replacing smileys inside URLs
 		`(?im)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,}/)(?:[^\s()<>]+|\([^\s()<>]+\))+(?:\([^\s()<>]+\)|[^\s` + "`" + `!()\[\]{};:'".,<>?]))`,
 	)
@@ -26,35 +23,36 @@ var (
 		"youtube": true,
 	}
 	forumSmileyReplacer = strings.NewReplacer(
+		// Longer representations must come before their prefixes.
+		":roll:", "[smiley]269[/smiley]",
+		":shock:", "[smiley]75[/smiley]",
+		":arrow:", "[smiley]247[/smiley]",
+		":idea:", "[smiley]261[/smiley]",
+		":oops:", "[smiley]268[/smiley]",
+		":cry:", "[smiley]55[/smiley]",
+		":lol:", "[smiley]262[/smiley]",
+		":!:", "[smiley]260[/smiley]",
+		":?:", "[smiley]266[/smiley]",
+		"8-)", "[smiley]248[/smiley]",
+		">:(", "[smiley]51[/smiley]",
 		":)", "[smiley]50[/smiley]",
 		";)", "[smiley]59[/smiley]",
 		":D", "[smiley]242[/smiley]",
 		":o", "[smiley]57[/smiley]",
-		">:(", "[smiley]51[/smiley]",
-		"8-)", "[smiley]248[/smiley]",
 		":(", "[smiley]56[/smiley]",
 		":?", "[smiley]60[/smiley]",
 		":x", "[smiley]51[/smiley]",
 		":P", "[smiley]58[/smiley]",
 		":|", "[smiley]52[/smiley]",
-		":!:", "[smiley]260[/smiley]",
-		":?:", "[smiley]266[/smiley]",
-		":cry:", "[smiley]55[/smiley]",
-		":lol:", "[smiley]262[/smiley]",
-		":roll:", "[smiley]269[/smiley]",
-		":idea:", "[smiley]261[/smiley]",
-		":oops:", "[smiley]268[/smiley]",
-		":shock:", "[smiley]75[/smiley]",
-		":arrow:", "[smiley]247[/smiley]",
 	)
 )
 
-func normalizeForumPostSmileys(input string) string {
+func NormalizeSmileys(input string) string {
 	var output strings.Builder
 	var rawTag string
 
 	// We will rebuild the input string piece by piece,
-	// while replacing smileys outside of raw tags (like [code] or [url])
+	// while replacing smileys outside of raw tags
 	// e.g. :shock: will be replaced with [smiley]75[/smiley]
 
 	for len(input) > 0 {
@@ -94,15 +92,6 @@ func normalizeForumPostSmileys(input string) string {
 	return output.String()
 }
 
-func forumSmileysEnabled(ctx *server.Context) bool {
-	values, submitted := ctx.Request.PostForm["enable-smilies"]
-	if !submitted {
-		// on by default
-		return true
-	}
-	return slices.Contains(values, "1")
-}
-
 func writeForumSmileyText(output *strings.Builder, text string, raw bool) {
 	if raw {
 		output.WriteString(text)
@@ -113,7 +102,7 @@ func writeForumSmileyText(output *strings.Builder, text string, raw bool) {
 	// replace smileys in the text outside of them
 
 	last := 0
-	for _, match := range forumSmileyUrlRegex.FindAllStringIndex(text, -1) {
+	for _, match := range forumSmileyURLRegex.FindAllStringIndex(text, -1) {
 		output.WriteString(forumSmileyReplacer.Replace(text[last:match[0]]))
 		output.WriteString(text[match[0]:match[1]])
 		last = match[1]
