@@ -798,6 +798,39 @@ input[type="url"], input[type="search"] {
     font-size: 105%;
 }
 
+.bbcode-smilies {
+    /* TODO: Remove usage of flex - this was just a quick implementation */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin: 2px 3px 0;
+}
+
+.bbcode-smiley {
+    width: 22px;
+    height: 22px;
+    padding: 3px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.bbcode-smiley:hover {
+    background-color: rgb(205, 205, 240);
+}
+
+.bbcode-smiley:active {
+    background-color: rgb(184, 184, 218);
+}
+
+.bbcode-smiley img {
+    width: 16px;
+    height: 16px;
+}
+
 #editor-wrapper {
     background-color: #e3e1fa;
     border-radius: 5px;

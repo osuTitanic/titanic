@@ -115,6 +115,25 @@ function insertTextAtSelection(textarea, content) {
     setSelectionRangeCompat(textarea, newCaretPos, newCaretPos);
 }
 
+function insertSmiley(event) {
+    event = event || window.event;
+    event.preventDefault();
+    var element = event.target || event.srcElement;
+
+    if (element.tagName !== "BUTTON") {
+        element = $(element).parent()[0];
+    }
+
+    var smiley = element.getAttribute("data-smiley");
+    var wrapper = $(element).parent().parent()[0];
+    var textareas = wrapper.getElementsByTagName("textarea");
+    if (!smiley || textareas.length === 0) {
+        return;
+    }
+
+    insertTextAtSelection(textareas[0], smiley);
+}
+
 function replaceFirstOccurrence(textarea, oldContent, newContent) {
     var value = textarea.value;
     var index = value.indexOf(oldContent);
@@ -291,6 +310,12 @@ var toolbars = $(".bbcode-toolbar");
 
 for (var i = 0; i < toolbars.length; i++) {
     $(toolbars[i]).on("click", insertBBCode);
+}
+
+var smileyPalettes = $(".bbcode-smilies");
+
+for (var i = 0; i < smileyPalettes.length; i++) {
+    $(smileyPalettes[i]).on("click", insertSmiley);
 }
 
 $(document).ready(setupDraftAutosave);
