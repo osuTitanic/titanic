@@ -99,7 +99,7 @@ Register the builder instead of using `TaskWithoutArguments`:
 
 ### Using Task Options
 
-The service will allow other cli flag combinations as well and try its best to parse them:
+The service will try its best to parse various flag combinations:
 
 ```sh
 go run ./services/jobs/cmd/cli -name users_cleanup -batch-size 250
