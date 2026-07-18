@@ -92,7 +92,13 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 	}
 
 	popularityFactor := math.Pow(float64(beatmap.Playcount), 0.4) * 3.6
+
+	// TODO: Implement beatmapset-relative playcount factor properly
+	// 		 The 0.24 factor should only be applied when the playcount ratio is below
+	//       0.98, which is calculated by dividing the beatmap's playcount with the
+	// 		 largest playcount among difficulties in the beatmapset & game mode.
 	popularityFactor *= 0.24
+
 	accFactor := math.Pow(score.Acc, 15)
 	passRatio := float64(beatmap.Passcount) / float64(beatmap.Playcount)
 
