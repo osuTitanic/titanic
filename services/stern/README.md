@@ -128,3 +128,20 @@ return
 ```
 
 Prefer an existing helper such as `UserNotFound`, `BeatmapNotFound`, `ForumNotFound`, `TopicLocked`, or `PostingTooQuickly` when it matches the failure. You may add new reusable helpers to `internal/routes/errors.go`.
+
+## Components
+
+Components are reusable pieces rendered as part of another template. They live in `web/template/components` and do not have their own route.
+
+Use `include` when the component renders its data directly, without a `block`:
+
+```jet
+{{ include "/components/pagination.jet" .Pagination }}
+```
+
+If the component defines blocks, import it first and render a block with `yield`:
+
+```jet
+{{ import "/components/editor.jet" }}
+{{ yield editor() .Editor }}
+```
