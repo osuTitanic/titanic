@@ -145,3 +145,37 @@ If the component defines blocks, import it first and render a block with `yield`
 {{ import "/components/editor.jet" }}
 {{ yield editor() .Editor }}
 ```
+
+## Partials
+
+"Partials" are standalone HTML fragments, used for lazy loading or periodically refreshing part of a page. They live in `web/template/partials` and should *not* extend `layout.jet`.
+
+To reuse HTML from a full page, define it as a block in the page template.
+The partial can then import that page and render only the block:
+
+```jet
+{* web/template/partials/home_news.jet *}
+{{ import "/pages/public/home.jet" }}
+{{ yield homeNews() . }}
+```
+
+Add a handler that prepares only the data needed by the partial:
+
+```go
+func HomeNewsPartial(ctx *server.Context) {
+	view := any(fetchHomeNews(ctx))
+	ctx.RenderTemplate(http.StatusOK, "partials/home_news", view)
+}
+```
+
+Register the partial route in `InitializeWebRoutes`:
+
+```go
+server.Handle("GET /partials/home/news", routes.HomeNewsPartial)
+```
+
+Partials can then be loaded on demand with a `data-partial` attribute & page JavaScript, or refreshed with `registerPartial`:
+
+```jet
+<script defer>registerPartial("#chat", "/partials/home/chat #chat > *", 30000)</script>
+```
