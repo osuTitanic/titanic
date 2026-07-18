@@ -1,8 +1,30 @@
 # Stern
 
-Stern is the website frontend. Routes are implemented in `internal/routes`, registered in `cmd/web/main.go`, and rendered with Jet templates from `web/template`.
+Stern is the website frontend for Titanic!, inspired by the design of the [old osu! website](https://old.ppy.sh), internally called "osu! web 1.0".
 
-<!-- TODO: More info, screenshots, yada yada -->
+## Usage
+
+Run stern from the repository root so it can load the `.env` & resolve the default static directory:
+
+```sh
+go run ./services/stern/cmd/web
+```
+
+The server listens on `FRONTEND_HOST` and `FRONTEND_PORT`, which default to `localhost:8080`.
+
+### Static Assets
+
+Jet templates are embedded into the binary. However, static assets are served from `services/stern/web/static` by default, or from the directory set through `STERN_STATIC_DIR`.
+
+Use the `static_embedded` build tag when a self-contained binary should include the static assets:
+
+```sh
+go build -tags static_embedded -o stern ./services/stern/cmd/web
+```
+
+Keep in mind that this will increase the binary size by a lot. You will also need to rebuild the binary whenever static assets are changed. The option is there though, if you really want that.
+
+The Docker image does not embed or copy static assets. It expects them to be mounted at `/app/static`.
 
 ## Adding a Page
 
@@ -55,7 +77,7 @@ if !ctx.RequireLogin() {
 }
 ```
 
-## Adding a Template
+### Adding a Template
 
 Stern uses the [jet template engine](https://github.com/CloudyKit/jet). Refer to the [jet syntax reference](https://github.com/CloudyKit/jet/blob/master/docs/syntax.md) for more details. The documentation is very straightforward and serves as a good reference cheat sheet.
 
@@ -82,7 +104,7 @@ Page-specific styles and scripts belong in `web/static/css` and `web/static/js`.
 <link rel="stylesheet" href="{{ cachedUrl("/css/about.css") }}">
 ```
 
-## Error Codes
+### Error Codes
 
 Error helpers are defined in `internal/routes/errors.go`. They render the error page with the provided HTTP status, but do not stop the handler, so always return after calling one.
 
@@ -131,7 +153,7 @@ return
 
 Prefer an existing helper such as `UserNotFound`, `BeatmapNotFound`, `ForumNotFound`, `TopicLocked`, or `PostingTooQuickly` when it matches the failure. You may add new reusable helpers to `internal/routes/errors.go`.
 
-## Components
+### Components
 
 Components are reusable pieces rendered as part of another template. They live in `web/template/components` and do not have their own route.
 
@@ -148,7 +170,7 @@ If the component defines blocks, import it first and render a block with `yield`
 {{ yield editor() .Editor }}
 ```
 
-## Partials
+### Partials
 
 "Partials" are standalone HTML fragments, used for lazy loading or periodically refreshing part of a page. They live in `web/template/partials` and should *not* extend `layout.jet`.
 
