@@ -112,6 +112,13 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		basePP *= 0.2
 	}
 
+	// TODO: Implement SS ratio
+	// 		 For the beatmap/mode top 800 scores:
+	//       	ss_ratio = min(1, count(X or XH) / count(S or SH))
+	//      	factor   = 1 - 3 * ss_ratio
+	//       This can cause considerable database load, unless we make
+	// 		 some kind of materialized view for it, or add caching, but fuck caching tbh
+
 	ppv1 := basePP *
 		ageFactor *
 		ssBonus *
