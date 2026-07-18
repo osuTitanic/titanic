@@ -57,6 +57,8 @@ if !ctx.RequireLogin() {
 
 ## Adding a Template
 
+Stern uses the [jet template engine](https://github.com/CloudyKit/jet). Refer to the [jet syntax reference](https://github.com/CloudyKit/jet/blob/master/docs/syntax.md) for more details. The documentation is very straightforward and serves as a good reference cheat sheet.
+
 Following our example, create a `web/template/pages/public/about.jet`.
 
 ```jet
