@@ -26,8 +26,7 @@
     <h2>Friends / Following ({{ len(.Friends) }})</h2>
 
     <form class="relationship-form" onsubmit="return addFriendFromSettings(this);">
-        <label for="friend-username">Add a friend</label>
-        <input id="friend-username" name="username" type="text" placeholder="Username" autocomplete="off" required>
+        <input name="username" type="text" placeholder="Username" autocomplete="off" required>
         <button class="submit-button" type="submit">Add friend</button>
     </form>
 
@@ -66,8 +65,7 @@
     <h2>Foes / Blocked ({{ len(.Foes) }})</h2>
 
     <form class="relationship-form" onsubmit="return addFoeFromSettings(this);">
-        <label for="foe-username">Add a foe</label>
-        <input id="foe-username" name="username" type="text" placeholder="Username" autocomplete="off" required>
+        <input name="username" type="text" placeholder="Username" autocomplete="off" required>
         <button class="submit-button" type="submit">Block user</button>
     </form>
 
