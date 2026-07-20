@@ -403,6 +403,22 @@ function createXhr() {
     }
 }
 
+// TODO: See where we can integrate this function
+
+function apiErrorMessage(xhr, fallback) {
+    try {
+        var response = $.parseJSON(xhr.responseText);
+        return response.details || fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function apiErrorAlert(xhr, fallback) {
+    var message = apiErrorMessage(xhr, fallback);
+    alert(message);
+}
+
 function performApiRequest(method, path, data, callbackSuccess, callbackError) {
     var url = apiBaseurl + path;
     var xhr;
