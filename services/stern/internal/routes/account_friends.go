@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 )
@@ -17,6 +18,13 @@ func AccountFriends(ctx *server.Context) {
 	friends, err := ctx.State.Repositories.Relationships.FetchTargetUsers(userId, constants.RelationshipStatusFriend)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch friends", "user", userId, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	foes, err := ctx.State.Repositories.Relationships.FetchTargetUsers(userId, constants.RelationshipStatusFoe)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch foes", "user", userId, "error", err)
 		InternalServerError(ctx)
 		return
 	}
@@ -42,6 +50,7 @@ func AccountFriends(ctx *server.Context) {
 	view := templates.SettingsFriendsView{
 		DefaultView: buildDefaultView(ctx),
 		Friends:     entries,
+		Foes:        foes,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/account/settings_friends", view)
 }
