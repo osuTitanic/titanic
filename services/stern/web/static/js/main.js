@@ -419,6 +419,58 @@ function apiErrorAlert(xhr, fallback) {
     alert(message);
 }
 
+function addFriend(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "POST",
+        "/account/friends?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function removeFriend(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "DELETE",
+        "/account/friends?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function addFoe(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "POST",
+        "/account/foes?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function removeFoe(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "DELETE",
+        "/account/foes?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
 function performApiRequest(method, path, data, callbackSuccess, callbackError) {
     var url = apiBaseurl + path;
     var xhr;
