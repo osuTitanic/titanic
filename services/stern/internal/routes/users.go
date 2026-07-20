@@ -649,6 +649,15 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 		return false, false, true, nil
 	}
 
+	// The current user has blocked the profile owner
+	blocked, err = ctx.State.Repositories.Relationships.ByUserAndTarget(ctx.CurrentUser.Id, targetId)
+	if err != nil {
+		return false, false, false, err
+	}
+	if blocked != nil && blocked.Status == constants.RelationshipStatusFoe {
+		return false, false, true, nil
+	}
+
 	currentFriends, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(
 		ctx.CurrentUser.Id,
 		constants.RelationshipStatusFriend,
