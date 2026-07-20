@@ -10,7 +10,7 @@
         <a href="/account/security">Security</a>
     </div>
     <div class="sidebar-section {{ if .CurrentPath == "/account/friends" }}selected-sidebar{{ end }}">
-        <a href="/account/friends">Friends</a>
+        <a href="/account/friends">Friends & Foes</a>
     </div>
     <div class="sidebar-section {{ if .CurrentPath == "/account/chat" }}selected-sidebar{{ end }}">
         <a href="/account/chat">Chat</a>
