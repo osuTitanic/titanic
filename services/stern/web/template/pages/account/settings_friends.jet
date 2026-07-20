@@ -1,8 +1,8 @@
 {{ extends "/layout.jet" }}
 
 {{ block head() }}
-<title>Friends</title>
-<meta property="og:title" content="Friends - Titanic!">
+<title>Friends & Foes</title>
+<meta property="og:title" content="Friends & Foes - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/friends">
 <link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
@@ -10,40 +10,89 @@
 
 {{ block body() }}
 {{ include "/components/settings_sidebar.jet" . }}
-{{ yield friendsHeading() }}
-{{ yield friendsList() }}
+<div class="relationship-settings">
+    <div class="friends-heading">
+        <h1>Friends & Foes</h1>
+        <p>Manage the people you follow and the users you have blocked.</p>
+    </div>
+    {{ yield friendsList() }}
+    {{ yield foesList() }}
+</div>
 <script src="{{ cachedUrl("/js/settings.js") }}"></script>
 {{ end }}
 
-{{ block friendsHeading() }}
-<div class="friends-heading">
-    <h1>Friends</h1>
-    <p>Here you can view and manage your friends. You currently have a total of {{ len(.Friends) }} friends.</p>
-</div>
-{{ end }}
-
 {{ block friendsList() }}
-<div class="friends">
-    {{ range _, friend := .Friends }}
-    {{ yield friendItem() friend }}
+<div class="relationship-section">
+    <h2>Friends / Following ({{ len(.Friends) }})</h2>
+
+    <form class="relationship-form" onsubmit="return addFriendFromSettings(this);">
+        <label for="friend-username">Add a friend</label>
+        <input id="friend-username" name="username" type="text" placeholder="Username" autocomplete="off" required>
+        <button type="submit">Add friend</button>
+    </form>
+
+    {{ if len(.Friends) == 0 }}
+    <p class="relationship-empty">You have not added any friends yet.</p>
+    {{ else }}
+    <div class="friends relationship-list">
+        {{ range _, friend := .Friends }}
+        {{ yield friendItem() friend }}
+        {{ end }}
+    </div>
     {{ end }}
 </div>
 {{ end }}
 
 {{ block friendItem() }}
-<div class="friend">
+<div class="relationship-card">
     <div class="avatar">
         <a href="/u/{{ .User.Id }}">
             <img src="{{ .User.AvatarUrl() }}" alt="" loading="lazy">
         </a>
     </div>
-    <div class="friend-description">
-        <p>{{ .User.Name }}</p>
+    <div class="relationship-description">
+        <p><a href="/u/{{ .User.Id }}">{{ .User.Name }}</a></p>
         {{ if .IsMutual }}
-        <a id="{{ .User.Id }}" style="color: red;" onclick="return removeFriend(this);">Remove Mutual Friend</a>
+        <a id="{{ .User.Id }}" class="relationship-remove" onclick="return removeFriendFromSettings(this);">Remove Mutual Friend</a>
         {{ else }}
-        <a id="{{ .User.Id }}" style="color: red;" onclick="return removeFriend(this);">Remove</a>
+        <a id="{{ .User.Id }}" class="relationship-remove" onclick="return removeFriendFromSettings(this);">Remove</a>
         {{ end }}
+    </div>
+</div>
+{{ end }}
+
+{{ block foesList() }}
+<div class="relationship-section foes-section">
+    <h2>Foes / Blocked ({{ len(.Foes) }})</h2>
+
+    <form class="relationship-form" onsubmit="return addFoeFromSettings(this);">
+        <label for="foe-username">Add a foe</label>
+        <input id="foe-username" name="username" type="text" placeholder="Username" autocomplete="off" required>
+        <button type="submit">Block user</button>
+    </form>
+
+    {{ if len(.Foes) == 0 }}
+    <p class="relationship-empty">You have not blocked anyone.</p>
+    {{ else }}
+    <div class="foes relationship-list">
+        {{ range _, foe := .Foes }}
+        {{ yield foeItem() foe }}
+        {{ end }}
+    </div>
+    {{ end }}
+</div>
+{{ end }}
+
+{{ block foeItem() }}
+<div class="relationship-card">
+    <div class="avatar">
+        <a href="/u/{{ .Id }}">
+            <img src="{{ .AvatarUrl() }}" alt="" loading="lazy">
+        </a>
+    </div>
+    <div class="relationship-description">
+        <p><a href="/u/{{ .Id }}">{{ .Name }}</a></p>
+        <a id="{{ .Id }}" class="relationship-remove" onclick="return removeFoeFromSettings(this);">Unblock</a>
     </div>
 </div>
 {{ end }}
