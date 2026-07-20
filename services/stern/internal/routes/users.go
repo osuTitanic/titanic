@@ -66,7 +66,10 @@ func UserProfile(ctx *server.Context) {
 		ctx.Logger.Error("Failed to fetch online status", "user", user.Id, "error", err)
 	}
 
-	followers, err := ctx.State.Repositories.Relationships.CountByTargetId(user.Id)
+	followers, err := ctx.State.Repositories.Relationships.CountByTargetIdAndStatus(
+		user.Id,
+		constants.RelationshipStatusFriend,
+	)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch follower count", "user", user.Id, "error", err)
 		InternalServerError(ctx)
@@ -642,15 +645,21 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 	if err != nil {
 		return false, false, false, err
 	}
-	if blocked != nil && blocked.Status == 1 {
+	if blocked != nil && blocked.Status == constants.RelationshipStatusFoe {
 		return false, false, true, nil
 	}
 
-	currentFriends, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(ctx.CurrentUser.Id, 0)
+	currentFriends, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(
+		ctx.CurrentUser.Id,
+		constants.RelationshipStatusFriend,
+	)
 	if err != nil {
 		return false, false, false, err
 	}
-	targetFriends, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(targetId, 0)
+	targetFriends, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(
+		targetId,
+		constants.RelationshipStatusFriend,
+	)
 	if err != nil {
 		return false, false, false, err
 	}

@@ -14,7 +14,7 @@ func AccountFriends(ctx *server.Context) {
 	}
 	userId := ctx.CurrentUser.Id
 
-	friends, err := ctx.State.Repositories.Relationships.FetchTargetUsers(userId, 0)
+	friends, err := ctx.State.Repositories.Relationships.FetchTargetUsers(userId, constants.RelationshipStatusFriend)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch friends", "user", userId, "error", err)
 		InternalServerError(ctx)
@@ -22,7 +22,7 @@ func AccountFriends(ctx *server.Context) {
 	}
 
 	// Users that have added the current user back, used to flag mutual friends
-	addedBy, err := ctx.State.Repositories.Relationships.UserIdsByStatus(userId, 0)
+	addedBy, err := ctx.State.Repositories.Relationships.UserIdsByStatus(userId, constants.RelationshipStatusFriend)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch mutual friends", "user", userId, "error", err)
 		InternalServerError(ctx)

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -59,7 +60,16 @@ func (r *RelationshipRepository) CountByTargetId(targetId int) (int, error) {
 	return int(count), err
 }
 
-func (r *RelationshipRepository) TargetIdsByStatus(userId int, status int) ([]int, error) {
+func (r *RelationshipRepository) CountByTargetIdAndStatus(targetId int, status constants.RelationshipStatus) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Relationship{}).
+		Where("target_id = ? AND status = ?", targetId, status).
+		Count(&count).
+		Error
+	return int(count), err
+}
+
+func (r *RelationshipRepository) TargetIdsByStatus(userId int, status constants.RelationshipStatus) ([]int, error) {
 	var targetIds []int
 	err := r.db.Model(&schemas.Relationship{}).
 		Where("user_id = ? AND status = ?", userId, status).
@@ -68,7 +78,7 @@ func (r *RelationshipRepository) TargetIdsByStatus(userId int, status int) ([]in
 	return targetIds, err
 }
 
-func (r *RelationshipRepository) UserIdsByStatus(targetId int, status int) ([]int, error) {
+func (r *RelationshipRepository) UserIdsByStatus(targetId int, status constants.RelationshipStatus) ([]int, error) {
 	var userIds []int
 	err := r.db.Model(&schemas.Relationship{}).
 		Where("target_id = ? AND status = ?", targetId, status).
@@ -77,7 +87,7 @@ func (r *RelationshipRepository) UserIdsByStatus(targetId int, status int) ([]in
 	return userIds, err
 }
 
-func (r *RelationshipRepository) FetchTargetUsers(userId int, status int) ([]*schemas.User, error) {
+func (r *RelationshipRepository) FetchTargetUsers(userId int, status constants.RelationshipStatus) ([]*schemas.User, error) {
 	var users []*schemas.User
 	err := r.db.Model(&schemas.User{}).
 		Joins("JOIN relationships ON relationships.target_id = users.id").

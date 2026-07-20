@@ -182,7 +182,10 @@ func resolveFriendIds(ctx *server.Context) ([]int, error) {
 		return []int{}, nil
 	}
 
-	targetIds, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(ctx.CurrentUser.Id, 0)
+	targetIds, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(
+		ctx.CurrentUser.Id,
+		constants.RelationshipStatusFriend,
+	)
 	if err != nil {
 		return nil, err
 	}
