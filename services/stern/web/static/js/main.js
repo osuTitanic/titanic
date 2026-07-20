@@ -403,6 +403,76 @@ function createXhr() {
     }
 }
 
+function apiErrorMessage(xhr, fallback) {
+    if (fallback === undefined) {
+        fallback = "The requested action could not be completed.";
+    }
+
+    try {
+        var response = $.parseJSON(xhr.responseText);
+        return response.details || fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+function apiErrorAlert(xhr, fallback) {
+    var message = apiErrorMessage(xhr, fallback);
+    alert(message);
+}
+
+function addFriend(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "POST",
+        "/account/friends?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function removeFriend(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "DELETE",
+        "/account/friends?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function addFoe(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "POST",
+        "/account/foes?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
+function removeFoe(userId, callbackSuccess, callbackError) {
+    if (!isLoggedIn()) return false;
+
+    performApiRequest(
+        "DELETE",
+        "/account/foes?id=" + userId,
+        null,
+        callbackSuccess,
+        callbackError
+    );
+    return false;
+}
+
 function performApiRequest(method, path, data, callbackSuccess, callbackError) {
     var url = apiBaseurl + path;
     var xhr;
@@ -527,21 +597,14 @@ function handleApiError(xhr, method, path, data, callbackSuccess, callbackError)
     if (xhr.status !== 403) return false;
 
     if (apiRetries >= 2) return false;
+    if (apiErrorMessage(xhr, null) !== "Invalid CSRF token") return false; // Only retry on CSRF token errors
 
-    try {
-        var response = JSON.parse(xhr.responseText);
-        if (!response || response.details !== "Invalid CSRF token") return false;
-
-        reloadCsrfToken(function () {
-            apiRetries += 1;
-            console.log("Retrying " + method + " request to " + path + " after reloading CSRF token");
-            performApiRequest(method, path, data, callbackSuccess, callbackError);
-        });
-        return true;
-    } catch (e) {
-        console.error("Failed to parse API error response: " + e);
-        return false;
-    }
+    reloadCsrfToken(function () {
+        apiRetries += 1;
+        console.log("Retrying " + method + " request to " + path + " after reloading CSRF token");
+        performApiRequest(method, path, data, callbackSuccess, callbackError);
+    });
+    return true;
 }
 
 function convertFormToJson(formElement) {

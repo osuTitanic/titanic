@@ -285,7 +285,10 @@ func fetchUserFriends(ctx *server.Context) (friends map[int]bool, err error) {
 		return friends, nil
 	}
 
-	friendIds, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(ctx.CurrentUser.Id, 0)
+	friendIds, err := ctx.State.Repositories.Relationships.TargetIdsByStatus(
+		ctx.CurrentUser.Id,
+		constants.RelationshipStatusFriend,
+	)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch friends", "user", ctx.CurrentUser.Id, "error", err)
 		InternalServerError(ctx)

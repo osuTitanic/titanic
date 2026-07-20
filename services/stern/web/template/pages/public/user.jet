@@ -140,17 +140,17 @@
 {{ if .IsOtherProfile() }}
     {{ if !.IsBlocked }}
         <div id="friend-status" class="friend-current-{{ .CurrentAdded }}-target-{{ .TargetAdded }}">
-            <a href="#" onclick="return removeFriend()">
+            <a href="#" onclick="return removeFriendFromProfile()">
                 <i class="icon-heart"></i> Mutual Friend
             </a>
-            <a href="#" onclick="return removeFriend()">
+            <a href="#" onclick="return removeFriendFromProfile()">
                 <i class="icon-star"></i> Friend
             </a>
             {* Difference from osu!: Added "Add as Mutual Friend" state *}
-            <a href="#" onclick="return addFriend()">
+            <a href="#" onclick="return addFriendFromProfile()">
                 <i class="icon-plus-sign"></i> Add as Mutual Friend
             </a>
-            <a href="#" onclick="return addFriend()">
+            <a href="#" onclick="return addFriendFromProfile()">
                 <i class="icon-plus-sign"></i> Add as Friend
             </a>
         </div>

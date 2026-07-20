@@ -63,8 +63,7 @@ function deletePost(postId) {
             }
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to delete post. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to delete post.");
         }
     );
     return false;
@@ -88,8 +87,7 @@ function giveKudos(postId, beatmapsetId) {
             kudosuStatus.style.color = "green";
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to give kudosu. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to give kudosu.");
         }
     );
     return false;
@@ -112,8 +110,7 @@ function revokeKudos(postId, beatmapsetId) {
             kudosuStatus.style.color = "red";
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to revoke kudosu. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to revoke kudosu.");
         }
     );
     return false;
@@ -136,8 +133,7 @@ function resetKudos(postId, beatmapsetId) {
             kudosuStatus.style.color = "blue";
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to reset kudosu. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to reset kudosu.");
         }
     );
     return false;
@@ -186,8 +182,7 @@ function moveTopic(topicId, targetForumId) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to move topic. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to move topic.");
         }
     );
     return false;
@@ -201,8 +196,7 @@ function lockTopic(topicId) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to lock topic. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to lock topic.");
         }
     );
     return false;
@@ -216,8 +210,7 @@ function unlockTopic(topicId) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to unlock topic. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to unlock topic.");
         }
     );
     return false;
@@ -231,8 +224,7 @@ function setTopicType(topicId, type) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to set topic type. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to set topic type.");
         }
     );
     return false;
@@ -246,8 +238,7 @@ function setTopicStatus(topicId, status) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to set topic status. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to set topic status.");
         }
     );
     return false;
@@ -261,8 +252,7 @@ function setTopicIcon(topicId, iconId) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to set topic icon. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to set topic icon.");
         }
     );
     return false;
@@ -276,8 +266,7 @@ function setTopicTitle(topicId, title) {
             reloadPageSoon();
         },
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
-            alert(data.details || "Failed to set topic title. (" + data.error + ")");
+            apiErrorAlert(xhr, "Failed to set topic title.");
         }
     );
     return false;

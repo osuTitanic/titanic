@@ -222,37 +222,115 @@
     margin-bottom: 15px;
 }
 
-.friends .avatar {
-    min-height: 128px;
-    min-width: 128px;
-}
-
-.friends {
+.relationship-settings {
     float: right;
-    text-align: center;
     width: 80%;
 }
 
-.friend {
-    display: inline-block;
-    vertical-align: top;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+.relationship-section {
+    background-color: #f0ecfa;
+    box-sizing: border-box;
+    margin: 0 5px 15px;
+    padding: 10px;
+}
+
+.relationship-section h2 {
+    margin: 0 0 8px;
+}
+
+.relationship-list .avatar {
+    float: left;
+    height: 48px;
+    min-height: 48px;
+    min-width: 48px;
+    width: 48px;
+}
+
+.relationship-list {
+    overflow: hidden;
+    text-align: left;
+    width: 100%;
+    zoom: 1;
+}
+
+.relationship-card {
     background-color: #f9f7ff;
     border: 1px solid #ddd;
-    margin: 5px;
-    padding: 8px;
     border-radius: 4px;
-    opacity: 100;
-    transition: opacity 0.2s ease-in-out;
+    box-sizing: border-box;
+    float: left;
+    height: 60px;
+    margin: 0 0.5% 5px;
+    padding: 5px 8px;
+    width: 49%;
 }
 
-.friend-description {
-    margin: 0 auto;
+.relationship-card .avatar a,
+.relationship-card .avatar img {
+    display: block;
+    height: 48px;
+    width: 48px;
+}
+
+.relationship-description {
     font-size: 130%;
+    margin: 3px 0 0 58px;
+    overflow: hidden;
 }
 
-.friend-description a {
+.relationship-description p {
+    line-height: 20px;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.relationship-description p a {
+    font-size: 100%;
+    font-weight: bold;
+}
+
+.relationship-description a {
+    cursor: pointer;
     font-size: 75%;
+}
+
+.relationship-remove,
+.relationship-block {
+    color: red;
+}
+
+.relationship-action-separator {
+    color: #888;
+    font-size: 75%;
+}
+
+.relationship-form {
+    background-color: #e3e1fa;
+    border-radius: 4px;
+    margin: 12px auto 12px auto;
+    padding: 8px;
+    text-align: center;
+}
+
+.relationship-form label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.relationship-form input {
+    padding: 4px;
+    width: 220px;
+}
+
+.foes-section > p {
+    margin-top: 0;
+}
+
+.relationship-empty {
+    color: grey;
+    text-align: center;
 }
 
 .moderation-heading {

@@ -282,9 +282,9 @@ func (stats *Stats) Clears() int {
 }
 
 type Relationship struct {
-	UserId   int `gorm:"column:user_id;primaryKey"`
-	TargetId int `gorm:"column:target_id;primaryKey"`
-	Status   int `gorm:"column:status"` // TODO: Add enum for this (0 = friend, 1 = blocked)
+	UserId   int                          `gorm:"column:user_id;primaryKey"`
+	TargetId int                          `gorm:"column:target_id;primaryKey"`
+	Status   constants.RelationshipStatus `gorm:"column:status"`
 
 	User   *User `gorm:"foreignKey:UserId;references:Id"`
 	Target *User `gorm:"foreignKey:TargetId;references:Id"`

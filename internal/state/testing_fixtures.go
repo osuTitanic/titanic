@@ -324,7 +324,7 @@ func (data *TestData) CreateRelationship(user *schemas.User, target *schemas.Use
 	relationship := &schemas.Relationship{
 		UserId:   user.Id,
 		TargetId: target.Id,
-		Status:   0,
+		Status:   constants.RelationshipStatusFriend,
 	}
 	applyFixtureOptions(relationship, opts)
 	data.create(relationship)

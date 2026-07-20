@@ -57,10 +57,7 @@ function updateBeatmapsetMetadata(event) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -95,7 +92,7 @@ function editBeatmapDescription() {
                 reloadPageSoon();
             },
             function (xhr) {
-                showError(xhr, "An error occurred while trying to update the description.");
+                apiErrorAlert(xhr, "An error occurred while trying to update the description.");
             }
         );
     };
@@ -149,7 +146,7 @@ function acceptCollaborationRequest(beatmapId, requestId) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while trying to accept the invite.");
+            apiErrorAlert(xhr, "An error occurred while trying to accept the invite.");
         }
     );
 }
@@ -167,7 +164,7 @@ function rejectCollaborationRequest(beatmapId, requestId) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while trying to decline the invite.");
+            apiErrorAlert(xhr, "An error occurred while trying to decline the invite.");
         }
     );
 }
@@ -185,7 +182,7 @@ function removeCollaborationRequest(beatmapId, requestId) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while trying to delete your invite.");
+            apiErrorAlert(xhr, "An error occurred while trying to delete your invite.");
         }
     );
 }
@@ -207,11 +204,10 @@ function createCollaborationRequest(beatmapId) {
             createCollaborationRequestFromUserId(user.id, beatmapId);
         },
         function (xhr) {
-            if (xhr.status === 404) {
-                alert("User not found. Please check the username and try again.");
-            } else {
-                alert("An error occurred while looking up the user.");
-            }
+            var fallback = xhr.status === 404
+                ? "User not found. Please check the username and try again."
+                : "An error occurred while looking up the user.";
+            apiErrorAlert(xhr, fallback);
         }
     );
 }
@@ -227,7 +223,7 @@ function createCollaborationRequestFromUserId(userId, beatmapId) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while creating your invite.");
+            apiErrorAlert(xhr, "An error occurred while creating your invite.");
         }
     );
 }
@@ -243,7 +239,7 @@ function editCollaborationRequest(beatmapId, collaborationId, edits) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while editing the collaboration invite.");
+            apiErrorAlert(xhr, "An error occurred while editing the collaboration invite.");
         }
     );
 }
@@ -263,7 +259,7 @@ function removeCollaboration(beatmapId, collaborationId) {
             reloadPageSoon();
         },
         function (xhr) {
-            showError(xhr, "An error occurred while trying to remove the collaborator.");
+            apiErrorAlert(xhr, "An error occurred while trying to remove the collaborator.");
         }
     );
 }
@@ -304,17 +300,6 @@ function isBeatmapAuthor(collaborationId) {
 function canUpdateResources(collaborationId) {
     var collaborator = document.getElementById("collaborator-" + collaborationId);
     return collaborator.innerHTML.includes("Disallow Resource Updates");
-}
-
-function showError(xhr, defaultMessage) {
-    var errorMessage = defaultMessage || "An error occurred while processing your request.";
-    try {
-        var response = JSON.parse(xhr.responseText);
-        errorMessage = response.details;
-    } catch (e) {
-        console.error("Failed to parse error response:", e);
-    }
-    alert(errorMessage);
 }
 
 var scores = document.querySelectorAll(".scores tbody tr");

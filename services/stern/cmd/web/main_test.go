@@ -125,7 +125,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "account overview", path: "/account"},
 		{name: "account profile", path: "/account/profile"},
 		{name: "account security", path: "/account/security"},
-		{name: "account friends", path: "/account/friends"},
+		{name: "account relationships", path: "/account/relationships"},
 		{name: "account chat", path: "/account/chat"},
 		{name: "authenticated forum topic", path: fmt.Sprintf("/forum/%d/t/%d", data.forum.Id, data.topic.Id)},
 		{name: "authenticated beatmap", path: fmt.Sprintf("/b/%d", data.beatmap.Id)},

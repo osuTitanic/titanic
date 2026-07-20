@@ -191,7 +191,7 @@ function deleteBeatmap(setId) {
         "/users/" + userId + "/beatmapsets/" + setId,
         null,
         reloadBeatmapsTab,
-        beatmapActionError
+        apiErrorAlert
     );
     return false;
 }
@@ -204,17 +204,9 @@ function reviveBeatmap(setId) {
         "/users/" + userId + "/beatmapsets/" + setId + "/revive",
         null,
         reloadBeatmapsTab,
-        beatmapActionError
+        apiErrorAlert
     );
     return false;
-}
-
-function beatmapActionError(xhr) {
-    try {
-        alert(JSON.parse(xhr.responseText).details);
-    } catch (e) {
-        alert("The requested action could not be completed.");
-    }
 }
 
 function updatePlaystyleElement(element) {
@@ -222,28 +214,34 @@ function updatePlaystyleElement(element) {
     performApiRequest(nowUsing ? "POST" : "DELETE", "/users/" + userId + "/playstyle", { playstyle: element.id });
 }
 
-function addFriend() {
-    if (!isLoggedIn()) return false;
-
-    performApiRequest("POST", "/account/friends?id=" + userId, null, function (xhr) {
-        var data = JSON.parse(xhr.responseText);
-        var targetAdded = data.status === "mutual" || superFriendly;
-        document.getElementById("friend-status").className = "friend-current-true-target-" + targetAdded;
-    });
-
-    return false;
+function updateFriendStatus(xhr, currentAdded) {
+    var data = $.parseJSON(xhr.responseText);
+    var targetAdded = data.status === "mutual" || superFriendly;
+    $("#friend-status").attr("class", "friend-current-" + currentAdded + "-target-" + targetAdded);
 }
 
-function removeFriend() {
-    if (!isLoggedIn()) return false;
+function addFriendFromProfile() {
+    return addFriend(
+        userId,
+        function (xhr) {
+            updateFriendStatus(xhr, true);
+        },
+        function (xhr) {
+            apiErrorAlert(xhr, "The user could not be added as a friend.");
+        }
+    );
+}
 
-    performApiRequest("DELETE", "/account/friends?id=" + userId, null, function (xhr) {
-        var data = JSON.parse(xhr.responseText);
-        var targetAdded = data.status === "mutual" || superFriendly;
-        document.getElementById("friend-status").className = "friend-current-false-target-" + targetAdded;
-    });
-
-    return false;
+function removeFriendFromProfile() {
+    return removeFriend(
+        userId,
+        function (xhr) {
+            updateFriendStatus(xhr, false);
+        },
+        function (xhr) {
+            apiErrorAlert(xhr, "The user could not be removed from your friends.");
+        }
+    );
 }
 
 function processRankEntries(entries, rankingType) {

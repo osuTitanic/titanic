@@ -62,7 +62,7 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("POST /account/profile/avatar", routes.AccountAvatarUpdate)
 	server.Handle("GET /account/security", routes.AccountSecurity)
 	server.Handle("POST /account/security", routes.AccountSecurityUpdate)
-	server.Handle("GET /account/friends", routes.AccountFriends)
+	server.Handle("GET /account/relationships", routes.AccountFriends)
 	server.Handle("GET /account/chat", routes.AccountChat)
 	server.Handle("GET /download", routes.Download)
 	server.Handle("GET /download/{$}", routes.Download)

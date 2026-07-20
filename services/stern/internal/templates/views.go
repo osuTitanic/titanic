@@ -259,6 +259,7 @@ type SettingsOverviewView struct {
 type SettingsFriendsView struct {
 	DefaultView
 	Friends []*SettingsFriend
+	Foes    []*schemas.User
 }
 
 type SettingsProfileView struct {
