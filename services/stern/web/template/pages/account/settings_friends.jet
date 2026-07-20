@@ -31,7 +31,7 @@
     </form>
 
     {{ if len(.Friends) == 0 }}
-    <p class="relationship-empty">You have not added any friends yet.</p>
+    <p class="relationship-empty">You have not added any friends yet</p>
     {{ else }}
     <div class="friends relationship-list">
         {{ range _, friend := .Friends }}
@@ -70,7 +70,7 @@
     </form>
 
     {{ if len(.Foes) == 0 }}
-    <p class="relationship-empty">You have not blocked anyone.</p>
+    <p class="relationship-empty">You have not blocked anyone</p>
     {{ else }}
     <div class="foes relationship-list">
         {{ range _, foe := .Foes }}
