@@ -115,7 +115,7 @@ func Beatmap(ctx *server.Context) {
 		return
 	}
 
-	mode := resolveMode(ctx, beatmap.Mode)
+	mode := resolveBeatmapMode(ctx, beatmap.Mode)
 	mods, modsString := resolveMods(ctx)
 
 	personalBest, personalBestRank, err := fetchUserScore(ctx, beatmap, mode)
@@ -311,6 +311,19 @@ func resolveMode(ctx *server.Context, fallback constants.Mode) constants.Mode {
 		mode = fallback
 	}
 	return mode
+}
+
+func resolveBeatmapMode(ctx *server.Context, beatmapMode constants.Mode) constants.Mode {
+	fallback := beatmapMode
+	if beatmapMode != constants.ModeOsu {
+		// Beatmap doesn't support converts so we can't fall back to the user's preferred mode
+		return resolveMode(ctx, fallback)
+	}
+	if ctx.IsAuthenticated() {
+		// If the `mode` parameter is not given, fall back to the user's preferred mode
+		fallback = ctx.CurrentUser.PreferredMode
+	}
+	return resolveMode(ctx, fallback)
 }
 
 func resolveMods(ctx *server.Context) (*constants.Mods, string) {
