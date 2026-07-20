@@ -9,8 +9,8 @@
     <div class="sidebar-section {{ if .CurrentPath == "/account/security" }}selected-sidebar{{ end }}">
         <a href="/account/security">Security</a>
     </div>
-    <div class="sidebar-section {{ if .CurrentPath == "/account/friends" }}selected-sidebar{{ end }}">
-        <a href="/account/friends">Friends & Foes</a>
+    <div class="sidebar-section {{ if .CurrentPath == "/account/relationships" }}selected-sidebar{{ end }}">
+        <a href="/account/relationships">Friends & Foes</a>
     </div>
     <div class="sidebar-section {{ if .CurrentPath == "/account/chat" }}selected-sidebar{{ end }}">
         <a href="/account/chat">Chat</a>

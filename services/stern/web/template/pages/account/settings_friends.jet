@@ -4,7 +4,7 @@
 <title>Friends & Foes</title>
 <meta property="og:title" content="Friends & Foes - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
-<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/friends">
+<meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/relationships">
 <link rel="stylesheet" href="{{ cachedUrl("/css/settings.css") }}">
 {{ end }}
 
