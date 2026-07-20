@@ -38,7 +38,7 @@ function showIrcTokenInSettings(action) {
         },
         function (xhr) {
             console.error("Failed to fetch IRC token:", xhr);
-            alert("Failed to retrieve your IRC password. Please try again later!");
+            apiErrorAlert(xhr, "Failed to retrieve your IRC password. Please try again later!");
         }
     );
 }

@@ -1713,7 +1713,7 @@ function handleStartDMByName(username) {
         },
         function (xhr) {
             console.error("User '" + username + "' was not found.");
-            alert("User '" + username + "' was not found.");
+            apiErrorAlert(xhr, "User '" + username + "' was not found.");
         }
     );
 }
@@ -1746,7 +1746,7 @@ function handleStartDMById(userId) {
         },
         function (xhr) {
             console.error("User '" + userId + "' was not found.");
-            alert("User '" + userId + "' was not found.");
+            apiErrorAlert(xhr, "User '" + userId + "' was not found.");
         }
     );
 }

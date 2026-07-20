@@ -191,7 +191,7 @@ function deleteBeatmap(setId) {
         "/users/" + userId + "/beatmapsets/" + setId,
         null,
         reloadBeatmapsTab,
-        beatmapActionError
+        apiErrorAlert
     );
     return false;
 }
@@ -204,17 +204,9 @@ function reviveBeatmap(setId) {
         "/users/" + userId + "/beatmapsets/" + setId + "/revive",
         null,
         reloadBeatmapsTab,
-        beatmapActionError
+        apiErrorAlert
     );
     return false;
-}
-
-function beatmapActionError(xhr) {
-    try {
-        alert(JSON.parse(xhr.responseText).details);
-    } catch (e) {
-        alert("The requested action could not be completed.");
-    }
 }
 
 function updatePlaystyleElement(element) {

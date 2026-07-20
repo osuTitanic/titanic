@@ -403,9 +403,11 @@ function createXhr() {
     }
 }
 
-// TODO: See where we can integrate this function
-
 function apiErrorMessage(xhr, fallback) {
+    if (fallback === undefined) {
+        fallback = "The requested action could not be completed.";
+    }
+
     try {
         var response = $.parseJSON(xhr.responseText);
         return response.details || fallback;
@@ -595,21 +597,14 @@ function handleApiError(xhr, method, path, data, callbackSuccess, callbackError)
     if (xhr.status !== 403) return false;
 
     if (apiRetries >= 2) return false;
+    if (apiErrorMessage(xhr, null) !== "Invalid CSRF token") return false; // Only retry on CSRF token errors
 
-    try {
-        var response = JSON.parse(xhr.responseText);
-        if (!response || response.details !== "Invalid CSRF token") return false;
-
-        reloadCsrfToken(function () {
-            apiRetries += 1;
-            console.log("Retrying " + method + " request to " + path + " after reloading CSRF token");
-            performApiRequest(method, path, data, callbackSuccess, callbackError);
-        });
-        return true;
-    } catch (e) {
-        console.error("Failed to parse API error response: " + e);
-        return false;
-    }
+    reloadCsrfToken(function () {
+        apiRetries += 1;
+        console.log("Retrying " + method + " request to " + path + " after reloading CSRF token");
+        performApiRequest(method, path, data, callbackSuccess, callbackError);
+    });
+    return true;
 }
 
 function convertFormToJson(formElement) {

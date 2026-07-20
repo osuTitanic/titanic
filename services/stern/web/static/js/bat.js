@@ -14,10 +14,7 @@ function setBeatmapsetStatus(beatmapsetId, status, promptText) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -34,10 +31,7 @@ function updateBeatmapStatuses(event) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -53,10 +47,7 @@ function nukeBeatmapset(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -70,10 +61,7 @@ function addNomination(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -91,10 +79,7 @@ function resetNominations(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -111,10 +96,7 @@ function addForceNomination(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -131,10 +113,7 @@ function removeForceNomination(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -173,10 +152,7 @@ function uploadResource(endpoint, key, filetypes, promptText) {
             function (xhr) {
                 reloadPageSoon();
             },
-            function (xhr) {
-                var response = JSON.parse(xhr.responseText);
-                alert(response.details);
-            }
+            apiErrorAlert
         );
     };
 
@@ -199,10 +175,7 @@ function updateBeatmapsetOwner(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -217,10 +190,7 @@ function linkBeatmapsetToTopic(beatmapsetId, topicId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
 
@@ -234,9 +204,6 @@ function unlinkBeatmapsetFromTopic(beatmapsetId) {
         function (xhr) {
             reloadPageSoon();
         },
-        function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            alert(response.details);
-        }
+        apiErrorAlert
     );
 }
