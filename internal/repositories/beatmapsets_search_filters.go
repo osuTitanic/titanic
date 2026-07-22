@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"gorm.io/gorm"
@@ -19,9 +20,9 @@ var (
 		"title":      stringSearchFilter("beatmapsets.title", "beatmapsets.title_unicode"),
 		"creator":    stringSearchFilter("beatmapsets.creator"),
 		"source":     stringSearchFilter("beatmapsets.source", "beatmapsets.source_unicode"),
-		"ranked":     yearSearchFilter("EXTRACT(YEAR FROM beatmapsets.approved_date)"),
+		"ranked":     dateSearchFilter("beatmapsets.approved_date"),
+		"created":    dateSearchFilter("beatmapsets.submission_date"),
 		"year":       yearSearchFilter("EXTRACT(YEAR FROM beatmapsets.approved_date)"),
-		"created":    yearSearchFilter("EXTRACT(YEAR FROM beatmapsets.submission_date)"),
 		"difficulty": numberSearchFilter("beatmaps.diff"),
 		"diff":       numberSearchFilter("beatmaps.diff"),
 		"stars":      numberSearchFilter("beatmaps.diff"),
@@ -162,6 +163,42 @@ func yearSearchFilter(expression string) searchFilter {
 	}
 }
 
+func dateSearchFilter(column string) searchFilter {
+	return func(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
+		// Parse date as "YYYY", "YYYY-MM", or "YYYY-MM-DD" and
+		// get the start & end of that range
+		start, end, err := parseSearchDateRange(condition.Value)
+		if err != nil {
+			return query, false, err
+		}
+
+		switch condition.Operator {
+		case "=":
+			// Between start & end
+			query = query.Where(column+" >= ? AND "+column+" < ?", start, end)
+		case "!=":
+			// Outside of start & end range
+			query = query.Where("("+column+" < ? OR "+column+" >= ?)", start, end)
+		case ">":
+			// After end
+			query = query.Where(column+" >= ?", end)
+		case ">=":
+			// After start
+			query = query.Where(column+" >= ?", start)
+		case "<":
+			// Before start
+			query = query.Where(column+" < ?", start)
+		case "<=":
+			// Before end
+			query = query.Where(column+" < ?", end)
+		default:
+			return query, false, fmt.Errorf("invalid date operator")
+		}
+
+		return query, false, nil
+	}
+}
+
 func numberSearchFilter(column string) searchFilter {
 	return func(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
 		value, err := strconv.ParseFloat(condition.Value, 64)
@@ -209,4 +246,30 @@ func parseBeatmapStatus(value string) (constants.BeatmapStatus, bool) {
 	// Its more likely for users to search by the status name, so we support that too
 	status, ok := beatmapStatusByName[strings.ToLower(value)]
 	return status, ok
+}
+
+func parseSearchDateRange(value string) (time.Time, time.Time, error) {
+	var layout string
+	var end func(time.Time) time.Time
+
+	switch len(value) {
+	// We support three date formats: YYYY, YYYY-MM, and YYYY-MM-DD
+	case len("2006"):
+		layout = "2006"
+		end = func(date time.Time) time.Time { return date.AddDate(1, 0, 0) }
+	case len("2006-01"):
+		layout = "2006-01"
+		end = func(date time.Time) time.Time { return date.AddDate(0, 1, 0) }
+	case len("2006-01-02"):
+		layout = time.DateOnly
+		end = func(date time.Time) time.Time { return date.AddDate(0, 0, 1) }
+	default:
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid date %q", value)
+	}
+
+	start, err := time.Parse(layout, value)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	return start, end(start), nil
 }
