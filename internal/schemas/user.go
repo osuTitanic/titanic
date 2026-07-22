@@ -309,6 +309,20 @@ func (Badge) TableName() string {
 	return "profile_badges"
 }
 
+func (badge *Badge) UrlText() string {
+	if badge.Url == nil {
+		return ""
+	}
+	return *badge.Url
+}
+
+func (badge *Badge) DescriptionText() string {
+	if badge.Description == nil {
+		return ""
+	}
+	return *badge.Description
+}
+
 type Stamp struct {
 	Id          int       `gorm:"column:id;primaryKey;autoIncrement"`
 	UserId      int       `gorm:"column:user_id"`
@@ -322,6 +336,20 @@ type Stamp struct {
 
 func (Stamp) TableName() string {
 	return "profile_stamps"
+}
+
+func (stamp *Stamp) UrlText() string {
+	if stamp.Url == nil {
+		return ""
+	}
+	return *stamp.Url
+}
+
+func (stamp *Stamp) DescriptionText() string {
+	if stamp.Description == nil {
+		return ""
+	}
+	return *stamp.Description
 }
 
 type Name struct {

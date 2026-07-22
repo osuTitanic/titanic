@@ -982,8 +982,8 @@
                             {{ range _, badge := user.Badges }}
                             <tr data-badge-id="{{ badge.Id }}">
                                 <td><input type="text" id="badge-icon-{{ badge.Id }}" value="{{ badge.Icon }}" style="width:100%" /></td>
-                                <td><input type="text" id="badge-url-{{ badge.Id }}" value="{{ badge.Url }}" style="width:100%" /></td>
-                                <td><input type="text" id="badge-desc-{{ badge.Id }}" value="{{ badge.Description }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-url-{{ badge.Id }}" value="{{ badge.UrlText() }}" style="width:100%" /></td>
+                                <td><input type="text" id="badge-desc-{{ badge.Id }}" value="{{ badge.DescriptionText() }}" style="width:100%" /></td>
                                 <td class="moderation-actions-cell">
                                     <button type="button" onclick="moderationUpdateBadge({{ user.Id }}, {{ badge.Id }})">Update</button>
                                     <button type="button" class="danger-button" onclick="if(confirm('Delete this badge?')) moderationDeleteBadge({{ user.Id }}, {{ badge.Id }})">Delete</button>
@@ -1030,8 +1030,8 @@
                             {{ range _, stamp := user.Stamps }}
                             <tr data-stamp-id="{{ stamp.Id }}">
                                 <td><input type="text" id="stamp-icon-{{ stamp.Id }}" value="{{ stamp.Icon }}" style="width:100%" /></td>
-                                <td><input type="text" id="stamp-url-{{ stamp.Id }}" value="{{ stamp.Url }}" style="width:100%" /></td>
-                                <td><input type="text" id="stamp-desc-{{ stamp.Id }}" value="{{ stamp.Description }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-url-{{ stamp.Id }}" value="{{ stamp.UrlText() }}" style="width:100%" /></td>
+                                <td><input type="text" id="stamp-desc-{{ stamp.Id }}" value="{{ stamp.DescriptionText() }}" style="width:100%" /></td>
                                 <td class="moderation-actions-cell">
                                     <button type="button" onclick="moderationUpdateStamp({{ user.Id }}, {{ stamp.Id }})">Update</button>
                                     <button type="button" class="danger-button" onclick="if(confirm('Delete this stamp?')) moderationDeleteStamp({{ user.Id }}, {{ stamp.Id }})">Delete</button>
