@@ -770,8 +770,7 @@ body {
 .moderation-container dialog.popup.moderation-dialog {
     padding: 0;
     background: #f0ecfa;
-    border: 2px solid #5c559c;
-    border-radius: 5px;
+    border: none;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.18);
     color: #222;
     overflow: hidden;
@@ -780,14 +779,13 @@ body {
 
 .moderation-dialog-title {
     margin: 0;
-    padding: 5px 9px;
+    padding: 8px 10px;
     background: #5b5399;
-    border-bottom: 1px solid #423d7a;
     color: #fff;
     font-size: 115%;
     font-weight: bold;
     line-height: 1.35;
-    text-shadow: none;
+    text-shadow: none !important;
 }
 
 .moderation-dialog-title i {
@@ -797,7 +795,7 @@ body {
 .moderation-dialog-content {
     max-height: calc(100vh - 100px);
     overflow: auto;
-    padding: 10px;
+    padding: 8px;
     background: linear-gradient(#f7f5ff, #f0ecfa 90px);
 }
 
@@ -810,7 +808,7 @@ body {
     background: #776cc0;
     color: #fff;
     border-color: #4b4589;
-    font-weight: bold;
+    font-weight: normal;
 }
 
 .moderation-container .confirm-button:hover {
@@ -869,8 +867,6 @@ body {
 .moderation-container .form-row label {
     width: 108px;
     flex: 0 0 108px;
-    font-weight: bold;
-    color: #5a539a;
     line-height: 22px;
     margin-top: 1px;
     text-align: right;
@@ -880,7 +876,7 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding-top: 8px;
+    padding-top: 5px;
     gap: 5px;
     border-top: 1px solid #dad7fb;
 }
@@ -940,7 +936,7 @@ body {
     background: #e7e4fc;
     border-bottom: 1px solid #a9a9ff;
     color: #5a539a;
-    font-weight: bold;
+    font-weight: normal;
     white-space: nowrap;
 }
 
