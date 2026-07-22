@@ -155,7 +155,7 @@ function unlinkTopicFromBeatmap() {
             <div style="background-color: #ebe8ff;">
                 <div class="post-time">
                     <a href="#post-{{ .Post.Id }}" title="{{ .Post.CreatedAt.Format("2006-01-02 15:04:05") }} UTC" style="line-height: 18px">
-                        <time class="timeago" datetime="{{ .Post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                        <span class="timeago" datetime="{{ .Post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
                     </a>
                     {{ if .Icon }}
                     <img src="{{ .Icon.Location }}" alt="{{ .Icon.Name }}" style="float: right; margin-left: 4px" width="15">
@@ -173,7 +173,7 @@ function unlinkTopicFromBeatmap() {
                 {{ if .Post.EditCount > 0 }}
                 <div style="margin-top: 15px; margin-left: 5px; float: left; overflow-wrap: anywhere;">
                     Last edited by <a href="/u/{{ .Post.User.Id }}">{{ .Post.User.Name }}</a>
-                    <time class="timeago" datetime="{{ .Post.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>,
+                    <span class="timeago" datetime="{{ .Post.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></span>,
                     edited {{ .Post.EditCount }} time{{ .Post.EditCount != 1 ? "s" : "" }} in total.
                 </div>
                 {{ end }}

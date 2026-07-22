@@ -76,7 +76,7 @@
                 {{ if recent }}
                     <a href="/forum/{{ .Forum.Id }}/p/{{ recent.Id }}/">{{ recent.Topic.Title }}</a>
                     <p>
-                        <time class="timeago" datetime="{{ recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                        <span class="timeago" datetime="{{ recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
                         by {{ forumUserLink(recent.User, .CurrentUserId()) | unsafe }}
                     </p>
                 {{ else }}
@@ -185,7 +185,7 @@
                 </a>
             </p>
             <p>
-                <time class="timeago" datetime="{{ .PreviewPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                <span class="timeago" datetime="{{ .PreviewPost.EditTime.Format("2006-01-02T15:04:05Z07:00") }}"></span>
             </p>
         {{ else }}
             <p>No posts</p>

@@ -209,7 +209,7 @@
     <div title="Arrived">
         <i class="icon-signin"></i>
         <div>
-            <time class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></time>
+            <span class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></span>
         </div>
     </div>
 
@@ -221,7 +221,7 @@
         {{ else }}
             <i class="icon-signout"></i>
             <div>
-                <time class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></time>
+                <span class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></span>
             </div>
         {{ end }}
     </div>
@@ -566,7 +566,7 @@
                             ({{ formatFloat(score.Acc * 100, 2) }}%)
                         </div>
                         <div class="score-bottom">
-                            <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                            <span class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
                             {{ if score.ClientString }}<div class="score-version"> &mdash; on <span class="score-version-number">{{ score.ClientString }}</span></div>{{ end }}
                         </div>
                     </td>
@@ -643,7 +643,7 @@
             {{ range _, score := .Recent }}
                 {{ if score.Beatmap }}
                 <div style="margin: 2.5px;">
-                    <time class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                    <span class="timeago" datetime="{{ score.SubmittedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
                     - <a href="/b/{{ score.BeatmapId }}">{{ score.Beatmap.Name() }}</a>
                     {{ score.PP|round|formatNumber }}pp ({{ score.Grade }})
                     {{ modString := score.Mods.String() }}{{ if modString != "NM" }}+{{ modString }}{{ end }}
@@ -842,7 +842,7 @@
     <h4 class="profile-stats-element"><b>Total Kudosu Earned</b>: {{ .TotalKudosu|formatNumber }}</h4>
     <h3 class="profile-stats-header">Recent Kudosu History</h3>
     {{ range _, entry := .Entries }}
-        <time class="timeago" datetime="{{ entry.Time.Format("2006-01-02T15:04:05Z07:00") }}"></time> -
+        <span class="timeago" datetime="{{ entry.Time.Format("2006-01-02T15:04:05Z07:00") }}"></span> -
         <a href="/u/{{ entry.ActorId }}">{{ entry.ActorName }}</a>
         {{ entry.Status }}
         <b>{{ entry.Amount }} kudos</b> {{ entry.Preposition }} a post by

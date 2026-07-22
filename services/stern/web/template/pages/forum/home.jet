@@ -53,7 +53,7 @@
                 {{ .Recent.Topic.Title }}
             </a>
             <p>
-                <time class="timeago" datetime="{{ .Recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+                <span class="timeago" datetime="{{ .Recent.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
                 by {{ forumUserLink(.Recent.User, .CurrentUserId) | unsafe }}
             </p>
         {{ else }}

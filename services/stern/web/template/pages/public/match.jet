@@ -16,7 +16,7 @@
     <h1>{{ .Match.Name }}</h1>
     <p id="info-text">
         Created by <a href="/u/{{ .Match.CreatorId }}">{{ .Match.Creator.Name }}</a>,
-        <time class="timeago" datetime="{{ .Match.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .Match.CreatedAt.Format("2006-01-02 15:04:05") }} UTC">{{ formatDateShort(.Match.CreatedAt) }}</time>
+        <span class="timeago" datetime="{{ .Match.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .Match.CreatedAt.Format("2006-01-02 15:04:05") }} UTC">{{ formatDateShort(.Match.CreatedAt) }}</span>
     </p>
 </div>
 <div id="match-events">

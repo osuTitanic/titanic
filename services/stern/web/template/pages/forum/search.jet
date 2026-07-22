@@ -170,7 +170,7 @@
 
     <td align="center">
         <p>
-            <time class="timeago" datetime="{{ post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></time>
+            <span class="timeago" datetime="{{ post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}"></span>
             <a href="/forum/{{ topic.ForumId }}/p/{{ post.Id }}/" aria-label="View post">
                 <i class="icon-arrow-right" style="color: #ababab"></i>
             </a>
