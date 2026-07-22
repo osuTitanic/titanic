@@ -53,7 +53,7 @@ function copySetId(element) {
 function updateBeatmapsetMetadata(event) {
     event.preventDefault();
 
-    var data = convertFormToJson(event.target);
+    var data = convertFormToJson(event.target || event.srcElement);
     var url = "/beatmapsets/" + data.beatmapset_id;
 
     performApiRequest(
@@ -199,14 +199,14 @@ function createCollaborationRequest(beatmapId) {
         return;
     }
 
-    var url = "/users/lookup/" + username.trim();
+    var url = "/users/lookup/" + $.trim(username);
 
     performApiRequest(
         "GET",
         url,
         null,
         function (xhr) {
-            user = JSON.parse(xhr.responseText);
+            var user = JSON.parse(xhr.responseText);
             createCollaborationRequestFromUserId(user.id, beatmapId);
         },
         function (xhr) {
@@ -300,18 +300,19 @@ function collaborationDisallowResourceUpdates(beatmapId, collaborationId) {
 
 function isBeatmapAuthor(collaborationId) {
     var collaborator = document.getElementById("collaborator-" + collaborationId);
-    return collaborator.innerHTML.includes("Remove Author Status");
+    return collaborator.innerHTML.indexOf("Remove Author Status") !== -1;
 }
 
 function canUpdateResources(collaborationId) {
     var collaborator = document.getElementById("collaborator-" + collaborationId);
-    return collaborator.innerHTML.includes("Disallow Resource Updates");
+    return collaborator.innerHTML.indexOf("Disallow Resource Updates") !== -1;
 }
 
 var scores = document.querySelectorAll(".scores tbody tr");
 for (var i = 0; i < scores.length; i++) {
     $(scores[i]).on("click", function (e) {
-        if ($(e.target).closest("a").length) return;
+        var target = e.target || e.srcElement;
+        if ($(target).closest("a").length) return;
 
         window.location.href = "/scores/" + this.id;
     });
@@ -319,7 +320,7 @@ for (var i = 0; i < scores.length; i++) {
 
 $(document).ready(function () {
     var url = window.location.pathname;
-    if (!url.startsWith("/b/") && !url.startsWith("/s/")) {
+    if (url.indexOf("/b/") !== 0 && url.indexOf("/s/") !== 0) {
         return;
     }
 

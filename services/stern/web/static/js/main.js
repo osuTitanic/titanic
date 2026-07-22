@@ -341,6 +341,8 @@ function reloadPageSoon(timeoutMs, href) {
 
 function resetOrPlayAudio(element) {
     var audio = document.getElementById(element);
+    if (!audio || !audio.play) return false;
+
     audio.volume = 0.35;
 
     if (audio.paused) {

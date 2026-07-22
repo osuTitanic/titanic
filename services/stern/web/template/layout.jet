@@ -206,6 +206,9 @@
                 </form>
             </div>
             <script src="{{ cachedUrl("/lib/jquery.min.js") }}"></script>
+            <!--[if lt IE 9]>
+            <script src="{{ cachedUrl("/lib/json3.min.js") }}"></script>
+            <![endif]-->
             <script src="{{ cachedUrl("/lib/jquery.migrate.min.js") }}" defer></script>
             <script src="{{ cachedUrl("/lib/jquery.timeago.js") }}" defer></script>
             <script src="{{ cachedUrl("/lib/jquery.marquee.js") }}" defer></script>

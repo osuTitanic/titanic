@@ -21,7 +21,7 @@ function setBeatmapsetStatus(beatmapsetId, status, promptText) {
 function updateBeatmapStatuses(event) {
     event.preventDefault();
 
-    var data = convertFormToJson(event.target);
+    var data = convertFormToJson(event.target || event.srcElement);
     var url = "/beatmapsets/" + data.beatmapset_id + "/status/beatmaps";
 
     performApiRequest(
