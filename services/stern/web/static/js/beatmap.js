@@ -27,6 +27,12 @@ function removeFavorite(beatmapsetId) {
 function copySetId(element) {
     var set_id = element.getAttribute("setid");
 
+    if (!navigator.clipboard) {
+        element.innerHTML = "Failed to copy!";
+        element.style.color = "red";
+        return;
+    }
+
     navigator.clipboard.writeText(set_id).then(
         function () {
             element.innerHTML = "Copied!";
