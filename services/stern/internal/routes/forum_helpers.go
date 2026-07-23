@@ -1,12 +1,14 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
+	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 )
@@ -144,6 +146,76 @@ func canCreateForumTopic(ctx *server.Context, forum *schemas.Forum) bool {
 	if forum.IsBeatmapForum() {
 		return ctx.HasPermission("forum.topics.create_beatmap")
 	}
+	return true
+}
+
+func canMoveForumTopic(ctx *server.Context) bool {
+	return ctx.CurrentUser != nil && ctx.HasPermission("forum.moderation.topics.move")
+}
+
+func resolveForumMoveTarget(ctx *server.Context, topic *schemas.ForumTopic, eligible bool) (*schemas.Forum, bool) {
+	if !eligible || !canMoveForumTopic(ctx) {
+		return nil, true
+	}
+	if strings.TrimSpace(ctx.FormValue("forum_id")) == "" {
+		return nil, true
+	}
+
+	forumId, err := ctx.FormValueInt("forum_id")
+	if err != nil {
+		RenderError(ctx, http.StatusBadRequest, "Invalid Forum", "Please select a valid destination forum.")
+		return nil, false
+	}
+	if forumId == topic.ForumId {
+		// We already are in that forum, no need to move anything
+		return nil, true
+	}
+
+	forum, err := ctx.State.Forums.ById(forumId)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch forum move target", "error", err, "forum", forumId, "topic", topic.Id)
+		InternalServerError(ctx)
+		return nil, false
+	}
+	if forum == nil || forum.Hidden {
+		RenderError(ctx, http.StatusBadRequest, "Invalid Forum", "Please select a valid destination forum.")
+		return nil, false
+	}
+	return forum, true
+}
+
+func moveForumTopic(ctx *server.Context, topic *schemas.ForumTopic, target *schemas.Forum) bool {
+	if target == nil {
+		return true
+	}
+	previousForumId := topic.ForumId
+
+	// Use a database transaction to ensure that both the topic and its posts are moved at the same time
+	err := ctx.State.DatabaseTransaction(func(repositories *state.Repositories) error {
+		topicUpdate := &schemas.ForumTopic{Id: topic.Id, ForumId: target.Id}
+		if _, err := repositories.ForumTopics.Update(topicUpdate, "forum_id"); err != nil {
+			return fmt.Errorf("update topic forum: %w", err)
+		}
+
+		postUpdate := &schemas.ForumPost{TopicId: topic.Id, ForumId: target.Id}
+		if _, err := repositories.ForumPosts.UpdateByTopic(postUpdate, "forum_id"); err != nil {
+			return fmt.Errorf("update post forums: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		ctx.Logger.Error("Failed to move forum topic", "error", err, "topic", topic.Id, "forum", target.Id)
+		InternalServerError(ctx)
+		return false
+	}
+
+	topic.ForumId = target.Id
+	topic.Forum = target
+	ctx.Logger.Info(
+		"Moved a forum topic",
+		"user", ctx.CurrentUser.Id, "topic", topic.Id,
+		"from_forum", previousForumId, "to_forum", target.Id,
+	)
 	return true
 }
 

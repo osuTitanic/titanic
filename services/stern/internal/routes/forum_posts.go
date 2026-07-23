@@ -91,6 +91,14 @@ func ForumPostEditorView(ctx *server.Context) {
 	content, smiliesEnabled := resolveEditorState(ctx, topic, action, referencedPost)
 	canEditIcon := canEditPostIcon(ctx, topic, action, editingLatestPost)
 
+	// Moderators are able to move topics to other forums
+	// The UI needs the forum jump view for that to display the drop-down
+	showForumSelect := canMoveForumTopic(ctx) && (action != forumActionEdit || editingInitialPost)
+	forumSelect := templates.ForumJumpView{CurrentForumId: topic.ForumId}
+	if showForumSelect {
+		forumSelect = buildForumJumpView(ctx, topic.ForumId)
+	}
+
 	selectedIcon := -1
 	if topic.IconId != nil {
 		selectedIcon = int(*topic.IconId)
@@ -118,6 +126,8 @@ func ForumPostEditorView(ctx *server.Context) {
 		ShowLockPost:     action == forumActionEdit && ctx.HasPermission("forum.moderation.posts.lock"),
 		ShowTopicTypes:   editingInitialPost && ctx.HasPermission("forum.moderation.topics.set_options"),
 		TopicType:        topicTypeString(topic),
+		ShowForumSelect:  showForumSelect,
+		ForumSelect:      forumSelect,
 	}
 	if action == forumActionPost {
 		editor.DraftUrl = fmt.Sprintf("/forum/%d/t/%d/draft", topic.ForumId, topic.Id)
@@ -298,6 +308,12 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	}
 	smiliesEnabled := forumSmileysEnabled(ctx)
 
+	// Moderators are able to move the topic to another forum when replying
+	targetForum, validTarget := resolveForumMoveTarget(ctx, topic, true)
+	if !validTarget {
+		return
+	}
+
 	post := &schemas.ForumPost{
 		TopicId:         topic.Id,
 		ForumId:         topic.ForumId,
@@ -317,6 +333,12 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 		InternalServerError(ctx)
 		return
 	}
+
+	// Try to move forum topic to the newly selected forum, if applicable
+	if !moveForumTopic(ctx, topic, targetForum) {
+		return
+	}
+	post.ForumId = topic.ForumId
 
 	// The reply was posted, so any saved drafts for this topic are now obsolete
 	clearForumDrafts(ctx, topic.Id)
@@ -418,6 +440,12 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	editingInitialPost := initialPost != nil && initialPost.Id == post.Id
 	editingLatestPost := latestPost != nil && latestPost.Id == post.Id
 
+	// Moderators are able to move the topic to another forum when editing the initial post
+	targetForum, validTarget := resolveForumMoveTarget(ctx, topic, editingInitialPost)
+	if !validTarget {
+		return
+	}
+
 	updates := &schemas.ForumPost{
 		Id:              post.Id,
 		Content:         content,
@@ -457,6 +485,11 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 
 	// If allowed, update the topic type & title when the user edits the initial post
 	applyEditedTopicOptions(ctx, topic, editingInitialPost)
+
+	// Try to move forum topic to the newly selected forum, if applicable
+	if !moveForumTopic(ctx, topic, targetForum) {
+		return
+	}
 
 	ctx.Logger.Info("Edited a forum post", "user", ctx.CurrentUser.Id, "post", post.Id)
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))
