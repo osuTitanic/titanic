@@ -534,6 +534,8 @@ type ForumEditorContext struct {
 	PostLocked      bool
 	ShowTopicTypes  bool
 	TopicType       string // "global" | "pinned" | "announcement"
+	ShowForumSelect bool
+	ForumSelect     ForumJumpView
 
 	ShowKudosuHint     bool
 	KudosuReward       int

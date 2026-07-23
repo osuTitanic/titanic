@@ -2,9 +2,13 @@
 {{ if .ShowSubject }}{{ yield editorSubject() }}{{ end }}
 {{ if .ShowIcons }}{{ yield editorIcons() }}{{ end }}
 {{ yield editorBody() }}
-{{ if .ShowControls }}{{ yield editorControls() }}{{ end }}
-{{ if .ShowKudosuHint }}{{ yield editorKudosuHint() }}{{ end }}
+
+{{ if .ShowControls }}{{ yield editorControlsRight() }}{{ end }}
+
 {{ yield editorButtons() }}
+{{ if .ShowControls }}{{ yield editorControlsLeft() }}{{ end }}
+{{ if .ShowKudosuHint }}{{ yield editorKudosuHint() }}{{ end }}
+
 {{ if .HasContent() }}{{ yield editorPreview() }}{{ end }}
 {{ end }}
 
@@ -85,7 +89,7 @@
 </div>
 {{ end }}
 
-{{ block editorControls() }}
+{{ block editorControlsRight() }}
 <div class="bbcode-editor-controls">
     {{ if .ShowStatusInput }}
     <div class="bbcode-editor-control-row">
@@ -94,6 +98,11 @@
     </div>
     {{ end }}
 
+    <div class="bbcode-editor-control-row">
+        <input type="checkbox" class="radio" name="notify" id="notify"{{ if .NotifyChecked }} checked{{ end }}>
+        <label for="notify">Notify me when a reply is posted</label>
+    </div>
+
     {{ if .ShowSmilies }}
     <div class="bbcode-editor-control-row">
         <input type="checkbox" class="radio" name="enable-smilies" id="enable-smilies" value="1"{{ if .SmiliesEnabled }} checked{{ end }}>
@@ -101,11 +110,6 @@
         <label for="enable-smilies">Enable smilies</label>
     </div>
     {{ end }}
-
-    <div class="bbcode-editor-control-row">
-        <input type="checkbox" class="radio" name="notify" id="notify"{{ if .NotifyChecked }} checked{{ end }}>
-        <label for="notify">Notify me when a reply is posted</label>
-    </div>
 
     {{ if .ShowLockTopic }}
     <div class="bbcode-editor-control-row">
@@ -120,7 +124,11 @@
         <label for="edit-locked">Lock this post</label>
     </div>
     {{ end }}
+</div>
+{{ end }}
 
+{{ block editorControlsLeft() }}
+<div class="bbcode-editor-controls" style="float: left; text-align: left;">
     {{ if .ShowTopicTypes }}
     <div class="bbcode-editor-control-row">
         Post topic as:
@@ -130,6 +138,16 @@
         <label for="type-pinned">Pinned</label>
         <input type="radio" name="type" value="announcement" id="type-announcement"{{ if .TopicType == "announcement" }} checked{{ end }}>
         <label for="type-announcement">Announcement</label>
+    </div>
+    {{ end }}
+
+    {{ if .ShowForumSelect }}
+    <div class="bbcode-editor-control-row">
+        <label for="topic-forum-target">Move topic to:</label>
+        <select class="forum-select" id="topic-forum-target" name="forum_id">
+            <option value="">Select a forum</option>
+            {{ include "/components/forum_select_options.jet" .ForumSelect }}
+        </select>
     </div>
     {{ end }}
 </div>
