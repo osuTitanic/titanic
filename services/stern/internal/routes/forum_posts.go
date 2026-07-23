@@ -702,6 +702,9 @@ func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, 
 	if *beatmapset.CreatorId == ctx.CurrentUser.Id || beatmapset.Status >= constants.BeatmapStatusRanked {
 		return
 	}
+	if editor.SubmitText == "Edit" {
+		return
+	}
 
 	// The kudosu hint is shown to a user if we have a linked beatmapset, stating
 	// that you can receive kudosu for posting in the topic. The amount of kudosu
