@@ -3,13 +3,16 @@ package wiki
 import (
 	"bytes"
 	stdhtml "html"
+	"net/url"
 	"regexp"
 	"strings"
 
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	gmhtml "github.com/yuin/goldmark/renderer/html"
+	gmtext "github.com/yuin/goldmark/text"
 )
 
 var (
@@ -40,20 +43,69 @@ type tocHeading struct {
 // RenderMarkdown converts the given Markdown text to HTML.
 // It handles wiki-style links, table of contents, and code blocks for syntax highlighting.
 func RenderMarkdown(text, language string) (string, error) {
+	return renderMarkdown(text, language, "")
+}
+
+// RenderMarkdownWithSourceURL converts the given Markdown text to HTML and
+// resolves relative image paths against the URL of the Markdown source file.
+func RenderMarkdownWithSourceURL(text, language, sourceURL string) (string, error) {
+	return renderMarkdown(text, language, sourceURL)
+}
+
+func renderMarkdown(text, language, sourceURL string) (string, error) {
 	text = createValidUtf8(SanitizeMarkdown(text))
 	text = StripFrontMatter(text)
 
 	headings := collectTocHeadings(text)
 	text = renderWikiLinks(text, language)
 
+	source := []byte(text)
+	document := markdownRenderer.Parser().Parse(gmtext.NewReader(source))
+	resolveRelativeImageUrls(document, sourceURL)
+
 	var buffer bytes.Buffer
-	if err := markdownRenderer.Convert([]byte(text), &buffer); err != nil {
+	if err := markdownRenderer.Renderer().Render(&buffer, source, document); err != nil {
 		return "", err
 	}
 
 	output := wrapCodeBlocks(buffer.String())
 	output = replaceTocMarker(output, renderToc(headings))
 	return output, nil
+}
+
+func resolveRelativeImageUrls(document ast.Node, sourceURL string) {
+	base, err := url.Parse(sourceURL)
+	if err != nil || !base.IsAbs() {
+		return
+	}
+
+	ast.Walk(document, func(node ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+
+		image, ok := node.(*ast.Image)
+		if !ok {
+			return ast.WalkContinue, nil
+		}
+
+		destination := strings.TrimSpace(string(image.Destination))
+		reference, err := url.Parse(destination)
+		if err != nil || !isRelativeImageUrl(reference) {
+			return ast.WalkContinue, nil
+		}
+
+		image.Destination = []byte(base.ResolveReference(reference).String())
+		return ast.WalkContinue, nil
+	})
+}
+
+func isRelativeImageUrl(reference *url.URL) bool {
+	return reference != nil &&
+		!reference.IsAbs() &&
+		reference.Host == "" &&
+		reference.Path != "" &&
+		!strings.HasPrefix(reference.Path, "/")
 }
 
 func renderWikiLinks(text, language string) string {

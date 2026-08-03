@@ -155,7 +155,11 @@ func WikiArticle(ctx *server.Context) {
 		return
 	}
 
-	renderedContent, err := wiki.RenderMarkdown(result.Content.Content, language)
+	renderedContent, err := wiki.RenderMarkdownWithSourceURL(
+		result.Content.Content,
+		language,
+		service.MarkdownUrl(path, result.Content.Language),
+	)
 	if err != nil {
 		ctx.Logger.Error("Failed to render wiki markdown", "path", path, "language", language, "error", err)
 		InternalServerError(ctx)
