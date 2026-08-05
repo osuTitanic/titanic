@@ -39,12 +39,20 @@ func BeatmapsetRedirect(ctx *server.Context) {
 		return
 	}
 
+	// Filter out inactive beatmaps, as they would lead to a 404
+	activeBeatmaps := make([]*schemas.Beatmap, 0, len(beatmapset.Beatmaps))
+	for _, beatmap := range beatmapset.Beatmaps {
+		if beatmap.Status > constants.BeatmapStatusInactive {
+			activeBeatmaps = append(activeBeatmaps, beatmap)
+		}
+	}
+
 	// Default to the requested mode, or osu! standard when none is given
 	mode := resolveMode(ctx, constants.ModeOsu)
 
 	// Resolve beatmap that matches the mode
-	beatmap := beatmapset.Beatmaps[0]
-	for _, candidate := range beatmapset.Beatmaps {
+	beatmap := activeBeatmaps[0]
+	for _, candidate := range activeBeatmaps {
 		if candidate.Mode == mode {
 			beatmap = candidate
 			break
