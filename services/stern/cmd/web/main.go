@@ -70,6 +70,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /p/doyoureallywanttoaskpeppy/", routes.PeppySkillIssue)
 	server.Handle("GET /events", routes.Events)
 	server.Handle("GET /p/changelog", routes.OsuChangelog)
+	server.Handle("GET /p/{page}", routes.LegacyPageRedirect)
+	server.Handle("GET /p/{page}/", routes.LegacyPageRedirect)
 	server.Handle("GET /u/{query}", routes.UserProfile)
 	server.Handle("GET /users/{query}", routes.UserProfileRedirect)
 	server.Handle("GET /g/{id}", routes.Group)
