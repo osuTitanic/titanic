@@ -76,7 +76,13 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     fi && \
     cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so
 
-FROM gcr.io/distroless/base-debian13:nonroot
+FROM debian:trixie-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libicu76 \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /out/jobs /app/jobs
