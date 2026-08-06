@@ -555,6 +555,7 @@
     font-size: 85%;
     line-height: 1.25;
     overflow-wrap: break-word;
+    max-width: 678px;
 }
 
 .topic-forum-name {
