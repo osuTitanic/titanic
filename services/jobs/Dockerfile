@@ -76,19 +76,32 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     fi && \
     cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so
 
-FROM debian:trixie-slim
+FROM debian:trixie-slim AS icu
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         libicu76 \
-        ca-certificates && \
+        libstdc++6 \
+        libgcc-s1 && \
+    mkdir -p /out/app/lib && \
+    for package in libicu76 libstdc++6 libgcc-s1; do \
+        dpkg-query -L "$package" | while IFS= read -r file; do \
+            case "$file" in \
+                */libicudata.so*|*/libicui18n.so*|*/libicuuc.so*|*/libstdc++.so*|*/libgcc_s.so*) \
+                    cp -a "$file" /out/app/lib/ ;; \
+            esac; \
+        done; \
+    done && \
     rm -rf /var/lib/apt/lists/*
+
+FROM gcr.io/distroless/base-debian13:nonroot
 
 WORKDIR /app
 COPY --from=builder /out/jobs /app/jobs
 COPY ./services/jobs/schedule.example.json /app/schedule.json
-
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
+COPY --from=icu /out/app/lib/ /app/lib/
+
 ENV LD_LIBRARY_PATH=/app/lib
 
 VOLUME ["/app/.data"]
