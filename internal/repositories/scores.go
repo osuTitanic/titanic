@@ -59,6 +59,14 @@ func (r *ScoreRepository) GetCount() (int64, error) {
 	return count, err
 }
 
+func (r *ScoreRepository) FetchWithZeroPP(preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("pp = ?", 0).
+		Find(&scores).Error
+	return scores, err
+}
+
 func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, excludeApproved bool, preload ...string) ([]*schemas.Score, error) {
 	// A negative limit cancels the limit clause entirely -> it will fetch every pb
 	return r.FetchBestRange(userId, mode, excludeApproved, -1, 0, preload...)
