@@ -86,7 +86,7 @@ func (r *ScoreRepository) FetchPassed(userId int, mode constants.Mode, preload .
 	err := Preloaded(r.db, preload).
 		Where("user_id = ?", userId).
 		Where("mode = ?", mode).
-		Where("status_pp > 1").
+		Where("status > 1").
 		Where("hidden = ?", false).
 		Find(&scores).Error
 	return scores, err
