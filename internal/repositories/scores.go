@@ -63,6 +63,8 @@ func (r *ScoreRepository) FetchWithZeroPP(preload ...string) ([]*schemas.Score, 
 	var scores []*schemas.Score
 	err := Preloaded(r.db, preload).
 		Where("pp = ?", 0).
+		Where("hidden = ?", false).
+		Where("status >= ?", constants.ScoreStatusSubmitted).
 		Find(&scores).Error
 	return scores, err
 }
