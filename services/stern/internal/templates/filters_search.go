@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
@@ -150,13 +151,20 @@ func beatmapDifficultySort(a jet.Arguments) reflect.Value {
 		return reflect.ValueOf(beatmaps)
 	}
 
-	sort.SliceStable(beatmaps, func(i, j int) bool {
-		if beatmaps[i].Mode == beatmaps[j].Mode {
-			return beatmaps[i].Diff < beatmaps[j].Diff
+	activeBeatmaps := make([]*schemas.Beatmap, 0, len(beatmaps))
+	for _, beatmap := range beatmaps {
+		if beatmap.Status != constants.BeatmapStatusInactive {
+			activeBeatmaps = append(activeBeatmaps, beatmap)
 		}
-		return beatmaps[i].Mode < beatmaps[j].Mode
+	}
+
+	sort.SliceStable(activeBeatmaps, func(i, j int) bool {
+		if activeBeatmaps[i].Mode == activeBeatmaps[j].Mode {
+			return activeBeatmaps[i].Diff < activeBeatmaps[j].Diff
+		}
+		return activeBeatmaps[i].Mode < activeBeatmaps[j].Mode
 	})
-	return reflect.ValueOf(beatmaps)
+	return reflect.ValueOf(activeBeatmaps)
 }
 
 func beatmapRatingWidth(a jet.Arguments) reflect.Value {
