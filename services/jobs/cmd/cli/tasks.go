@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/jobs/internal/scheduler"
 	"github.com/osuTitanic/titanic/services/jobs/internal/tasks"
@@ -19,18 +20,22 @@ type TaskDefinition struct {
 type TaskList map[string]TaskDefinition
 
 var availableTasks = TaskList{
-	"ranks_index":         {Build: BuildIndexRanksTask},
-	"ranks_sync":          TaskWithoutArguments(tasks.UpdateRanks),
-	"ranks_unlist":        TaskWithoutArguments(tasks.UnlistUsers),
-	"stats_website":       TaskWithoutArguments(tasks.UpdateWebsiteStats),
-	"stats_activity":      TaskWithoutArguments(tasks.UpdateActivityStats),
-	"users_notifications": TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
-	"users_historical":    TaskWithoutArguments(tasks.FixHistoricalData),
-	"users_autodelete":    TaskWithoutArguments(tasks.AutoDeleteUsers),
-	"beatmap_statuses":    TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
-	"ppv1_updates":        TaskWithoutArguments(tasks.UpdatePPv1),
-	"release_updates":     TaskWithoutArguments(tasks.ReleaseUpdates),
-	"scores_ppv2_failed":  TaskWithoutArguments(tasks.RecalculatePPv2Failed),
+	"ranks_index":             {Build: BuildIndexRanksTask},
+	"ranks_sync":              TaskWithoutArguments(tasks.UpdateRanks),
+	"ranks_unlist":            TaskWithoutArguments(tasks.UnlistUsers),
+	"stats_website":           TaskWithoutArguments(tasks.UpdateWebsiteStats),
+	"stats_activity":          TaskWithoutArguments(tasks.UpdateActivityStats),
+	"users_notifications":     TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
+	"users_historical":        TaskWithoutArguments(tasks.FixHistoricalData),
+	"users_autodelete":        TaskWithoutArguments(tasks.AutoDeleteUsers),
+	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
+	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
+	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
+	"scores_ppv2_failed":      TaskWithoutArguments(tasks.RecalculatePPv2Failed),
+	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
+	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
+	"scores_status_pp":        {Build: BuildRecalculatePPStatusTask},
+	"scores_status_score":     {Build: BuildRecalculateScoreStatusTask},
 }
 
 func (t TaskList) List() {
@@ -93,6 +98,50 @@ func ParseIndexRanksOptions(args []string) (tasks.IndexRanksOptions, error) {
 	}
 	if err := options.Validate(); err != nil {
 		return tasks.IndexRanksOptions{}, err
+	}
+	return options, nil
+}
+
+func BuildRecalculatePPStatusTask(args []string) (scheduler.Executor, error) {
+	options, err := ParseStatusRecalculationOptions("scores_status_pp", args)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(app *state.State, logger *slog.Logger) error {
+		return tasks.RecalculatePPStatusUser(app, logger, options)
+	}, nil
+}
+
+func BuildRecalculateScoreStatusTask(args []string) (scheduler.Executor, error) {
+	options, err := ParseStatusRecalculationOptions("scores_status_score", args)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(app *state.State, logger *slog.Logger) error {
+		return tasks.RecalculateScoreStatusUser(app, logger, options)
+	}, nil
+}
+
+func ParseStatusRecalculationOptions(taskName string, args []string) (tasks.StatusRecalculationOptions, error) {
+	flags := flag.NewFlagSet(taskName, flag.ContinueOnError)
+	userId := flags.Int("user-id", 0, "ID of the user whose score statuses should be recalculated")
+	mode := flags.Int("mode", 0, "game mode ID")
+
+	if err := flags.Parse(args); err != nil {
+		return tasks.StatusRecalculationOptions{}, err
+	}
+	if flags.NArg() > 0 {
+		return tasks.StatusRecalculationOptions{}, fmt.Errorf("unexpected arguments: %s", strings.Join(flags.Args(), " "))
+	}
+
+	options := tasks.StatusRecalculationOptions{
+		UserId: *userId,
+		Mode:   constants.Mode(*mode),
+	}
+	if err := options.Validate(); err != nil {
+		return tasks.StatusRecalculationOptions{}, err
 	}
 	return options, nil
 }

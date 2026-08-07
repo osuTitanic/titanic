@@ -89,6 +89,17 @@ func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode, exclud
 	return int(count), err
 }
 
+func (r *ScoreRepository) FetchPassed(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status > 1").
+		Where("hidden = ?", false).
+		Find(&scores).Error
+	return scores, err
+}
+
 func (r *ScoreRepository) FetchRangeScores(beatmapId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
 	err := Preloaded(r.db, preload).
