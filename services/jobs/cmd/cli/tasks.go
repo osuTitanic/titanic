@@ -20,19 +20,21 @@ type TaskDefinition struct {
 type TaskList map[string]TaskDefinition
 
 var availableTasks = TaskList{
-	"ranks_index":         {Build: BuildIndexRanksTask},
-	"ranks_sync":          TaskWithoutArguments(tasks.UpdateRanks),
-	"ranks_unlist":        TaskWithoutArguments(tasks.UnlistUsers),
-	"stats_website":       TaskWithoutArguments(tasks.UpdateWebsiteStats),
-	"stats_activity":      TaskWithoutArguments(tasks.UpdateActivityStats),
-	"users_notifications": TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
-	"users_historical":    TaskWithoutArguments(tasks.FixHistoricalData),
-	"users_autodelete":    TaskWithoutArguments(tasks.AutoDeleteUsers),
-	"beatmap_statuses":    TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
-	"ppv1_updates":        TaskWithoutArguments(tasks.UpdatePPv1),
-	"release_updates":     TaskWithoutArguments(tasks.ReleaseUpdates),
-	"scores_status_pp":    {Build: BuildRecalculatePPStatusTask},
-	"scores_status_score": {Build: BuildRecalculateScoreStatusTask},
+	"ranks_index":             {Build: BuildIndexRanksTask},
+	"ranks_sync":              TaskWithoutArguments(tasks.UpdateRanks),
+	"ranks_unlist":            TaskWithoutArguments(tasks.UnlistUsers),
+	"stats_website":           TaskWithoutArguments(tasks.UpdateWebsiteStats),
+	"stats_activity":          TaskWithoutArguments(tasks.UpdateActivityStats),
+	"users_notifications":     TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
+	"users_historical":        TaskWithoutArguments(tasks.FixHistoricalData),
+	"users_autodelete":        TaskWithoutArguments(tasks.AutoDeleteUsers),
+	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
+	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
+	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
+	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
+	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
+	"scores_status_pp":        {Build: BuildRecalculatePPStatusTask},
+	"scores_status_score":     {Build: BuildRecalculateScoreStatusTask},
 }
 
 func (t TaskList) List() {

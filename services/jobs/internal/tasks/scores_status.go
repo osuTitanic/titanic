@@ -9,6 +9,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/services/jobs/internal/workers"
 )
 
 type StatusRecalculationOptions struct {
@@ -23,6 +24,8 @@ func (options StatusRecalculationOptions) Validate() error {
 	return nil
 }
 
+const statusRecalculationWorkers = 4
+
 func RecalculateScoreStatusUser(app *state.State, logger *slog.Logger, options StatusRecalculationOptions) error {
 	return performStatusRecalculationForUser(app, logger, options, "score", func(a, b *schemas.Score) int {
 		return cmp.Compare(b.TotalScore, a.TotalScore)
@@ -35,6 +38,106 @@ func RecalculatePPStatusUser(app *state.State, logger *slog.Logger, options Stat
 			return result
 		}
 		return cmp.Compare(b.TotalScore, a.TotalScore)
+	})
+}
+
+func RecalculateScoreStatusAll(app *state.State, logger *slog.Logger) error {
+	criteria := map[string]any{
+		"restricted = ?": false,
+		"activated = ?":  true,
+	}
+	userList, err := app.Repositories.Users.Many(criteria)
+	if err != nil {
+		return fmt.Errorf("failed to fetch users: %w", err)
+	}
+
+	logger.Info("Recalculating score status for all users", "users", len(userList))
+	workerCount := workers.TaskWorkerCount(app, len(userList), statusRecalculationWorkers)
+
+	return workers.RunWorkerPool(userList, workerCount, func(user *schemas.User) error {
+		err := RecalculateScoreStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeOsu,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate score status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculateScoreStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeTaiko,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate score status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculateScoreStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeCatch,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate score status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculateScoreStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeMania,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate score status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		return nil
+	})
+}
+
+func RecalculatePPStatusAll(app *state.State, logger *slog.Logger) error {
+	criteria := map[string]any{
+		"restricted = ?": false,
+		"activated = ?":  true,
+	}
+	userList, err := app.Repositories.Users.Many(criteria)
+	if err != nil {
+		return fmt.Errorf("failed to fetch users: %w", err)
+	}
+
+	logger.Info("Recalculating pp status for all users", "users", len(userList))
+	workerCount := workers.TaskWorkerCount(app, len(userList), statusRecalculationWorkers)
+
+	return workers.RunWorkerPool(userList, workerCount, func(user *schemas.User) error {
+		err := RecalculatePPStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeOsu,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate pp status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculatePPStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeTaiko,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate pp status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculatePPStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeCatch,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate pp status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		err = RecalculatePPStatusUser(app, logger, StatusRecalculationOptions{
+			UserId: user.Id,
+			Mode:   constants.ModeMania,
+		})
+		if err != nil {
+			logger.Error("Failed to recalculate pp status for user", "userId", user.Id, "error", err)
+			return nil
+		}
+		return nil
 	})
 }
 
