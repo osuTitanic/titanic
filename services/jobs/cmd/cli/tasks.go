@@ -31,12 +31,12 @@ var availableTasks = TaskList{
 	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
 	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
 	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
-	"scores_ppv2":             TaskWithoutArguments(tasks.RecalculatePPv2),
-	"scores_ppv2_failed":      TaskWithoutArguments(tasks.RecalculatePPv2Failed),
-	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
-	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
+	"scores_ppv2":             {Build: BuildRecalculatePPv2Task},
+	"scores_ppv2_failed":      {Build: BuildRecalculatePPv2FailedTask},
 	"scores_status_pp":        {Build: BuildRecalculatePPStatusTask},
 	"scores_status_score":     {Build: BuildRecalculateScoreStatusTask},
+	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
+	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
 }
 
 func (t TaskList) List() {
@@ -112,6 +112,51 @@ func BuildRecalculatePPStatusTask(args []string) (scheduler.Executor, error) {
 	return func(app *state.State, logger *slog.Logger) error {
 		return tasks.RecalculatePPStatusUser(app, logger, options)
 	}, nil
+}
+
+func BuildRecalculatePPv2Task(args []string) (scheduler.Executor, error) {
+	options, err := ParsePPv2RecalculationOptions("scores_ppv2", args)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(app *state.State, logger *slog.Logger) error {
+		return tasks.RecalculatePPv2(app, logger, options)
+	}, nil
+}
+
+func BuildRecalculatePPv2FailedTask(args []string) (scheduler.Executor, error) {
+	options, err := ParsePPv2RecalculationOptions("scores_ppv2_failed", args)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(app *state.State, logger *slog.Logger) error {
+		return tasks.RecalculatePPv2Failed(app, logger, options)
+	}, nil
+}
+
+func ParsePPv2RecalculationOptions(taskName string, args []string) (tasks.PPv2RecalculationOptions, error) {
+	flags := flag.NewFlagSet(taskName, flag.ContinueOnError)
+	defaults := tasks.DefaultPPv2RecalculationOptions()
+	workers := flags.Int("workers", defaults.Workers, "number of workers")
+	batchSize := flags.Int("batch-size", defaults.BatchSize, "number of scores processed at once")
+
+	if err := flags.Parse(args); err != nil {
+		return tasks.PPv2RecalculationOptions{}, err
+	}
+	if flags.NArg() > 0 {
+		return tasks.PPv2RecalculationOptions{}, fmt.Errorf("unexpected arguments: %s", strings.Join(flags.Args(), " "))
+	}
+
+	options := tasks.PPv2RecalculationOptions{
+		Workers:   *workers,
+		BatchSize: *batchSize,
+	}
+	if err := options.Validate(); err != nil {
+		return tasks.PPv2RecalculationOptions{}, err
+	}
+	return options, nil
 }
 
 func BuildRecalculateScoreStatusTask(args []string) (scheduler.Executor, error) {

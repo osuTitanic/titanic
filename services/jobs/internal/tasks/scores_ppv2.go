@@ -11,12 +11,34 @@ import (
 	"github.com/osuTitanic/titanic/services/jobs/internal/workers"
 )
 
-// TODO: make task config
-const ppv2RecalculationWorkers = 12
-const ppv2RecalculationBatchSize = 500
+type PPv2RecalculationOptions struct {
+	Workers   int
+	BatchSize int
+}
+
+func DefaultPPv2RecalculationOptions() PPv2RecalculationOptions {
+	return PPv2RecalculationOptions{
+		BatchSize: 500,
+		Workers:   4,
+	}
+}
+
+func (o PPv2RecalculationOptions) Validate() error {
+	if o.Workers < 0 {
+		return fmt.Errorf("workers must be greater than or equal to zero")
+	}
+	if o.BatchSize < 1 {
+		return fmt.Errorf("batch size must be greater than zero")
+	}
+	return nil
+}
 
 // RecalculatePPv2 recalculates ppv2 for all passed scores.
-func RecalculatePPv2(app *state.State, logger *slog.Logger) error {
+func RecalculatePPv2(app *state.State, logger *slog.Logger, options PPv2RecalculationOptions) error {
+	if err := options.Validate(); err != nil {
+		return fmt.Errorf("invalid ppv2 recalculation options: %w", err)
+	}
+
 	if !app.PPv2.Available() {
 		logger.Info("PPv2 service is unavailable, skipping recalculation")
 		return nil
@@ -35,13 +57,13 @@ func RecalculatePPv2(app *state.State, logger *slog.Logger) error {
 	logger.Info(
 		"Starting ppv2 recalculation",
 		"total_scores", totalScores,
-		"batch_size", ppv2RecalculationBatchSize,
-		"workers", ppv2RecalculationWorkers,
+		"batch_size", options.BatchSize,
+		"workers", options.Workers,
 	)
 	var totalBatchDuration time.Duration
 
 	return recalculatePPv2Batch(
-		app, logger, ppv2RecalculationWorkers,
+		app, logger, options,
 		// Next batch -> fetch scores from the database in batches
 		func(offset, limit int) ([]*schemas.Score, error) {
 			return app.Repositories.Scores.Many(
@@ -55,7 +77,7 @@ func RecalculatePPv2(app *state.State, logger *slog.Logger) error {
 			averageBatchDuration := totalBatchDuration / time.Duration(completedBatches)
 
 			scoresLeft := max(int(totalScores)-processedScores, 0)
-			batchesLeft := (scoresLeft + ppv2RecalculationBatchSize - 1) / ppv2RecalculationBatchSize
+			batchesLeft := (scoresLeft + options.BatchSize - 1) / options.BatchSize
 			estimatedRemaining := time.Duration(batchesLeft) * averageBatchDuration
 
 			logger.Info(
@@ -71,7 +93,11 @@ func RecalculatePPv2(app *state.State, logger *slog.Logger) error {
 }
 
 // RecalculatePPv2Failed recalculates scores whose ppv2 calculation previously failed.
-func RecalculatePPv2Failed(app *state.State, logger *slog.Logger) error {
+func RecalculatePPv2Failed(app *state.State, logger *slog.Logger, options PPv2RecalculationOptions) error {
+	if err := options.Validate(); err != nil {
+		return fmt.Errorf("invalid ppv2 recalculation options: %w", err)
+	}
+
 	if !app.PPv2.Available() {
 		logger.Info("PPv2 service is unavailable, skipping recalculation")
 		return nil
@@ -85,11 +111,12 @@ func RecalculatePPv2Failed(app *state.State, logger *slog.Logger) error {
 	logger.Info(
 		"Recalculating failed ppv2 calculations",
 		"total_scores", len(scores),
-		"workers", ppv2RecalculationWorkers,
+		"batch_size", options.BatchSize,
+		"workers", options.Workers,
 	)
 
 	return recalculatePPv2Batch(
-		app, logger, ppv2RecalculationWorkers,
+		app, logger, options,
 		// Next batch -> in this case we already have all the scores in memory, so we just slice them
 		func(offset, limit int) ([]*schemas.Score, error) {
 			if offset >= len(scores) {
@@ -105,7 +132,7 @@ func RecalculatePPv2Failed(app *state.State, logger *slog.Logger) error {
 func recalculatePPv2Batch(
 	app *state.State,
 	logger *slog.Logger,
-	maxWorkers int,
+	options PPv2RecalculationOptions,
 	next func(offset, limit int) ([]*schemas.Score, error),
 	onBatchDone func(completedBatches, processedScores int, batchDuration time.Duration),
 ) error {
@@ -113,7 +140,7 @@ func recalculatePPv2Batch(
 	completedBatches := 0
 
 	for {
-		scores, err := next(offset, ppv2RecalculationBatchSize)
+		scores, err := next(offset, options.BatchSize)
 		if err != nil {
 			return fmt.Errorf("failed to fetch scores for ppv2 recalculation: %w", err)
 		}
@@ -121,7 +148,7 @@ func recalculatePPv2Batch(
 			break
 		}
 
-		workerCount := workers.TaskWorkerCount(app, len(scores), maxWorkers)
+		workerCount := workers.TaskWorkerCount(app, len(scores), options.Workers)
 		batchStarted := time.Now()
 
 		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
