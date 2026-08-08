@@ -31,6 +31,7 @@ var availableTasks = TaskList{
 	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
 	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
 	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
+	"scores_ppv2":             TaskWithoutArguments(tasks.RecalculatePPv2),
 	"scores_ppv2_failed":      TaskWithoutArguments(tasks.RecalculatePPv2Failed),
 	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
 	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
