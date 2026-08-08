@@ -25,6 +25,7 @@ var availableTasks = TaskList{
 	"ranks_unlist":            TaskWithoutArguments(tasks.UnlistUsers),
 	"stats_website":           TaskWithoutArguments(tasks.UpdateWebsiteStats),
 	"stats_activity":          TaskWithoutArguments(tasks.UpdateActivityStats),
+	"users_stats":             TaskWithoutArguments(tasks.UpdateUsersStats),
 	"users_notifications":     TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
 	"users_historical":        TaskWithoutArguments(tasks.FixHistoricalData),
 	"users_autodelete":        TaskWithoutArguments(tasks.AutoDeleteUsers),
