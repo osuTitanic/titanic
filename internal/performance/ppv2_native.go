@@ -108,7 +108,14 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 		return 0, fmt.Errorf("calculate performance for beatmap %d: %w", score.BeatmapId, err)
 	}
 
-	return nativePerformanceTotal(attributes)
+	total, err := nativePerformanceTotal(attributes)
+	if err != nil {
+		return 0, fmt.Errorf("calculate performance for beatmap %d: %w", score.BeatmapId, err)
+	}
+	if !isFinite(total) {
+		return 0, nil
+	}
+	return total, nil
 }
 
 func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
