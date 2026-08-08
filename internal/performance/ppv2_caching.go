@@ -26,7 +26,7 @@ type PPv2CacheKey struct {
 }
 
 func (key PPv2CacheKey) String() string {
-	return fmt.Sprintf("%d-%d-%d", key.BeatmapId, key.Mode, key.Mods)
+	return fmt.Sprintf("ppv2:%d-%d-%d", key.BeatmapId, key.Mode, key.Mods)
 }
 
 type PPv2MemoryCache struct {
