@@ -38,73 +38,36 @@ func RecalculatePPv2(app *state.State, logger *slog.Logger) error {
 		"batch_size", ppv2RecalculationBatchSize,
 		"workers", ppv2RecalculationWorkers,
 	)
-
-	currentOffset := 0
-	completedBatches := 0
 	var totalBatchDuration time.Duration
 
-	for {
-		scores, err := app.Repositories.Scores.Many(
-			criteria, "pp ASC, id ASC",
-			currentOffset, ppv2RecalculationBatchSize,
-		)
-		if err != nil {
-			return fmt.Errorf("failed to fetch scores for ppv2 recalculation: %w", err)
-		}
-		if len(scores) == 0 {
-			break
-		}
-
-		workerCount := workers.TaskWorkerCount(app, len(scores), ppv2RecalculationWorkers)
-		batchStarted := time.Now()
-
-		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
-			pp, err := app.PPv2.CalculatePerformance(score)
-			if err != nil {
-				logger.Error(
-					"Failed to recalculate ppv2",
-					"score_id", score.Id, "beatmap_id", score.BeatmapId, "error", err,
-				)
-				return nil
-			}
-
-			score.PP = pp
-			if _, err := app.Repositories.Scores.Update(score, "pp"); err != nil {
-				logger.Error(
-					"Failed to save recalculated ppv2",
-					"score_id", score.Id, "beatmap_id", score.BeatmapId, "error", err,
-				)
-				return nil
-			}
-
-			logger.Debug(
-				"Recalculated ppv2",
-				"score_id", score.Id, "beatmap_id", score.BeatmapId, "pp", pp,
+	return recalculatePPv2Batch(
+		app, logger, ppv2RecalculationWorkers,
+		// Next batch -> fetch scores from the database in batches
+		func(offset, limit int) ([]*schemas.Score, error) {
+			return app.Repositories.Scores.Many(
+				criteria, "pp ASC",
+				offset, limit,
 			)
-			return nil
-		}); err != nil {
-			return fmt.Errorf("failed to recalculate ppv2: %w", err)
-		}
+		},
+		// On batch completion
+		func(completedBatches, processedScores int, batchDuration time.Duration) {
+			totalBatchDuration += batchDuration
+			averageBatchDuration := totalBatchDuration / time.Duration(completedBatches)
 
-		totalBatchDuration += time.Since(batchStarted)
-		completedBatches++
+			scoresLeft := max(int(totalScores)-processedScores, 0)
+			batchesLeft := (scoresLeft + ppv2RecalculationBatchSize - 1) / ppv2RecalculationBatchSize
+			estimatedRemaining := time.Duration(batchesLeft) * averageBatchDuration
 
-		batchesLeft := (int(totalScores) - currentOffset - len(scores)) / ppv2RecalculationBatchSize
-		estimatedRemaining := time.Duration(batchesLeft) * (totalBatchDuration / time.Duration(completedBatches))
-		estimatedCompletion := time.Now().Add(estimatedRemaining)
-
-		logger.Info(
-			"Completed ppv2 recalculation batch",
-			"completed_batches", completedBatches,
-			"batches_left", batchesLeft,
-			"average_batch_duration", totalBatchDuration/time.Duration(completedBatches),
-			"estimated_remaining", estimatedRemaining,
-			"estimated_completion", estimatedCompletion.Format(time.RFC1123),
-		)
-		currentOffset += len(scores)
-	}
-
-	return nil
+			logger.Info(
+				"Completed ppv2 recalculation batch",
+				"completed_batches", completedBatches,
+				"batches_left", batchesLeft,
+				"average_batch_duration", averageBatchDuration,
+				"estimated_remaining", estimatedRemaining,
+				"estimated_completion", time.Now().Add(estimatedRemaining).Format(time.RFC1123),
+			)
+		},
+	)
 }
 
 // RecalculatePPv2Failed recalculates scores whose ppv2 calculation previously failed.
@@ -119,35 +82,91 @@ func RecalculatePPv2Failed(app *state.State, logger *slog.Logger) error {
 		return fmt.Errorf("failed to fetch scores with zero pp: %w", err)
 	}
 
-	workerCount := workers.TaskWorkerCount(app, len(scores), ppv2RecalculationWorkers)
 	logger.Info(
 		"Recalculating failed ppv2 calculations",
-		"total_scores", len(scores), "workers", workerCount,
+		"total_scores", len(scores),
+		"workers", ppv2RecalculationWorkers,
 	)
 
-	return workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
-		pp, err := app.PPv2.CalculatePerformance(score)
+	return recalculatePPv2Batch(
+		app, logger, ppv2RecalculationWorkers,
+		// Next batch -> in this case we already have all the scores in memory, so we just slice them
+		func(offset, limit int) ([]*schemas.Score, error) {
+			if offset >= len(scores) {
+				return nil, nil
+			}
+			end := min(offset+limit, len(scores))
+			return scores[offset:end], nil
+		},
+		nil,
+	)
+}
+
+func recalculatePPv2Batch(
+	app *state.State,
+	logger *slog.Logger,
+	maxWorkers int,
+	next func(offset, limit int) ([]*schemas.Score, error),
+	onBatchDone func(completedBatches, processedScores int, batchDuration time.Duration),
+) error {
+	offset := 0
+	completedBatches := 0
+
+	for {
+		scores, err := next(offset, ppv2RecalculationBatchSize)
 		if err != nil {
-			logger.Error(
-				"Failed to recalculate ppv2",
-				"score_id", score.Id, "beatmap_id", score.BeatmapId, "error", err,
-			)
-			return nil
+			return fmt.Errorf("failed to fetch scores for ppv2 recalculation: %w", err)
+		}
+		if len(scores) == 0 {
+			break
 		}
 
-		score.PP = pp
-		if _, err := app.Repositories.Scores.Update(score, "pp"); err != nil {
-			logger.Error(
-				"Failed to save recalculated ppv2",
-				"score_id", score.Id, "beatmap_id", score.BeatmapId, "error", err,
+		workerCount := workers.TaskWorkerCount(app, len(scores), maxWorkers)
+		batchStarted := time.Now()
+
+		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
+			pp, err := app.PPv2.CalculatePerformance(score)
+			if err != nil {
+				logger.Error(
+					"Failed to recalculate ppv2",
+					"score_id", score.Id,
+					"beatmap_id", score.BeatmapId,
+					"error", err,
+				)
+				return nil
+			}
+
+			score.PP = pp
+			if _, err := app.Repositories.Scores.Update(score, "pp"); err != nil {
+				logger.Error(
+					"Failed to save recalculated ppv2",
+					"score_id", score.Id,
+					"beatmap_id", score.BeatmapId,
+					"error", err,
+				)
+				return nil
+			}
+
+			logger.Debug(
+				"Recalculated ppv2",
+				"score_id", score.Id,
+				"beatmap_id", score.BeatmapId,
+				"pp", pp,
 			)
 			return nil
+		}); err != nil {
+			return fmt.Errorf("failed to recalculate ppv2: %w", err)
 		}
 
-		logger.Debug(
-			"Recalculated ppv2",
-			"score_id", score.Id, "beatmap_id", score.BeatmapId, "pp", pp,
-		)
-		return nil
-	})
+		batchDuration := time.Since(batchStarted)
+
+		offset += len(scores)
+		completedBatches++
+
+		if onBatchDone != nil {
+			onBatchDone(completedBatches, offset, batchDuration)
+		}
+	}
+
+	return nil
 }
