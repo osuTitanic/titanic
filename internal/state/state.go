@@ -127,6 +127,10 @@ func NewState(environmentFiles ...string) (*State, error) {
 		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)
 	}
 
+	ppv1Service := performance.NewPPv1Service(repos.Scores, repos.Beatmaps)
+	ppv2Service := performance.NewPPv2Service(beatmapResources)
+	ppv2Service.SetCacheLayer(performance.NewPPv2RedisCache(redisClient))
+
 	return &State{
 		Config:          cfg,
 		Database:        db,
@@ -139,9 +143,9 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Repositories:    repos,
 		Resources:       beatmapResources,
 		Extensions:      make(map[string]any),
+		PPv1:            ppv1Service,
+		PPv2:            ppv2Service,
 		Rankings:        rankings.NewRankingsService(redisClient),
-		PPv1:            performance.NewPPv1Service(repos.Scores, repos.Beatmaps),
-		PPv2:            performance.NewPPv2Service(beatmapResources), // TODO: set caching layer
 		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),

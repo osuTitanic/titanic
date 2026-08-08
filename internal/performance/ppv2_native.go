@@ -402,7 +402,7 @@ func nativeBeatmapMode(data []byte) constants.Mode {
 
 func init() {
 	// Register structs in gob for cache layer
-	gob.Register(&osunative.PerformanceAttributes{})
+	gob.Register(&osunative.DifficultyAttributes{})
 	gob.Register(&osunative.OsuDifficultyAttributes{})
 	gob.Register(&osunative.TaikoDifficultyAttributes{})
 	gob.Register(&osunative.CatchDifficultyAttributes{})
