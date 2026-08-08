@@ -49,6 +49,7 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	if score.Touchscreen {
 		adjustedMods |= constants.TouchDevice
 	}
+	adjustedMods = normalizeNativeMods(adjustedMods, score.Mode)
 
 	beatmap, _, err := service.LoadBeatmap(score.BeatmapId)
 	if err != nil {
@@ -111,6 +112,7 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 }
 
 func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
+	adjustedMods := normalizeNativeMods(mods, mode)
 	beatmap, beatmapMode, err := service.LoadBeatmap(beatmapId)
 	if err != nil {
 		return nil, err
@@ -123,7 +125,7 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	}
 	defer ruleset.Close()
 
-	nativeMods, err := newNativeMods(mods)
+	nativeMods, err := newNativeMods(adjustedMods)
 	if err != nil {
 		return nil, fmt.Errorf("create mods for beatmap %d: %w", beatmapId, err)
 	}
@@ -133,7 +135,7 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	attributes, err := service.FromCacheOrCompute(PPv2CacheKey{
 		BeatmapId: beatmapId,
 		Mode:      mode,
-		Mods:      mods,
+		Mods:      adjustedMods,
 	}, func() (any, error) {
 		calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
 		if err != nil {
@@ -156,6 +158,19 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 		return nil, fmt.Errorf("calculate difficulty for beatmap %d: %w", beatmapId, err)
 	}
 	return result, nil
+}
+
+func normalizeNativeMods(mods constants.Mods, mode constants.Mode) constants.Mods {
+	if mods.Has(constants.Nightcore) && !mods.Has(constants.DoubleTime) {
+		mods |= constants.DoubleTime
+	}
+	if mods.Has(constants.Perfect) && !mods.Has(constants.SuddenDeath) {
+		mods |= constants.SuddenDeath
+	}
+	if mode == constants.ModeMania && mods.Has(constants.Hidden) && !mods.Has(constants.FadeIn) {
+		mods |= constants.FadeIn
+	}
+	return mods
 }
 
 func (service *PPv2ServiceNative) FromCacheOrCompute(key PPv2CacheKey, calculator func() (any, error)) (any, error) {
