@@ -77,7 +77,15 @@ func ParseTitle(text string) string {
 	if len(lines) == 0 {
 		return ""
 	}
-	return strings.TrimSpace(strings.TrimLeft(lines[0], "#"))
+
+	// Find the first line with a title ('# <title>')
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "#") {
+			return strings.TrimSpace(strings.TrimLeft(line, "#"))
+		}
+	}
+	return "Untitled"
 }
 
 // ExtractOutlinks finds all wiki-style links in the given
