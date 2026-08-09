@@ -67,7 +67,7 @@ func RecalculatePPv2(app *state.State, logger *slog.Logger, options PPv2Recalcul
 		// Next batch -> fetch scores from the database in batches
 		func(offset, limit int) ([]*schemas.Score, error) {
 			return app.Repositories.Scores.Many(
-				criteria, "pp ASC",
+				criteria, "id ASC",
 				offset, limit,
 			)
 		},
