@@ -8,7 +8,6 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
-	"github.com/osuTitanic/titanic/services/jobs/internal/workers"
 )
 
 type PPv2RecalculationOptions struct {
@@ -148,10 +147,13 @@ func recalculatePPv2Batch(
 			break
 		}
 
-		workerCount := workers.TaskWorkerCount(app, len(scores), options.Workers)
+		// workerCount := workers.TaskWorkerCount(app, len(scores), options.Workers)
 		batchStarted := time.Now()
 
-		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
+		// Concurrent recalculations are broken right now, lets see if sequential ones work...
+
+		// if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
+		for _, score := range scores {
 			pp, err := app.PPv2.CalculatePerformance(score)
 			if err != nil {
 				logger.Error(
@@ -160,7 +162,8 @@ func recalculatePPv2Batch(
 					"beatmap_id", score.BeatmapId,
 					"error", err,
 				)
-				return nil
+				// return nil
+				continue
 			}
 
 			score.PP = pp
@@ -171,7 +174,8 @@ func recalculatePPv2Batch(
 					"beatmap_id", score.BeatmapId,
 					"error", err,
 				)
-				return nil
+				// return nil
+				continue
 			}
 
 			logger.Debug(
@@ -180,10 +184,11 @@ func recalculatePPv2Batch(
 				"beatmap_id", score.BeatmapId,
 				"pp", pp,
 			)
-			return nil
-		}); err != nil {
-			return fmt.Errorf("failed to recalculate ppv2: %w", err)
+			// return nil
 		}
+		// }); err != nil {
+		// 	return fmt.Errorf("failed to recalculate ppv2: %w", err)
+		// }
 
 		batchDuration := time.Since(batchStarted)
 
