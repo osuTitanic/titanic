@@ -53,6 +53,40 @@ func (r *ScoreRepository) ManyById(ids []int64, preload ...string) ([]*schemas.S
 	return scores, err
 }
 
+func (r *ScoreRepository) Many(critera map[string]any, order string, offset, limit int, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	query := Preloaded(r.db, preload)
+
+	for key, value := range critera {
+		query = query.Where(key, value)
+	}
+	if order != "" {
+		query = query.Order(order)
+	}
+
+	if offset >= 0 {
+		query = query.Offset(offset)
+	}
+	if limit >= 0 {
+		query = query.Limit(limit)
+	}
+	err := query.Find(&scores).Error
+	return scores, err
+}
+
+func (r *ScoreRepository) Count(critera map[string]any) (int64, error) {
+	var count int64
+	query := r.db.Model(&schemas.Score{})
+
+	for key, value := range critera {
+		query = query.Where(key, value)
+	}
+	err := query.Count(&count).Error
+	return count, err
+}
+
+// probably a bit weird to have Count and GetCount but who cares lol
+
 func (r *ScoreRepository) GetCount() (int64, error) {
 	var count int64
 	err := r.db.Model(&schemas.Score{}).Count(&count).Error

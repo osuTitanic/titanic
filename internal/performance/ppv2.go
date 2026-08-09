@@ -38,6 +38,9 @@ func CalculateWeightedPPv2(scores []*schemas.Score) float64 {
 		if score == nil {
 			continue
 		}
+		if !isFinite(score.PP) {
+			continue
+		}
 
 		weightedPP += score.PP * math.Pow(0.95, float64(scoreCount))
 		scoreCount++
@@ -59,6 +62,9 @@ func CalculateWeightedAccuracy(scores []*schemas.Score) float64 {
 		if score == nil {
 			continue
 		}
+		if !isFinite(score.Acc) {
+			continue
+		}
 
 		weightedAccuracy += score.Acc * math.Pow(0.95, float64(scoreCount))
 		scoreCount++
@@ -69,4 +75,8 @@ func CalculateWeightedAccuracy(scores []*schemas.Score) float64 {
 
 	weightTotal := 20 * (1 - math.Pow(0.95, float64(scoreCount)))
 	return weightedAccuracy / weightTotal
+}
+
+func isFinite(value float64) bool {
+	return !math.IsNaN(value) && !math.IsInf(value, 0)
 }
