@@ -3,7 +3,7 @@ module github.com/osuTitanic/titanic
 go 1.26
 
 require (
-	github.com/7mochi/osu-native-go v0.0.0-20260808173438-4e7559bcbc41
+	github.com/7mochi/osu-native-go v0.0.0-20260810174832-58149246cddd
 	github.com/CloudyKit/jet/v6 v6.3.2
 	github.com/Lekuruu/bbgo v0.0.0-20260715201745-75b8f719535e
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
