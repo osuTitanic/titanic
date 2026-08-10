@@ -3,8 +3,6 @@ package workers
 import (
 	"context"
 	"sync"
-
-	"github.com/osuTitanic/titanic/internal/state"
 )
 
 // RunWorkerPool processes items with up to a specified amount of concurrent workers
@@ -73,16 +71,12 @@ func RunWorkerPool[T any](items []T, workerCount int, work func(T) error) error 
 	}
 }
 
-// TaskWorkerCount returns a bounded worker count for a task based on app configuration & item count
-func TaskWorkerCount(app *state.State, itemCount int, fallback int) int {
+// TaskWorkerCount returns a bounded worker count for a task based on item count
+func TaskWorkerCount(itemCount int, target int) int {
 	if itemCount <= 0 {
 		return 0
 	}
-
-	workerCount := fallback
-	if app != nil && app.Config.PostgresPoolSize > 0 {
-		workerCount = app.Config.PostgresPoolSize
-	}
+	workerCount := target
 
 	if workerCount < 1 {
 		return 1

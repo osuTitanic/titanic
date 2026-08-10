@@ -93,7 +93,7 @@ func indexRanksForPlayers(app *state.State, logger *slog.Logger, players []*sche
 
 func rankIndexWorkerCount(app *state.State, playerCount int, requestedWorkers int) int {
 	if requestedWorkers > 0 {
-		return workers.TaskWorkerCount(nil, playerCount, requestedWorkers)
+		return workers.TaskWorkerCount(playerCount, requestedWorkers)
 	}
-	return workers.TaskWorkerCount(app, playerCount, defaultRankIndexWorkers)
+	return workers.TaskWorkerCount(playerCount, defaultRankIndexWorkers)
 }

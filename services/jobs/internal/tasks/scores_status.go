@@ -52,7 +52,7 @@ func RecalculateScoreStatusAll(app *state.State, logger *slog.Logger) error {
 	}
 
 	logger.Info("Recalculating score status for all users", "users", len(userList))
-	workerCount := workers.TaskWorkerCount(app, len(userList), statusRecalculationWorkers)
+	workerCount := workers.TaskWorkerCount(len(userList), statusRecalculationWorkers)
 
 	return workers.RunWorkerPool(userList, workerCount, func(user *schemas.User) error {
 		err := RecalculateScoreStatusUser(app, logger, StatusRecalculationOptions{
@@ -102,7 +102,7 @@ func RecalculatePPStatusAll(app *state.State, logger *slog.Logger) error {
 	}
 
 	logger.Info("Recalculating pp status for all users", "users", len(userList))
-	workerCount := workers.TaskWorkerCount(app, len(userList), statusRecalculationWorkers)
+	workerCount := workers.TaskWorkerCount(len(userList), statusRecalculationWorkers)
 
 	return workers.RunWorkerPool(userList, workerCount, func(user *schemas.User) error {
 		err := RecalculatePPStatusUser(app, logger, StatusRecalculationOptions{

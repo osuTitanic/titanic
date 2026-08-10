@@ -148,7 +148,7 @@ func recalculatePPv2Batch(
 			break
 		}
 
-		workerCount := workers.TaskWorkerCount(app, len(scores), options.Workers)
+		workerCount := workers.TaskWorkerCount(len(scores), options.Workers)
 		batchStarted := time.Now()
 
 		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {

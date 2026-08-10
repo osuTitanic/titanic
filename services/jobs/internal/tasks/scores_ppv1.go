@@ -35,13 +35,13 @@ func UpdatePPv1(app *state.State, logger *slog.Logger) error {
 
 	logger.Info(
 		"Starting ppv1 update workers",
-		"workers", ppv1UpdateWorkerCount(app, len(userList)),
+		"workers", ppv1UpdateWorkerCount(len(userList)),
 	)
 	return updatePPv1ForUsers(app, logger, userList)
 }
 
 func updatePPv1ForUsers(app *state.State, logger *slog.Logger, users []*schemas.User) error {
-	workerCount := ppv1UpdateWorkerCount(app, len(users))
+	workerCount := ppv1UpdateWorkerCount(len(users))
 	return workers.RunWorkerPool(users, workerCount, func(user *schemas.User) error {
 		if err := updatePPv1ForUser(app, logger, user); err != nil {
 			logger.Error("Failed to update user", "id", user.Id, "error", err)
@@ -50,8 +50,8 @@ func updatePPv1ForUsers(app *state.State, logger *slog.Logger, users []*schemas.
 	})
 }
 
-func ppv1UpdateWorkerCount(app *state.State, userCount int) int {
-	return workers.TaskWorkerCount(app, userCount, ppv1UpdateWorkers)
+func ppv1UpdateWorkerCount(userCount int) int {
+	return workers.TaskWorkerCount(userCount, ppv1UpdateWorkers)
 }
 
 func updatePPv1ForUser(app *state.State, logger *slog.Logger, user *schemas.User) error {
