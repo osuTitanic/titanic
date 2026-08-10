@@ -38,6 +38,9 @@ func (service *PPv2ServiceNative) CalculatePerformance(score *schemas.Score) (fl
 	if score == nil {
 		return 0, nil
 	}
+	if score.Relaxing() {
+		return 0, nil
+	}
 	adjustedMods := score.Mods
 
 	// NoVideo has the same value as TouchDevice, so in return, pp systems
