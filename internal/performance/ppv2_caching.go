@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-const ppv2CacheExpiry = time.Hour * 24
+const ppv2CacheExpiry = time.Hour * 24 * 7
 
 type PPv2CacheLayer interface {
 	ToCache(key PPv2CacheKey, data any) bool
