@@ -127,6 +127,8 @@ func ForumTopicView(ctx *server.Context) {
 	canDeleteOwn := authenticated && ctx.HasPermission("forum.posts.delete")
 	canEditOthers := authenticated && ctx.HasPermission("forum.moderation.posts.edit")
 	canDeleteOthers := authenticated && ctx.HasPermission("forum.moderation.posts.delete")
+	canHideTopics := authenticated && ctx.HasPermission("forum.moderation.topics.hide")
+	canHidePosts := authenticated && ctx.HasPermission("forum.moderation.posts.hide")
 	canBypassTopicLock := authenticated && ctx.HasPermission("forum.moderation.topics.bypass_lock")
 	canBypassPostLock := authenticated && ctx.HasPermission("forum.moderation.posts.bypass_lock")
 
@@ -139,12 +141,15 @@ func ForumTopicView(ctx *server.Context) {
 	previews := make([]*templates.ForumPostPreview, 0, len(posts))
 	for _, post := range posts {
 		isOwn := authenticated && ctx.CurrentUser.Id == post.UserId
+		isInitial := post.Id == initialPost.Id
 
 		editable := !post.EditLocked || canBypassPostLock
-		canModify := showActions && !post.Deleted && editable
+		canQuote := !post.Deleted && showActions && canCreatePosts
+		canModify := !post.Deleted && showActions && editable
 
-		canDelete := (isOwn && canDeleteOwn) || (!isOwn && canDeleteOthers)
 		canEdit := (isOwn && canEditOwn) || (!isOwn && canEditOthers)
+		canDelete := (isOwn && canDeleteOwn) || (!isOwn && canDeleteOthers)
+		canHide := (isInitial && canHideTopics) || (!isInitial && canHidePosts)
 
 		preview := &templates.ForumPostPreview{
 			Post:         post,
@@ -152,8 +157,10 @@ func ForumTopicView(ctx *server.Context) {
 			AuthorTitle:  forumUserTitle(post.User, postCounts[post.UserId]),
 			PostCount:    postCounts[post.UserId],
 			CanDelete:    canModify && canDelete,
+			CanHide:      canHide,
 			CanEdit:      canModify && canEdit,
-			CanQuote:     showActions && canCreatePosts,
+			CanQuote:     canQuote,
+			IsInitial:    isInitial,
 			KudosuTotal:  kudosuTotals[post.Id],
 			LatestKudosu: latestKudosu[post.Id],
 		}
