@@ -76,6 +76,10 @@ type Config struct {
 	SmtpTls           bool   `env:"SMTP_TLS" envDefault:"true"`
 	SmtpSkipTlsVerify bool   `env:"SMTP_SKIP_TLS_VERIFY" envDefault:"false"`
 
+	// Location services
+	GeoLitePath string `env:"GEOLITE_PATH" envDefault:".data/GeoLite2-City.mmdb"`
+	GeoLiteUrl  string `env:"GEOLITE_URL" envDefault:"https://git.io/GeoLite2-City.mmdb"`
+
 	// Score server configuration
 	WebHost                    string `env:"WEB_HOST" envDefault:"localhost"`
 	WebPort                    int    `env:"WEB_PORT" envDefault:"80"`

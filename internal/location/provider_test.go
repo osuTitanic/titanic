@@ -1,63 +1,67 @@
 package location
 
 import (
-	"io"
-	"net/http"
-	"strings"
+	"errors"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/osuTitanic/titanic/internal/testkit"
 )
 
-// roundTripFunc implements the http.RoundTripper interface for testing
-type roundTripFunc func(*http.Request) (*http.Response, error)
+func TestProviderGeoLite(t *testing.T) {
+	databasePath := filepath.Join("..", "..", ".data", "GeoLite2-City.mmdb")
+	if _, err := os.Stat(databasePath); err != nil {
+		t.Skipf("GeoLite database is unavailable at %q: %v", databasePath, err)
+	}
 
-func (fn roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	// Call the function to handle the request & return the response
-	return fn(req)
-}
+	fakeWeb := &testingProvider{resolveErr: errors.New("web provider should not be used")}
+	geoLite := NewGeoLiteProvider(databasePath, "")
+	resolver := newProviderFromInterfaces(geoLite, fakeWeb)
 
-func TestProvider(t *testing.T) {
-	resolver := NewProvider()
+	t.Cleanup(func() {
+		if err := resolver.Close(); err != nil {
+			t.Errorf("failed to close provider: %v", err)
+		}
+	})
 	if err := resolver.Setup(); err != nil {
 		t.Fatalf("failed to setup provider: %v", err)
 	}
-	requests := 0
+	if resolver.geoLite == nil {
+		t.Fatal("expected GeoLite database to be loaded")
+	}
 
-	// Create a simulated HTTP client that returns a predefined response for the location lookup.
-	// We don't want to make calls to the actual ip-api.com for unit tests.
-	simulatedRequest := roundTripFunc(func(req *http.Request) (*http.Response, error) {
-		requests++
-		if req.URL.String() != "http://ip-api.com/json/1.1.1.1" {
-			t.Fatalf("unexpected location lookup url: %s", req.URL.String())
-		}
+	result, err := resolver.Resolve("81.2.69.160")
+	if err != nil {
+		t.Fatalf("failed to resolve IP with GeoLite: %v", err)
+	}
+	if result.IP != "81.2.69.160" {
+		t.Fatalf("IP = %q, want %q", result.IP, "81.2.69.160")
+	}
+	if result.CountryCode != "GB" {
+		t.Fatalf("CountryCode = %q, want %q", result.CountryCode, "GB")
+	}
+	if fakeWeb.resolveCalls != 0 {
+		t.Fatalf("web lookups = %d, want 0", fakeWeb.resolveCalls)
+	}
+}
 
-		body := `{
-			"status": "success",
-			"country": "Australia",
-			"countryCode": "AU",
-			"city": "Brisbane",
-			"lat": -27.4698,
-			"lon": 153.0251,
-			"timezone": "Australia/Brisbane",
-			"query": "1.1.1.1"
-		}`
-		return &http.Response{
-			StatusCode: http.StatusOK,
-			Header:     make(http.Header),
-			Body:       io.NopCloser(strings.NewReader(body)),
-		}, nil
-	})
+func TestProviderWebFallback(t *testing.T) {
+	if !testkit.IsInternetAvailable() {
+		t.Skip("internet connection is unavailable")
+	}
 
-	// Override the HTTP client in the provider with our simulated client
-	resolver.(*provider).web.client = &http.Client{
-		Transport: simulatedRequest,
+	geoLite := &testingProvider{resolveErr: errors.New("address not found")}
+	web := NewWebProvider()
+	resolver := newProviderFromInterfaces(geoLite, web)
+
+	if err := resolver.Setup(); err != nil {
+		t.Fatalf("failed to setup provider: %v", err)
 	}
 
 	result, err := resolver.Resolve("1.1.1.1")
 	if err != nil {
-		t.Fatalf("failed to resolve IP: %v", err)
-	}
-	if result == nil {
-		t.Fatal("expected a location result, got nil")
+		t.Fatalf("failed to resolve IP with web fallback: %v", err)
 	}
 	if result.IP != "1.1.1.1" {
 		t.Fatalf("IP = %q, want %q", result.IP, "1.1.1.1")
@@ -65,8 +69,8 @@ func TestProvider(t *testing.T) {
 	if result.CountryCode != "AU" {
 		t.Fatalf("CountryCode = %q, want %q", result.CountryCode, "AU")
 	}
-	if result.City != "Brisbane" {
-		t.Fatalf("City = %q, want %q", result.City, "Brisbane")
+	if result.CountryName != "Australia" {
+		t.Fatalf("CountryName = %q, want %q", result.CountryName, "Australia")
 	}
 
 	cached, err := resolver.Resolve("1.1.1.1")
@@ -74,9 +78,72 @@ func TestProvider(t *testing.T) {
 		t.Fatalf("failed to resolve cached IP: %v", err)
 	}
 	if cached != result {
-		t.Fatal("expected cached location result")
+		t.Fatal("expected cached web result")
 	}
-	if requests != 1 {
-		t.Fatalf("location lookup requests = %d, want 1", requests)
+	if geoLite.resolveCalls != 1 {
+		t.Fatalf("GeoLite lookups = %d, want 1", geoLite.resolveCalls)
 	}
+}
+
+func TestProviderCachesResult(t *testing.T) {
+	want := &Location{
+		IP:          "1.1.1.1",
+		CountryCode: "AU",
+		CountryName: "Australia",
+		City:        "Brisbane",
+	}
+	fakeGeoLite := &testingProvider{result: want}
+	fakeWeb := &testingProvider{resolveErr: errors.New("web provider should not be used")}
+	resolver := newProviderFromInterfaces(fakeGeoLite, fakeWeb)
+
+	if err := resolver.Setup(); err != nil {
+		t.Fatalf("failed to setup provider: %v", err)
+	}
+
+	result, err := resolver.Resolve("1.1.1.1")
+	if err != nil {
+		t.Fatalf("failed to resolve IP with GeoLite: %v", err)
+	}
+	if result != want {
+		t.Fatal("expected result from GeoLite provider")
+	}
+
+	cached, err := resolver.Resolve("1.1.1.1")
+	if err != nil {
+		t.Fatalf("failed to resolve cached IP: %v", err)
+	}
+	if cached != result {
+		t.Fatal("expected cached GeoLite result")
+	}
+	if fakeGeoLite.resolveCalls != 1 {
+		t.Fatalf("GeoLite lookups = %d, want 1", fakeGeoLite.resolveCalls)
+	}
+	if fakeWeb.resolveCalls != 0 {
+		t.Fatalf("web lookups = %d, want 0", fakeWeb.resolveCalls)
+	}
+}
+
+type testingProvider struct {
+	result       *Location
+	setupErr     error
+	resolveErr   error
+	closeErr     error
+	setupCalls   int
+	resolveCalls int
+	closeCalls   int
+}
+
+func (provider *testingProvider) Setup() error {
+	provider.setupCalls++
+	return provider.setupErr
+}
+
+func (provider *testingProvider) Resolve(string) (*Location, error) {
+	provider.resolveCalls++
+	return provider.result, provider.resolveErr
+}
+
+func (provider *testingProvider) Close() error {
+	provider.closeCalls++
+	return provider.closeErr
 }

@@ -38,6 +38,13 @@ func (p *WebProvider) Setup() error {
 	return nil
 }
 
+func (p *WebProvider) Close() error {
+	if p.client != nil {
+		p.client.CloseIdleConnections()
+	}
+	return nil
+}
+
 func (p *WebProvider) Resolve(ip string) (*Location, error) {
 	p.logger.Debug("Resolving location", "ip", ip)
 

@@ -1,16 +1,17 @@
 # Location
 
-This module provides geolocation lookups, resolving an IP address into a `Location` struct. The default `Provider` resolves geolocation data through a rest api backed by [ip-api.com](https://ip-api.com).
+This module provides geolocation lookups, resolving an IP address into a `Location` struct. The default `Provider` resolves geolocation data from a local GeoLite database and falls back to the REST API backed by [ip-api.com](https://ip-api.com).
 
 ## Usage
 
 Create the default provider, call `Setup()`, then `Resolve` an address.
 
 ```go
-provider := location.NewProvider()
+provider := location.NewProvider(cfg.GeoLitePath, cfg.GeoLiteUrl)
 if err := provider.Setup(); err != nil {
 	return err
 }
+defer provider.Close()
 // You may also use `state.Location` if you have the app set up
 
 loc, err := provider.Resolve("1.1.1.1")
