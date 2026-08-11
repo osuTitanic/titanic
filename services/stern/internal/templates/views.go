@@ -438,7 +438,9 @@ type ForumPostPreview struct {
 	PostCount   int
 	CanEdit     bool
 	CanDelete   bool
+	CanHide     bool
 	CanQuote    bool
+	IsInitial   bool
 
 	BeatmapsetId    int
 	ShowKudosuBox   bool

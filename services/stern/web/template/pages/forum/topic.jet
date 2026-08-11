@@ -99,11 +99,25 @@ function unlinkTopicFromBeatmap() {
 {{ else }}
     {{ range index, post := .Posts }}
     <div class="post-spacing"></div>
-    {{ if .HasBeatmapset() && index == 0 }}
-    <div class="beatmapset-link-info">
-        This topic is linked to a beatmapset.
-        Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
-    </div>
+    {{ if index == 0 }} {* First post of the topic *}
+        {{ if .Topic.Hidden }}
+        <div class="post-info">
+            This topic is <b>hidden</b>.
+            Regular users are not able to view it.
+        </div>
+        {{ else if .HasBeatmapset() }}
+        <div class="post-info">
+            This topic is linked to a beatmapset.
+            Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
+        </div>
+        {{ end }}
+    {{ else }}
+        {{ if post.Post.Hidden }}
+        <div class="post-info">
+            This post is <b>hidden</b>.
+            Regular users are not able to view it.
+        </div>
+        {{ end }}
     {{ end }}
     {{ yield forumTopicPost() post }}
     {{ end }}
@@ -177,8 +191,11 @@ function unlinkTopicFromBeatmap() {
                     edited {{ .Post.EditCount }} time{{ .Post.EditCount != 1 ? "s" : "" }} in total.
                 </div>
                 {{ end }}
-                {{ if .CanDelete || .CanEdit || .CanQuote }}
+                {{ if .CanDelete || .CanHide || .CanEdit || .CanQuote }}
                 <div class="post-buttons hover-button">
+                    {{ if .CanHide }}
+                    <a class="button-grey" onclick="hidePost({{ .Post.ForumId }}, {{ .Post.TopicId }}, {{ .Post.Id }}, {{ .IsInitial }})">Hide</a>
+                    {{ end }}
                     {{ if .CanDelete }}
                     <a class="button-red" onclick="deletePost({{ .Post.Id }})">Delete</a>
                     {{ end }}

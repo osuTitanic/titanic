@@ -69,6 +69,38 @@ function deletePost(postId) {
     return false;
 }
 
+function hidePost(forumId, topicId, postId, isInitialPost) {
+    var target = isInitialPost ? "topic" : "post";
+    if (!confirm("Are you sure you want to hide this " + target + "?")) return false;
+
+    var url = "/forum/" + forumId + "/topics/" + topicId;
+    if (isInitialPost) {
+        // Hide the entire forum topic if first post was selected
+        url += "/hide";
+    } else {
+        // Hide only this post
+        url += "/posts/" + postId + "/hide";
+    }
+
+    performApiRequest(
+        "PATCH",
+        url,
+        { hidden: true },
+        function (xhr) {
+            if (isInitialPost) {
+                // Redirect back to a page we can view
+                window.location.href = "/forum/" + forumId;
+                return;
+            }
+            window.location.reload();
+        },
+        function (xhr) {
+            apiErrorAlert(xhr, "Failed to hide " + target + ".");
+        }
+    );
+    return false;
+}
+
 function giveKudos(postId, beatmapsetId) {
     performApiRequest(
         "POST",
