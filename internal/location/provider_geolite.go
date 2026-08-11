@@ -106,6 +106,9 @@ func (provider *GeoLiteProvider) Resolve(ipString string) (*Location, error) {
 		location.SetCountryCode(record.Country.ISOCode)
 	}
 
+	if location.CountryCode == "" || location.CountryCode == "XX" {
+		return location, errors.New("missing country information")
+	}
 	return location, nil
 }
 
