@@ -111,6 +111,13 @@ function unlinkTopicFromBeatmap() {
             Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
         </div>
         {{ end }}
+    {{ else }}
+        {{ if post.Post.Hidden }}
+        <div class="post-info">
+            This post is <b>hidden</b>.
+            Regular users are not able to view it.
+        </div>
+        {{ end }}
     {{ end }}
     {{ yield forumTopicPost() post }}
     {{ end }}
