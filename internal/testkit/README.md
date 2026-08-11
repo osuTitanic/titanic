@@ -38,3 +38,13 @@ if err := client.Set(context.Background(), "key", "value", 0).Err(); err != nil 
 	t.Fatal(err)
 }
 ```
+
+## Internet
+
+Use `IsInternetAvailable` to skip a test when the internet connection is unavailable.
+
+```go
+if !testkit.IsInternetAvailable() {
+	t.Skip("internet connection is unavailable")
+}
+```
