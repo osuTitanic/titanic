@@ -99,11 +99,18 @@ function unlinkTopicFromBeatmap() {
 {{ else }}
     {{ range index, post := .Posts }}
     <div class="post-spacing"></div>
-    {{ if .HasBeatmapset() && index == 0 }}
-    <div class="beatmapset-link-info">
-        This topic is linked to a beatmapset.
-        Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
-    </div>
+    {{ if index == 0 }} {* First post of the topic *}
+        {{ if .Topic.Hidden }}
+        <div class="post-info">
+            This topic is <b>hidden</b>.
+            Regular users are not able to view it.
+        </div>
+        {{ else if .HasBeatmapset() }}
+        <div class="post-info">
+            This topic is linked to a beatmapset.
+            Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
+        </div>
+        {{ end }}
     {{ end }}
     {{ yield forumTopicPost() post }}
     {{ end }}
