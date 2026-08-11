@@ -31,15 +31,15 @@ func TestProviderGeoLite(t *testing.T) {
 		t.Fatal("expected GeoLite database to be loaded")
 	}
 
-	result, err := resolver.Resolve("1.1.1.1")
+	result, err := resolver.Resolve("81.2.69.160")
 	if err != nil {
 		t.Fatalf("failed to resolve IP with GeoLite: %v", err)
 	}
-	if result.IP != "1.1.1.1" {
-		t.Fatalf("IP = %q, want %q", result.IP, "1.1.1.1")
+	if result.IP != "81.2.69.160" {
+		t.Fatalf("IP = %q, want %q", result.IP, "81.2.69.160")
 	}
-	if result.CountryCode == "" || result.CountryCode == "XX" {
-		t.Fatalf("expected resolved country code, got %q", result.CountryCode)
+	if result.CountryCode != "GB" {
+		t.Fatalf("CountryCode = %q, want %q", result.CountryCode, "GB")
 	}
 	if fakeWeb.resolveCalls != 0 {
 		t.Fatalf("web lookups = %d, want 0", fakeWeb.resolveCalls)
