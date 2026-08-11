@@ -2,6 +2,7 @@ package state
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -96,7 +97,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		return nil, fmt.Errorf("state: failed to setup email service: %w", err)
 	}
 
-	geolocation := location.NewProvider()
+	geolocation := location.NewProvider(cfg.GeoLitePath, cfg.GeoLiteUrl)
 	if err := geolocation.Setup(); err != nil {
 		database.CloseSession(db)
 		return nil, fmt.Errorf("state: failed to setup location service: %w", err)
@@ -111,6 +112,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Password: redisPassword,
 	})
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
+		geolocation.Close()
 		database.CloseSession(db)
 		return nil, fmt.Errorf("state: failed to connect to Redis: %w", err)
 	}
@@ -123,6 +125,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		repos.Beatmapsets,
 	)
 	if err := beatmapResources.Setup(); err != nil {
+		geolocation.Close()
 		database.CloseSession(db)
 		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)
 	}
@@ -175,8 +178,22 @@ func (state *State) DatabaseTransaction(fn func(repositories *Repositories) erro
 
 // Close gracefully closes the state
 func (state *State) Close() error {
-	if state == nil || state.Database == nil {
+	if state == nil {
 		return nil
 	}
-	return database.CloseSession(state.Database)
+	var locationErr error
+	var databaseErr error
+
+	if state.Location != nil {
+		if err := state.Location.Close(); err != nil {
+			locationErr = fmt.Errorf("state: failed to close location service: %w", err)
+		}
+	}
+	if state.Database != nil {
+		if err := database.CloseSession(state.Database); err != nil {
+			databaseErr = fmt.Errorf("state: failed to close database: %w", err)
+		}
+	}
+
+	return errors.Join(locationErr, databaseErr)
 }

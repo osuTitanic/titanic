@@ -13,6 +13,10 @@ func (p *DummyProvider) Setup() error {
 	return nil
 }
 
+func (p *DummyProvider) Close() error {
+	return nil
+}
+
 func (p *DummyProvider) Resolve(ip string) (*Location, error) {
 	copy := *p.Result
 	location := &copy
