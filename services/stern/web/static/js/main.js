@@ -719,6 +719,8 @@ function applyCsrfToForms() {
 }
 
 function renderTimeagoElements() {
+    jQuery.timeago.settings.allowFuture = true;
+
     var times = $(".timeago");
 
     for (var i = 0; i < times.length; i++) {
