@@ -97,3 +97,17 @@ func (r *RelationshipRepository) FetchTargetUsers(userId int, status constants.R
 		Find(&users).Error
 	return users, err
 }
+
+func (r *RelationshipRepository) IsBlockedBetween(firstUserId int, secondUserId int) (bool, error) {
+	var count int64
+	err := r.db.Model(&schemas.Relationship{}).
+		Where("status = ?", constants.RelationshipStatusFoe).
+		Where(
+			// Either user has blocked the other
+			"(user_id = ? AND target_id = ?) OR (user_id = ? AND target_id = ?)",
+			firstUserId, secondUserId, secondUserId, firstUserId,
+		).
+		Count(&count).
+		Error
+	return count > 0, err
+}
