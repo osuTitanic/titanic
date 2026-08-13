@@ -269,6 +269,7 @@ func renderProfile(options Options) bbgo.RenderFunc {
 func renderMention(options Options) bbgo.RenderFunc {
 	return func(ctx bbgo.RenderContext) string {
 		username := strings.TrimSpace(ctx.Value)
+		username = strings.TrimPrefix(username, "@")
 		usernameSafe := sanitizeInput(username)
 		if username == "" {
 			return `<a href="#">@Unknown User</a>`
