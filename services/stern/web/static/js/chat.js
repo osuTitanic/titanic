@@ -1093,7 +1093,8 @@ function createMessageElement(sender, text, highlight, time) {
         messageElement.classList.add("highlighted");
     }
 
-    var timestamp = time ? formatMessageTime(time) : formatMessageTime(new Date());
+    var messageTime = time ? (time instanceof Date ? time : new Date(time)) : new Date();
+    var timestamp = formatMessageTime(messageTime);
     var senderName = sender.nick || sender.name || "Unknown";
     var userId = sender.id;
 
@@ -1107,6 +1108,8 @@ function createMessageElement(sender, text, highlight, time) {
 
     var timestampSpan = document.createElement("span");
     timestampSpan.className = "message-time";
+    timestampSpan.setAttribute("datetime", formatMessageTimeDatetime(messageTime));
+    timestampSpan.setAttribute("title", formatMessageTimeTitle(messageTime));
     timestampSpan.textContent = timestamp;
 
     var senderLink = document.createElement("a");
@@ -1276,10 +1279,26 @@ function displayHistoricalDirectMessage(msg, user) {
 }
 
 function formatMessageTime(time) {
+    // 23:51 format (24-hour)
     var date = time instanceof Date ? time : new Date(time);
     var hours = date.getHours().toString().padStart(2, "0");
     var minutes = date.getMinutes().toString().padStart(2, "0");
     return hours + ":" + minutes;
+}
+
+function formatMessageTimeDatetime(time) {
+    //2025-04-14T21:39:12Z format
+    var date = time instanceof Date ? time : new Date(time);
+    return date.toISOString().split(".")[0] + "Z";
+}
+
+function formatMessageTimeTitle(time) {
+    //2025-04-14 21:39:12 UTC format
+    var date = time instanceof Date ? time : new Date(time);
+    var parts = date.toISOString().split("T");
+    var time_without_ms = parts[1].split(".")[0];
+
+    return parts[0] + " " + time_without_ms + " UTC";
 }
 
 function clearChatLog() {
