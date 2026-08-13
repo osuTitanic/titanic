@@ -340,6 +340,10 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	}
 	post.ForumId = topic.ForumId
 
+	// Users can mention other users with the [mention] tag,
+	// sending out a notification to them
+	notifyForumMentions(ctx, topic, post, "")
+
 	// The reply was posted, so any saved drafts for this topic are now obsolete
 	clearForumDrafts(ctx, topic.Id)
 
@@ -418,6 +422,7 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 		PostLocked(ctx)
 		return
 	}
+	previousContent := post.Content
 
 	isOwnPost := post.UserId == ctx.CurrentUser.Id
 	if !isOwnPost && !ctx.HasPermission("forum.moderation.posts.edit") {
@@ -490,6 +495,10 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	if !moveForumTopic(ctx, topic, targetForum) {
 		return
 	}
+
+	// Notify any new users that got mentioned
+	post.Content = content
+	notifyForumMentions(ctx, topic, post, previousContent)
 
 	ctx.Logger.Info("Edited a forum post", "user", ctx.CurrentUser.Id, "post", post.Id)
 	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d/p/%d", topic.ForumId, topic.Id, post.Id))

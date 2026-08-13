@@ -345,6 +345,10 @@ func ForumCreateTopicAction(ctx *server.Context) {
 		return
 	}
 
+	// Users can mention other users with the [mention] tag,
+	// sending out a notification to them
+	notifyForumMentions(ctx, topic, post, "")
+
 	shouldNotify := ctx.Request.FormValue("notify") != ""
 	updateForumSubscription(ctx, topic.Id, shouldNotify)
 

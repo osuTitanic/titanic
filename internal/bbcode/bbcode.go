@@ -29,6 +29,7 @@ type Options struct {
 	ImageProxyBaseUrl  string
 	ImageProxySecret   string
 	ValidImageServices []string
+	ResolveUserId      func(username string) (int, error)
 }
 
 // Renderer wraps bbgo with the tag set used by the application
@@ -64,6 +65,27 @@ func ConfigureDefault(options Options) {
 // Strip removes recognized bbcode tags using the default renderer
 func Strip(input string, stripNewlines bool) string {
 	return defaultRenderer.Strip(input, stripNewlines)
+}
+
+// MentionedUsernames returns the unique usernames in rendered mention tags
+func MentionedUsernames(input string) []string {
+	usernames := make([]string, 0)
+	seen := make(map[string]struct{}) // one day we'll have sets in go...
+
+	// Use renderer to collect usernames, and ignore the rest
+	// TODO: Use bbcode renderer that only registers the mention tag
+	renderer := New(Options{
+		ResolveUserId: func(username string) (int, error) {
+			key := strings.ToLower(username)
+			if _, ok := seen[key]; !ok {
+				seen[key] = struct{}{}
+				usernames = append(usernames, username)
+			}
+			return 1, nil
+		},
+	})
+	renderer.RenderHtml(input)
+	return usernames
 }
 
 // RenderHtml renders input as html
@@ -109,6 +131,7 @@ func registerLinkTags(parser *bbgo.BBGO, options Options) {
 	parser.AddFormatter("google", renderGoogle, rawOptions())
 	parser.AddFormatter("email", renderEmail, rawOptions())
 	parser.AddFormatter("profile", renderProfile(options), embeddedOptions())
+	parser.AddFormatter("mention", renderMention(options), rawOptions())
 }
 
 func registerMediaTags(parser *bbgo.BBGO, options Options) {
@@ -261,6 +284,27 @@ func renderProfile(options Options) bbgo.RenderFunc {
 			profile = ctx.Value
 		}
 		return fmt.Sprintf(`<a href="%s/u/%s">%s</a>`, strings.TrimRight(options.BaseUrl, "/"), sanitizeInput(profile), ctx.Value)
+	}
+}
+
+func renderMention(options Options) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		username := strings.TrimSpace(ctx.Value)
+		username = strings.TrimPrefix(username, "@")
+		usernameSafe := sanitizeInput(username)
+		if username == "" {
+			return `<a href="#">@Unknown User</a>`
+		}
+		if options.ResolveUserId == nil {
+			// Resolver is not available
+			return fmt.Sprintf(`<a href="#">@%s</a>`, usernameSafe)
+		}
+
+		userId, err := options.ResolveUserId(username)
+		if err != nil || userId <= 0 {
+			return `<a href="#">@Unknown User</a>`
+		}
+		return fmt.Sprintf(`<a href="/u/%d">@%s</a>`, userId, usernameSafe)
 	}
 }
 

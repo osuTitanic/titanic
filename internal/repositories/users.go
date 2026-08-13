@@ -213,6 +213,58 @@ func (r *UserRepository) GetUserIdCaseInsensitive(name string) (int, error) {
 	return userId, err
 }
 
+func (r *UserRepository) GetUserIds(names []string) (map[string]int, error) {
+	if len(names) == 0 {
+		return map[string]int{}, nil
+	}
+
+	var results []struct {
+		Name string
+		Id   int
+	}
+	err := r.db.Model(&schemas.User{}).
+		Where("name IN ?", names).
+		Select("name, id").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	userIds := make(map[string]int)
+	for _, result := range results {
+		userIds[result.Name] = result.Id
+	}
+	return userIds, nil
+}
+
+func (r *UserRepository) GetUserIdsCaseInsensitive(names []string) (map[string]int, error) {
+	if len(names) == 0 {
+		return map[string]int{}, nil
+	}
+	lowerNames := make([]string, len(names))
+	for i, name := range names {
+		lowerNames[i] = strings.ToLower(name)
+	}
+
+	var results []struct {
+		Name string
+		Id   int
+	}
+	err := r.db.Model(&schemas.User{}).
+		Where("LOWER(name) IN ?", lowerNames).
+		Select("name, id").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	userIds := make(map[string]int)
+	for _, result := range results {
+		userIds[result.Name] = result.Id
+	}
+	return userIds, nil
+}
+
 func (r *UserRepository) GetAvatarChecksum(id int) (string, error) {
 	var checksum *string
 	err := r.db.Model(&schemas.User{}).
