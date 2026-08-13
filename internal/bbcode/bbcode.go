@@ -67,6 +67,27 @@ func Strip(input string, stripNewlines bool) string {
 	return defaultRenderer.Strip(input, stripNewlines)
 }
 
+// MentionedUsernames returns the unique usernames in rendered mention tags
+func MentionedUsernames(input string) []string {
+	usernames := make([]string, 0)
+	seen := make(map[string]struct{}) // one day we'll have sets in go...
+
+	// Use renderer to collect usernames, and ignore the rest
+	// TODO: Use bbcode renderer that only registers the mention tag
+	renderer := New(Options{
+		ResolveUserId: func(username string) (int, error) {
+			key := strings.ToLower(username)
+			if _, ok := seen[key]; !ok {
+				seen[key] = struct{}{}
+				usernames = append(usernames, username)
+			}
+			return 1, nil
+		},
+	})
+	renderer.RenderHtml(input)
+	return usernames
+}
+
 // RenderHtml renders input as html
 func (r *Renderer) RenderHtml(input string) string {
 	return renderTimecodes(r.parser.Parse(input))
