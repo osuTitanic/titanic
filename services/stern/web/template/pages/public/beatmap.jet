@@ -20,7 +20,7 @@
         {{ yield scoreboard() }}
     {{ end }}
 </div>
-{* TODO: Implement a first-party comments section, or just embed disqus once again *}
+{{ yield beatmapComments() }}
 {{ yield beatmapScripts() }}
 {{ end }}
 
@@ -515,6 +515,34 @@
     {{ end }}
     </tbody>
 </table>
+{{ end }}
+{{ end }}
+
+{{ block beatmapComments() }}
+{*
+    TODO: Add Disqus-like frontend, but 1st party instead of relying on Disqus itself.
+          Also archive all of the disqus comments, they are not going to be around forever.
+*}
+{{ if .Beatmapset.Server == 0 }}
+<div id="disqus_thread" style="margin-top: 10px; padding-left: 7px; padding-right: 8px"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'osugame';
+    var disqus_identifier = 'beatmapset_{{ .Beatmapset.Id }}';
+    var disqus_title = "{{ .Beatmapset.Name() }}";
+    var disqus_url = 'https://osu.ppy.sh/s/{{ .Beatmapset.Id }}';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+
+    var disqus_config = function () {
+        this.page.remote_auth_s3 = '';
+        this.page.api_key = '';
+    }
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 {{ end }}
 {{ end }}
 
