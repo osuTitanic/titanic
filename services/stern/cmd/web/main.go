@@ -185,7 +185,7 @@ func main() {
 	}
 	defer app.Close()
 
-	engine, err := templates.NewEngine(app.Config)
+	engine, err := templates.NewEngine(app.Config, app.Users.GetUserIdCaseInsensitive)
 	if err != nil {
 		slog.Error("Failed to initialize templates", "error", err)
 		os.Exit(1)

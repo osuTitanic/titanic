@@ -29,6 +29,7 @@ type Options struct {
 	ImageProxyBaseUrl  string
 	ImageProxySecret   string
 	ValidImageServices []string
+	ResolveUserId      func(username string) (int, error)
 }
 
 // Renderer wraps bbgo with the tag set used by the application
@@ -109,6 +110,7 @@ func registerLinkTags(parser *bbgo.BBGO, options Options) {
 	parser.AddFormatter("google", renderGoogle, rawOptions())
 	parser.AddFormatter("email", renderEmail, rawOptions())
 	parser.AddFormatter("profile", renderProfile(options), embeddedOptions())
+	parser.AddFormatter("mention", renderMention(options), rawOptions())
 }
 
 func registerMediaTags(parser *bbgo.BBGO, options Options) {
@@ -261,6 +263,26 @@ func renderProfile(options Options) bbgo.RenderFunc {
 			profile = ctx.Value
 		}
 		return fmt.Sprintf(`<a href="%s/u/%s">%s</a>`, strings.TrimRight(options.BaseUrl, "/"), sanitizeInput(profile), ctx.Value)
+	}
+}
+
+func renderMention(options Options) bbgo.RenderFunc {
+	return func(ctx bbgo.RenderContext) string {
+		username := strings.TrimSpace(ctx.Value)
+		usernameSafe := sanitizeInput(username)
+		if username == "" {
+			return `<a href="#">@Unknown User</a>`
+		}
+		if options.ResolveUserId == nil {
+			// Resolver is not available
+			return fmt.Sprintf(`<a href="#">@%s</a>`, usernameSafe)
+		}
+
+		userId, err := options.ResolveUserId(username)
+		if err != nil || userId <= 0 {
+			return `<a href="#">@Unknown User</a>`
+		}
+		return fmt.Sprintf(`<a href="/u/%d">@%s</a>`, userId, usernameSafe)
 	}
 }
 

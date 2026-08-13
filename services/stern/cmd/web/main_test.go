@@ -241,7 +241,7 @@ func enableForumSearchVectors(t *testing.T, app *state.State) {
 func newTestRouter(t *testing.T, app *state.State) http.Handler {
 	t.Helper()
 
-	engine, err := templates.NewEngine(app.Config)
+	engine, err := templates.NewEngine(app.Config, app.Users.GetUserIdCaseInsensitive)
 	if err != nil {
 		t.Fatalf("failed to initialize templates: %v", err)
 	}

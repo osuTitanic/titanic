@@ -14,12 +14,13 @@ type Engine struct {
 	Set *jet.Set
 }
 
-func NewEngine(cfg *config.Config) (*Engine, error) {
+func NewEngine(cfg *config.Config, resolveUserId func(string) (int, error)) (*Engine, error) {
 	bbcode.ConfigureDefault(bbcode.Options{
 		BaseUrl:            cfg.OsuBaseUrl(),
 		ValidImageServices: cfg.ValidImageServices(),
 		ImageProxyBaseUrl:  cfg.ImageProxyBaseUrl,
 		ImageProxySecret:   cfg.FrontendSecretKey,
+		ResolveUserId:      resolveUserId,
 	})
 
 	set := jet.NewSet(
