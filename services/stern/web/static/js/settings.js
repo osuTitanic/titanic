@@ -12,6 +12,9 @@ function handleNotificationClick(event, linkElement) {
 
         // Redirect to the target URL after marking as read
         if (targetUrl) window.location.href = targetUrl;
+    }, function (xhr) {
+        // If the API request fails, still redirect to the target URL
+        if (targetUrl) window.location.href = targetUrl;
     });
 
     return false;
