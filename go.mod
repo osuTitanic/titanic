@@ -10,6 +10,7 @@ require (
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/calemy/rosu-pp-go v0.0.0-20260712072956-76a9c6b69f7c
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/joho/godotenv v1.5.1
 	github.com/minio/minio-go/v7 v7.2.1
@@ -37,7 +38,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.8.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -71,7 +72,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/oschwald/maxminddb-golang/v2 v2.5.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20260805114148-88456608a4f6 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/shirou/gopsutil/v4 v4.26.7 // indirect
