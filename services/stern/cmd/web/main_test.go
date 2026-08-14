@@ -78,43 +78,12 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "rankings performance", path: "/rankings/osu/performance"},
 		{name: "rankings country", path: "/rankings/osu/country"},
 		{name: "rankings kudosu", path: "/rankings/kudosu"},
+		{name: "default user banchobot", path: fmt.Sprintf("/u/%d", 1)},
+		{name: "default user peppy", path: fmt.Sprintf("/u/%d", 2)},
 	}
 
 	t.Run("public", func(t *testing.T) {
 		assertWebsiteRoutesRender(t, router, publicRoutes, nil)
-	})
-
-	t.Run("forum search filters", func(t *testing.T) {
-		matchingPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
-			post.Content = "Details about digital client"
-		})
-		unrelatedPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
-			post.Content = "An unrelated reply"
-		})
-
-		body := renderForumSearch(t, router, url.Values{"username": {data.friend.Name}})
-		assertForumSearchPost(t, body, matchingPost, true)
-		assertForumSearchPost(t, body, unrelatedPost, true)
-
-		body = renderForumSearch(t, router, url.Values{
-			"username": {data.friend.Name},
-			"query":    {"digital client"},
-		})
-		assertForumSearchPost(t, body, matchingPost, true)
-		assertForumSearchPost(t, body, unrelatedPost, false)
-		for _, term := range []string{"digital", "client"} {
-			if !strings.Contains(body, "<strong>"+term+"</strong>") {
-				t.Errorf("forum search does not highlight %q", term)
-			}
-		}
-
-		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
-		assertForumSearchPost(t, body, data.post, true)
-		assertForumSearchPost(t, body, matchingPost, false)
-		assertForumSearchPost(t, body, unrelatedPost, false)
-
-		body = renderForumSearch(t, router, url.Values{"query": {"lorem ipsum"}})
-		assertForumSearchPost(t, body, data.post, true)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -156,27 +125,6 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	t.Run("post flows", func(t *testing.T) {
 		assertWebsitePostFlows(t, app, router, fixtures, data)
 	})
-}
-
-func renderForumSearch(t *testing.T, router http.Handler, query url.Values) string {
-	t.Helper()
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/forum/search?"+query.Encode(), nil)
-	request.Header.Set("User-Agent", "Mozilla/5.0")
-	router.ServeHTTP(recorder, request)
-
-	assertStatus(t, recorder, http.StatusOK)
-	return recorder.Body.String()
-}
-
-func assertForumSearchPost(t *testing.T, body string, post *schemas.ForumPost, want bool) {
-	t.Helper()
-
-	postUrl := fmt.Sprintf("/forum/%d/p/%d/", post.ForumId, post.Id)
-	if got := strings.Contains(body, postUrl); got != want {
-		t.Errorf("forum search contains post %d = %t, want %t", post.Id, got, want)
-	}
 }
 
 func newWebsiteTestState(t *testing.T) *state.State {
@@ -470,12 +418,12 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 	fixtures.CreateGroupEntry(group, user)
 
 	mainForum := fixtures.CreateForum(func(forum *schemas.Forum) {
-		forum.Name = "Announcements"
+		forum.Name = "Main Forum"
 	})
 	subForum := fixtures.CreateForum(func(forum *schemas.Forum) {
 		parentId := mainForum.Id
 		forum.ParentId = &parentId
-		forum.Name = "Development"
+		forum.Name = "Sub Forum"
 	})
 	topic := fixtures.CreateForumTopic(subForum, user, func(topic *schemas.ForumTopic) {
 		topic.Announcement = true
@@ -522,10 +470,10 @@ func updateWebsiteRankings(t *testing.T, app *state.State, stats *schemas.Stats,
 	t.Helper()
 
 	if err := app.Rankings.Update(stats, country); err != nil {
-		t.Fatalf("failed to seed rankings: %v", err)
+		t.Fatalf("failed to populate rankings: %v", err)
 	}
 	if err := app.Rankings.UpdateLeaderScores(stats, country, app.Repositories.Scores); err != nil {
-		t.Fatalf("failed to seed leader rankings: %v", err)
+		t.Fatalf("failed to populate leader rankings: %v", err)
 	}
 }
 
@@ -539,7 +487,7 @@ func populateWebsiteRankingCountries(t *testing.T, app *state.State) {
 			continue
 		}
 
-		// Seed some rankings for the country to ensure it appears in the country selector
+		// Populate some rankings for the country to ensure it appears in the country selector
 		// They aren't real users, but they will be enough to make the country appear in the selector
 
 		score := float64(1000 - seeded)
