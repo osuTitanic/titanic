@@ -22,6 +22,7 @@ const (
 	historyRecentLimit     = 5
 	historyMostPlayedLimit = 15
 	kudosuHistoryLimit     = 30
+	infringementWindow     = 30 * 24 * time.Hour
 )
 
 func UserProfileRedirect(ctx *server.Context) {
@@ -55,6 +56,19 @@ func UserProfile(ctx *server.Context) {
 
 	if user == nil || !user.Activated {
 		UserNotFound(ctx)
+		return
+	}
+
+	var infringements []*schemas.Infringement
+	if user.Restricted {
+		// TODO: maybe we should still limit the amount of infringements
+		infringements, err = ctx.State.Repositories.Infringements.ManyByUserId(user.Id)
+	} else {
+		infringements, err = ctx.State.Repositories.Infringements.ManyByUserIdUntil(user.Id, infringementWindow)
+	}
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch user infringements", "user", user.Id, "error", err)
+		InternalServerError(ctx)
 		return
 	}
 
@@ -109,6 +123,7 @@ func UserProfile(ctx *server.Context) {
 		TargetAdded:   targetAdded,
 		IsBlocked:     isBlocked,
 		SuperFriendly: slices.Contains(ctx.State.Config.SuperFriendlyUsers, user.Id),
+		Infringements: infringements,
 		General:       general,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/user", view)

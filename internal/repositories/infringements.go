@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -40,6 +42,19 @@ func (r *InfringementRepository) ById(id int, preload ...string) (*schemas.Infri
 
 func (r *InfringementRepository) ManyByUserId(userId int, preload ...string) ([]*schemas.Infringement, error) {
 	var infringements []*schemas.Infringement
-	err := Preloaded(r.db, preload).Where("user_id = ?", userId).Order("time DESC").Find(&infringements).Error
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Order("time DESC").
+		Find(&infringements).Error
+	return infringements, err
+}
+
+func (r *InfringementRepository) ManyByUserIdUntil(userId int, until time.Duration, preload ...string) ([]*schemas.Infringement, error) {
+	var infringements []*schemas.Infringement
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Where("time > ?", time.Now().Add(-until)).
+		Order("time DESC").
+		Find(&infringements).Error
 	return infringements, err
 }

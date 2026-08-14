@@ -21,8 +21,10 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/internal/testkit"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
+	"github.com/osuTitanic/titanic/services/stern/internal/wiki"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -42,6 +44,7 @@ type websiteRenderData struct {
 	beatmap    *schemas.Beatmap
 	score      *schemas.Score
 	pack       *schemas.BeatmapPack
+	match      *schemas.Match
 }
 
 func TestWebsiteRoutesRender(t *testing.T) {
@@ -75,46 +78,31 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "beatmap pack partial", path: fmt.Sprintf("/partials/packs/%d", data.pack.Id)},
 		{name: "beatmap", path: fmt.Sprintf("/b/%d", data.beatmap.Id)},
 		{name: "score", path: fmt.Sprintf("/scores/%d", data.score.Id)},
+		{name: "multiplayer match", path: fmt.Sprintf("/mp/%d", data.match.Id)},
 		{name: "rankings performance", path: "/rankings/osu/performance"},
 		{name: "rankings country", path: "/rankings/osu/country"},
 		{name: "rankings kudosu", path: "/rankings/kudosu"},
+		{name: "default user banchobot", path: fmt.Sprintf("/u/%d", 1)},
+		{name: "default user peppy", path: fmt.Sprintf("/u/%d", 2)},
 	}
 
 	t.Run("public", func(t *testing.T) {
 		assertWebsiteRoutesRender(t, router, publicRoutes, nil)
 	})
 
-	t.Run("forum search filters", func(t *testing.T) {
-		matchingPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
-			post.Content = "Details about digital client"
-		})
-		unrelatedPost := fixtures.CreateForumPost(data.topic, data.friend, func(post *schemas.ForumPost) {
-			post.Content = "An unrelated reply"
-		})
-
-		body := renderForumSearch(t, router, url.Values{"username": {data.friend.Name}})
-		assertForumSearchPost(t, body, matchingPost, true)
-		assertForumSearchPost(t, body, unrelatedPost, true)
-
-		body = renderForumSearch(t, router, url.Values{
-			"username": {data.friend.Name},
-			"query":    {"digital client"},
-		})
-		assertForumSearchPost(t, body, matchingPost, true)
-		assertForumSearchPost(t, body, unrelatedPost, false)
-		for _, term := range []string{"digital", "client"} {
-			if !strings.Contains(body, "<strong>"+term+"</strong>") {
-				t.Errorf("forum search does not highlight %q", term)
-			}
+	t.Run("wiki", func(t *testing.T) {
+		// We need an internet connection to be able to fetch the wiki content from github
+		if !testkit.IsInternetAvailable() {
+			t.Skip("internet connection is unavailable")
 		}
 
-		body = renderForumSearch(t, router, url.Values{"query": {data.topic.Title}})
-		assertForumSearchPost(t, body, data.post, true)
-		assertForumSearchPost(t, body, matchingPost, false)
-		assertForumSearchPost(t, body, unrelatedPost, false)
-
-		body = renderForumSearch(t, router, url.Values{"query": {"lorem ipsum"}})
-		assertForumSearchPost(t, body, data.post, true)
+		wikiRoutes := []websiteRouteTest{
+			{name: "home", path: "/wiki/en/"},
+			{name: "search", path: "/wiki/en/search/"},
+			{name: "welcome", path: "/wiki/en/Welcome"},
+			{name: "rules", path: "/wiki/en/Rules"},
+		}
+		assertWebsiteRoutesRender(t, router, wikiRoutes, nil)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -158,84 +146,9 @@ func TestWebsiteRoutesRender(t *testing.T) {
 	})
 }
 
-func renderForumSearch(t *testing.T, router http.Handler, query url.Values) string {
-	t.Helper()
-
-	recorder := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/forum/search?"+query.Encode(), nil)
-	request.Header.Set("User-Agent", "Mozilla/5.0")
-	router.ServeHTTP(recorder, request)
-
-	assertStatus(t, recorder, http.StatusOK)
-	return recorder.Body.String()
-}
-
-func assertForumSearchPost(t *testing.T, body string, post *schemas.ForumPost, want bool) {
-	t.Helper()
-
-	postUrl := fmt.Sprintf("/forum/%d/p/%d/", post.ForumId, post.Id)
-	if got := strings.Contains(body, postUrl); got != want {
-		t.Errorf("forum search contains post %d = %t, want %t", post.Id, got, want)
-	}
-}
-
 func newWebsiteTestState(t *testing.T) *state.State {
 	t.Helper()
-
-	app := state.NewTestState(t, state.WithTestMigrations(
-		&schemas.User{},
-		&schemas.Stats{},
-		&schemas.Login{},
-		&schemas.Group{},
-		&schemas.GroupEntry{},
-		&schemas.UserPermission{},
-		&schemas.GroupPermission{},
-		&schemas.Notification{},
-		&schemas.Verification{},
-		&schemas.Relationship{},
-		&schemas.Badge{},
-		&schemas.Stamp{},
-		&schemas.Name{},
-		&schemas.Activity{},
-		&schemas.Achievement{},
-		&schemas.Forum{},
-		&schemas.ForumIcon{},
-		&schemas.ForumTopic{},
-		&schemas.ForumPost{},
-		&schemas.ForumBookmark{},
-		&schemas.ForumSubscriber{},
-		&schemas.Message{},
-		&schemas.Beatmapset{},
-		&schemas.Beatmap{},
-		&schemas.Score{},
-		&schemas.BeatmapFavourite{},
-		&schemas.BeatmapCollaboration{},
-		&schemas.BeatmapNomination{},
-		&schemas.BeatmapModding{},
-		&schemas.BeatmapPack{},
-		&schemas.BeatmapPackEntry{},
-		&schemas.BeatmapPlays{},
-		&schemas.Release{},
-	))
-	enableForumSearchVectors(t, app)
-	return app
-}
-
-func enableForumSearchVectors(t *testing.T, app *state.State) {
-	t.Helper()
-
-	// Gorm migrations don't do this automatically
-	statements := []string{
-		`ALTER TABLE forum_topics ADD COLUMN search_vector tsvector
-		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(title, ''))) STORED`,
-		`ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
-		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED`,
-	}
-	for _, statement := range statements {
-		if err := app.Database.Exec(statement).Error; err != nil {
-			t.Fatalf("failed to add forum search vector: %v", err)
-		}
-	}
+	return state.NewTestState(t)
 }
 
 func newTestRouter(t *testing.T, app *state.State) http.Handler {
@@ -247,6 +160,8 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 	}
 
 	server := server.NewServer("localhost", 0, "stern-test", app, engine)
+	wikiService := wiki.NewService(app.Config, app.Repositories, app.Logger)
+	state.RegisterExtension(app, "wiki", wikiService)
 	InitializeWebRoutes(server)
 	return server.Router
 }
@@ -276,7 +191,6 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 	t.Helper()
 
 	grantWebsitePostPermissions(t, app, data.user)
-	populateRegistrationGroups(t, app)
 
 	t.Run("login", func(t *testing.T) {
 		before := countRows(t, app, &schemas.Login{}, "user_id = ? AND osu_version = ?", data.user.Id, "web")
@@ -525,12 +439,12 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 	fixtures.CreateGroupEntry(group, user)
 
 	mainForum := fixtures.CreateForum(func(forum *schemas.Forum) {
-		forum.Name = "Announcements"
+		forum.Name = "Main Forum"
 	})
 	subForum := fixtures.CreateForum(func(forum *schemas.Forum) {
 		parentId := mainForum.Id
 		forum.ParentId = &parentId
-		forum.Name = "Development"
+		forum.Name = "Sub Forum"
 	})
 	topic := fixtures.CreateForumTopic(subForum, user, func(topic *schemas.ForumTopic) {
 		topic.Announcement = true
@@ -552,6 +466,10 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 	fixtures.CreateBeatmapPackEntry(pack, beatmapset)
 	fixtures.CreateBeatmapModding(user, friend, beatmapset, post)
 
+	match := fixtures.CreateMatch(user, func(match *schemas.Match) {
+		match.Name = "Website integration test"
+	})
+
 	updateWebsiteRankings(t, app, stats, user.Country)
 	updateWebsiteRankings(t, app, friendStats, friend.Country)
 	populateWebsiteRankingCountries(t, app)
@@ -570,6 +488,7 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 		beatmap:    beatmap,
 		score:      score,
 		pack:       pack,
+		match:      match,
 	}
 }
 
@@ -577,34 +496,10 @@ func updateWebsiteRankings(t *testing.T, app *state.State, stats *schemas.Stats,
 	t.Helper()
 
 	if err := app.Rankings.Update(stats, country); err != nil {
-		t.Fatalf("failed to seed rankings: %v", err)
+		t.Fatalf("failed to populate rankings: %v", err)
 	}
 	if err := app.Rankings.UpdateLeaderScores(stats, country, app.Repositories.Scores); err != nil {
-		t.Fatalf("failed to seed leader rankings: %v", err)
-	}
-}
-
-func populateRegistrationGroups(t *testing.T, app *state.State) {
-	t.Helper()
-
-	groups := []*schemas.Group{
-		{
-			Id:        constants.GroupSupporter,
-			Name:      "Supporter",
-			ShortName: "SUP",
-			Color:     "#ff66aa",
-		},
-		{
-			Id:        constants.GroupPlayers,
-			Name:      "Players",
-			ShortName: "PLY",
-			Color:     "#66aa66",
-		},
-	}
-	for _, group := range groups {
-		if err := app.Database.Create(group).Error; err != nil {
-			t.Fatalf("failed to seed registration group %d: %v", group.Id, err)
-		}
+		t.Fatalf("failed to populate leader rankings: %v", err)
 	}
 }
 
@@ -618,7 +513,7 @@ func populateWebsiteRankingCountries(t *testing.T, app *state.State) {
 			continue
 		}
 
-		// Seed some rankings for the country to ensure it appears in the country selector
+		// Populate some rankings for the country to ensure it appears in the country selector
 		// They aren't real users, but they will be enough to make the country appear in the selector
 
 		score := float64(1000 - seeded)

@@ -27,6 +27,8 @@ if err := db.Exec("SELECT 1").Error; err != nil {
 
 Use `PostgresConfig` when a test needs a `config.Config` pointing at the container instead of an already-open session.
 
+Use `MigratePostgres` with that config to apply the repository's production migrations to the test database.
+
 ## Redis
 
 Use `RedisClient` when a test needs a `*redis.Client`. The helper starts a fresh Redis container, verifies it with `PING`, and binds cleanup with the test.

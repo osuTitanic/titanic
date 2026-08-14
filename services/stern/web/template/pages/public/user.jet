@@ -361,6 +361,18 @@
         <td>
             <div id="achievements" class="tab-content" data-partial="/partials/users/{{ .User.Id }}/achievements" style="opacity: 1; filter: none; display: none; height: 0px;"></div>
         </td>
+
+        {{ if len(.Infringements) > 0 }}
+        <tr>
+            <td class="tab-heading tab-heading-account">Account Standing</td>
+        </tr>
+        <td>
+            {* Always expanded *}
+            <div id="account" class="tab-content">
+                {{ yield accountStandingTab() }}
+            </div>
+        </td>
+        {{ end }}
     </tbody>
 </table>
 {{ end }}
@@ -1116,5 +1128,51 @@
     <button type="button" class="restore-button" onclick="moderationRestoreUserScores({{ user.Id }})">
         <i class="icon-repeat"></i> Restore Scores
     </button>
+</div>
+{{ end }}
+
+{{ block accountStandingTab() }}
+<div style="width: 100%">
+    <p style="color: red">
+        {{ .User.Name }}'s account is not in good standing :(
+        {{ if .IsOwnProfile() }}
+        <br>
+        <br>
+        Your account could be permanently disabled if you continue to cause problems.
+        Please make sure to follow the <a href="/wiki/en/Rules">community rules</a>!
+        Note that infringements will disappear after four weeks of good behaviour.
+        {{ end }}
+    </p>
+    <br>
+    <h3 class="profile-stats-header" style="text-align: left">
+        Recent Infringements
+    </h3>
+    <table>
+        <thead>
+            <tr>
+                <td>Date</td>
+                <td>Action</td>
+                <td>Length</td>
+                <td>Description</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{ range _, infringement := .Infringements }}
+            <tr>
+                <td>
+                    {* TODO: add a timeago filter that also includes the title attribute *}
+                    <span class="timeago" datetime="{{ infringement.Time.Format("2006-01-02T15:04:05Z07:00") }}"></span>
+                </td>
+                {{ if infringement.Action == 0 }}
+                <td style="background-color: red">BAN</td>
+                {{ else }}
+                <td style="background-color: yellow">SILENCE</td>
+                {{ end }}
+                <td>{{ infringement.LengthText() }}</td>
+                <td>{{ infringement.DescriptionText() }}</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
 </div>
 {{ end }}

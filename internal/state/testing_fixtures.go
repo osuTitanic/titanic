@@ -98,6 +98,22 @@ func (data *TestData) CreateLogin(user *schemas.User, opts ...FixtureOption[sche
 	return login
 }
 
+func (data *TestData) CreateMatch(creator *schemas.User, opts ...FixtureOption[schemas.Match]) *schemas.Match {
+	data.t.Helper()
+	data.requireUser(creator)
+
+	sequence := data.next()
+	match := &schemas.Match{
+		BanchoId:  sequence,
+		Name:      fmt.Sprintf("Test Match %d", sequence),
+		CreatorId: creator.Id,
+		CreatedAt: testDataTime(sequence),
+	}
+	applyFixtureOptions(match, opts)
+	data.create(match)
+	return match
+}
+
 func (data *TestData) CreateWebsiteSessionCookie(user *schemas.User, request *http.Request) *http.Cookie {
 	data.t.Helper()
 	data.requireUser(user)
@@ -231,6 +247,7 @@ func (data *TestData) CreateBeatmapset(creator *schemas.User, opts ...FixtureOpt
 		Title:          new(title),
 		Artist:         new(artist),
 		Creator:        new(creator.Name),
+		DisplayTitle:   new(""),
 		Description:    new(description),
 		Tags:           new(tags),
 		Status:         constants.BeatmapStatusRanked,

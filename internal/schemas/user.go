@@ -382,6 +382,46 @@ func (Infringement) TableName() string {
 	return "infringements"
 }
 
+func (infringement *Infringement) DescriptionText() string {
+	if infringement.Description == nil {
+		return ""
+	}
+	return *infringement.Description
+}
+
+func (infringement *Infringement) LengthText() string {
+	if infringement.IsPermanent {
+		return "Permanent"
+	}
+	if infringement.Length == nil {
+		return "Unknown"
+	}
+
+	start := infringement.Time.Round(time.Minute)
+	end := infringement.Length.Round(time.Minute)
+	duration := end.Sub(start)
+
+	days := duration / (24 * time.Hour)
+	duration %= 24 * time.Hour
+
+	hours := duration / time.Hour
+	duration %= time.Hour
+
+	minutes := duration / time.Minute
+	seconds := duration % time.Minute / time.Second
+
+	clock := fmt.Sprintf("%d:%02d:%02d", hours, minutes, seconds)
+
+	switch days {
+	case 0:
+		return clock
+	case 1, -1:
+		return fmt.Sprintf("%d day, %s", days, clock)
+	default:
+		return fmt.Sprintf("%d days, %s", days, clock)
+	}
+}
+
 type Report struct {
 	Id       int       `gorm:"column:id;primaryKey;autoIncrement"`
 	TargetId int       `gorm:"column:target_id"`

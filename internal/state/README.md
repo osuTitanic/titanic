@@ -155,12 +155,7 @@ Integration tests can use `NewTestState` and `NewTestData` behind the `integrati
 `NewTestState` creates temporary PostgreSQL and Redis containers, while `NewTestData` creates rows with overridable defaults.
 
 ```go
-app := state.NewTestState(t, state.WithTestMigrations(
-	&schemas.User{},
-	&schemas.Forum{},
-	&schemas.ForumTopic{},
-	&schemas.ForumPost{},
-))
+app := state.NewTestState(t)
 
 fixtures := state.NewTestData(t, app)
 user := fixtures.CreateUser()
@@ -170,3 +165,5 @@ topic := fixtures.CreateForumTopic(forum, user, func(topic *schemas.ForumTopic) 
 })
 fixtures.CreateForumPost(topic, user)
 ```
+
+`NewTestState` applies the repository's production migrations before test fixtures are created.
