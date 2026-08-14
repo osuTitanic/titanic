@@ -115,6 +115,7 @@ type UserProfileView struct {
 	IsBlocked     bool
 	SuperFriendly bool
 	General       *UserGeneralTab
+	Infringements []*schemas.Infringement
 }
 
 func (v UserProfileView) IsOwnProfile() bool {
