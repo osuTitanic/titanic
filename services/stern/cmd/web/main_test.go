@@ -181,62 +181,7 @@ func assertForumSearchPost(t *testing.T, body string, post *schemas.ForumPost, w
 
 func newWebsiteTestState(t *testing.T) *state.State {
 	t.Helper()
-
-	app := state.NewTestState(t, state.WithTestMigrations(
-		&schemas.User{},
-		&schemas.Stats{},
-		&schemas.Login{},
-		&schemas.Group{},
-		&schemas.GroupEntry{},
-		&schemas.UserPermission{},
-		&schemas.GroupPermission{},
-		&schemas.Notification{},
-		&schemas.Verification{},
-		&schemas.Relationship{},
-		&schemas.Infringement{},
-		&schemas.Badge{},
-		&schemas.Stamp{},
-		&schemas.Name{},
-		&schemas.Activity{},
-		&schemas.Achievement{},
-		&schemas.Forum{},
-		&schemas.ForumIcon{},
-		&schemas.ForumTopic{},
-		&schemas.ForumPost{},
-		&schemas.ForumBookmark{},
-		&schemas.ForumSubscriber{},
-		&schemas.Message{},
-		&schemas.Beatmapset{},
-		&schemas.Beatmap{},
-		&schemas.Score{},
-		&schemas.BeatmapFavourite{},
-		&schemas.BeatmapCollaboration{},
-		&schemas.BeatmapNomination{},
-		&schemas.BeatmapModding{},
-		&schemas.BeatmapPack{},
-		&schemas.BeatmapPackEntry{},
-		&schemas.BeatmapPlays{},
-		&schemas.Release{},
-	))
-	enableForumSearchVectors(t, app)
-	return app
-}
-
-func enableForumSearchVectors(t *testing.T, app *state.State) {
-	t.Helper()
-
-	// Gorm migrations don't do this automatically
-	statements := []string{
-		`ALTER TABLE forum_topics ADD COLUMN search_vector tsvector
-		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(title, ''))) STORED`,
-		`ALTER TABLE forum_posts ADD COLUMN search_vector tsvector
-		 GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED`,
-	}
-	for _, statement := range statements {
-		if err := app.Database.Exec(statement).Error; err != nil {
-			t.Fatalf("failed to add forum search vector: %v", err)
-		}
-	}
+	return state.NewTestState(t)
 }
 
 func newTestRouter(t *testing.T, app *state.State) http.Handler {
@@ -277,7 +222,6 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 	t.Helper()
 
 	grantWebsitePostPermissions(t, app, data.user)
-	populateRegistrationGroups(t, app)
 
 	t.Run("login", func(t *testing.T) {
 		before := countRows(t, app, &schemas.Login{}, "user_id = ? AND osu_version = ?", data.user.Id, "web")
@@ -582,30 +526,6 @@ func updateWebsiteRankings(t *testing.T, app *state.State, stats *schemas.Stats,
 	}
 	if err := app.Rankings.UpdateLeaderScores(stats, country, app.Repositories.Scores); err != nil {
 		t.Fatalf("failed to seed leader rankings: %v", err)
-	}
-}
-
-func populateRegistrationGroups(t *testing.T, app *state.State) {
-	t.Helper()
-
-	groups := []*schemas.Group{
-		{
-			Id:        constants.GroupSupporter,
-			Name:      "Supporter",
-			ShortName: "SUP",
-			Color:     "#ff66aa",
-		},
-		{
-			Id:        constants.GroupPlayers,
-			Name:      "Players",
-			ShortName: "PLY",
-			Color:     "#66aa66",
-		},
-	}
-	for _, group := range groups {
-		if err := app.Database.Create(group).Error; err != nil {
-			t.Fatalf("failed to seed registration group %d: %v", group.Id, err)
-		}
 	}
 }
 

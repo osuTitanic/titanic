@@ -231,6 +231,7 @@ func (data *TestData) CreateBeatmapset(creator *schemas.User, opts ...FixtureOpt
 		Title:          new(title),
 		Artist:         new(artist),
 		Creator:        new(creator.Name),
+		DisplayTitle:   new(""),
 		Description:    new(description),
 		Tags:           new(tags),
 		Status:         constants.BeatmapStatusRanked,

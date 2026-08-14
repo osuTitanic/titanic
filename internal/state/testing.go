@@ -29,9 +29,8 @@ import (
 // 		 Too lazy to document this right now in the readme.
 
 type TestStateOptions struct {
-	configure  []func(*config.Config)
-	migrations []any
-	logger     *slog.Logger
+	configure []func(*config.Config)
+	logger    *slog.Logger
 }
 type TestStateOption func(*TestStateOptions)
 
@@ -61,6 +60,9 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		configure(cfg)
 	}
 
+	t.Log("applying repository migrations")
+	testkit.MigratePostgres(t, cfg)
+
 	db, err := database.CreateSession(cfg)
 	if err != nil {
 		t.Fatalf("failed to create postgres session: %v", err)
@@ -70,17 +72,6 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 			t.Fatalf("failed to close postgres session: %v", err)
 		}
 	})
-
-	if len(options.migrations) > 0 {
-		if err := db.Exec("CREATE EXTENSION IF NOT EXISTS pgcrypto").Error; err != nil {
-			t.Fatalf("failed to create pgcrypto extension: %v", err)
-		}
-		if err := db.AutoMigrate(options.migrations...); err != nil {
-			t.Fatalf("failed to migrate test state schemas: %v", err)
-		}
-		// TODO: We would eventually want to run our own migrations, unless that takes too long
-		// 		 Another option would be to add default test data to the database
-	}
 
 	geolocation := location.NewDummyProvider()
 	if err := geolocation.Setup(); err != nil {
@@ -129,13 +120,6 @@ func WithTestConfig(configure func(*config.Config)) TestStateOption {
 		if configure != nil {
 			options.configure = append(options.configure, configure)
 		}
-	}
-}
-
-// WithTestMigrations runs AutoMigrate for the given schemas after postgres is available
-func WithTestMigrations(models ...any) TestStateOption {
-	return func(options *TestStateOptions) {
-		options.migrations = append(options.migrations, models...)
 	}
 }
 
