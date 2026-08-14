@@ -21,8 +21,10 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/internal/testkit"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
+	"github.com/osuTitanic/titanic/services/stern/internal/wiki"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -42,6 +44,7 @@ type websiteRenderData struct {
 	beatmap    *schemas.Beatmap
 	score      *schemas.Score
 	pack       *schemas.BeatmapPack
+	match      *schemas.Match
 }
 
 func TestWebsiteRoutesRender(t *testing.T) {
@@ -75,6 +78,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "beatmap pack partial", path: fmt.Sprintf("/partials/packs/%d", data.pack.Id)},
 		{name: "beatmap", path: fmt.Sprintf("/b/%d", data.beatmap.Id)},
 		{name: "score", path: fmt.Sprintf("/scores/%d", data.score.Id)},
+		{name: "multiplayer match", path: fmt.Sprintf("/mp/%d", data.match.Id)},
 		{name: "rankings performance", path: "/rankings/osu/performance"},
 		{name: "rankings country", path: "/rankings/osu/country"},
 		{name: "rankings kudosu", path: "/rankings/kudosu"},
@@ -84,6 +88,21 @@ func TestWebsiteRoutesRender(t *testing.T) {
 
 	t.Run("public", func(t *testing.T) {
 		assertWebsiteRoutesRender(t, router, publicRoutes, nil)
+	})
+
+	t.Run("wiki", func(t *testing.T) {
+		// We need an internet connection to be able to fetch the wiki content from github
+		if !testkit.IsInternetAvailable() {
+			t.Skip("internet connection is unavailable")
+		}
+
+		wikiRoutes := []websiteRouteTest{
+			{name: "home", path: "/wiki/en/"},
+			{name: "search", path: "/wiki/en/search/"},
+			{name: "welcome", path: "/wiki/en/Welcome"},
+			{name: "rules", path: "/wiki/en/Rules"},
+		}
+		assertWebsiteRoutesRender(t, router, wikiRoutes, nil)
 	})
 
 	fixtures.CreateNotification(data.user)
@@ -141,6 +160,8 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 	}
 
 	server := server.NewServer("localhost", 0, "stern-test", app, engine)
+	wikiService := wiki.NewService(app.Config, app.Repositories, app.Logger)
+	state.RegisterExtension(app, "wiki", wikiService)
 	InitializeWebRoutes(server)
 	return server.Router
 }
@@ -445,6 +466,10 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 	fixtures.CreateBeatmapPackEntry(pack, beatmapset)
 	fixtures.CreateBeatmapModding(user, friend, beatmapset, post)
 
+	match := fixtures.CreateMatch(user, func(match *schemas.Match) {
+		match.Name = "Website integration test"
+	})
+
 	updateWebsiteRankings(t, app, stats, user.Country)
 	updateWebsiteRankings(t, app, friendStats, friend.Country)
 	populateWebsiteRankingCountries(t, app)
@@ -463,6 +488,7 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 		beatmap:    beatmap,
 		score:      score,
 		pack:       pack,
+		match:      match,
 	}
 }
 
