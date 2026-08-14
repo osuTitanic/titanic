@@ -193,6 +193,7 @@ func newWebsiteTestState(t *testing.T) *state.State {
 		&schemas.Notification{},
 		&schemas.Verification{},
 		&schemas.Relationship{},
+		&schemas.Infringement{},
 		&schemas.Badge{},
 		&schemas.Stamp{},
 		&schemas.Name{},
