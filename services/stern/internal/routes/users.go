@@ -15,14 +15,15 @@ import (
 )
 
 const (
-	activityPageSize       = 10
-	activityRecentWindow   = 30 * 24 * time.Hour
-	topPlaysPageSize       = 5
-	topPlaysPageSizeExpand = 15
-	historyRecentLimit     = 5
-	historyMostPlayedLimit = 15
-	kudosuHistoryLimit     = 30
-	infringementWindow     = 30 * 24 * time.Hour
+	activityPageSize        = 10
+	activityRecentWindow    = 30 * 24 * time.Hour
+	topPlaysPageSize        = 5
+	topPlaysPageSizeExpand  = 15
+	historyRecentLimit      = 5
+	historyMostPlayedLimit  = 15
+	historyMostWatchedLimit = 15
+	kudosuHistoryLimit      = 30
+	infringementWindow      = 30 * 24 * time.Hour
 )
 
 func UserProfileRedirect(ctx *server.Context) {
@@ -261,11 +262,22 @@ func UserHistoryPartial(ctx *server.Context) {
 		return
 	}
 
+	mostWatched, err := ctx.State.Repositories.Scores.FetchMostWatchedByUser(
+		user.Id, mode, historyMostWatchedLimit,
+		"Beatmap.Beatmapset",
+	)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch most watched replays", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
 	tab := &templates.UserHistoryTab{
-		UserId:     user.Id,
-		Mode:       mode,
-		MostPlayed: mostPlayed,
-		Recent:     recent,
+		UserId:      user.Id,
+		Mode:        mode,
+		Recent:      recent,
+		MostPlayed:  mostPlayed,
+		MostWatched: mostWatched,
 	}
 	ctx.RenderTemplate(http.StatusOK, "partials/user_history", tab)
 }

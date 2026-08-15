@@ -190,10 +190,11 @@ func (p *UserScorePage) ShowWeight() bool {
 }
 
 type UserHistoryTab struct {
-	UserId     int
-	Mode       constants.Mode
-	MostPlayed []*schemas.BeatmapPlays
-	Recent     []*schemas.Score
+	UserId      int
+	Mode        constants.Mode
+	Recent      []*schemas.Score
+	MostPlayed  []*schemas.BeatmapPlays
+	MostWatched []*schemas.Score
 }
 
 type UserKudosuTab struct {
