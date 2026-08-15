@@ -622,7 +622,7 @@
 
 {*
     The Historical tab includes play history,
-    most played beatmaps & recent plays
+    most played beatmaps, recent plays & replay history
 *}
 {{ block userHistoryTab() }}
 <div class="tab-spacing">
@@ -672,6 +672,20 @@
         {* Loaded client-side from the api *}
         <div class="profile-graph" id="replay-graph">
             <svg></svg>
+        </div>
+    </div>
+
+    <div class="most-watched-replays">
+        <h2 class="profile-stats-header">Most Watched Replays</h2>
+        <div id="replays-container">
+            {{ range index, score := .MostWatched }}
+                <div style="font-size: {{ round(180 * scoreWeight(index + 1)) }}%; margin: 2.5px;">
+                    {* TODO: show more info about the score? *}
+                    {{ score.ReplayViews|formatNumber }} view{{ score.ReplayViews != 1 ? "s" : "" }} - <a href="/scores/{{ score.Id }}">{{ score.Beatmap.Name() }}</a>
+                </div>
+            {{ else }}
+                <p>This player's replays have not been watched yet :(</p>
+            {{ end }}
         </div>
     </div>
 </div>
