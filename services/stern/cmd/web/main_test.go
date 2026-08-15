@@ -281,7 +281,7 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 			"interests": {"testing"},
 			"location":  {"osu hq"},
 			"website":   {"https://example.com"},
-			"discord":   {"tester_123"},
+			"discord":   {"tester.123"},
 			"twitter":   {"@tester"},
 		}, authenticateWebsiteRequest(t, app, fixtures, data.user))
 		assertStatus(t, recorder, http.StatusOK)
@@ -293,7 +293,7 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 		assertStringPointer(t, "interests", updated.Interests, "testing")
 		assertStringPointer(t, "location", updated.Location, "osu hq")
 		assertStringPointer(t, "website", updated.Website, "https://example.com")
-		assertStringPointer(t, "discord", updated.Discord, "tester_123")
+		assertStringPointer(t, "discord", updated.Discord, "tester.123")
 		assertStringPointer(t, "twitter", updated.Twitter, "https://twitter.com/@tester")
 		if updated.PreferredMode != constants.ModeTaiko {
 			t.Fatalf("preferred mode = %v, want %v", updated.PreferredMode, constants.ModeTaiko)
