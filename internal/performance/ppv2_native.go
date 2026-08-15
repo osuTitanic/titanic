@@ -309,15 +309,31 @@ var nativeModAcronyms = []struct {
 
 func newNativeScoreInfo(score *schemas.Score) *osunative.ScoreInfo {
 	totalScore := score.TotalScore
-	return &osunative.ScoreInfo{
+	info := &osunative.ScoreInfo{
 		Accuracy:         score.Accuracy(),
 		MaxCombo:         score.MaxCombo,
-		CountGreat:       score.Count300,
-		CountOk:          score.Count100,
-		CountMeh:         score.Count50,
 		CountMiss:        score.CountMiss,
 		LegacyTotalScore: &totalScore,
 	}
+
+	switch score.Mode {
+	case constants.ModeCatch:
+		info.CountGreat = score.Count300
+		info.CountLargeTickHit = score.Count100
+		info.CountSmallTickHit = score.Count50
+		info.CountSmallTickMiss = score.CountKatu
+	case constants.ModeMania:
+		info.CountPerfect = score.CountGeki
+		info.CountGreat = score.Count300
+		info.CountGood = score.CountKatu
+		info.CountOk = score.Count100
+		info.CountMeh = score.Count50
+	default:
+		info.CountGreat = score.Count300
+		info.CountOk = score.Count100
+		info.CountMeh = score.Count50
+	}
+	return info
 }
 
 func newDifficultyAttributes(mode constants.Mode, isConvert bool, attributes any) (*DifficultyAttributes, error) {
