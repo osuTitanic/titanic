@@ -21,6 +21,7 @@ const (
 	MatchScoringScore    MatchScoringType = 0
 	MatchScoringAccuracy MatchScoringType = 1
 	MatchScoringCombo    MatchScoringType = 2
+	MatchScoringScoreV2  MatchScoringType = 3
 )
 
 func (scoringType MatchScoringType) String() string {
@@ -31,6 +32,8 @@ func (scoringType MatchScoringType) String() string {
 		return "Accuracy"
 	case MatchScoringCombo:
 		return "Combo"
+	case MatchScoringScoreV2:
+		return "ScoreV2"
 	default:
 		return fmt.Sprintf("%d", scoringType)
 	}
