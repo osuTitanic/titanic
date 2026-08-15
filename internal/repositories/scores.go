@@ -306,6 +306,21 @@ func (r *ScoreRepository) FetchRecentByUser(userId int, mode constants.Mode, lim
 	return scores, err
 }
 
+func (r *ScoreRepository) FetchMostWatchedByUser(userId int, mode constants.Mode, limit int, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("replay_views > 0").
+		Where("hidden = ?", false).
+		Where("failtime IS NULL").
+		Order("replay_views DESC").
+		Order("id DESC").
+		Limit(limit).
+		Find(&scores).Error
+	return scores, err
+}
+
 func (r *ScoreRepository) FetchPinned(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
 	err := pinnedQuery(userId, mode, Preloaded(r.db, preload)).
