@@ -332,9 +332,6 @@
 }
 
 .bat-diffs {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
     margin-bottom: 10px;
     overflow: hidden;
     overflow-wrap: anywhere;
@@ -342,9 +339,10 @@
 }
 
 .bat-diffs div {
+    display: inline-block;
     text-align: center;
-    display: grid;
     margin: 2px;
+    vertical-align: top;
 }
 
 .bat-diffs select {

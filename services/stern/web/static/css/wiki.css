@@ -92,9 +92,14 @@
     font-size: 0.85em;
     border-bottom: 3px double #cccccc;
     padding: 10px;
-    display: flex;
-    justify-content: space-around;
+    text-align: center;
     margin-bottom: 15px !important;
+}
+
+.wiki-stats span {
+    display: inline-block;
+    vertical-align: top;
+    width: 45%;
 }
 
 .wiki-warning {
@@ -224,10 +229,6 @@
     display: block;
     max-width: 600px;
     text-decoration: none;
-}
-
-.wiki-content li:has(img) {
-    list-style-type: none;
 }
 
 .wiki-content table {

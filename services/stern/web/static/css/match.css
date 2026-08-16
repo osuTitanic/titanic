@@ -4,7 +4,7 @@
 }
 
 #match-events {
-    display: grid;
+    display: block;
     text-align: center;
     margin-top: 15px;
     font-size: 80%;

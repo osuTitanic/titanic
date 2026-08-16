@@ -62,8 +62,7 @@
 }
 
 .account-form-panel {
-    display: grid;
-    justify-items: center;
+    display: block;
     text-align: center;
 }
 

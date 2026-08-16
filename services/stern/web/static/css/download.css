@@ -6,7 +6,7 @@
     padding: 5px 5px 0 5px;
     display: inline-block;
     vertical-align: top;
-    margin: 0 15px;
+    margin: 0 20px;
     transition: 0.4s all;
 }
 
@@ -129,98 +129,3 @@
 .bottom-text a:hover {
     text-decoration: underline;
 }
-
-@supports (display: flex) {
-    .category-wrapper {
-        display: flex;
-        justify-content: space-evenly;
-        text-align: initial;
-    }
-    .category-wrapper .category {
-        display: initial;
-    }
-}
-
-.timeline-overview {
-    background: #ffdef5;
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 20px;
-    margin-top: 20px;
-}
-
-.timeline-empty {
-    text-align: center;
-    border-radius: 6px;
-    padding: 20px;
-}
-
-.timeline-year-labels {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.timeline-year-link {
-    color: #fe6f9f !important;
-    text-decoration: none !important;
-    text-align: center;
-    border-radius: 3px;
-    padding: 2px 4px;
-    font-size: 12px;
-    transition: 0.3s all;
-}
-
-.timeline-year-link.selected {
-    background: #ff5d93;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-
-.timeline-year-link:hover {
-    background: #ff5d93;
-    color: #ffffff !important;
-    font-weight: bold;
-}
-
-.timeline-bars-container {
-    display: grid;
-    gap: 6px;
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    align-items: end;
-}
-
-.timeline-year-bars {
-    height: 72px;
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    align-items: end;
-    gap: 1px;
-    background: #dedede;
-    border-radius: 3px;
-    overflow: hidden;
-    text-decoration: none;
-}
-
-.timeline-year-bars.selected {
-    outline: 2px solid #ff5d93;
-}
-
-.timeline-bar {
-    width: 100%;
-    align-self: end;
-    background: #bdbdbd;
-}
-
-.timeline-bar.level-0 { height: 4%; }
-.timeline-bar.level-1 { height: 10%; background: #a8a8a8; }
-.timeline-bar.level-2 { height: 20%; background: #989898; }
-.timeline-bar.level-3 { height: 30%; background: #898989; }
-.timeline-bar.level-4 { height: 40%; background: #797979; }
-.timeline-bar.level-5 { height: 50%; background: #696969; }
-.timeline-bar.level-6 { height: 60%; background: #5a5a5a; }
-.timeline-bar.level-7 { height: 70%; background: #4a4a4a; }
-.timeline-bar.level-8 { height: 80%; background: #3b3b3b; }
-.timeline-bar.level-9 { height: 90%; background: #2b2b2b; }
-.timeline-bar.level-10 { height: 96%; background: #111; }

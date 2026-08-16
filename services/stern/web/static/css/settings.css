@@ -143,15 +143,14 @@
 
 .avatar-box img {
     vertical-align: middle;
-    display: flex;
+    display: block;
     margin: 0 auto;
     width: 120px;
     height: 120px;
 }
 
 .notifications {
-    display: flex;
-    flex-wrap: wrap;
+    overflow: hidden;
 }
 
 .notifications .notification-link {
@@ -166,6 +165,7 @@
 }
 
 .notification {
+    float: left;
     width: 45%;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -173,7 +173,7 @@
     padding: 10px;
     border-radius: 5px;
     height: 100%;
-    margin: 5px auto;
+    margin: 5px;
 }
 
 .notification:hover {
@@ -334,7 +334,7 @@
 }
 
 .moderation-heading {
-    display: grid;
+    display: block;
     padding: 10px;
     padding-top: 0px;
 }
@@ -353,7 +353,7 @@
 .moderation-section {
     padding: 10px;
     padding-left: 20px;
-    display: flex;
+    overflow: hidden;
 }
 
 .user-header-box {
@@ -398,6 +398,7 @@
 
 .chat {
     width: 76%;
+    height: 520px;
     margin-left: 190px;
 }
 
@@ -505,19 +506,17 @@
 }
 
 .channel-join {
-    display: flex;
-    gap: 5px;
     margin-bottom: 10px;
     width: 140px;
+    white-space: nowrap;
 }
 
 .channel-join input {
-    flex: 1;
     padding: 5px 10px;
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 90%;
-    width: calc(100% - 80px);
+    width: 75px;
 }
 
 .channel-join button {
@@ -542,19 +541,17 @@
 }
 
 .dm-join {
-    display: flex;
-    gap: 5px;
     margin-bottom: 10px;
     width: 140px;
+    white-space: nowrap;
 }
 
 .dm-join input {
-    flex: 1;
     padding: 5px 10px;
     border: 1px solid #dee2e6;
     border-radius: 4px;
     font-size: 90%;
-    width: calc(100% - 80px);
+    width: 72px;
 }
 
 .dm-join button {
@@ -626,7 +623,6 @@
 .channel-status, .dm-status {
     color: #6c757d;
     font-size: 85%;
-    font-style: italic;
     padding: 6px 4px;
 }
 
