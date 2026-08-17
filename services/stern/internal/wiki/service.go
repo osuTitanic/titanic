@@ -23,17 +23,12 @@ type Service struct {
 	logger *slog.Logger
 	client *http.Client
 	urls   URLs
-	cache  *caching.Cache[string, CachedMarkdown]
+	cache  *caching.Cache[string, string]
 }
 
 type PageResult struct {
 	Page    *schemas.WikiPage
 	Content *schemas.WikiContent
-}
-
-type CachedMarkdown struct {
-	content string
-	found   bool
 }
 
 func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logger) *Service {
@@ -45,7 +40,7 @@ func NewService(cfg *config.Config, repos *state.Repositories, logger *slog.Logg
 		repos:  repos,
 		logger: logger.With("component", "wiki"),
 		client: &http.Client{Timeout: 15 * time.Second},
-		cache:  caching.New[string, CachedMarkdown](markdownCacheTTL),
+		cache:  caching.New[string, string](markdownCacheTTL),
 		urls:   BuildURLs(cfg),
 	}
 }
@@ -106,8 +101,11 @@ func (s *Service) FetchPage(path, language string) (*PageResult, error) {
 	}
 	if content == nil {
 		// Content for the requested language doesn't exist, create it if available
-		contentMarkdown, found := s.FetchMarkdownCached(page.Path, language)
-		if !found {
+		contentMarkdown, err := s.FetchMarkdownCached(page.Path, language)
+		if err != nil {
+			return nil, err
+		}
+		if contentMarkdown == "" {
 			// Content for this language doesn't exist, so we return the default content
 			return &PageResult{Page: page, Content: defaultContent}, nil
 		}
@@ -132,44 +130,47 @@ func (s *Service) FetchPage(path, language string) (*PageResult, error) {
 	return &PageResult{Page: page, Content: content}, nil
 }
 
-func (s *Service) FetchMarkdownCached(path, language string) (string, bool) {
+func (s *Service) FetchMarkdownCached(path, language string) (string, error) {
 	cacheKey := s.MarkdownUrl(path, language)
-	entry := s.cache.GetOrCompute(cacheKey, func() CachedMarkdown {
-		content, found := s.FetchMarkdown(path, language)
-		return CachedMarkdown{content: content, found: found}
+	return s.cache.GetOrLoad(cacheKey, func() (string, error) {
+		return s.FetchMarkdown(path, language)
 	})
-	return entry.content, entry.found
 }
 
-func (s *Service) FetchMarkdown(path, language string) (string, bool) {
+func (s *Service) FetchMarkdown(path, language string) (string, error) {
 	targetURL := s.MarkdownUrl(path, language)
 	request, err := http.NewRequest(http.MethodGet, targetURL, nil)
 	if err != nil {
 		s.logger.Error("Failed to create markdown request", "url", targetURL, "error", err)
-		return "", false
+		return "", fmt.Errorf("wiki: create markdown request: %w", err)
 	}
 	request.Header.Set("User-Agent", "osuTitanic/wiki")
 
 	response, err := s.client.Do(request)
 	if err != nil {
 		s.logger.Error("Failed to fetch markdown", "url", targetURL, "error", err)
-		return "", false
+		return "", fmt.Errorf("wiki: fetch markdown: %w", err)
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusNotFound {
+		// Page not found or was deleted
+		return "", nil
+	}
+
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
 		s.logger.Error("Failed to fetch markdown", "url", response.Request.URL.String(), "status", response.StatusCode)
-		return "", false
+		return "", fmt.Errorf("wiki: fetch markdown: %s returned HTTP %d", targetURL, response.StatusCode)
 	}
 
 	// Limit the content to prevent excessive memory usage
 	body, err := io.ReadAll(io.LimitReader(response.Body, markdownFetchLimit))
 	if err != nil {
 		s.logger.Error("Failed to read markdown response", "url", targetURL, "error", err)
-		return "", false
+		return "", fmt.Errorf("wiki: read markdown response: %w", err)
 	}
 
-	return SanitizeMarkdown(string(body)), true
+	return SanitizeMarkdown(string(body)), nil
 }
 
 func (s *Service) createPage(path, language string) (*PageResult, error) {
@@ -179,8 +180,11 @@ func (s *Service) createPage(path, language string) (*PageResult, error) {
 	)
 
 	defaultLanguage := s.DefaultLanguage()
-	defaultContentMarkdown, found := s.FetchMarkdownCached(path, defaultLanguage)
-	if !found {
+	defaultContentMarkdown, err := s.FetchMarkdownCached(path, defaultLanguage)
+	if err != nil {
+		return nil, err
+	}
+	if defaultContentMarkdown == "" {
 		s.logger.Error("Page not found in default language", "path", path, "language", defaultLanguage)
 		return nil, nil
 	}
@@ -211,8 +215,11 @@ func (s *Service) createPage(path, language string) (*PageResult, error) {
 		return &PageResult{Page: page, Content: defaultContent}, nil
 	}
 
-	contentMarkdown, found := s.FetchMarkdownCached(path, language)
-	if !found {
+	contentMarkdown, err := s.FetchMarkdownCached(path, language)
+	if err != nil {
+		return nil, err
+	}
+	if contentMarkdown == "" {
 		s.logger.Info("Page only available in default language", "path", path, "language", language)
 		return &PageResult{Page: page, Content: defaultContent}, nil
 	}
@@ -236,8 +243,11 @@ func (s *Service) updateContent(path string, entry *schemas.WikiContent) (*schem
 		"path", path, "language", entry.Language, "last_updated", entry.LastUpdated,
 	)
 
-	contentMarkdown, found := s.FetchMarkdownCached(path, entry.Language)
-	if !found {
+	contentMarkdown, err := s.FetchMarkdownCached(path, entry.Language)
+	if err != nil {
+		return nil, err
+	}
+	if contentMarkdown == "" {
 		s.logger.Warn(
 			"Content no longer exists, deleting page data",
 			"page_id", entry.PageId,
