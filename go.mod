@@ -10,6 +10,7 @@ require (
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/calemy/rosu-pp-go v0.0.0-20260712072956-76a9c6b69f7c
+	github.com/gofrs/flock v0.13.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/joho/godotenv v1.5.1

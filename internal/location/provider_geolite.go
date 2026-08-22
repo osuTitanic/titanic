@@ -9,8 +9,8 @@ import (
 	"net/netip"
 	"os"
 	"path/filepath"
-	"syscall"
 
+	"github.com/gofrs/flock"
 	"github.com/oschwald/geoip2-golang/v2"
 )
 
@@ -126,7 +126,6 @@ func (provider *GeoLiteProvider) Download() error {
 		return fmt.Errorf("lock database: %w", err)
 	}
 	defer lock.Close()
-	defer os.Remove(provider.databasePath + ".lock")
 
 	// Another service may have finished the download while this one waited for the lock
 	if _, err := os.Stat(provider.databasePath); err == nil {
@@ -184,29 +183,24 @@ func (provider *GeoLiteProvider) Download() error {
 	return nil
 }
 
-func (provider *GeoLiteProvider) lockOrWait(path string) (*os.File, error) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
+func (provider *GeoLiteProvider) lockOrWait(path string) (*flock.Flock, error) {
+	fileLock := flock.New(path)
+
+	// Try to acquire an exclusive lock on the file without blocking
+	locked, err := fileLock.TryLock()
 	if err != nil {
 		return nil, err
 	}
-
-	// Try to acquire an exclusive lock on the file without blocking
-	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
-	if err == nil {
-		return file, nil
-	}
-	if !errors.Is(err, syscall.EWOULDBLOCK) {
-		file.Close()
-		return nil, err
+	if locked {
+		return fileLock, nil
 	}
 
 	provider.logger.Info(
 		"Waiting for GeoLite2 database download...",
 		"path", provider.databasePath,
 	)
-	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX); err != nil {
-		file.Close()
+	if err := fileLock.Lock(); err != nil {
 		return nil, err
 	}
-	return file, nil
+	return fileLock, nil
 }
