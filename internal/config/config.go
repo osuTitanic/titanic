@@ -77,7 +77,7 @@ type Config struct {
 	SmtpSkipTlsVerify bool   `env:"SMTP_SKIP_TLS_VERIFY" envDefault:"false"`
 
 	// Location services
-	GeoLitePath string `env:"GEOLITE_PATH" envDefault:".data/GeoLite2-City.mmdb"`
+	GeoLitePath string `env:"GEOLITE_PATH" envDefault:"./.data/GeoLite2-City.mmdb"`
 	GeoLiteUrl  string `env:"GEOLITE_URL" envDefault:"https://git.io/GeoLite2-City.mmdb"`
 
 	// Score server configuration
