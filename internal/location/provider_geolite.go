@@ -2,11 +2,14 @@ package location
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/netip"
 	"os"
+	"path/filepath"
+	"syscall"
 
 	"github.com/oschwald/geoip2-golang/v2"
 )
@@ -27,9 +30,14 @@ func NewGeoLiteProvider(databasePath, downloadUrl string) *GeoLiteProvider {
 }
 
 func (provider *GeoLiteProvider) Setup() error {
-	if _, err := os.Stat(provider.databasePath); err != nil {
-		err = provider.Download()
-		if err != nil {
+	_, err := os.Stat(provider.databasePath)
+	wasNotFound := errors.Is(err, os.ErrNotExist)
+
+	if err != nil && !wasNotFound {
+		return err
+	}
+	if wasNotFound {
+		if err := provider.Download(); err != nil {
 			return err
 		}
 	}
@@ -113,27 +121,92 @@ func (provider *GeoLiteProvider) Resolve(ipString string) (*Location, error) {
 }
 
 func (provider *GeoLiteProvider) Download() error {
+	lock, err := provider.lockOrWait(provider.databasePath + ".lock")
+	if err != nil {
+		return fmt.Errorf("lock database: %w", err)
+	}
+	defer lock.Close()
+	defer os.Remove(provider.databasePath + ".lock")
+
+	// Another service may have finished the download while this one waited for the lock
+	if _, err := os.Stat(provider.databasePath); err == nil {
+		return nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+
 	provider.logger.Info(
 		"Downloading GeoLite2 database...",
 		"url", provider.downloadUrl, "path", provider.databasePath,
 	)
 
-	// Create a new database file
-	file, err := os.Create(provider.databasePath)
+	// Create a temporary file in the same directory as the target database file
+	// Once the download finished we can move it to the target path
+	file, err := os.CreateTemp(
+		filepath.Dir(provider.databasePath),
+		"."+filepath.Base(provider.databasePath)+".tmp-*",
+	)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	temporaryPath := file.Name()
+	defer func() {
+		file.Close()
+		os.Remove(temporaryPath)
+	}()
 
 	response, err := http.Get(provider.downloadUrl)
 	if err != nil {
 		return err
 	}
 	defer response.Body.Close()
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		return fmt.Errorf("download database: unexpected status code: %d", response.StatusCode)
+	}
 
-	_, err = io.Copy(file, response.Body)
-	if err != nil {
+	if _, err := io.Copy(file, response.Body); err != nil {
+		return err
+	}
+	if err := file.Sync(); err != nil {
+		return err
+	}
+	if err := file.Chmod(0o644); err != nil {
+		return err
+	}
+	if err := file.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(temporaryPath, provider.databasePath); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (provider *GeoLiteProvider) lockOrWait(path string) (*os.File, error) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, err
+	}
+
+	// Try to acquire an exclusive lock on the file without blocking
+	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+	if err == nil {
+		return file, nil
+	}
+	if !errors.Is(err, syscall.EWOULDBLOCK) {
+		file.Close()
+		return nil, err
+	}
+
+	provider.logger.Info(
+		"Waiting for GeoLite2 database download...",
+		"path", provider.databasePath,
+	)
+	if err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX); err != nil {
+		file.Close()
+		return nil, err
+	}
+	return file, nil
 }
