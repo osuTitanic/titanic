@@ -34,22 +34,23 @@ func (server *Server) IsDebug() bool {
 
 // HandleFileSystem registers a static file handler under the provided prefix.
 func (server *Server) HandleFileSystem(prefix string, instance fs.FS) {
-	// Check if we are serving a directory or a single file
-	if strings.HasSuffix(prefix, "/") {
-		handler := http.StripPrefix(prefix, http.FileServerFS(instance))
-		server.Router.Handle("GET "+prefix, http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			server.SetCacheHeaders(response.Header(), request)
-			handler.ServeHTTP(response, request)
-		}))
-		return
-	}
-	// TODO: Clean up this method / defer it into common http server code
+	var handler http.Handler
 
-	filename := path.Base(prefix)
-	server.Router.HandleFunc("GET "+prefix, func(response http.ResponseWriter, request *http.Request) {
+	if strings.HasSuffix(prefix, "/") {
+		// We are serving a directory
+		handler = http.StripPrefix(prefix, http.FileServerFS(instance))
+	} else {
+		// We are only serving a single file
+		filename := path.Base(prefix)
+		handler = http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+			http.ServeFileFS(response, request, instance, filename)
+		})
+	}
+
+	server.Router.Handle("GET "+prefix, http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		server.SetCacheHeaders(response.Header(), request)
-		http.ServeFileFS(response, request, instance, filename)
-	})
+		handler.ServeHTTP(response, request)
+	}))
 }
 
 // SetCacheHeaders sets the appropriate cache headers for static assets based on the request path & query parameters.
