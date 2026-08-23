@@ -8,8 +8,13 @@ import (
 	"syscall"
 
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/services/deck/internal/routes"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
+
+func InitializeRoutes(server *server.Server) {
+	server.Handle("GET /web/check-updates.php", routes.CheckUpdates)
+}
 
 func main() {
 	// TODO: Healthcheck
@@ -26,6 +31,7 @@ func main() {
 		app.Config.ApiPort,
 		"deck", app,
 	)
+	InitializeRoutes(deck)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
