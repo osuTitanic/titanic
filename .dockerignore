@@ -3,6 +3,8 @@
 .data
 .env
 .example.env
+.vscode
+.zed
 bin
 dist
 tmp

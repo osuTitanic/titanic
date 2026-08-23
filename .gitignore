@@ -26,8 +26,6 @@ go.work.sum
 ## Misc
 
 .idea
-.vscode
-.zed
 .data
 .env
 
