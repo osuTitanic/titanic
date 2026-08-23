@@ -1105,6 +1105,11 @@ input[type="url"], input[type="search"] {
     margin-left: 6px;
 }
 
+.user .flag, #titanic .flag {
+    /* Difference from osu!: Preserve the flag art style at high DPI */
+    image-rendering: pixelated;
+}
+
 /* Shared white avatar frame */
 .avatar-frame {
     background-color: white;

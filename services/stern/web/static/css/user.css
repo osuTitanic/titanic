@@ -124,11 +124,6 @@ body {
     max-width: 20px;
 }
 
-#titanic .flag {
-    /* Difference from osu!: Preserve the flag art style at high DPI */
-    image-rendering: pixelated;
-}
-
 #friend-status {
     padding-bottom: 8px;
     text-align: center;
