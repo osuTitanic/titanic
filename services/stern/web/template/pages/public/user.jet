@@ -118,7 +118,7 @@
 
             {{ if .IsOtherProfile() }}
                 <a href="/account/chat?target={{ .User.Id }}">
-                    <img src="{{ cachedUrl("/images/icons/user/contact.png") }}" title="Send private message" alt="DM" />
+                    <img src="{{ cachedUrl("/images/icons/user/contact.png") }}" title="Send private message" alt="DM" style="image-rendering: pixelated" />
                 </a>
             {{ end }}
 
