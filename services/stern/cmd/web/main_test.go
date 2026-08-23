@@ -80,6 +80,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "score", path: fmt.Sprintf("/scores/%d", data.score.Id)},
 		{name: "multiplayer match", path: fmt.Sprintf("/mp/%d", data.match.Id)},
 		{name: "rankings performance", path: "/rankings/osu/performance"},
+		{name: "rankings clears", path: "/rankings/osu/clears"},
 		{name: "rankings country", path: "/rankings/osu/country"},
 		{name: "rankings kudosu", path: "/rankings/kudosu"},
 		{name: "default user banchobot", path: fmt.Sprintf("/u/%d", 1)},
