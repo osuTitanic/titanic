@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
 func main() {
@@ -17,6 +21,16 @@ func main() {
 	}
 	defer app.Close()
 
-	slog.Info("gaming")
-	// TODO: HTTP server
+	deck := server.NewServer(
+		app.Config.ApiHost,
+		app.Config.ApiPort,
+		"deck", app,
+	)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := deck.Serve(ctx); err != nil {
+		slog.Error("HTTP server stopped unexpectedly", "error", err)
+	}
 }
