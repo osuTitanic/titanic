@@ -2,10 +2,6 @@
 	path = services/bancho
 	url = https://github.com/osuTitanic/anchor.git
 	branch = main
-[submodule "services/deck"]
-	path = services/deck
-	url = https://github.com/osuTitanic/deck.git
-	branch = main
 [submodule "services/bot"]
 	path = services/bot
 	url = https://github.com/osuTitanic/banchobot
