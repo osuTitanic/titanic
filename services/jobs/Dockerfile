@@ -22,7 +22,8 @@ COPY go.mod go.sum ./
 RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
-COPY . .
+COPY internal ./internal
+COPY services/jobs ./services/jobs
 
 # This shit is a hot mess to look at, but I don't care because it works
 
