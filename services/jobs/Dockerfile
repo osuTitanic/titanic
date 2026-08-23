@@ -77,18 +77,27 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     fi && \
     cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so
 
-FROM debian:trixie-slim AS runtime
+FROM debian:trixie-slim AS runtime-deps
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
         libicu76 && \
+    mkdir -p /out/lib && \
+    dpkg-query -L libicu76 | while IFS= read -r file; do \
+        case "$file" in \
+            */libicudata.so*|*/libicui18n.so*|*/libicuuc.so*) \
+                cp -a "$file" /out/lib/ ;; \
+        esac; \
+    done && \
     rm -rf /var/lib/apt/lists/*
+
+FROM gcr.io/distroless/cc-debian13:latest AS runtime
 
 WORKDIR /app
 COPY --from=builder /out/jobs /app/jobs
 COPY ./services/jobs/schedule.example.json /app/schedule.json
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
+COPY --from=runtime-deps /out/lib/ /app/lib/
 
 ENV LD_LIBRARY_PATH=/app/lib
 
