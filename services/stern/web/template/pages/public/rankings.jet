@@ -83,7 +83,7 @@
 
 {{ block countrySelect() }}
 <div class="country-select">
-    {{ range .TopCountries[:20] }}
+    {{ range .TopCountries }}
     <a href="?country={{ . }}">
         <img src="/images/flags/{{ . }}.gif" alt="" loading="eager">
     </a>

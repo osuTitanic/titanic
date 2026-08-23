@@ -13,6 +13,7 @@ import (
 )
 
 const RankingsEntriesPerPage = 50
+const RankingsCountryDisplayLimit = 20
 
 func RankingsGlobal(ctx *server.Context) {
 	modeString := ctx.PathValue("mode")
@@ -170,8 +171,8 @@ func resolveTopCountries(ctx *server.Context, mode constants.Mode, rankingType c
 		return nil, err
 	}
 
-	topCountries := make([]string, len(countries))
-	for i, country := range countries {
+	topCountries := make([]string, min(len(countries), RankingsCountryDisplayLimit))
+	for i, country := range countries[:len(topCountries)] {
 		topCountries[i] = country.Name
 	}
 	return topCountries, nil
