@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -15,6 +16,14 @@ type BeatmapRepository struct {
 type BeatmapPlayCount struct {
 	Beatmap *schemas.Beatmap
 	Count   int
+}
+
+type BeatmapStatusResult struct {
+	Id       int
+	SetId    int
+	TopicId  *int
+	Checksum string
+	Status   constants.BeatmapStatus
 }
 
 func NewBeatmapRepository(db *gorm.DB) *BeatmapRepository {
@@ -63,6 +72,20 @@ func (r *BeatmapRepository) ManyById(ids []int, preload ...string) ([]*schemas.B
 	var beatmaps []*schemas.Beatmap
 	err := Preloaded(r.db, preload).Where("id IN ?", ids).Find(&beatmaps).Error
 	return beatmaps, err
+}
+
+func (r *BeatmapRepository) FetchStatusesByChecksums(checksums []string) ([]BeatmapStatusResult, error) {
+	if len(checksums) == 0 {
+		return []BeatmapStatusResult{}, nil
+	}
+
+	var results []BeatmapStatusResult
+	err := r.db.Model(&schemas.Beatmap{}).
+		Select("beatmaps.id, beatmaps.set_id, beatmaps.md5 AS checksum, beatmaps.status, beatmapsets.topic_id").
+		Joins("JOIN beatmapsets ON beatmapsets.id = beatmaps.set_id").
+		Where("beatmaps.md5 IN ?", checksums).
+		Scan(&results).Error
+	return results, err
 }
 
 func (r *BeatmapRepository) GetCount() (int, error) {

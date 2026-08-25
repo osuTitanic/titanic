@@ -15,6 +15,7 @@ import (
 func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/check-updates.php", routes.CheckUpdates)
 	server.Handle("GET /web/osu-getseasonal.php", routes.SeasonalBackgrounds)
+	server.Handle("GET /web/osu-getstatus.php", routes.BeatmapStatus)
 	server.Handle("GET /web/osu-stat.php", routes.UserStats)
 	server.Handle("GET /web/osu-statoth.php", routes.UserStatsOther)
 	server.Handle("GET /web/osu-title-image.php", routes.TitleImage)
