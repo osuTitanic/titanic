@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"io"
+	"mime"
 	"strconv"
 	"strings"
 
@@ -107,8 +108,11 @@ func BeatmapDownload(ctx *server.Context) {
 		oszFilename = fmt.Sprintf("%d %s (no video).osz", beatmapset.Id, beatmapset.Name())
 	}
 
+	ctx.Response.Header().Set(
+		"Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": oszFilename}),
+	)
 	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
-	ctx.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", oszFilename))
 	ctx.Response.Header().Set("Last-Modified", beatmapset.LastUpdate.Format("Mon, 02 Jan 2006 15:04:05 GMT"))
 
 	if oszSize > 0 {
