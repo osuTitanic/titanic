@@ -64,6 +64,18 @@ func (r *BeatmapRepository) ById(id int, preload ...string) (*schemas.Beatmap, e
 	return LookupResult(&beatmap, err)
 }
 
+func (r *BeatmapRepository) ByFilename(filename string, preload ...string) (*schemas.Beatmap, error) {
+	var beatmap schemas.Beatmap
+	err := Preloaded(r.db, preload).Where("filename = ?", filename).First(&beatmap).Error
+	return LookupResult(&beatmap, err)
+}
+
+func (r *BeatmapRepository) ByChecksum(checksum string, preload ...string) (*schemas.Beatmap, error) {
+	var beatmap schemas.Beatmap
+	err := Preloaded(r.db, preload).Where("md5 = ?", checksum).First(&beatmap).Error
+	return LookupResult(&beatmap, err)
+}
+
 func (r *BeatmapRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmap, error) {
 	if len(ids) == 0 {
 		return []*schemas.Beatmap{}, nil
