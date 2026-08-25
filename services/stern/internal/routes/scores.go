@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"mime"
 	"net/http"
 	"strconv"
 
@@ -100,7 +101,10 @@ func ScoreReplayDownload(ctx *server.Context) {
 		score.Mode.Short(),
 	)
 
-	ctx.Response.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	ctx.Response.Header().Set(
+		"Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": filename}),
+	)
 	ctx.Response.Header().Set("Content-Length", strconv.Itoa(len(replay)))
 	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
 	ctx.Response.WriteHeader(http.StatusOK)
