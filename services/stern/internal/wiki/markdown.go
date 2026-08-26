@@ -110,10 +110,9 @@ func isRelativeImageUrl(reference *url.URL) bool {
 
 func renderWikiLinks(text, language string) string {
 	var builder strings.Builder
-	lines := strings.SplitAfter(text, "\n")
 	inFence := false
 
-	for _, line := range lines {
+	for line := range strings.SplitAfterSeq(text, "\n") {
 		trimmed := strings.TrimSpace(line)
 
 		// Ignore replacing wiki links for code fences
