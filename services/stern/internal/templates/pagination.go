@@ -2,6 +2,7 @@ package templates
 
 import (
 	"net/url"
+	"slices"
 	"strconv"
 )
 
@@ -136,7 +137,7 @@ func paginationUrl(path string, current url.Values, page int) string {
 func cloneQuery(current url.Values) url.Values {
 	query := make(url.Values, len(current))
 	for key, values := range current {
-		query[key] = append([]string(nil), values...)
+		query[key] = slices.Clone(values)
 	}
 	return query
 }
