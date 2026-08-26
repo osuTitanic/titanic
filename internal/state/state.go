@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
+	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/config"
@@ -108,7 +110,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		redisPassword = *cfg.RedisPass
 	}
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", cfg.RedisHost, cfg.RedisPort),
+		Addr:     net.JoinHostPort(cfg.RedisHost, strconv.Itoa(cfg.RedisPort)),
 		Password: redisPassword,
 	})
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {

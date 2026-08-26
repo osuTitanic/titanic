@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/smtp"
+	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/config"
 )
@@ -62,7 +64,7 @@ func (s *SMTPEmail) Send(message *Message) error {
 		return err
 	}
 
-	address := fmt.Sprintf("%s:%d", s.config.SmtpHost, s.config.SmtpPort)
+	address := net.JoinHostPort(s.config.SmtpHost, strconv.Itoa(s.config.SmtpPort))
 	client, err := smtp.Dial(address)
 	if err != nil {
 		return fmt.Errorf("email: failed to connect to SMTP server: %w", err)
