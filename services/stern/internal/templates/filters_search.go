@@ -19,10 +19,10 @@ type SearchHiddenInput struct {
 func searchParamUrl(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("searchParamUrl", 4, 4)
 
-	current, _ := a.Get(0).Interface().(url.Values)
-	path, _ := a.Get(1).Interface().(string)
-	key, _ := a.Get(2).Interface().(string)
-	value, _ := a.Get(3).Interface().(string)
+	current, _ := reflect.TypeAssert[url.Values](a.Get(0))
+	path, _ := reflect.TypeAssert[string](a.Get(1))
+	key, _ := reflect.TypeAssert[string](a.Get(2))
+	value, _ := reflect.TypeAssert[string](a.Get(3))
 
 	query := cloneQuery(current)
 	query.Del("page")
@@ -38,10 +38,10 @@ func searchParamUrl(a jet.Arguments) reflect.Value {
 func searchFlagUrl(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("searchFlagUrl", 4, 4)
 
-	current, _ := a.Get(0).Interface().(url.Values)
-	path, _ := a.Get(1).Interface().(string)
-	key, _ := a.Get(2).Interface().(string)
-	removes, _ := a.Get(3).Interface().(string)
+	current, _ := reflect.TypeAssert[url.Values](a.Get(0))
+	path, _ := reflect.TypeAssert[string](a.Get(1))
+	key, _ := reflect.TypeAssert[string](a.Get(2))
+	removes, _ := reflect.TypeAssert[string](a.Get(3))
 
 	query := cloneQuery(current)
 	query.Del("page")
@@ -63,17 +63,17 @@ func searchFlagUrl(a jet.Arguments) reflect.Value {
 func searchSortUrl(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("searchSortUrl", 3, 5)
 
-	current, _ := a.Get(0).Interface().(url.Values)
-	path, _ := a.Get(1).Interface().(string)
-	sort, _ := a.Get(2).Interface().(string)
+	current, _ := reflect.TypeAssert[url.Values](a.Get(0))
+	path, _ := reflect.TypeAssert[string](a.Get(1))
+	sort, _ := reflect.TypeAssert[string](a.Get(2))
 
 	defaultSort := "4"
 	defaultOrder := "0"
 	if a.NumOfArguments() > 3 {
-		defaultSort, _ = a.Get(3).Interface().(string)
+		defaultSort, _ = reflect.TypeAssert[string](a.Get(3))
 	}
 	if a.NumOfArguments() > 4 {
-		defaultOrder, _ = a.Get(4).Interface().(string)
+		defaultOrder, _ = reflect.TypeAssert[string](a.Get(4))
 	}
 
 	return reflect.ValueOf(buildSearchSortUrl(current, path, sort, defaultSort, defaultOrder))
@@ -111,7 +111,7 @@ func searchHiddenInputs(a jet.Arguments) reflect.Value {
 	inputs := make([]SearchHiddenInput, 0)
 	excluded := map[string]bool{"query": true, "page": true}
 	if a.NumOfArguments() > 1 {
-		extra, _ := a.Get(1).Interface().(string)
+		extra, _ := reflect.TypeAssert[string](a.Get(1))
 		for name := range strings.SplitSeq(extra, ",") {
 			name = strings.TrimSpace(name)
 			if name != "" {
@@ -120,7 +120,7 @@ func searchHiddenInputs(a jet.Arguments) reflect.Value {
 		}
 	}
 
-	current, _ := a.Get(0).Interface().(url.Values)
+	current, _ := reflect.TypeAssert[url.Values](a.Get(0))
 	for name, values := range current {
 		if excluded[name] {
 			continue
@@ -143,7 +143,7 @@ func searchHiddenInputs(a jet.Arguments) reflect.Value {
 func beatmapDifficultySort(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("orderedBeatmaps", 1, 1)
 
-	beatmaps, ok := a.Get(0).Interface().([]*schemas.Beatmap)
+	beatmaps, ok := reflect.TypeAssert[[]*schemas.Beatmap](a.Get(0))
 	if !ok {
 		return reflect.ValueOf([]*schemas.Beatmap{})
 	}
@@ -170,7 +170,7 @@ func beatmapDifficultySort(a jet.Arguments) reflect.Value {
 func beatmapRatingWidth(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("beatmapRatingWidth", 1, 1)
 
-	ratingAverage, ok := a.Get(0).Interface().(float64)
+	ratingAverage, ok := reflect.TypeAssert[float64](a.Get(0))
 	if !ok {
 		return reflect.ValueOf(0)
 	}

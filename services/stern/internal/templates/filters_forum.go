@@ -13,7 +13,7 @@ import (
 func forumUserLink(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("forumUserLink", 1, 2)
 
-	user, ok := a.Get(0).Interface().(*schemas.User)
+	user, ok := reflect.TypeAssert[*schemas.User](a.Get(0))
 	if !ok || user == nil {
 		return reflect.ValueOf("")
 	}
