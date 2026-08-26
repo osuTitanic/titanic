@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -105,10 +106,10 @@ func StartSchedulerAndWait(app *state.State, s *scheduler.Scheduler) {
 	s.Start(app)
 	app.Logger.Info("Scheduler started")
 
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+	<-ctx.Done()
 
-	app.Logger.Info("Shutting down...")
+	app.Logger.Info("Shutting down...", "cause", context.Cause(ctx))
 	s.Stop()
 }
