@@ -308,12 +308,11 @@ var nativeModAcronyms = []struct {
 }
 
 func newNativeScoreInfo(score *schemas.Score) *osunative.ScoreInfo {
-	totalScore := score.TotalScore
 	info := &osunative.ScoreInfo{
 		Accuracy:         score.Accuracy(),
 		MaxCombo:         score.MaxCombo,
 		CountMiss:        score.CountMiss,
-		LegacyTotalScore: &totalScore,
+		LegacyTotalScore: new(score.TotalScore),
 	}
 
 	switch score.Mode {

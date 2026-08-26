@@ -123,13 +123,13 @@ func notifyWebhook(app *state.State, logger *slog.Logger, file *schemas.ReleaseF
 
 	webhook := discord.Webhook{
 		URL:       app.Config.ReleaseUpdateNotifyWebhook,
-		Username:  ptr("Release Updates"),
-		AvatarURL: ptr("https://osu.ppy.sh/images/layout/osu-logo.png"),
+		Username:  new("Release Updates"),
+		AvatarURL: new("https://osu.ppy.sh/images/layout/osu-logo.png"),
 	}
 	embed := discord.Embed{
-		Title:       ptr("New release file"),
-		Description: ptr(fmt.Sprintf("A new file has been added to the `%s` release stream.", stream)),
-		Color:       ptr(0xFF66AB),
+		Title:       new("New release file"),
+		Description: new(fmt.Sprintf("A new file has been added to the `%s` release stream.", stream)),
+		Color:       new(0xFF66AB),
 	}
 	embed.AddField("Filename", fmt.Sprintf("`%s`", file.Filename), true)
 	embed.AddField("Version", fmt.Sprintf("`%d`", file.FileVersion), true)
@@ -165,8 +165,4 @@ func uploadFile(url string, app *state.State, logger *slog.Logger) error {
 	location := fmt.Sprintf("%s/%s", app.Config.ReleaseUpdateLocation, filename)
 	app.Storage.SaveUrl(checksum, location, url)
 	return nil
-}
-
-func ptr[T any](v T) *T {
-	return &v
 }
