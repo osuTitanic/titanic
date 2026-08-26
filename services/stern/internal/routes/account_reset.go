@@ -172,17 +172,14 @@ func createPasswordResetVerification(ctx *server.Context, user *schemas.User) (*
 
 	// Use transaction to ensure that the verification is created atomically
 	err := ctx.State.DatabaseTransaction(func(repos *state.Repositories) error {
-		token, err := generateVerificationToken()
-		if err != nil {
-			return err
-		}
-
-		verification, err = repos.Verifications.CreateForUser(
+		token := generateVerificationToken()
+		created, err := repos.Verifications.CreateForUser(
 			user.Id,
 			constants.VerificationTypePassword,
 			token,
 			time.Now(),
 		)
+		verification = created
 		return err
 	})
 	if err != nil {

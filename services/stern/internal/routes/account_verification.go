@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
+	"slices"
 	"strconv"
 	"time"
 
@@ -171,8 +171,8 @@ func ensureActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 	}
 
 	// Sort pending verifications by sent time, newest first
-	sort.Slice(pending, func(i, j int) bool {
-		return pending[i].SentAt.After(pending[j].SentAt)
+	slices.SortFunc(pending, func(a, b *schemas.Verification) int {
+		return b.SentAt.Compare(a.SentAt)
 	})
 
 	if len(pending) == 0 {
@@ -203,17 +203,14 @@ func createActivationVerification(ctx *server.Context, user *schemas.User) (*sch
 
 	// Use transaction to ensure that the verification is created atomically
 	err := ctx.State.DatabaseTransaction(func(repos *state.Repositories) error {
-		token, err := generateVerificationToken()
-		if err != nil {
-			return err
-		}
-
-		verification, err = repos.Verifications.CreateForUser(
+		token := generateVerificationToken()
+		created, err := repos.Verifications.CreateForUser(
 			user.Id,
 			constants.VerificationTypeActivation,
 			token,
 			time.Now(),
 		)
+		verification = created
 		return err
 	})
 	if err != nil {
@@ -233,17 +230,14 @@ func replaceVerification(ctx *server.Context, previousVerification *schemas.Veri
 			return err
 		}
 
-		token, err := generateVerificationToken()
-		if err != nil {
-			return err
-		}
-
-		verification, err = repos.Verifications.CreateForUser(
+		token := generateVerificationToken()
+		created, err := repos.Verifications.CreateForUser(
 			previousVerification.UserId,
 			verificationType,
 			token,
 			time.Now(),
 		)
+		verification = created
 		return err
 	})
 	if err != nil {
@@ -276,12 +270,10 @@ func sendWelcomeEmail(ctx *server.Context, verification *schemas.Verification) e
 	})
 }
 
-func generateVerificationToken() (string, error) {
+func generateVerificationToken() string {
 	token := make([]byte, 16)
-	if _, err := rand.Read(token); err != nil {
-		return "", fmt.Errorf("verification token generation: %w", err)
-	}
-	return hex.EncodeToString(token), nil
+	rand.Read(token)
+	return hex.EncodeToString(token)
 }
 
 func parseVerificationType(value string) (constants.VerificationType, bool) {

@@ -31,12 +31,10 @@ func CSRFRedisKey(userId int) string {
 	return "csrf:" + strconv.Itoa(userId)
 }
 
-func GenerateCSRFToken() (string, error) {
+func GenerateCSRFToken() string {
 	token := make([]byte, 32)
-	if _, err := rand.Read(token); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(token), nil
+	rand.Read(token)
+	return hex.EncodeToString(token)
 }
 
 func RequiresCSRF(cfg *config.Config, origin string) bool {
@@ -56,10 +54,7 @@ func RequiresCSRF(cfg *config.Config, origin string) bool {
 }
 
 func (store *CSRFStore) Upsert(ctx context.Context, userId int) (string, error) {
-	token, err := GenerateCSRFToken()
-	if err != nil {
-		return "", err
-	}
+	token := GenerateCSRFToken()
 
 	ttl := store.TTL
 	if ttl <= 0 {

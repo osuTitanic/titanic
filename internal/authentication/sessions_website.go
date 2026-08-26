@@ -50,13 +50,8 @@ func NewWebsiteSession(userId int, now time.Time, ttl time.Duration) (*WebsiteSe
 		return nil, ErrExpiredToken
 	}
 
-	sessionId, err := GenerateTokenId()
-	if err != nil {
-		return nil, err
-	}
-
 	return &WebsiteSession{
-		Id:        sessionId,
+		Id:        GenerateTokenId(),
 		UserId:    userId,
 		CreatedAt: now.Unix(),
 		ExpiresAt: now.Add(ttl).Unix(),

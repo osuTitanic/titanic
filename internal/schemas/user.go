@@ -1,9 +1,10 @@
 package schemas
 
 import (
+	"cmp"
 	"fmt"
 	"math"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -73,8 +74,8 @@ func (user *User) AgeDays() int {
 }
 
 func (user *User) SortStats() {
-	sort.Slice(user.Stats, func(i, j int) bool {
-		return user.Stats[i].Mode < user.Stats[j].Mode
+	slices.SortFunc(user.Stats, func(a, b *Stats) int {
+		return cmp.Compare(a.Mode, b.Mode)
 	})
 }
 
@@ -177,8 +178,8 @@ func (user *User) SortedGroups() []*Group {
 		groups = append(groups, entry.Group)
 	}
 
-	sort.Slice(groups, func(i, j int) bool {
-		return groups[i].Id < groups[j].Id
+	slices.SortFunc(groups, func(a, b *Group) int {
+		return cmp.Compare(a.Id, b.Id)
 	})
 	return groups
 }

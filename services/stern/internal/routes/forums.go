@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
-	"sort"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -227,12 +226,14 @@ func mergeForumTopics(pinned, recent []*schemas.ForumTopic) []*schemas.ForumTopi
 	}
 
 	// Sort the merged topics so that pinned topics appear first
-	sort.SliceStable(merged, func(i, j int) bool {
-		a, b := merged[i], merged[j]
+	slices.SortStableFunc(merged, func(a, b *schemas.ForumTopic) int {
 		if a.Pinned != b.Pinned {
-			return a.Pinned
+			if a.Pinned {
+				return -1
+			}
+			return 1
 		}
-		return a.LastPostAt.After(b.LastPostAt)
+		return b.LastPostAt.Compare(a.LastPostAt)
 	})
 	return merged
 }

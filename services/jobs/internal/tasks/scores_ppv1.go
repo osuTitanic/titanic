@@ -1,8 +1,9 @@
 package tasks
 
 import (
+	"cmp"
 	"log/slog"
-	"sort"
+	"slices"
 
 	"github.com/osuTitanic/titanic/internal/performance"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -29,8 +30,8 @@ func UpdatePPv1(app *state.State, logger *slog.Logger) error {
 	}
 	logger.Info("Updating ppv1 calculations...", "total_users", len(userList))
 
-	sort.Slice(userList, func(i, j int) bool {
-		return resolveUserPPv1(userList[i]) > resolveUserPPv1(userList[j])
+	slices.SortFunc(userList, func(a, b *schemas.User) int {
+		return cmp.Compare(resolveUserPPv1(b), resolveUserPPv1(a))
 	})
 
 	logger.Info(

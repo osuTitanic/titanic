@@ -103,17 +103,14 @@ func changeEmailAddress(ctx *server.Context, newEmail, emailConfirm string) {
 			return err
 		}
 
-		token, err := generateVerificationToken()
-		if err != nil {
-			return err
-		}
-
-		verification, err = repos.Verifications.CreateForUser(
+		token := generateVerificationToken()
+		created, err := repos.Verifications.CreateForUser(
 			ctx.CurrentUser.Id,
 			constants.VerificationTypeActivation,
 			token,
 			time.Now(),
 		)
+		verification = created
 		return err
 	})
 	if err != nil {
