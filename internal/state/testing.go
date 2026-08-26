@@ -3,7 +3,6 @@
 package state
 
 import (
-	"io"
 	"log/slog"
 	"net"
 	"strconv"
@@ -40,7 +39,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 	t.Log("creating new test state")
 
 	options := &TestStateOptions{
-		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		logger: slog.New(slog.DiscardHandler),
 	}
 	for _, opt := range opts {
 		opt(options)
