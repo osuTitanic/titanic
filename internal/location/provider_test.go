@@ -47,7 +47,7 @@ func TestProviderGeoLite(t *testing.T) {
 }
 
 func TestProviderWebFallback(t *testing.T) {
-	if !testkit.IsInternetAvailable() {
+	if !testkit.IsInternetAvailable(t.Context()) {
 		t.Skip("internet connection is unavailable")
 	}
 

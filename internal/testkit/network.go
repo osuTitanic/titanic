@@ -12,8 +12,8 @@ const (
 )
 
 // IsInternetAvailable reports whether an external http endpoint can be reached.
-func IsInternetAvailable() bool {
-	ctx, cancel := context.WithTimeout(context.Background(), internetCheckTimeout)
+func IsInternetAvailable(ctx context.Context) bool {
+	ctx, cancel := context.WithTimeout(ctx, internetCheckTimeout)
 	defer cancel()
 
 	return isInternetAvailable(ctx, http.DefaultClient, internetCheckUrl)

@@ -3,7 +3,6 @@
 package authentication
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -12,7 +11,7 @@ import (
 
 func TestWebsiteSessionStoreWithRedisContainer(t *testing.T) {
 	// Spin up a temporary redis container to complete this test
-	ctx := context.Background()
+	ctx := t.Context()
 	client := testkit.RedisClient(t)
 	store := NewWebsiteSessionStore(client)
 

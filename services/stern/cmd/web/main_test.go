@@ -4,7 +4,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"image"
 	"image/color"
@@ -93,7 +92,7 @@ func TestWebsiteRoutesRender(t *testing.T) {
 
 	t.Run("wiki", func(t *testing.T) {
 		// We need an internet connection to be able to fetch the wiki content from github
-		if !testkit.IsInternetAvailable() {
+		if !testkit.IsInternetAvailable(t.Context()) {
 			t.Skip("internet connection is unavailable")
 		}
 
@@ -395,7 +394,7 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 func populateWebsiteStats(t *testing.T, app *state.State) {
 	t.Helper()
 
-	if err := app.Redis.MSet(context.Background(),
+	if err := app.Redis.MSet(t.Context(),
 		"bancho:totalusers", "0",
 		"bancho:totalscores", "0",
 		"bancho:activity:osu", "0",
@@ -522,7 +521,7 @@ func populateWebsiteRankingCountries(t *testing.T, app *state.State) {
 		country := country
 
 		for _, rankingType := range []string{"performance", "rscore", "tscore"} {
-			pipe.ZAdd(context.Background(), app.Rankings.RankingKey(constants.ModeOsu, rankingType, &country), redis.Z{
+			pipe.ZAdd(t.Context(), app.Rankings.RankingKey(constants.ModeOsu, rankingType, &country), redis.Z{
 				Score:  score,
 				Member: member,
 			})
@@ -535,7 +534,7 @@ func populateWebsiteRankingCountries(t *testing.T, app *state.State) {
 		}
 	}
 
-	if _, err := pipe.Exec(context.Background()); err != nil {
+	if _, err := pipe.Exec(t.Context()); err != nil {
 		t.Fatalf("failed to seed ranking country selector: %v", err)
 	}
 }
