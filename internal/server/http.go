@@ -200,7 +200,7 @@ func (server *HttpServer[C]) Serve(ctx context.Context) error {
 		}
 		return err
 	case <-ctx.Done():
-		server.Logger.Info("Shutting down server")
+		server.Logger.Info("Shutting down server", "cause", context.Cause(ctx))
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
