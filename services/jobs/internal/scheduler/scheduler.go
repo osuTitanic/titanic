@@ -4,7 +4,7 @@ package scheduler
 
 import (
 	"log/slog"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/state"
@@ -68,14 +68,20 @@ func (c *Scheduler) AddTask(task *Task) {
 }
 
 func (c *Scheduler) run(app *state.State) {
-	sortByTime := func(i, j int) bool {
-		if c.entries[i].Next.IsZero() {
-			return false
+	sortByTime := func(a, b *Task) int {
+		aIsZero := a.Next.IsZero()
+		bIsZero := b.Next.IsZero()
+
+		switch {
+		case aIsZero && bIsZero:
+			return 0
+		case aIsZero:
+			return 1
+		case bIsZero:
+			return -1
+		default:
+			return a.Next.Compare(b.Next)
 		}
-		if c.entries[j].Next.IsZero() {
-			return true
-		}
-		return c.entries[i].Next.Before(c.entries[j].Next)
 	}
 	now := time.Now()
 
@@ -84,15 +90,15 @@ func (c *Scheduler) run(app *state.State) {
 	}
 
 	for {
-		sort.Slice(c.entries, sortByTime)
+		slices.SortFunc(c.entries, sortByTime)
 
 		// Set the timer to the next task's scheduled time, or a
 		// default of 1 hour if there are no tasks
-		timer := time.NewTimer(time.Hour)
-
+		delay := time.Hour
 		if len(c.entries) > 0 && !c.entries[0].Next.IsZero() {
-			timer = time.NewTimer(time.Until(c.entries[0].Next))
+			delay = time.Until(c.entries[0].Next)
 		}
+		timer := time.NewTimer(delay)
 
 		select {
 		case now = <-timer.C:
