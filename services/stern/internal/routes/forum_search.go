@@ -215,7 +215,7 @@ func forumPostSearchExcerpt(content, textQuery string) []templates.ForumSearchEx
 func forumSearchTerms(textQuery string) map[string]struct{} {
 	// Split on every non-letter & remove duplicate terms
 	terms := make(map[string]struct{})
-	for _, term := range strings.FieldsFunc(strings.ToLower(textQuery), func(r rune) bool {
+	for term := range strings.FieldsFuncSeq(strings.ToLower(textQuery), func(r rune) bool {
 		return !isForumSearchWordRune(r)
 	}) {
 		terms[term] = struct{}{}

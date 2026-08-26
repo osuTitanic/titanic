@@ -73,13 +73,8 @@ func StripFrontMatter(text string) string {
 // e.g. "# Example Title\nContent" -> "Example Title"
 func ParseTitle(text string) string {
 	text = StripFrontMatter(text)
-	lines := strings.Split(text, "\n")
-	if len(lines) == 0 {
-		return ""
-	}
-
 	// Find the first line with a title ('# <title>')
-	for _, line := range lines {
+	for line := range strings.SplitSeq(text, "\n") {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "#") {
 			return strings.TrimSpace(strings.TrimLeft(line, "#"))
