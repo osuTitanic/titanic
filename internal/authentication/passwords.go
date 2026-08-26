@@ -39,9 +39,7 @@ func GetPasswordCache() map[string]bool {
 	passwordCacheMu.RLock()
 	defer passwordCacheMu.RUnlock()
 
-	cloned := make(map[string]bool, len(passwordCache))
-	maps.Copy(cloned, passwordCache)
-	return cloned
+	return maps.Clone(passwordCache)
 }
 
 func ClearPasswordCache() {
