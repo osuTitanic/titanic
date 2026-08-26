@@ -25,7 +25,7 @@ func Avatar(ctx *server.Context) {
 	avatarFilename := ctx.PathValue("filename")
 
 	// Workaround for older clients that use file extensions
-	userIdString := strings.SplitN(avatarFilename, "_", 2)[0]
+	userIdString, _, _ := strings.Cut(avatarFilename, "_")
 	userId, err := strconv.Atoi(userIdString)
 	if err != nil {
 		DefaultAvatar(ctx)

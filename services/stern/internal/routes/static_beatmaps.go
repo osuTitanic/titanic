@@ -14,7 +14,7 @@ func BeatmapThumbnail(ctx *server.Context) {
 	filename := ctx.PathValue("filename")
 
 	// Handle filenames such as "1.jpg" (small) and "1l.jpg" (large)
-	key := strings.SplitN(filename, ".", 2)[0]
+	key, _, _ := strings.Cut(filename, ".")
 	large := strings.Contains(key, "l")
 
 	setId, err := strconv.Atoi(strings.ReplaceAll(key, "l", ""))
@@ -44,7 +44,7 @@ func BeatmapAudioPreview(ctx *server.Context) {
 	filename := ctx.PathValue("filename")
 
 	// Handle filenames such as "1.mp3"
-	key := strings.SplitN(filename, ".", 2)[0]
+	key, _, _ := strings.Cut(filename, ".")
 
 	setId, err := strconv.Atoi(key)
 	if err != nil {
