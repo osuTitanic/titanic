@@ -177,7 +177,7 @@ func (server *HttpServer[C]) ContextMiddleware(handler HttpHandlerFunc[C]) http.
 // Serve starts the server and gracefully shuts it down when ctx is cancelled.
 func (server *HttpServer[C]) Serve(ctx context.Context) error {
 	httpServer := &http.Server{
-		Addr:              fmt.Sprintf("%s:%d", server.Host, server.Port),
+		Addr:              net.JoinHostPort(server.Host, strconv.Itoa(server.Port)),
 		Handler:           server.LoggingMiddleware(server.Router),
 		ReadHeaderTimeout: httpReadHeaderTimeout,
 		IdleTimeout:       httpIdleTimeout,
