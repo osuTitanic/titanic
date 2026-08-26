@@ -245,11 +245,7 @@ func performRegistration(ctx *server.Context, input registrationRequest) (result
 			// Skip email verification if we can't send emails
 			return nil
 		}
-
-		token, err := generateVerificationToken()
-		if err != nil {
-			return err
-		}
+		token := generateVerificationToken()
 
 		verification, err := repositories.Verifications.CreateForUser(
 			user.Id,

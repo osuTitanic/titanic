@@ -1,8 +1,9 @@
 package performance
 
 import (
+	"cmp"
 	"math"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -143,8 +144,10 @@ func (service *PPv1Service) CalculateWeight(pps []float64) float64 {
 		return 0
 	}
 
-	sorted := append([]float64(nil), pps...)
-	sort.Sort(sort.Reverse(sort.Float64Slice(sorted)))
+	sorted := slices.Clone(pps)
+	slices.SortFunc(sorted, func(a, b float64) int {
+		return cmp.Compare(b, a)
+	})
 
 	baseWeight := 0.0
 	for index, pp := range sorted {

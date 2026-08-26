@@ -1,7 +1,8 @@
 package rankings
 
 import (
-	"sort"
+	"cmp"
+	"slices"
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -91,8 +92,8 @@ func (service *RankingsService) TopCountries(mode constants.Mode) ([]*CountryRan
 		})
 	}
 
-	sort.Slice(rankings, func(i, j int) bool {
-		return rankings[i].TotalPerformance > rankings[j].TotalPerformance
+	slices.SortFunc(rankings, func(a, b *CountryRanking) int {
+		return cmp.Compare(b.TotalPerformance, a.TotalPerformance)
 	})
 	return rankings, nil
 }
@@ -137,8 +138,8 @@ func (service *RankingsService) TopCountriesForType(mode constants.Mode, rankTyp
 		})
 	}
 
-	sort.Slice(rankings, func(i, j int) bool {
-		return rankings[i].Score > rankings[j].Score
+	slices.SortFunc(rankings, func(a, b *CountryRankingSingle) int {
+		return cmp.Compare(b.Score, a.Score)
 	})
 	return rankings, nil
 }

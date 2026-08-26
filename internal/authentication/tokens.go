@@ -60,11 +60,6 @@ func GenerateToken(secret string, user *schemas.User, expiry time.Time, source T
 		return "", fmt.Errorf("authentication: user is nil")
 	}
 
-	tokenId, err := GenerateTokenId()
-	if err != nil {
-		return "", err
-	}
-
 	return GenerateTokenClaims(secret, TokenClaims{
 		Id:       user.Id,
 		Name:     user.Name,
@@ -72,7 +67,7 @@ func GenerateToken(secret string, user *schemas.User, expiry time.Time, source T
 		IssuedAt: time.Now().Unix(),
 		Source:   source,
 		Type:     tokenType,
-		TokenId:  tokenId,
+		TokenId:  GenerateTokenId(),
 	})
 }
 
@@ -200,12 +195,10 @@ func ValidateTokenTypeAt(token string, secret string, tokenType TokenType, now t
 	return claims, nil
 }
 
-func GenerateTokenId() (string, error) {
+func GenerateTokenId() string {
 	randomBytes := make([]byte, 32)
-	if _, err := rand.Read(randomBytes); err != nil {
-		return "", fmt.Errorf("authentication: generate token id: %w", err)
-	}
-	return hex.EncodeToString(randomBytes), nil
+	rand.Read(randomBytes)
+	return hex.EncodeToString(randomBytes)
 }
 
 func signToken(secret string, signingInput string) string {

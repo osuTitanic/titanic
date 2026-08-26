@@ -1,9 +1,10 @@
 package tasks
 
 import (
+	"cmp"
 	"fmt"
 	"log/slog"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -88,8 +89,8 @@ func generateUnreadDmNotification(app *state.State, userId int) (string, string,
 	}
 
 	// Sort users by count of unread messages in descending order
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].count > entries[j].count
+	slices.SortFunc(entries, func(a, b UnreadDmEntry) int {
+		return cmp.Compare(b.count, a.count)
 	})
 	link := fmt.Sprintf("/account/chat?target=%d", entries[0].userId)
 

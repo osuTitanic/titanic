@@ -1,9 +1,10 @@
 package tasks
 
 import (
+	"cmp"
 	"fmt"
 	"log/slog"
-	"sort"
+	"slices"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -58,11 +59,11 @@ func fixReplayHistoryForUser(app *state.State, logger *slog.Logger, userId int, 
 	}
 
 	// Sort replay entries by date
-	sort.Slice(replayEntries, func(i, j int) bool {
-		if replayEntries[i].Year == replayEntries[j].Year {
-			return replayEntries[i].Month < replayEntries[j].Month
+	slices.SortFunc(replayEntries, func(a, b *schemas.ReplayHistory) int {
+		if byYear := cmp.Compare(a.Year, b.Year); byYear != 0 {
+			return byYear
 		}
-		return replayEntries[i].Year < replayEntries[j].Year
+		return cmp.Compare(a.Month, b.Month)
 	})
 
 	if len(replayEntries) == 0 {
@@ -120,11 +121,11 @@ func fixPlayHistoryForUser(app *state.State, logger *slog.Logger, userId int, mo
 	}
 
 	// Sort play entries by date
-	sort.Slice(playEntries, func(i, j int) bool {
-		if playEntries[i].Year == playEntries[j].Year {
-			return playEntries[i].Month < playEntries[j].Month
+	slices.SortFunc(playEntries, func(a, b *schemas.PlayHistory) int {
+		if byYear := cmp.Compare(a.Year, b.Year); byYear != 0 {
+			return byYear
 		}
-		return playEntries[i].Year < playEntries[j].Year
+		return cmp.Compare(a.Month, b.Month)
 	})
 
 	if len(playEntries) == 0 {

@@ -1,9 +1,10 @@
 package templates
 
 import (
+	"cmp"
 	"net/url"
 	"reflect"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/CloudyKit/jet/v6"
@@ -131,11 +132,11 @@ func searchHiddenInputs(a jet.Arguments) reflect.Value {
 	}
 
 	// Sort the inputs by name and then by value for consistent ordering
-	sort.Slice(inputs, func(i, j int) bool {
-		if inputs[i].Name == inputs[j].Name {
-			return inputs[i].Value < inputs[j].Value
+	slices.SortFunc(inputs, func(a, b SearchHiddenInput) int {
+		if byName := cmp.Compare(a.Name, b.Name); byName != 0 {
+			return byName
 		}
-		return inputs[i].Name < inputs[j].Name
+		return cmp.Compare(a.Value, b.Value)
 	})
 	return reflect.ValueOf(inputs)
 }
@@ -158,11 +159,11 @@ func beatmapDifficultySort(a jet.Arguments) reflect.Value {
 		}
 	}
 
-	sort.SliceStable(activeBeatmaps, func(i, j int) bool {
-		if activeBeatmaps[i].Mode == activeBeatmaps[j].Mode {
-			return activeBeatmaps[i].Diff < activeBeatmaps[j].Diff
+	slices.SortStableFunc(activeBeatmaps, func(a, b *schemas.Beatmap) int {
+		if byMode := cmp.Compare(a.Mode, b.Mode); byMode != 0 {
+			return byMode
 		}
-		return activeBeatmaps[i].Mode < activeBeatmaps[j].Mode
+		return cmp.Compare(a.Diff, b.Diff)
 	})
 	return reflect.ValueOf(activeBeatmaps)
 }
