@@ -23,8 +23,6 @@ func RunWorkerPool[T any](items []T, workerCount int, work func(T) error) error 
 	errs := make(chan error, 1)
 
 	worker := func() {
-		defer wg.Done()
-
 		for {
 			select {
 			case <-ctx.Done():
@@ -46,8 +44,7 @@ func RunWorkerPool[T any](items []T, workerCount int, work func(T) error) error 
 	}
 
 	for range workerCount {
-		wg.Add(1)
-		go worker()
+		wg.Go(worker)
 	}
 
 	for _, item := range items {
