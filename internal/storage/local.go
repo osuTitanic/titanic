@@ -30,6 +30,10 @@ func (storage *FileStorage) Setup() error {
 	return nil
 }
 
+// TODO: Use os.Root to ensure all file operations stay in dataPath
+//       This does not need immediate attention since we only store /
+// 		 request IDs right now, which are validated beforehand
+
 func (storage *FileStorage) Read(key string, folder string) ([]byte, error) {
 	path := fmt.Sprintf("%s/%s/%s", storage.dataPath, folder, key)
 	return os.ReadFile(path)
