@@ -12,7 +12,7 @@ import (
 func formatActivity(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("formatActivity", 1, 1)
 
-	entry, ok := a.Get(0).Interface().(*schemas.Activity)
+	entry, ok := reflect.TypeAssert[*schemas.Activity](a.Get(0))
 	if !ok || entry == nil {
 		return reflect.ValueOf("")
 	}

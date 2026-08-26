@@ -62,25 +62,23 @@ func formatFloat(a jet.Arguments) reflect.Value {
 func formatDateShort(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("formatDateShort", 1, 1)
 
-	value := a.Get(0).Interface()
-	switch value := value.(type) {
-	case time.Time:
+	value := a.Get(0)
+	if value, ok := reflect.TypeAssert[time.Time](value); ok {
 		return reflect.ValueOf(value.Format("Jan 2, 2006"))
-	case *time.Time:
+	}
+	if value, ok := reflect.TypeAssert[*time.Time](value); ok {
 		if value == nil {
 			return reflect.ValueOf("")
 		}
 		return reflect.ValueOf(value.Format("Jan 2, 2006"))
-	default:
-		return reflect.ValueOf("")
 	}
+	return reflect.ValueOf("")
 }
 
 func countryName(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("countryName", 1, 1)
 
-	value := a.Get(0).Interface()
-	if code, ok := value.(string); ok {
+	if code, ok := reflect.TypeAssert[string](a.Get(0)); ok {
 		return reflect.ValueOf(constants.GetCountryNameFromCode(code))
 	}
 
@@ -90,7 +88,7 @@ func countryName(a jet.Arguments) reflect.Value {
 func renderBBCode(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("bbcode", 1, 1)
 
-	input, ok := a.Get(0).Interface().(string)
+	input, ok := reflect.TypeAssert[string](a.Get(0))
 	if !ok {
 		return reflect.ValueOf("")
 	}
@@ -100,7 +98,7 @@ func renderBBCode(a jet.Arguments) reflect.Value {
 func shortMods(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("shortMods", 1, 1)
 
-	mods, ok := a.Get(0).Interface().(constants.Mods)
+	mods, ok := reflect.TypeAssert[constants.Mods](a.Get(0))
 	if !ok {
 		return reflect.ValueOf("None")
 	}
@@ -113,7 +111,7 @@ func shortMods(a jet.Arguments) reflect.Value {
 func markdownUrls(a jet.Arguments) reflect.Value {
 	a.RequireNumOfArguments("markdownUrls", 1, 1)
 
-	input, ok := a.Get(0).Interface().(string)
+	input, ok := reflect.TypeAssert[string](a.Get(0))
 	if !ok {
 		return reflect.ValueOf("")
 	}
