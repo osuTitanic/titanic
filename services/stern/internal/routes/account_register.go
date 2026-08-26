@@ -276,21 +276,16 @@ func notifyOfficerAboutRegistration(ctx *server.Context, user *schemas.User) {
 		return
 	}
 
-	title := "New registration"
-	description := fmt.Sprintf(
-		"[%s](%s/u/%d) registered an account.",
-		user.Name,
-		strings.TrimRight(ctx.State.Config.OsuBaseUrl(), "/"),
-		user.Id,
-	)
-	timestamp := time.Now()
-	color := 0x66CCFF
-
 	embed := discord.Embed{
-		Title:       &title,
-		Description: &description,
-		Color:       &color,
-		Timestamp:   &timestamp,
+		Title: new("New registration"),
+		Description: new(fmt.Sprintf(
+			"[%s](%s/u/%d) registered an account.",
+			user.Name,
+			strings.TrimRight(ctx.State.Config.OsuBaseUrl(), "/"),
+			user.Id,
+		)),
+		Color:     new(0x66CCFF),
+		Timestamp: new(time.Now()),
 	}
 	embed.AddField("User ID", fmt.Sprintf("`%d`", user.Id), true)
 	embed.AddField("Username", fmt.Sprintf("`%s`", user.Name), true)
