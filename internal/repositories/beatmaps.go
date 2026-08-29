@@ -104,6 +104,18 @@ func (r *BeatmapRepository) ByChecksum(checksum string, preload ...string) (*sch
 	return LookupResult(&beatmap, err)
 }
 
+func (r *BeatmapRepository) Many(critera map[string]any, preload ...string) ([]*schemas.Beatmap, error) {
+	var beatmaps []*schemas.Beatmap
+	query := Preloaded(r.db, preload)
+
+	for key, value := range critera {
+		query = query.Where(key, value)
+	}
+
+	err := query.Find(&beatmaps).Error
+	return beatmaps, err
+}
+
 func (r *BeatmapRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmap, error) {
 	if len(ids) == 0 {
 		return []*schemas.Beatmap{}, nil
