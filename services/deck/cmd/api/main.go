@@ -18,6 +18,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("POST /web/osu-getbeatmapinfo.php", routes.BeatmapInfo)
 	server.Handle("GET /web/osu-getseasonal.php", routes.SeasonalBackgrounds)
 	server.Handle("GET /web/osu-getstatus.php", routes.BeatmapStatus)
+	server.Handle("POST /web/osu-screenshot.php", routes.Screenshot)
 	server.Handle("GET /web/osu-stat.php", routes.UserStats)
 	server.Handle("GET /web/osu-statoth.php", routes.UserStatsOther)
 	server.Handle("GET /web/osu-title-image.php", routes.TitleImage)
