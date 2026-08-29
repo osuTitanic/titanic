@@ -29,6 +29,7 @@ var availableTasks = TaskList{
 	"users_notifications":     TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
 	"users_historical":        TaskWithoutArguments(tasks.FixHistoricalData),
 	"users_autodelete":        TaskWithoutArguments(tasks.AutoDeleteUsers),
+	"beatmaps_eyup":           TaskWithoutArguments(tasks.RecalculateEyupStars),
 	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
 	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
 	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
