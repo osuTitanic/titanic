@@ -126,6 +126,10 @@ func (v UserProfileView) IsOtherProfile() bool {
 	return v.CurrentUser != nil && v.CurrentUser.Id != v.User.Id
 }
 
+func (v UserProfileView) ArrivedSinceBeginning() bool {
+	return v.User != nil && !v.User.CreatedAt.After(v.Config.BeginningEndedAt.Time())
+}
+
 type UserGeneralTab struct {
 	User           *schemas.User
 	Mode           constants.Mode

@@ -209,7 +209,11 @@
     <div title="Arrived">
         <i class="icon-signin"></i>
         <div>
-            <span class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></span>
+            {{ if .ArrivedSinceBeginning() }}
+                <span datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC">since the beginning</span>
+            {{ else }}
+                <span class="timeago" datetime="{{ .User.CreatedAt.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.CreatedAt.Format("2006-01-02 15:04:05") }} UTC"></span>
+            {{ end }}
         </div>
     </div>
 
