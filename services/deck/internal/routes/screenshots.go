@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"slices"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/activity"
-	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
@@ -23,9 +23,16 @@ var allowedScreenshotFilenames = []string{"jpg", "png", "ss"}
 
 // /web/osu-screenshot.php -> Upload an in-game screenshot (Shift+F12)
 func Screenshot(ctx *server.Context) {
-	user, ok := authenticateUserForScreenshot(ctx)
-	if !ok {
-		// Response already set by function
+	user, err := ctx.AuthenticateUserFromQuery("u", "p", true)
+	switch {
+	case errors.Is(err, server.ErrUserNotFound):
+	case errors.Is(err, server.ErrInvalidPassword):
+	case errors.Is(err, server.ErrBanchoPresenceNotFound):
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+		return
+	case err != nil:
+		ctx.Logger.Error("Failed to authenticate user", "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -53,7 +60,7 @@ func Screenshot(ctx *server.Context) {
 	user.LatestActivity = time.Now()
 	ctx.State.Users.Update(user, "latest_activity")
 
-	err := activity.Submit(
+	err = activity.Submit(
 		ctx.State,
 		user.Id,
 		nil, // mode independent
@@ -68,45 +75,6 @@ func Screenshot(ctx *server.Context) {
 
 	ctx.Logger.Info("Screenshot uploaded", "user_id", user.Id, "id", screenshot.Id)
 	ctx.RenderText(http.StatusOK, key)
-}
-
-// TODO: I want to centralize user authentication logic somewhere
-// 		 with custom response handling
-
-func authenticateUserForScreenshot(ctx *server.Context) (*schemas.User, bool) {
-	username := ctx.QueryValue("u")
-	password := ctx.QueryValue("p")
-
-	user, err := ctx.State.Users.ByName(username)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch screenshot user", "username", username, "error", err)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		return nil, false
-	}
-	if user == nil {
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return nil, false
-	}
-	if !authentication.VerifyPasswordHashFromMd5(password, user.Bcrypt) {
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return nil, false
-	}
-
-	online, err := ctx.State.Redis.Exists(
-		ctx.Request.Context(),
-		"bancho:status:"+strconv.Itoa(user.Id),
-	).Result()
-	if err != nil {
-		ctx.Logger.Error("Failed to check bancho status", "user_id", user.Id, "error", err)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		return nil, false
-	}
-	if online == 0 {
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return nil, false
-	}
-
-	return user, true
 }
 
 func readScreenshot(ctx *server.Context) ([]byte, bool) {
