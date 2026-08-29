@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	"slices"
 	"strings"
@@ -23,16 +22,8 @@ type beatmapInfoRequest struct {
 
 // /web/osu-getbeatmapinfo.php -> Resolve beatmap metadata & pb's, similar to Bancho's BeatmapInfo packets
 func BeatmapInfo(ctx *server.Context) {
-	user, err := ctx.AuthenticateUserFromQuery("u", "h", true)
-	switch {
-	case errors.Is(err, server.ErrUserNotFound):
-	case errors.Is(err, server.ErrInvalidPassword):
-	case errors.Is(err, server.ErrBanchoPresenceNotFound):
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return
-	case err != nil:
-		ctx.Logger.Error("Failed to authenticate beatmap info user", "error", err)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
+	user, ok := ctx.HandleUserAuthenticationSimple("u", "h", true)
+	if !ok {
 		return
 	}
 

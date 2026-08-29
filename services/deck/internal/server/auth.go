@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
@@ -15,6 +16,9 @@ var (
 	ErrBanchoPresenceNotFound = errors.New("bancho presence not found")
 )
 
+// AuthenticateUser authenticates a user by their username and password.
+// If `requireBanchoPresence` is true, the user must also be present on Bancho.
+// Use ErrUserNotFound, ErrInvalidPassword, and ErrBanchoPresenceNotFound to check for specific errors.
 func (ctx *Context) AuthenticateUser(
 	username string,
 	password string,
@@ -49,6 +53,7 @@ func (ctx *Context) AuthenticateUser(
 	return user, nil
 }
 
+// AuthenticateUserFromQuery authenticates a user using query parameters for username and password.
 func (ctx *Context) AuthenticateUserFromQuery(
 	usernameKey string,
 	passwordKey string,
@@ -59,4 +64,30 @@ func (ctx *Context) AuthenticateUserFromQuery(
 		ctx.QueryValue(passwordKey),
 		requireBanchoPresence,
 	)
+}
+
+// HandleUserAuthenticationSimple authenticates a user and handles the response in case of failure.
+func (ctx *Context) HandleUserAuthenticationSimple(
+	usernameKey string,
+	passwordKey string,
+	requireBanchoPresence bool,
+) (*schemas.User, bool) {
+	user, err := ctx.AuthenticateUserFromQuery(
+		usernameKey,
+		passwordKey,
+		requireBanchoPresence,
+	)
+
+	switch {
+	case errors.Is(err, ErrUserNotFound),
+		errors.Is(err, ErrInvalidPassword),
+		errors.Is(err, ErrBanchoPresenceNotFound):
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+	case err != nil:
+		ctx.Logger.Error("Failed to authenticate user", "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+	default:
+		return user, true
+	}
+	return nil, false
 }

@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"slices"
@@ -23,16 +22,9 @@ var allowedScreenshotFilenames = []string{"jpg", "png", "ss"}
 
 // /web/osu-screenshot.php -> Upload an in-game screenshot (Shift+F12)
 func Screenshot(ctx *server.Context) {
-	user, err := ctx.AuthenticateUserFromQuery("u", "p", true)
-	switch {
-	case errors.Is(err, server.ErrUserNotFound):
-	case errors.Is(err, server.ErrInvalidPassword):
-	case errors.Is(err, server.ErrBanchoPresenceNotFound):
-		ctx.Response.WriteHeader(http.StatusUnauthorized)
-		return
-	case err != nil:
-		ctx.Logger.Error("Failed to authenticate user", "error", err)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
+	user, ok := ctx.HandleUserAuthenticationSimple("u", "p", true)
+	if !ok {
+		// Response already set by function
 		return
 	}
 
@@ -60,7 +52,7 @@ func Screenshot(ctx *server.Context) {
 	user.LatestActivity = time.Now()
 	ctx.State.Users.Update(user, "latest_activity")
 
-	err = activity.Submit(
+	err := activity.Submit(
 		ctx.State,
 		user.Id,
 		nil, // mode independent
