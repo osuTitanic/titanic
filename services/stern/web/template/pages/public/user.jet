@@ -225,7 +225,11 @@
         {{ else }}
             <i class="icon-signout"></i>
             <div>
-                <span class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></span>
+                {{ if .LastActiveBeforeBeginning() }}
+                    <span datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC">dead</span>
+                {{ else }}
+                    <span class="timeago" datetime="{{ .User.LatestActivity.Format("2006-01-02T15:04:05Z07:00") }}" title="{{ .User.LatestActivity.Format("2006-01-02 15:04:05") }} UTC"></span>
+                {{ end }}
             </div>
         {{ end }}
     </div>
