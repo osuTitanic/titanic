@@ -130,6 +130,10 @@ func (v UserProfileView) ArrivedSinceBeginning() bool {
 	return v.User != nil && !v.User.CreatedAt.After(v.Config.BeginningEndedAt.Time())
 }
 
+func (v UserProfileView) LastActiveBeforeBeginning() bool {
+	return v.User != nil && !v.User.LatestActivity.After(v.Config.BeginningEndedAt.Time())
+}
+
 type UserGeneralTab struct {
 	User           *schemas.User
 	Mode           constants.Mode
