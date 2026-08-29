@@ -231,18 +231,14 @@ func (service *PPv1Service) CalculateEyupStarRating(beatmap *schemas.Beatmap) fl
 
 	stars := 0.0
 
-	// Songs with insane accuracy/circle size/life drain
 	if difficulty > 21 {
+		// Songs with insane accuracy/circle size/life drain
 		stars = (math.Min(difficulty, 30)/3*4 + math.Min(20-0.032*math.Pow(noteDensity-5, 4), 20)) / 10
-	}
-
-	// Songs with insane number of beats per second
-	if noteDensity >= 2.5 {
+	} else if noteDensity >= 2.5 {
+		// Songs with insane number of beats per second
 		stars = (math.Min(difficulty, 18)/18*10 + math.Min(40-40/math.Pow(5, 3.5)*math.Pow(math.Min(noteDensity, 5)-5, 4), 40)) / 10
-	}
-
-	// Songs with glacial number of beats per second
-	if noteDensity < 1 {
+	} else if noteDensity < 1 {
+		// Songs with glacial number of beats per second
 		stars = (math.Min(difficulty, 18)/18*10)/10 + 0.25
 	} else {
 		// All other songs of medium difficulty
