@@ -206,7 +206,7 @@ func (service *PPv1Service) ResolveEyupStarRating(beatmap *schemas.Beatmap) (flo
 
 // CalculateEyupStarRating calculates the old eyup star rating for a beatmap
 func (service *PPv1Service) CalculateEyupStarRating(beatmap *schemas.Beatmap) float64 {
-	if beatmap == nil || beatmap.DrainLength <= 0 {
+	if beatmap == nil || beatmap.DrainLength <= 0 || beatmap.BPM <= 0 {
 		return 0
 	}
 
