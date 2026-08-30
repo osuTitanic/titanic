@@ -1,0 +1,57 @@
+{
+    "format_on_save": "modifications_if_available",
+    "line_ending": "prefer_lf",
+    "languages": {
+        "Python": {
+            "format_on_save": "off",
+        },
+        "Go": {
+            "format_on_save": "on",
+            "inlay_hints": {
+                "enabled": true,
+                "show_type_hints": true,
+                "show_parameter_hints": false,
+                "show_other_hints": true,
+            },
+        },
+    },
+    "lsp": {
+        "gopls": {
+            "initialization_options": {
+                "buildFlags": ["-tags=integration,native"],
+            },
+        },
+    },
+    "file_types": {
+        "Jet": ["jet"],
+        "HTML": ["jet"], // fallback if jet extension is not installed
+        "Shell Script": [".example.env", ".env*"],
+        "Dockerfile": ["Dockerfile*"],
+        "Docker Compose": ["docker-compose.*.yml", "docker-compose.*.yaml"],
+    },
+    "file_scan_exclusions": [
+        "logs",
+        "tmp",
+        ".git",
+        ".data",
+        "**/.venv",
+        "**/.git",
+        "**/.svn",
+        "**/.hg",
+        "**/.jj",
+        "**/.classpath",
+        "**/.settings",
+        "**/.data",
+        "**/CVS",
+        "**/.DS_Store",
+        "**/Thumbs.db",
+        "**/tmp",
+        "**/venv",
+        "**/__pycache__",
+        "**/.pytest_cache",
+    ],
+    "edit_predictions": {
+        "mode": "subtle",
+        "disabled_globs": ["**/.env*", "**/*.pem", "**/*.key", "**/*.md"],
+    },
+}
