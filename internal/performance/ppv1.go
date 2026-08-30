@@ -193,6 +193,7 @@ func (service *PPv1Service) ResolveEyupStarRating(beatmap *schemas.Beatmap) (flo
 		return 0, nil
 	}
 	if beatmap.DiffEyup != 0 {
+		// Use pre-computed value if available
 		return beatmap.DiffEyup, nil
 	}
 	return service.RecalculateEyupStarRating(beatmap)
@@ -205,14 +206,19 @@ func (service *PPv1Service) RecalculateEyupStarRating(beatmap *schemas.Beatmap) 
 	}
 
 	// Recalculate & round to 4 decimal places
-	beatmap.DiffEyup = math.Round(service.CalculateEyupStarRating(beatmap)*10000) / 10000
+	eyupDiff := math.Round(service.CalculateEyupStarRating(beatmap)*10000) / 10000
 
-	if beatmap.DiffEyup < 0 {
-		beatmap.DiffEyup = 0
+	if eyupDiff < 0 {
+		eyupDiff = 0
 	}
-	if !isFinite(beatmap.DiffEyup) {
-		beatmap.DiffEyup = 0
+	if !isFinite(eyupDiff) {
+		eyupDiff = 0
 	}
+	if eyupDiff == beatmap.DiffEyup {
+		// Avoid unnecessary database updates
+		return eyupDiff, nil
+	}
+	beatmap.DiffEyup = eyupDiff
 
 	if _, err := service.beatmaps.Update(beatmap, "diff_eyup"); err != nil {
 		return 0, err
