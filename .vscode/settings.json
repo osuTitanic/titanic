@@ -1,0 +1,81 @@
+{
+    "files.eol": "\n",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "editor.inlayHints.enabled": "on",
+    "[python]": {
+        "editor.formatOnSave": false,
+    },
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "golang.go",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+        },
+    },
+    "[yaml]": {
+        "editor.tabSize": 2,
+    },
+    "go.testTimeout": "2m",
+    "go.toolsManagement.autoUpdate": true,
+    "go.inlayHints.assignVariableTypes": true,
+    "go.inlayHints.compositeLiteralFields": true,
+    "go.inlayHints.compositeLiteralTypes": true,
+    "go.inlayHints.constantValues": true,
+    "go.inlayHints.functionTypeParameters": true,
+    "go.inlayHints.parameterNames": false,
+    "go.inlayHints.rangeVariableTypes": true,
+    "gopls": {
+        "build.buildFlags": [
+            "-tags=integration,native"
+        ],
+        "ui.diagnostic.analyses": {
+            "ST1003": false
+        },
+    },
+    "files.associations": {
+        "*.jet": "html",
+        ".env*": "dotenv",
+        "*.env*": "dotenv",
+        "Dockerfile*": "dockerfile",
+        "docker-compose.*.yml": "dockercompose",
+        "docker-compose.*.yaml": "dockercompose",
+    },
+    "search.exclude": {
+        "**/migrations": true,
+        "**/logs": true,
+        "**/tmp": true,
+        "**/.git": true,
+        "**/.data": true,
+        "**/.venv": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.jj": true,
+        "**/.classpath": true,
+        "**/.settings": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/venv": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+    },
+    "files.watcherExclude": {
+        "**/logs/**": true,
+        "**/tmp/**": true,
+        "**/.git/**": true,
+        "**/.data/**": true,
+        "**/.venv/**": true,
+        "**/.svn/**": true,
+        "**/.hg/**": true,
+        "**/.jj/**": true,
+        "**/venv/**": true,
+        "**/__pycache__/**": true,
+        "**/.pytest_cache/**": true,
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.patterns": {
+        "go.mod": "go.sum, go.work, go.work.sum",
+        "docker-compose.yml": "docker-compose.*.yml, docker-compose.*.yaml",
+    },
+}

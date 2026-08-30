@@ -1,0 +1,81 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Go: integration test",
+            "type": "process",
+            "command": "go",
+            "args": [
+                "test",
+                "-tags",
+                "integration",
+                "./..."
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "group": "test",
+            "problemMatcher": "$go",
+        },
+        {
+            "label": "Go: run stern",
+            "type": "process",
+            "command": "go",
+            "args": [
+                "run",
+                "./services/stern/cmd/web/"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": "$go",
+        },
+        {
+            "label": "Go: run stern (auto-reload)",
+            "type": "process",
+            "command": "air",
+            "args": [
+                "-c",
+                "services/stern/.air.toml"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "dependsOn": "Check: Air installed",
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+        },
+        {
+            "label": "Go: run jobs",
+            "type": "process",
+            "command": "go",
+            "args": [
+                "run",
+                "./services/jobs/cmd/cli/",
+                "--name",
+                "${input:jobName}",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": "$go",
+        },
+        {
+            "label": "Check: Air installed",
+            "type": "process",
+            "command": "/bin/sh",
+            "args": [
+                "-c",
+                "command -v air >/dev/null 2>&1 || { echo 'Air is not installed. Install it with: go install github.com/air-verse/air@latest'; exit 1; }",
+            ],
+            "problemMatcher": [],
+        },
+    ],
+    "inputs": [
+        {
+            "id": "jobName",
+            "type": "promptString",
+            "description": "Job name to run",
+        },
+    ],
+}
