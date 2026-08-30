@@ -1,0 +1,22 @@
+[
+    {
+        "label": "Go: integration test",
+        "command": "go",
+        "args": ["test", "-tags", "integration", "./..."]
+    },
+    {
+        "label": "Go: run stern",
+        "command": "go",
+        "args": ["run", "./services/stern/cmd/web/"]
+    },
+    {
+        "label": "Go: run stern (auto-reload)",
+        "command": "air",
+        "args": ["-build.cmd", "go build -o ./tmp/main ./services/stern/cmd/web/"]
+    },
+    {
+        "label": "Go: run jobs",
+        "command": "go",
+        "args": ["run", "./services/jobs/cmd/cli/"]
+    }
+]
