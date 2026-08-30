@@ -1,10 +1,16 @@
+## Project / IDE
+
+.idea/
+.data/
+.env
+.env*
+
 ## Go
 
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
-*.so
 *.dylib
 tmp/
 bin/
@@ -23,23 +29,39 @@ profile.cov
 go.work
 go.work.sum
 
-## Misc
+## Python
 
-.idea
-.data
-.env
+# Bytecode / compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 
-## MacOS
+# Flask
+instance/
+.webassets-cache/
 
-# General
+# Virtual environments
+.venv/
+venv/
+[Bb]in/
+[Ii]nclude/
+[Ll]ib/
+[Ll]ib64/
+[Ll]ocal/
+[Ss]cripts/
+pyvenv.cfg
+pip-selfcheck.json
+
+## macOS
+
+# Finder / metadata
 .DS_Store
 .localized
 __MACOSX/
 .AppleDouble
 .LSOverride
 Icon[]
-
-# Resource forks
 ._*
 
 # Files and directories that might appear in the root of a volume
@@ -57,7 +79,7 @@ Icon[]
 .vol
 .file
 .disk_label*
-lost+found
+lost+found/
 .HFS+ Private Directory Data[]
 
 # Directories potentially created on remote AFP share
@@ -70,11 +92,11 @@ Temporary Items
 # Mac OS 6 to 9
 Desktop DB
 Desktop DF
-TheFindByContentFolder
-TheVolumeSettingsFolder
+TheFindByContentFolder/
+TheVolumeSettingsFolder/
 .FBCIndex
 .FBCSemaphoreFile
-.FBCLockFolder
+.FBCLockFolder/
 
 # Quota system
 .quota.group
@@ -82,9 +104,9 @@ TheVolumeSettingsFolder
 .quota.ops.group
 .quota.ops.user
 
-# TimeMachine
-Backups.backupdb
-.MobileBackups
-.MobileBackups.trash
-MobileBackups.trash
+# Time Machine
+Backups.backupdb/
+.MobileBackups/
+.MobileBackups.trash/
+MobileBackups.trash/
 tmbootpicker.efi
