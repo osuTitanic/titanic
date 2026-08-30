@@ -29,6 +29,9 @@ profile.cov
 go.work
 go.work.sum
 
+# Debug artifacts
+__debug_bin*
+
 ## Python
 
 # Bytecode / compiled files
