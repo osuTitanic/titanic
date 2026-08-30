@@ -12,7 +12,7 @@
     {
         "label": "Go: run stern (auto-reload)",
         "command": "air",
-        "args": ["-build.cmd", "go build -o ./tmp/main ./services/stern/cmd/web/"]
+        "args": ["-c", "services/stern/.air.toml"]
     },
     {
         "label": "Go: run jobs",
