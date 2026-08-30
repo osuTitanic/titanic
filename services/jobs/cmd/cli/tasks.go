@@ -33,6 +33,7 @@ var availableTasks = TaskList{
 	"beatmap_statuses":        TaskWithoutArguments(tasks.UpdateBeatmapStatuses),
 	"ppv1_updates":            TaskWithoutArguments(tasks.UpdatePPv1),
 	"release_updates":         TaskWithoutArguments(tasks.ReleaseUpdates),
+	"scores_ppv1":             {Build: BuildRecalculatePPv1Task},
 	"scores_ppv2":             {Build: BuildRecalculatePPv2Task},
 	"scores_ppv2_failed":      {Build: BuildRecalculatePPv2FailedTask},
 	"scores_status_pp":        {Build: BuildRecalculatePPStatusTask},
@@ -125,6 +126,40 @@ func BuildRecalculatePPv2Task(args []string) (scheduler.Executor, error) {
 	return func(app *state.State, logger *slog.Logger) error {
 		return tasks.RecalculatePPv2(app, logger, options)
 	}, nil
+}
+
+func BuildRecalculatePPv1Task(args []string) (scheduler.Executor, error) {
+	options, err := ParsePPv1RecalculationOptions("scores_ppv1", args)
+	if err != nil {
+		return nil, err
+	}
+
+	return func(app *state.State, logger *slog.Logger) error {
+		return tasks.UpdatePPv1All(app, logger, options)
+	}, nil
+}
+
+func ParsePPv1RecalculationOptions(taskName string, args []string) (tasks.PPv1RecalculationOptions, error) {
+	flags := flag.NewFlagSet(taskName, flag.ContinueOnError)
+	defaults := tasks.DefaultPPv1RecalculationOptions()
+	workers := flags.Int("workers", defaults.Workers, "number of workers")
+	batchSize := flags.Int("batch-size", defaults.BatchSize, "number of scores processed at once")
+
+	if err := flags.Parse(args); err != nil {
+		return tasks.PPv1RecalculationOptions{}, err
+	}
+	if flags.NArg() > 0 {
+		return tasks.PPv1RecalculationOptions{}, fmt.Errorf("unexpected arguments: %s", strings.Join(flags.Args(), " "))
+	}
+
+	options := tasks.PPv1RecalculationOptions{
+		Workers:   *workers,
+		BatchSize: *batchSize,
+	}
+	if err := options.Validate(); err != nil {
+		return tasks.PPv1RecalculationOptions{}, err
+	}
+	return options, nil
 }
 
 func BuildRecalculatePPv2FailedTask(args []string) (scheduler.Executor, error) {

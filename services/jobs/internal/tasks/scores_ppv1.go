@@ -2,14 +2,39 @@ package tasks
 
 import (
 	"cmp"
+	"fmt"
 	"log/slog"
 	"slices"
+	"time"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/performance"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/jobs/internal/workers"
 )
+
+type PPv1RecalculationOptions struct {
+	Workers   int
+	BatchSize int
+}
+
+func DefaultPPv1RecalculationOptions() PPv1RecalculationOptions {
+	return PPv1RecalculationOptions{
+		BatchSize: 500,
+		Workers:   4,
+	}
+}
+
+func (o PPv1RecalculationOptions) Validate() error {
+	if o.Workers < 0 {
+		return fmt.Errorf("workers must be greater than or equal to zero")
+	}
+	if o.BatchSize < 1 {
+		return fmt.Errorf("batch size must be greater than zero")
+	}
+	return nil
+}
 
 var ppv1UpdateWorkers = 8
 
@@ -39,6 +64,96 @@ func UpdatePPv1(app *state.State, logger *slog.Logger) error {
 		"workers", ppv1UpdateWorkerCount(len(userList)),
 	)
 	return updatePPv1ForUsers(app, logger, userList)
+}
+
+// UpdatePPv1All recalculates ppv1 for all submitted scores
+func UpdatePPv1All(app *state.State, logger *slog.Logger, options PPv1RecalculationOptions) error {
+	if err := options.Validate(); err != nil {
+		return fmt.Errorf("invalid ppv1 recalculation options: %w", err)
+	}
+
+	criteria := map[string]any{
+		"status >= ?": constants.ScoreStatusSubmitted,
+		"hidden = ?":  false,
+	}
+
+	totalScores, err := app.Repositories.Scores.Count(criteria)
+	if err != nil {
+		return fmt.Errorf("failed to count scores for ppv1 recalculation: %w", err)
+	}
+
+	logger.Info(
+		"Starting ppv1 recalculation",
+		"total_scores", totalScores,
+		"batch_size", options.BatchSize,
+		"workers", options.Workers,
+	)
+	var totalBatchDuration time.Duration
+
+	offset := 0
+	completedBatches := 0
+
+	for {
+		scores, err := app.Repositories.Scores.Many(
+			criteria, "id ASC",
+			offset, options.BatchSize,
+			"Beatmap",
+		)
+		if err != nil {
+			return fmt.Errorf("failed to fetch scores for ppv1 recalculation: %w", err)
+		}
+		if len(scores) == 0 {
+			break
+		}
+
+		workerCount := workers.TaskWorkerCount(len(scores), options.Workers)
+		batchStarted := time.Now()
+
+		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
+			ppv1, err := app.PPv1.CalculatePerformance(score)
+			if err != nil {
+				return fmt.Errorf("failed to recalculate ppv1 for score %d: %w", score.Id, err)
+			}
+
+			if score.PPv1 != ppv1 {
+				score.PPv1 = ppv1
+				if _, err := app.Repositories.Scores.Update(score, "ppv1"); err != nil {
+					return fmt.Errorf("failed to save recalculated ppv1 for score %d: %w", score.Id, err)
+				}
+			}
+
+			logger.Debug(
+				"Recalculated ppv1",
+				"score_id", score.Id,
+				"beatmap_id", score.BeatmapId,
+				"ppv1", ppv1,
+			)
+			return nil
+		}); err != nil {
+			return fmt.Errorf("failed to recalculate ppv1: %w", err)
+		}
+
+		batchDuration := time.Since(batchStarted)
+		totalBatchDuration += batchDuration
+		offset += len(scores)
+		completedBatches++
+
+		averageBatchDuration := totalBatchDuration / time.Duration(completedBatches)
+		scoresLeft := max(int(totalScores)-offset, 0)
+		batchesLeft := (scoresLeft + options.BatchSize - 1) / options.BatchSize
+		estimatedRemaining := time.Duration(batchesLeft) * averageBatchDuration
+
+		logger.Info(
+			"Completed ppv1 recalculation batch",
+			"completed_batches", completedBatches,
+			"batches_left", batchesLeft,
+			"average_batch_duration", averageBatchDuration,
+			"estimated_remaining", estimatedRemaining,
+			"estimated_completion", time.Now().Add(estimatedRemaining).Format(time.RFC1123),
+		)
+	}
+
+	return nil
 }
 
 func updatePPv1ForUsers(app *state.State, logger *slog.Logger, users []*schemas.User) error {
