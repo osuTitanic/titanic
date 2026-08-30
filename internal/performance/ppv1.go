@@ -203,11 +203,20 @@ func (service *PPv1Service) RecalculateEyupStarRating(beatmap *schemas.Beatmap) 
 	if beatmap == nil {
 		return 0, nil
 	}
+
+	// Recalculate & round to 4 decimal places
 	beatmap.DiffEyup = math.Round(service.CalculateEyupStarRating(beatmap)*10000) / 10000
+
+	if beatmap.DiffEyup < 0 {
+		beatmap.DiffEyup = 0
+	}
+	if !isFinite(beatmap.DiffEyup) {
+		beatmap.DiffEyup = 0
+	}
+
 	if _, err := service.beatmaps.Update(beatmap, "diff_eyup"); err != nil {
 		return 0, err
 	}
-
 	return beatmap.DiffEyup, nil
 }
 
@@ -220,7 +229,7 @@ func (service *PPv1Service) CalculateEyupStarRating(beatmap *schemas.Beatmap) fl
 	if beatmap.Mode == constants.ModeMania {
 		notes := float64(beatmap.CountNormal) + float64(beatmap.CountSlider)*1.2
 		stars := (beatmap.HP/14 + beatmap.OD/12) + ((notes/float64(beatmap.DrainLength))/2.3)*math.Pow(1.04, beatmap.CS-3)
-		return min(5, stars)
+		return max(0, min(5, stars))
 	}
 
 	totalObjects := float64(beatmap.CountNormal) + float64(beatmap.CountSlider)*2 + float64(beatmap.CountSpinner)*3
@@ -252,5 +261,5 @@ func (service *PPv1Service) CalculateEyupStarRating(beatmap *schemas.Beatmap) fl
 		stars = (math.Min(difficulty, 18)/18*10 + math.Min(25*(noteDensity-1), 40)) / 10
 	}
 
-	return min(5, stars)
+	return max(0, min(5, stars))
 }
