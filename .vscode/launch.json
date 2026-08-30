@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug stern",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/services/stern/cmd/web",
+            "cwd": "${workspaceFolder}",
+            "showLog": true,
+        },
+        {
+            "name": "Debug jobs",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/services/jobs/cmd/cli",
+            "cwd": "${workspaceFolder}",
+            "showLog": true,
+        },
+    ],
+}
