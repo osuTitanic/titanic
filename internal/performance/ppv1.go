@@ -49,19 +49,7 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		return 0, nil
 	}
 
-	var scoreRank int
-	if score.Id > 0 && score.StatusScore == constants.ScoreStatusBest && !score.Hidden {
-		// Score exists & is a pb -> fetch its rank on the leaderboard by ID
-		scoreRank, err = service.scores.FetchScoreIndexById(
-			score.Id, beatmap.Id, score.Mode,
-		)
-	} else {
-		// Score is not a pb / does not exist yet -> fetch the potential rank
-		scoreRank, err = service.scores.FetchScoreIndexByTscore(
-			score.TotalScore, score.SubmittedAt,
-			beatmap.Id, score.Mode,
-		)
-	}
+	scoreRank, err := service.scores.FetchScoreIndex(score)
 	if err != nil {
 		return 0, err
 	}

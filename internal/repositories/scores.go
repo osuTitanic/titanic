@@ -177,6 +177,22 @@ func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constant
 	return LookupResult(&score, err)
 }
 
+func (r *ScoreRepository) FetchScoreIndex(score *schemas.Score) (scoreRank int, err error) {
+	if score.Id > 0 && score.StatusScore == constants.ScoreStatusBest && !score.Hidden {
+		// Score exists & is a pb -> fetch its rank on the leaderboard by ID
+		scoreRank, err = r.FetchScoreIndexById(
+			score.Id, score.BeatmapId, score.Mode,
+		)
+	} else {
+		// Score is not a pb / does not exist yet -> fetch the potential rank
+		scoreRank, err = r.FetchScoreIndexByTscore(
+			score.TotalScore, score.SubmittedAt,
+			score.BeatmapId, score.Mode,
+		)
+	}
+	return scoreRank, err
+}
+
 func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode constants.Mode) (int, error) {
 	rankQuery := `
 		SELECT rank
