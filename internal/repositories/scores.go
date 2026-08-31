@@ -213,20 +213,25 @@ func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode
 	return rank, nil
 }
 
-func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, beatmapId int, mode constants.Mode) (int, error) {
+func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, submittedAt time.Time, beatmapId int, mode constants.Mode) (int, error) {
 	// This score may not be stored yet, so calculate its prospective rank directly
-	var higherScores int64
+	var precedingScores int64
 	err := r.db.Model(&schemas.Score{}).
 		Where("beatmap_id = ?", beatmapId).
 		Where("mode = ?", mode).
 		Where("hidden = ?", false).
 		Where("status_score = ?", constants.ScoreStatusBest).
-		Where("total_score > ?", totalScore).
-		Count(&higherScores).Error
+		Where(
+			"total_score > ? OR (total_score = ? AND submitted_at < ?)",
+			totalScore,
+			totalScore,
+			submittedAt,
+		).
+		Count(&precedingScores).Error
 	if err != nil {
 		return 0, err
 	}
-	return int(higherScores) + 1, nil
+	return int(precedingScores) + 1, nil
 }
 
 func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
