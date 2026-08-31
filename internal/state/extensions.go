@@ -12,6 +12,9 @@ package state
 // mannnnnnn
 // ok but why am i complaining, this will work just fine anyway haha harharharhehahhehaehahe
 
+// update: go 1.27 now supports this -> https://go.dev/doc/go1.27#language
+// todo: refactor this once we upgrade
+
 func RegisterExtension(state *State, key string, value any) {
 	if state == nil || state.Extensions == nil {
 		return
