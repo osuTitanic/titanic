@@ -1,0 +1,1 @@
+DROP INDEX CONCURRENTLY IF EXISTS idx_scores_ranked_visible_order;

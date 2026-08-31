@@ -1,0 +1,1 @@
+DROP INDEX CONCURRENTLY IF EXISTS idx_scores_user_visible_best_order;
