@@ -193,6 +193,8 @@ func (r *ScoreRepository) FetchScoreIndex(score *schemas.Score) (scoreRank int, 
 	return scoreRank, err
 }
 
+// FetchScoreIndexById fetches the rank of a score on the leaderboard, which is expected to be a pb score.
+// It will return 0 if the score is not found on the leaderboard.
 func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode constants.Mode) (int, error) {
 	rankQuery := `
 		SELECT rank
@@ -224,6 +226,8 @@ func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode
 	return rank, nil
 }
 
+// FetchScoreIndexByTscore fetches the theoretical rank of a score on the leaderboard based on its total score & submission time.
+// It should be used for scores that are not yet on the leaderboard / not a pb.
 func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, submittedAt time.Time, beatmapId int, mode constants.Mode) (int, error) {
 	var precedingScores int64
 	err := r.db.Model(&schemas.Score{}).
