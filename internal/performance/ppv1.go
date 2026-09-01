@@ -49,7 +49,7 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		return 0, nil
 	}
 
-	scoreRank, err := service.scores.FetchScoreIndexByTscore(score.TotalScore, beatmap.Id, score.Mode)
+	scoreRank, err := service.scores.FetchScoreIndex(score)
 	if err != nil {
 		return 0, err
 	}

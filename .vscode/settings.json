@@ -31,7 +31,9 @@
             "-tags=integration,native"
         ],
         "ui.diagnostic.analyses": {
-            "ST1003": false
+            "ST1000": false,
+            "ST1003": false,
+            "ST1022": false
         },
     },
     "files.associations": {

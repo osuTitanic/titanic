@@ -143,8 +143,7 @@ func (r *ScoreRepository) FetchRangeScores(beatmapId int, mode constants.Mode, l
 		Where("mode = ?", mode).
 		Where("status_score = ?", constants.ScoreStatusBest).
 		Where("hidden = ?", false).
-		Order("total_score DESC").
-		Order("id ASC").
+		Order("total_score DESC, submitted_at ASC, id ASC").
 		Offset(offset).
 		Limit(limit).
 		Find(&scores).Error
@@ -159,8 +158,7 @@ func (r *ScoreRepository) FetchRangeScoresMods(beatmapId int, mode constants.Mod
 		Where("status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
 		Where("hidden = ?", false).
 		Where("mods = ?", mods).
-		Order("total_score DESC").
-		Order("id ASC").
+		Order("total_score DESC, submitted_at ASC, id ASC").
 		Offset(offset).
 		Limit(limit).
 		Find(&scores).Error
@@ -179,33 +177,48 @@ func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constant
 	return LookupResult(&score, err)
 }
 
+func (r *ScoreRepository) FetchScoreIndex(score *schemas.Score) (scoreRank int, err error) {
+	if score.Id > 0 && score.StatusScore == constants.ScoreStatusBest && !score.Hidden {
+		// Score exists & is a pb -> fetch its rank on the leaderboard by ID
+		scoreRank, err = r.FetchScoreIndexById(
+			score.Id, score.BeatmapId, score.Mode,
+		)
+	} else {
+		// Score is not a pb / does not exist yet -> fetch the potential rank
+		scoreRank, err = r.FetchScoreIndexByTscore(
+			score.TotalScore, score.SubmittedAt,
+			score.BeatmapId, score.Mode,
+		)
+	}
+	return scoreRank, err
+}
+
+// FetchScoreIndexById fetches the rank of a score on the leaderboard, which is expected to be a pb score.
+// It will return 0 if the score is not found on the leaderboard.
 func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode constants.Mode) (int, error) {
-	// RANK() is one plus the number of rows with a strictly higher score
-	// Counting those rows directly preserves ties without ranking the full leaderboard
 	rankQuery := `
-		SELECT COUNT(better.id) + 1 AS rank
-		FROM scores AS target
-		LEFT JOIN scores AS better
-			ON better.beatmap_id = target.beatmap_id
-			AND better.mode = target.mode
-			AND better.hidden = FALSE
-			AND better.status_score = ?
-			AND better.total_score > target.total_score
-		WHERE target.id = ?
-			AND target.beatmap_id = ?
-			AND target.mode = ?
-			AND target.hidden = FALSE
-			AND target.status_score = ?
-		GROUP BY target.id
+		SELECT rank
+		FROM (
+			SELECT
+				id,
+				ROW_NUMBER() OVER (
+					ORDER BY total_score DESC, submitted_at ASC, id ASC
+				) AS rank
+			FROM scores
+			WHERE beatmap_id = ?
+				AND mode = ?
+				AND hidden = FALSE
+				AND status_score = ?
+		) AS ranked
+		WHERE id = ?
 	`
 	var rank int
 	err := r.db.Raw(
 		rankQuery,
-		constants.ScoreStatusBest,
-		scoreId,
 		beatmapId,
 		mode,
 		constants.ScoreStatusBest,
+		scoreId,
 	).Scan(&rank).Error
 	if err != nil {
 		return 0, err
@@ -213,33 +226,39 @@ func (r *ScoreRepository) FetchScoreIndexById(scoreId int64, beatmapId int, mode
 	return rank, nil
 }
 
-func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, beatmapId int, mode constants.Mode) (int, error) {
-	// This score may not be stored yet, so calculate its prospective rank directly
-	var higherScores int64
+// FetchScoreIndexByTscore fetches the theoretical rank of a score on the leaderboard based on its total score & submission time.
+// It should be used for scores that are not yet on the leaderboard / not a pb.
+func (r *ScoreRepository) FetchScoreIndexByTscore(totalScore int64, submittedAt time.Time, beatmapId int, mode constants.Mode) (int, error) {
+	var precedingScores int64
 	err := r.db.Model(&schemas.Score{}).
 		Where("beatmap_id = ?", beatmapId).
 		Where("mode = ?", mode).
 		Where("hidden = ?", false).
 		Where("status_score = ?", constants.ScoreStatusBest).
-		Where("total_score > ?", totalScore).
-		Count(&higherScores).Error
+		Where(
+			"total_score > ? OR (total_score = ? AND submitted_at <= ?)",
+			totalScore,
+			totalScore,
+			submittedAt,
+		).
+		Count(&precedingScores).Error
 	if err != nil {
 		return 0, err
 	}
-	return int(higherScores) + 1, nil
+	return int(precedingScores) + 1, nil
 }
 
 func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
-	// Only keep scores where no other pb score on the same beatmap has
-	// a higher total score, i.e. the user is in first place.
-	notBeatenSubquery := `
-		NOT EXISTS (
-			SELECT 1 FROM scores AS other
-			WHERE other.beatmap_id = scores.beatmap_id
-				AND other.mode = scores.mode
-				AND other.status_score = ?
-				AND other.hidden = FALSE
-				AND other.total_score > scores.total_score
+	leaderSubquery := `
+		scores.id = (
+			SELECT leader.id
+			FROM scores AS leader
+			WHERE leader.beatmap_id = scores.beatmap_id
+				AND leader.mode = scores.mode
+				AND leader.status_score = ?
+				AND leader.hidden = FALSE
+			ORDER BY leader.total_score DESC, leader.submitted_at ASC, leader.id ASC
+			LIMIT 1
 		)
 	`
 
@@ -251,7 +270,7 @@ func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, lim
 		Where("scores.mode = ?", mode).
 		Where("scores.status_score = ?", constants.ScoreStatusBest).
 		Where("scores.hidden = ?", false).
-		Where(notBeatenSubquery, constants.ScoreStatusBest).
+		Where(leaderSubquery, constants.ScoreStatusBest).
 		Order("scores.id DESC").
 		Offset(offset).
 		Limit(limit).
@@ -260,31 +279,31 @@ func (r *ScoreRepository) FetchLeaderScores(userId int, mode constants.Mode, lim
 }
 
 func (r *ScoreRepository) FetchLeaderCount(userId int, mode constants.Mode) (int, error) {
-	// We want to base off the user's own scores instead of ranking all scores
-	// in the mode, which is what I was doing previously.
-	// For each score, check that no visible best score on the same beatmap/mode
-	// has a higher total_score.
 	query := `
 		SELECT COUNT(DISTINCT s.beatmap_id)
 		FROM scores s
-		WHERE s.user_id = ?
+		JOIN beatmaps ON beatmaps.id = s.beatmap_id
+		WHERE beatmaps.status > ?
+			AND s.user_id = ?
 			AND s.mode = ?
 			AND s.hidden = FALSE
 			AND s.status_score = ?
-			AND NOT EXISTS (
-				SELECT 1
-				FROM scores better
-				WHERE better.beatmap_id = s.beatmap_id
-					AND better.mode = s.mode
-					AND better.hidden = FALSE
-					AND better.status_score = ?
-					AND better.total_score > s.total_score
+			AND s.id = (
+				SELECT leader.id
+				FROM scores AS leader
+				WHERE leader.beatmap_id = s.beatmap_id
+					AND leader.mode = s.mode
+					AND leader.hidden = FALSE
+					AND leader.status_score = ?
+				ORDER BY leader.total_score DESC, leader.submitted_at ASC, leader.id ASC
+				LIMIT 1
 			)
 	`
 
 	var count int
 	err := r.db.Raw(
 		query,
+		constants.BeatmapStatusPending,
 		userId,
 		mode,
 		constants.ScoreStatusBest,

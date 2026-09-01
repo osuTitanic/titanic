@@ -27,18 +27,17 @@ func (options StatusRecalculationOptions) Validate() error {
 const statusRecalculationWorkers = 4
 
 func RecalculateScoreStatusUser(app *state.State, logger *slog.Logger, options StatusRecalculationOptions) error {
-	return performStatusRecalculationForUser(app, logger, options, "score", func(a, b *schemas.Score) int {
-		return cmp.Compare(b.TotalScore, a.TotalScore)
-	})
+	return performStatusRecalculationForUser(
+		app, logger, options, "score",
+		compareScoreLeaderboardPosition,
+	)
 }
 
 func RecalculatePPStatusUser(app *state.State, logger *slog.Logger, options StatusRecalculationOptions) error {
-	return performStatusRecalculationForUser(app, logger, options, "pp", func(a, b *schemas.Score) int {
-		if result := cmp.Compare(b.PP, a.PP); result != 0 {
-			return result
-		}
-		return cmp.Compare(b.TotalScore, a.TotalScore)
-	})
+	return performStatusRecalculationForUser(
+		app, logger, options, "pp",
+		compareScorePP,
+	)
 }
 
 func RecalculateScoreStatusAll(app *state.State, logger *slog.Logger) error {
@@ -259,4 +258,21 @@ func performStatusRecalculationForUser(
 		}
 	}
 	return nil
+}
+
+func compareScorePP(a, b *schemas.Score) int {
+	return cmp.Or(
+		// Sorted by pp, then leaderboard position if equal
+		cmp.Compare(b.PP, a.PP),
+		compareScoreLeaderboardPosition(a, b),
+	)
+}
+
+func compareScoreLeaderboardPosition(a, b *schemas.Score) int {
+	return cmp.Or(
+		// Sorted by total_score DESC, submitted_at ASC, id ASC
+		cmp.Compare(b.TotalScore, a.TotalScore),
+		a.SubmittedAt.Compare(b.SubmittedAt),
+		cmp.Compare(a.Id, b.Id),
+	)
 }
