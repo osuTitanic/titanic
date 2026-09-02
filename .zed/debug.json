@@ -8,6 +8,14 @@
         "cwd": "$ZED_WORKTREE_ROOT",
     },
     {
+        "label": "Debug deck",
+        "adapter": "Delve",
+        "request": "launch",
+        "mode": "debug",
+        "program": "./services/deck/cmd/api/",
+        "cwd": "$ZED_WORKTREE_ROOT",
+    },
+    {
         "label": "Debug jobs",
         "adapter": "Delve",
         "request": "launch",

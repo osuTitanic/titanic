@@ -46,6 +46,34 @@
             "problemMatcher": [],
         },
         {
+            "label": "Go: run deck",
+            "type": "process",
+            "command": "go",
+            "args": [
+                "run",
+                "./services/deck/cmd/api/"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": "$go",
+        },
+        {
+            "label": "Go: run deck (auto-reload)",
+            "type": "process",
+            "command": "air",
+            "args": [
+                "-c",
+                "services/deck/.air.toml"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "dependsOn": "Check: Air installed",
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+        },
+        {
             "label": "Go: run jobs",
             "type": "process",
             "command": "go",
