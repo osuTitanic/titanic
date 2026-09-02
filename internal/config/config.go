@@ -109,7 +109,7 @@ type Config struct {
 	BanchoMaintenance         bool        `env:"BANCHO_MAINTENANCE" envDefault:"false"`
 	AllowMultiaccounting      bool        `env:"ALLOW_MULTIACCOUNTING" envDefault:"false"`
 	AutojoinChannels          StringSlice `env:"AUTOJOIN_CHANNELS" envDefault:"#osu,#announce"`
-	BanchoIp                  string      `env:"BANCHO_IP"`
+	BanchoIp                  string      `env:"PUBLIC_BANCHO_IP"`
 	DisableClientVerification bool        `env:"DISABLE_CLIENT_VERIFICATION" envDefault:"true"`
 	BanchoClientCutoff        int         `env:"BANCHO_CLIENT_CUTOFF"`
 	MultiplayerMaxSlots       int         `env:"MULTIPLAYER_MAX_SLOTS" envDefault:"8"`
