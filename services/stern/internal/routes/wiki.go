@@ -35,13 +35,12 @@ func WikiHome(ctx *server.Context) {
 		return
 	}
 
-	service, ok := ctx.State.GetExtension[*wiki.Service]("wiki")
-	if !ok {
-		ctx.Logger.Error("Failed to resolve wiki service from state")
+	if ctx.Wiki == nil {
+		ctx.Logger.Error("Wiki service is not configured")
 		InternalServerError(ctx)
 		return
 	}
-	urls := service.URLs()
+	urls := ctx.Wiki.URLs()
 
 	pageCount, err := ctx.State.WikiPages.Count()
 	if err != nil {
@@ -130,14 +129,13 @@ func WikiArticle(ctx *server.Context) {
 		return
 	}
 
-	service, ok := ctx.State.GetExtension[*wiki.Service]("wiki")
-	if !ok {
-		ctx.Logger.Error("Failed to resolve wiki service from state")
+	if ctx.Wiki == nil {
+		ctx.Logger.Error("Wiki service is not configured")
 		InternalServerError(ctx)
 		return
 	}
 
-	result, err := service.FetchPage(path, language)
+	result, err := ctx.Wiki.FetchPage(path, language)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch wiki page", "path", path, "language", language, "error", err)
 		InternalServerError(ctx)
@@ -157,7 +155,7 @@ func WikiArticle(ctx *server.Context) {
 	renderedContent, err := wiki.RenderMarkdownWithSourceURL(
 		result.Content.Content,
 		language,
-		service.MarkdownUrl(path, result.Content.Language),
+		ctx.Wiki.MarkdownUrl(path, result.Content.Language),
 	)
 	if err != nil {
 		ctx.Logger.Error("Failed to render wiki markdown", "path", path, "language", language, "error", err)
@@ -166,7 +164,7 @@ func WikiArticle(ctx *server.Context) {
 	}
 
 	githubPath := wiki.GitHubPath(path)
-	urls := service.URLs()
+	urls := ctx.Wiki.URLs()
 	siteURL := fmt.Sprintf("/wiki/%s/%s", result.Content.Language, path)
 
 	view := templates.WikiView{

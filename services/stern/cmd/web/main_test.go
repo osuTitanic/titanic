@@ -159,9 +159,8 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 		t.Fatalf("failed to initialize templates: %v", err)
 	}
 
-	server := server.NewServer("localhost", 0, "stern-test", app, engine)
 	wikiService := wiki.NewService(app.Config, app.Repositories, app.Logger)
-	app.RegisterExtension("wiki", wikiService)
+	server := server.NewServer("localhost", 0, "stern-test", app, engine, wikiService)
 	InitializeWebRoutes(server)
 	return server.Router
 }

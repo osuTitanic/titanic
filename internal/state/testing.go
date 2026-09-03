@@ -103,7 +103,6 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		Location:        geolocation,
 		Resources:       beatmapResources,
 		Repositories:    repositories,
-		Extensions:      map[string]any{},
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repositories.Scores, repositories.Beatmaps),
 		Permissions:     permissions.New(repositories.Permissions, repositories.Groups),

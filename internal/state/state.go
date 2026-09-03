@@ -30,15 +30,14 @@ type State struct {
 	*Repositories
 
 	// Core components
-	Config     *config.Config
-	Logger     *slog.Logger
-	Database   *gorm.DB
-	Redis      *redis.Client
-	Storage    storage.Storage
-	Email      email.Email
-	Officer    *discord.Officer
-	Location   location.Provider
-	Extensions map[string]any
+	Config   *config.Config
+	Logger   *slog.Logger
+	Database *gorm.DB
+	Redis    *redis.Client
+	Storage  storage.Storage
+	Email    email.Email
+	Officer  *discord.Officer
+	Location location.Provider
 
 	// Services
 	Permissions permissions.Resolver
@@ -147,7 +146,6 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Redis:           redisClient,
 		Repositories:    repos,
 		Resources:       beatmapResources,
-		Extensions:      make(map[string]any),
 		PPv1:            ppv1Service,
 		PPv2:            ppv2Service,
 		Rankings:        rankings.NewRankingsService(redisClient),

@@ -13,6 +13,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/server"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
+	"github.com/osuTitanic/titanic/services/stern/internal/wiki"
 )
 
 type Server struct {
@@ -20,9 +21,9 @@ type Server struct {
 	State *state.State
 }
 
-func NewServer(host string, port int, name string, state *state.State, engine *templates.Engine) *Server {
+func NewServer(host string, port int, name string, state *state.State, engine *templates.Engine, wikiService *wiki.Service) *Server {
 	return &Server{
-		HttpServer: server.NewHttpServer(host, port, name, NewContextFactory(state, engine)),
+		HttpServer: server.NewHttpServer(host, port, name, NewContextFactory(state, engine, wikiService)),
 		State:      state,
 	}
 }
@@ -94,6 +95,7 @@ type Context struct {
 	server.HttpContext
 	State          *state.State
 	Templates      *templates.Engine
+	Wiki           *wiki.Service
 	CurrentUser    *schemas.User
 	CurrentSession *authentication.WebsiteSession
 	CSRFToken      string
@@ -101,12 +103,13 @@ type Context struct {
 	resolvedPermissions *permissions.Set
 }
 
-func NewContextFactory(state *state.State, engine *templates.Engine) server.HttpContextFactory[*Context] {
+func NewContextFactory(state *state.State, engine *templates.Engine, wikiService *wiki.Service) server.HttpContextFactory[*Context] {
 	return func(base server.HttpContext) *Context {
 		ctx := &Context{
 			HttpContext: base,
 			State:       state,
 			Templates:   engine,
+			Wiki:        wikiService,
 		}
 		ctx.ResolveAuthentication()
 		return ctx

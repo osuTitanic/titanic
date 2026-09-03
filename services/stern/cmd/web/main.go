@@ -191,11 +191,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Register wiki service extension to app state
 	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
-	app.RegisterExtension("wiki", wikiService)
-
-	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
+	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine, wikiService)
 	InitializeWebRoutes(stern)
 	InitializeStaticRoutes(stern)
 
