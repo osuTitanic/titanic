@@ -3,7 +3,7 @@
 # NOTE: This assumes you are running the build from the root, e.g.:
 #       docker build -f ./services/deck/Dockerfile -t osutitanic/deck .
 
-FROM --platform=$BUILDPLATFORM golang:1.26-trixie AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.1-trixie AS builder
 
 ARG TARGETOS
 ARG TARGETARCH
