@@ -284,12 +284,9 @@ func resolveTotalBeatmaps(ctx *server.Context, mode constants.Mode) (int, error)
 }
 
 func filterQuery(query url.Values, exclude ...string) url.Values {
-	clone := make(url.Values, len(query))
-	for key, values := range query {
-		if slices.Contains(exclude, key) {
-			continue
-		}
-		clone[key] = values
+	clone := query.Clone()
+	for _, key := range exclude {
+		clone.Del(key)
 	}
 	return clone
 }

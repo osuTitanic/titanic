@@ -25,7 +25,7 @@ func searchParamUrl(a jet.Arguments) reflect.Value {
 	key, _ := reflect.TypeAssert[string](a.Get(2))
 	value, _ := reflect.TypeAssert[string](a.Get(3))
 
-	query := cloneQuery(current)
+	query := current.Clone()
 	query.Del("page")
 
 	if value == "" {
@@ -44,7 +44,7 @@ func searchFlagUrl(a jet.Arguments) reflect.Value {
 	key, _ := reflect.TypeAssert[string](a.Get(2))
 	removes, _ := reflect.TypeAssert[string](a.Get(3))
 
-	query := cloneQuery(current)
+	query := current.Clone()
 	query.Del("page")
 	if query.Get(key) != "" {
 		query.Del(key)
@@ -84,7 +84,7 @@ func buildSearchSortUrl(current url.Values, path, sort, defaultSort, defaultOrde
 	currentSort := cmp.Or(current.Get("sort"), defaultSort)
 	currentOrder := cmp.Or(current.Get("order"), defaultOrder)
 
-	query := cloneQuery(current)
+	query := current.Clone()
 	query.Del("page")
 	query.Set("sort", sort)
 
