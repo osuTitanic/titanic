@@ -252,6 +252,7 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 	joins.beatmaps = joins.beatmaps || filtersRequireBeatmaps
 
 	if strings.TrimSpace(updatedSearchQuery) != "" {
+		// TODO: Add way to search by beatmap(set) ID directly through the query
 		query = applyBeatmapsetTextSearch(query, updatedSearchQuery)
 	}
 
