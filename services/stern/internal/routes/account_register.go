@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -312,7 +313,7 @@ func hasTooManyRegistrations(ctx *server.Context) (bool, error) {
 	if err == nil {
 		return registrations > 2, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return false, nil
 	}
 	return false, err

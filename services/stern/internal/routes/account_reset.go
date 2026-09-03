@@ -216,7 +216,7 @@ func hasPasswordResetLock(ctx *server.Context, userId int) (bool, error) {
 	if err == nil {
 		return value != 0, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return false, nil
 	}
 	return false, err

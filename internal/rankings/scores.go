@@ -1,6 +1,7 @@
 package rankings
 
 import (
+	"errors"
 	"math"
 	"strconv"
 
@@ -22,7 +23,7 @@ func (service *RankingsService) ScoreByKey(key string, userId int) (float64, err
 	if err == nil {
 		return value, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return 0, nil
 	}
 	return 0, err

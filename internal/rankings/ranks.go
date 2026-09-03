@@ -1,6 +1,7 @@
 package rankings
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -16,7 +17,7 @@ func (service *RankingsService) RankByKey(key string, userId int) (int, error) {
 	if err == nil {
 		return int(rank + 1), nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return 0, nil
 	}
 	return 0, err
@@ -38,14 +39,14 @@ func (service *RankingsService) RanksByKeys(keys []string, userId int) ([]int, e
 
 	// A missing member results in redis.Nil on Exec, which we handle per
 	// command.Result() below, so it isn't a failure of the pipeline itself.
-	if _, err := pipe.Exec(service.ctx); err != nil && err != redis.Nil {
+	if _, err := pipe.Exec(service.ctx); err != nil && !errors.Is(err, redis.Nil) {
 		return nil, err
 	}
 
 	ranks := make([]int, len(keys))
 	for i, command := range commands {
 		rank, err := command.Result()
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			continue
 		}
 		if err != nil {
