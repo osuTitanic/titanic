@@ -81,14 +81,8 @@ func searchSortUrl(a jet.Arguments) reflect.Value {
 }
 
 func buildSearchSortUrl(current url.Values, path, sort, defaultSort, defaultOrder string) string {
-	currentSort := current.Get("sort")
-	if currentSort == "" {
-		currentSort = defaultSort
-	}
-	currentOrder := current.Get("order")
-	if currentOrder == "" {
-		currentOrder = defaultOrder
-	}
+	currentSort := cmp.Or(current.Get("sort"), defaultSort)
+	currentOrder := cmp.Or(current.Get("order"), defaultOrder)
 
 	query := cloneQuery(current)
 	query.Del("page")
@@ -182,9 +176,7 @@ func beatmapRatingWidth(a jet.Arguments) reflect.Value {
 }
 
 func searchUrl(path string, query url.Values) string {
-	if path == "" {
-		path = "/"
-	}
+	path = cmp.Or(path, "/")
 	if encoded := query.Encode(); encoded != "" {
 		return path + "?" + encoded
 	}

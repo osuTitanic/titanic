@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -95,10 +96,7 @@ func WikiSearch(ctx *server.Context) {
 	}
 
 	query := ctx.QueryValue("query")
-	title := query
-	if title == "" {
-		title = "Search"
-	}
+	title := cmp.Or(query, "Search")
 	// TODO: Implement search functionality
 
 	view := templates.WikiView{

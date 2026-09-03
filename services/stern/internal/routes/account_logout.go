@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"cmp"
 	"net/http"
 
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
@@ -11,11 +12,9 @@ func AccountLogout(ctx *server.Context) {
 		ctx.Logger.Warn("Failed to parse logout form", "error", err)
 	}
 
-	redirectTarget := sanitizeRedirectTarget(ctx.Request.FormValue("redirect"))
-	if redirectTarget == "" {
-		redirectTarget = "/"
-	}
-
+	redirectTarget := cmp.Or(
+		sanitizeRedirectTarget(ctx.Request.FormValue("redirect")), "/",
+	)
 	if !ctx.IsAuthenticated() {
 		ctx.ExpireSessionCookie()
 		ctx.Redirect(http.StatusSeeOther, redirectTarget)

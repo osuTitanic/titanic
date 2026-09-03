@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"cmp"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -45,11 +47,7 @@ func AccountLogin(ctx *server.Context) {
 		return
 	}
 
-	redirect := ctx.Request.FormValue("redirect")
-	redirectTarget := sanitizeRedirectTarget(redirect)
-	if redirectTarget == "" {
-		redirectTarget = "/"
-	}
+	redirectTarget := cmp.Or(sanitizeRedirectTarget(ctx.Request.FormValue("redirect")), "/")
 
 	if ctx.IsAuthenticated() {
 		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/u/%d", ctx.CurrentUser.Id))
@@ -191,7 +189,7 @@ func hasTooManyLoginAttempts(ctx *server.Context) (bool, error) {
 	if err == nil {
 		return attempts > 30, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return false, nil
 	}
 	return false, err

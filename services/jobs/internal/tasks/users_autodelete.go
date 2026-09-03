@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"cmp"
 	"fmt"
 	"log/slog"
 	"time"
@@ -99,8 +100,5 @@ func resolveEmailDomain(app *state.State) string {
 	if domain := app.Config.EmailDomain(); domain != nil && *domain != "" {
 		return *domain
 	}
-	if app.Config.DomainName != "" {
-		return app.Config.DomainName
-	}
-	return "example.com"
+	return cmp.Or(app.Config.DomainName, "example.com")
 }

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cmp"
 	"fmt"
 	"net/url"
 	"strings"
@@ -204,10 +205,7 @@ func LoadConfig(envFiles ...string) (*Config, error) {
 }
 
 func (c *Config) PostgresDSN() string {
-	database := c.PostgresDatabase
-	if database == "" {
-		database = c.PostgresUser
-	}
+	database := cmp.Or(c.PostgresDatabase, c.PostgresUser)
 	return fmt.Sprintf(
 		"postgresql://%s:%s@%s:%d/%s",
 		c.PostgresUser, c.PostgresPassword, c.PostgresHost, c.PostgresPort, database,

@@ -2,6 +2,7 @@ package server
 
 import (
 	"bufio"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -87,10 +88,7 @@ func (ctx *HttpContext) QueryValueInt64(name string) (int64, error) {
 // QueryValueDefault attempts to get a query parameter from
 // the request while falling back to the given if not present.
 func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
-	if value := ctx.QueryValue(name); value != "" {
-		return value
-	}
-	return fallback
+	return cmp.Or(ctx.QueryValue(name), fallback)
 }
 
 // QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value

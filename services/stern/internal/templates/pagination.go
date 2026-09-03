@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"cmp"
 	"net/url"
 	"slices"
 	"strconv"
@@ -38,9 +39,7 @@ type PaginationItem struct {
 }
 
 func NewPagination(options PaginationOptions) PaginationView {
-	if options.Path == "" {
-		options.Path = "/"
-	}
+	options.Path = cmp.Or(options.Path, "/")
 	if options.CurrentPage < 1 {
 		options.CurrentPage = 1
 	}

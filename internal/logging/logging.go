@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"io"
@@ -78,9 +79,7 @@ func (h *ColorLogger) Handle(_ context.Context, record slog.Record) error {
 	})
 
 	// If no "component" attribute is found, we use `titanic` by default
-	if component == "" {
-		component = "titanic"
-	}
+	component = cmp.Or(component, "titanic")
 
 	timestamp := record.Time.Format("2006-01-02 15:04:05")
 	level := strings.ToUpper(record.Level.String())
