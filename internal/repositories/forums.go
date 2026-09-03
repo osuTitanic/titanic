@@ -366,6 +366,32 @@ func (r *ForumPostRepository) FetchInitialByTopicIds(topicIds []int, preload ...
 	return postsByTopic, nil
 }
 
+func (r *ForumPostRepository) FetchInitialIdsByTopicIds(topicIds []int) (map[int]int64, error) {
+	if len(topicIds) == 0 {
+		return map[int]int64{}, nil
+	}
+
+	var posts []struct {
+		TopicId int
+		PostId  int64
+	}
+	err := r.db.Model(&schemas.ForumPost{}).
+		Select("topic_id, MIN(id) AS post_id").
+		Where("topic_id IN ?", topicIds).
+		Where("hidden = ?", false).
+		Group("topic_id").
+		Scan(&posts).Error
+	if err != nil {
+		return nil, err
+	}
+
+	postIdsByTopic := make(map[int]int64, len(posts))
+	for _, post := range posts {
+		postIdsByTopic[post.TopicId] = post.PostId
+	}
+	return postIdsByTopic, nil
+}
+
 func (r *ForumPostRepository) FetchLastForForums(forumIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
 	if len(forumIds) == 0 {
 		return map[int]*schemas.ForumPost{}, nil
