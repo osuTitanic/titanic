@@ -311,8 +311,8 @@ func fetchUserFriends(ctx *server.Context) (friends map[int]bool, err error) {
 
 func resolveMode(ctx *server.Context, fallback constants.Mode) constants.Mode {
 	mode := fallback
-	if parsed, err := ctx.QueryValueInt("mode"); err == nil {
-		mode = constants.Mode(parsed)
+	if parsed, err := ctx.QueryValueEnum[constants.Mode]("mode"); err == nil {
+		mode = parsed
 	}
 
 	if mode < constants.ModeOsu || mode > constants.ModeMania {

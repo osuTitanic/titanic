@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
+	"golang.org/x/exp/constraints"
 )
 
 const (
@@ -90,6 +91,25 @@ func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value
+func (ctx *HttpContext) QueryValueEnum[T constraints.Signed](name string) (T, error) {
+	raw := strings.TrimSpace(ctx.QueryValue(name))
+	parsed, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return T(0), err
+	}
+
+	value := T(parsed)
+	if int64(value) != parsed {
+		return T(0), &strconv.NumError{
+			Func: "ParseInt",
+			Num:  raw,
+			Err:  strconv.ErrRange,
+		}
+	}
+	return value, nil
 }
 
 // FormValue is a helper function to get form values from the request body.
