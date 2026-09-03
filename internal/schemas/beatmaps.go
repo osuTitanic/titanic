@@ -66,7 +66,23 @@ func (Beatmapset) TableName() string {
 }
 
 func (b *Beatmapset) Name() string {
-	return b.ArtistName() + " - " + b.TitleName()
+	switch {
+	case b.Artist != nil && b.Title != nil:
+		return *b.Artist + " - " + *b.Title
+	case b.Artist != nil:
+		return *b.Artist
+	case b.Title != nil:
+		return *b.Title
+	default:
+		return "Unknown"
+	}
+}
+
+func (b *Beatmapset) OszFilename() string {
+	if b.Creator != nil {
+		return fmt.Sprintf("%d %s (%s).osz", b.Id, b.Name(), *b.Creator)
+	}
+	return fmt.Sprintf("%d %s.osz", b.Id, b.Name())
 }
 
 func (b *Beatmapset) ArtistName() string {
