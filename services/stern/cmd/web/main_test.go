@@ -161,7 +161,7 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 
 	server := server.NewServer("localhost", 0, "stern-test", app, engine)
 	wikiService := wiki.NewService(app.Config, app.Repositories, app.Logger)
-	state.RegisterExtension(app, "wiki", wikiService)
+	app.RegisterExtension("wiki", wikiService)
 	InitializeWebRoutes(server)
 	return server.Router
 }

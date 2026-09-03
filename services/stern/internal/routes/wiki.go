@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
-	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 	"github.com/osuTitanic/titanic/services/stern/internal/wiki"
@@ -36,7 +35,7 @@ func WikiHome(ctx *server.Context) {
 		return
 	}
 
-	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
+	service, ok := ctx.State.GetExtension[*wiki.Service]("wiki")
 	if !ok {
 		ctx.Logger.Error("Failed to resolve wiki service from state")
 		InternalServerError(ctx)
@@ -131,7 +130,7 @@ func WikiArticle(ctx *server.Context) {
 		return
 	}
 
-	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
+	service, ok := ctx.State.GetExtension[*wiki.Service]("wiki")
 	if !ok {
 		ctx.Logger.Error("Failed to resolve wiki service from state")
 		InternalServerError(ctx)
