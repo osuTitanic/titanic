@@ -98,7 +98,10 @@ services:
       retries: 10
 
   deck:
-    build: ./services/deck
+    image: ghcr.io/osutitanic/deck:latest
+    build:
+      context: .
+      dockerfile: ./services/deck/Dockerfile
     restart: unless-stopped
     env_file:
       - ".env"
@@ -113,8 +116,7 @@ services:
     # Uncomment to access deck from outside
     # - 127.0.0.1:6060:80
     volumes:
-      - "./.data:/deck/.data"
-      - "./.data/logs/deck:/deck/logs"
+      - "./.data:/app/.data"
     depends_on:
       db:
         condition: service_healthy
