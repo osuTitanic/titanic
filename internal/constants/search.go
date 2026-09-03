@@ -19,6 +19,7 @@ const (
 	BeatmapSortPlays      BeatmapSort = 6
 	BeatmapSortCreated    BeatmapSort = 7
 	BeatmapSortRelevance  BeatmapSort = 8
+	BeatmapSortUpdated    BeatmapSort = 9
 )
 
 type BeatmapCategory int

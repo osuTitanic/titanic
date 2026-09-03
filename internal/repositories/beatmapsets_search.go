@@ -53,7 +53,7 @@ func (options *BeatmapsetSearchOptions) Normalize() {
 	if options.Category < constants.BeatmapCategoryAny || options.Category > constants.BeatmapCategoryGraveyard {
 		options.Category = constants.BeatmapCategoryLeaderboard
 	}
-	if options.Sort < constants.BeatmapSortTitle || options.Sort > constants.BeatmapSortRelevance {
+	if options.Sort < constants.BeatmapSortTitle || options.Sort > constants.BeatmapSortUpdated {
 		options.Sort = constants.BeatmapSortRanked
 	}
 	if options.Order != constants.SearchOrderAscending {
@@ -169,6 +169,7 @@ var beatmapsetSortExpressions = map[constants.BeatmapSort]string{
 	constants.BeatmapSortDifficulty: "beatmapsets.max_diff",
 	constants.BeatmapSortPlays:      "beatmapsets.total_playcount",
 	constants.BeatmapSortCreated:    "beatmapsets.id",
+	constants.BeatmapSortUpdated:    "beatmapsets.last_updated",
 	// For ratings, we calculate a Bayesian average to provide a more balanced ranking
 	// that accounts for both the average rating and the number of ratings
 	// https://en.wikipedia.org/wiki/Bayesian_average
