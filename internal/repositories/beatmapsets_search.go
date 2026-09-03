@@ -19,9 +19,13 @@ type BeatmapsetSearchResult struct {
 type BeatmapsetSearchOptions struct {
 	QueryString string
 
-	Order    constants.SearchOrder
+	// One can either specify the category (e.g. Ranked, Approved, ...)
+	// or the allowed statuses of a beatmapset, useful for osu! direct
+	Statuses []constants.BeatmapStatus
 	Category constants.BeatmapCategory
-	Sort     constants.BeatmapSort
+
+	Order constants.SearchOrder
+	Sort  constants.BeatmapSort
 
 	Genre    *constants.BeatmapGenre
 	Language *constants.BeatmapLanguage
@@ -180,11 +184,16 @@ var beatmapsetSortExpressions = map[constants.BeatmapSort]string{
 }
 
 func (r *BeatmapsetRepository) Search(options BeatmapsetSearchOptions, preload ...string) ([]*schemas.Beatmapset, error) {
-	result, err := r.SearchPage(options, preload...)
-	if err != nil {
-		return nil, err
-	}
-	return result.Beatmapsets, nil
+	options.Normalize()
+	query, textQuery := r.buildBeatmapsetSearchQuery(r.db.Model(&schemas.Beatmapset{}), options)
+	query = applyBeatmapsetSearchSort(query, options, textQuery)
+
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(query, preload).
+		Offset(options.Offset).
+		Limit(options.Limit).
+		Find(&beatmapsets).Error
+	return beatmapsets, err
 }
 
 func (r *BeatmapsetRepository) SearchPage(options BeatmapsetSearchOptions, preload ...string) (*BeatmapsetSearchResult, error) {
@@ -225,7 +234,15 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 
 	query = query.Where("EXISTS (SELECT 1 FROM beatmaps WHERE beatmaps.set_id = beatmapsets.id)")
 	query = applyBeatmapsetCriteria(query, options)
-	query = applyBeatmapsetSearchCategory(query, options.Category)
+
+	// We can either specify the category (e.g. Ranked, Approved, ...) or the
+	// allowed statuses of a beatmapset, which is useful for osu! direct search
+	// Applying statuses takes precedence over the selected category
+	if len(options.Statuses) > 0 {
+		query = query.Where("beatmapsets.submission_status IN ?", options.Statuses)
+	} else {
+		query = applyBeatmapsetSearchCategory(query, options.Category)
+	}
 
 	query, updatedSearchQuery, filtersRequireBeatmaps := applyBeatmapsetSearchFilters(
 		query,
