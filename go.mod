@@ -2,6 +2,8 @@ module github.com/osuTitanic/titanic
 
 go 1.27.1
 
+// TODO: Migrate encoding/json calls to encoding/json/v2 after auditing compatibility
+
 require (
 	github.com/7mochi/osu-native-go v0.0.0-20260810174832-58149246cddd
 	github.com/CloudyKit/jet/v6 v6.3.2
