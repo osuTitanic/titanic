@@ -26,8 +26,8 @@ func PageName(path string) string {
 	path = strings.TrimSuffix(strings.TrimSpace(path), "/")
 	path = strings.TrimSuffix(path, ".md")
 
-	if index := strings.LastIndex(path, "/"); index >= 0 {
-		path = path[index+1:]
+	if _, name, found := strings.CutLast(path, "/"); found {
+		path = name
 	}
 	return strings.ReplaceAll(path, "_", " ")
 }
