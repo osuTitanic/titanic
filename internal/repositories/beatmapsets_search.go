@@ -62,8 +62,8 @@ func (options *BeatmapsetSearchOptions) Normalize() {
 	if options.Limit < 1 {
 		options.Limit = 50
 	}
-	if options.Limit > 50 {
-		options.Limit = 50
+	if options.Limit > 100 {
+		options.Limit = 100
 	}
 	if options.Offset < 0 {
 		options.Offset = 0
