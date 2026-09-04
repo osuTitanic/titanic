@@ -80,6 +80,16 @@ func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
 	return cmp.Or(ctx.QueryValue(name), fallback)
 }
 
+// QueryValueOptional attempts to get a query parameter
+// from the request and returns nil if not present.
+func (ctx *HttpContext) QueryValueOptional(name string) *string {
+	if value := strings.TrimSpace(ctx.QueryValue(name)); value == "" {
+		return nil
+	} else {
+		return &value
+	}
+}
+
 // QueryValueInt returns a query parameter as an integer.
 func (ctx *HttpContext) QueryValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.QueryValue(name)))
@@ -88,6 +98,20 @@ func (ctx *HttpContext) QueryValueInt(name string) (int, error) {
 // QueryValueInt64 returns a query parameter as an int64.
 func (ctx *HttpContext) QueryValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.QueryValue(name)), 10, 64)
+}
+
+// QueryValueIntOptional returns a query parameter as an
+// integer pointer or nil if the parameter is not present.
+func (ctx *HttpContext) QueryValueIntOptional(name string) (*int, error) {
+	raw := ctx.QueryValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(*raw)
+	if err != nil {
+		return nil, err
+	}
+	return new(value), nil
 }
 
 // QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value.
@@ -101,6 +125,22 @@ func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
 }
 
+// FormValueDefault attempts to get a form value from the
+// request while falling back to the given if not present.
+func (ctx *HttpContext) FormValueDefault(name, fallback string) string {
+	return cmp.Or(ctx.FormValue(name), fallback)
+}
+
+// FormValueOptional attempts to get a form value from
+// the request and returns nil if not present.
+func (ctx *HttpContext) FormValueOptional(name string) *string {
+	if value := strings.TrimSpace(ctx.FormValue(name)); value == "" {
+		return nil
+	} else {
+		return &value
+	}
+}
+
 // FormValueInt returns a form value as an integer.
 func (ctx *HttpContext) FormValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.FormValue(name)))
@@ -109,6 +149,20 @@ func (ctx *HttpContext) FormValueInt(name string) (int, error) {
 // FormValueInt64 returns a form value as an int64.
 func (ctx *HttpContext) FormValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.FormValue(name)), 10, 64)
+}
+
+// FormValueIntOptional returns a form value as an integer
+// pointer or nil if the parameter is not present.
+func (ctx *HttpContext) FormValueIntOptional(name string) (*int, error) {
+	raw := ctx.FormValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(*raw)
+	if err != nil {
+		return nil, err
+	}
+	return new(value), nil
 }
 
 // FormValueEnum attempts to get a form value from the request and parse it as an enum value.
