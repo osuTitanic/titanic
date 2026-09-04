@@ -1,5 +1,7 @@
 package constants
 
+import "slices"
+
 type SearchOrder int
 
 const (
@@ -12,8 +14,8 @@ var SearchOrders = []SearchOrder{
 	SearchOrderAscending,
 }
 
-func (order SearchOrder) Values() []SearchOrder {
-	return SearchOrders
+func (order SearchOrder) Valid() bool {
+	return slices.Contains(SearchOrders, order)
 }
 
 type BeatmapSort int
@@ -44,8 +46,8 @@ var BeatmapSortingOptions = []BeatmapSort{
 	BeatmapSortUpdated,
 }
 
-func (sort BeatmapSort) Values() []BeatmapSort {
-	return BeatmapSortingOptions
+func (sort BeatmapSort) Valid() bool {
+	return slices.Contains(BeatmapSortingOptions, sort)
 }
 
 type BeatmapCategory int
@@ -74,6 +76,6 @@ var BeatmapCategories = []BeatmapCategory{
 	BeatmapCategoryGraveyard,
 }
 
-func (category BeatmapCategory) Values() []BeatmapCategory {
-	return BeatmapCategories
+func (category BeatmapCategory) Valid() bool {
+	return slices.Contains(BeatmapCategories, category)
 }

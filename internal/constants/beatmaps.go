@@ -1,5 +1,7 @@
 package constants
 
+import "slices"
+
 type BeatmapStatus int
 
 const (
@@ -25,12 +27,12 @@ var BeatmapStatuses = []BeatmapStatus{
 	BeatmapStatusLoved,
 }
 
-func (status BeatmapStatus) Value() int {
-	return int(status)
+func (status BeatmapStatus) Valid() bool {
+	return slices.Contains(BeatmapStatuses, status)
 }
 
-func (status BeatmapStatus) Values() []BeatmapStatus {
-	return BeatmapStatuses
+func (status BeatmapStatus) Value() int {
+	return int(status)
 }
 
 func (status BeatmapStatus) String() string {
@@ -111,12 +113,12 @@ var BeatmapGenres = []BeatmapGenre{
 	BeatmapGenreJazz,
 }
 
-func (genre BeatmapGenre) Value() int {
-	return int(genre)
+func (genre BeatmapGenre) Valid() bool {
+	return slices.Contains(BeatmapGenres, genre)
 }
 
-func (genre BeatmapGenre) Values() []BeatmapGenre {
-	return BeatmapGenres
+func (genre BeatmapGenre) Value() int {
+	return int(genre)
 }
 
 func (genre BeatmapGenre) String() string {
@@ -193,12 +195,12 @@ var BeatmapLanguages = []BeatmapLanguage{
 	BeatmapLanguageOther,
 }
 
-func (language BeatmapLanguage) Value() int {
-	return int(language)
+func (language BeatmapLanguage) Valid() bool {
+	return slices.Contains(BeatmapLanguages, language)
 }
 
-func (language BeatmapLanguage) Values() []BeatmapLanguage {
-	return BeatmapLanguages
+func (language BeatmapLanguage) Value() int {
+	return int(language)
 }
 
 func (language BeatmapLanguage) String() string {

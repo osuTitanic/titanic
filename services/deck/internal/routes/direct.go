@@ -33,12 +33,8 @@ const (
 	directDisplayModeLoved
 )
 
-func (d directDisplayMode) Values() []directDisplayMode {
-	return []directDisplayMode{
-		directDisplayModeRanked, directDisplayModeRankedStrict, directDisplayModePending,
-		directDisplayModeQualified, directDisplayModeAll, directDisplayModeGraveyard,
-		directDisplayModeApproved, directDisplayModeRankedPlayed, directDisplayModeLoved,
-	}
+func (d directDisplayMode) Valid() bool {
+	return d >= directDisplayModeRanked && d <= directDisplayModeLoved
 }
 
 // /web/osu-search.php -> Search for beatmapsets through osu! direct

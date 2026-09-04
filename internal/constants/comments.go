@@ -17,6 +17,10 @@ func (target CommentTarget) Valid() bool {
 	}
 }
 
+func (target CommentTarget) Value() string {
+	return string(target)
+}
+
 func (target CommentTarget) String() string {
 	switch target {
 	case CommentTargetMap:

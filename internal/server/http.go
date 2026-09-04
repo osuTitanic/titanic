@@ -11,13 +11,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"slices"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
-	"golang.org/x/exp/constraints"
 )
 
 const (
@@ -93,31 +92,43 @@ func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
 }
 
 // QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value
-func (ctx *HttpContext) QueryValueEnum[T constraints.Signed](name string) (T, error) {
-	raw := strings.TrimSpace(ctx.QueryValue(name))
-	parsed, err := strconv.ParseInt(raw, 10, 64)
-	if err != nil {
-		return T(0), err
-	}
+func (ctx *HttpContext) QueryValueEnum[T interface{ Valid() bool }](name string) (T, error) {
+	var zero T
 
-	value := T(parsed)
+	raw := ctx.QueryValue(name)
+	trimmed := strings.TrimSpace(raw)
 
-	// Check if value is within the integer range of T
-	if int64(value) != parsed {
-		return T(0), &strconv.NumError{
-			Func: "ParseInt",
-			Num:  raw,
-			Err:  strconv.ErrRange,
+	enumType := reflect.TypeFor[T]()
+	value := reflect.New(enumType).Elem()
+
+	switch enumType.Kind() {
+	case reflect.String:
+		value.SetString(raw)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		parsed, err := strconv.ParseInt(trimmed, 10, enumType.Bits())
+		if err != nil {
+			return zero, err
 		}
+		value.SetInt(parsed)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		parsed, err := strconv.ParseUint(trimmed, 10, enumType.Bits())
+		if err != nil {
+			return zero, err
+		}
+		value.SetUint(parsed)
+	default:
+		return zero, fmt.Errorf(
+			"unsupported enum type %s for query parameter %q",
+			enumType,
+			name,
+		)
 	}
 
-	// If the value is an enum, check if it contains the provided value
-	// TODO: check if there's a nicer syntax for this w/ reflect
-	enum, ok := any(value).(constants.Enum[T])
-	if ok && !slices.Contains(enum.Values(), value) {
-		return T(0), fmt.Errorf("invalid enum value %q for query parameter %q", raw, name)
+	enum := value.Interface().(T)
+	if !enum.Valid() {
+		return zero, fmt.Errorf("invalid enum value %q for query parameter %q", trimmed, name)
 	}
-	return value, nil
+	return enum, nil
 }
 
 // FormValue is a helper function to get form values from the request body.

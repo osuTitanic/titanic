@@ -30,8 +30,17 @@ const (
 	GradeN  Grade = "N"
 )
 
+func (grade Grade) Valid() bool {
+	switch grade {
+	case GradeXH, GradeSH, GradeX, GradeS, GradeA, GradeB, GradeC, GradeD, GradeF, GradeN:
+		return true
+	default:
+		return false
+	}
+}
+
 func (grade Grade) String() string {
-	if !grade.IsValid() {
+	if !grade.Valid() {
 		return fmt.Sprintf("Unknown(%s)", string(grade))
 	}
 	return string(grade)
@@ -61,14 +70,5 @@ func (grade Grade) Value() int8 {
 		return 9
 	default:
 		return -1
-	}
-}
-
-func (grade Grade) IsValid() bool {
-	switch grade {
-	case GradeXH, GradeSH, GradeX, GradeS, GradeA, GradeB, GradeC, GradeD, GradeF, GradeN:
-		return true
-	default:
-		return false
 	}
 }
