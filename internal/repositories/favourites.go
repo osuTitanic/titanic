@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BeatmapFavouriteRepository struct {
@@ -15,6 +16,14 @@ func NewBeatmapFavouriteRepository(db *gorm.DB) *BeatmapFavouriteRepository {
 
 func (r *BeatmapFavouriteRepository) Create(favourite *schemas.BeatmapFavourite) error {
 	return r.db.Create(favourite).Error
+}
+
+func (r *BeatmapFavouriteRepository) CreateIfAbsent(favourite *schemas.BeatmapFavourite) (bool, error) {
+	result := r.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "set_id"}},
+		DoNothing: true,
+	}).Create(favourite)
+	return result.RowsAffected > 0, result.Error
 }
 
 func (r *BeatmapFavouriteRepository) Delete(favourite *schemas.BeatmapFavourite) error {
