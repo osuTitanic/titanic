@@ -17,6 +17,10 @@ func (m Mode) Value() int {
 	return int(m)
 }
 
+func (m Mode) Values() []Mode {
+	return Modes
+}
+
 func (m Mode) String() string {
 	switch m {
 	case ModeOsu:

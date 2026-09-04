@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -100,12 +101,21 @@ func (ctx *HttpContext) QueryValueEnum[T constraints.Signed](name string) (T, er
 	}
 
 	value := T(parsed)
+
+	// Check if value is within the integer range of T
 	if int64(value) != parsed {
 		return T(0), &strconv.NumError{
 			Func: "ParseInt",
 			Num:  raw,
 			Err:  strconv.ErrRange,
 		}
+	}
+
+	// If the value is an enum, check if it contains the provided value
+	// TODO: check if there's a nicer syntax for this w/ reflect
+	enum, ok := any(value).(constants.Enum[T])
+	if ok && !slices.Contains(enum.Values(), value) {
+		return T(0), fmt.Errorf("invalid enum value %q for query parameter %q", raw, name)
 	}
 	return value, nil
 }
