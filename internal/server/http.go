@@ -90,7 +90,7 @@ func (ctx *HttpContext) QueryValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.QueryValue(name)), 10, 64)
 }
 
-// QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value
+// QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value.
 func (ctx *HttpContext) QueryValueEnum[T constants.HasValidator](name string) (T, error) {
 	raw := ctx.QueryValue(name)
 	return constants.ResolveEnum[T](raw)
@@ -104,6 +104,17 @@ func (ctx *HttpContext) FormValue(name string) string {
 // FormValueInt returns a form value as an integer.
 func (ctx *HttpContext) FormValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.FormValue(name)))
+}
+
+// FormValueInt64 returns a form value as an int64.
+func (ctx *HttpContext) FormValueInt64(name string) (int64, error) {
+	return strconv.ParseInt(strings.TrimSpace(ctx.FormValue(name)), 10, 64)
+}
+
+// FormValueEnum attempts to get a form value from the request and parse it as an enum value.
+func (ctx *HttpContext) FormValueEnum[T constants.HasValidator](name string) (T, error) {
+	raw := ctx.FormValue(name)
+	return constants.ResolveEnum[T](raw)
 }
 
 func (ctx *HttpContext) Redirect(status int, location string) {
