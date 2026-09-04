@@ -66,6 +66,19 @@ func (ctx *Context) AuthenticateUserFromQuery(
 	)
 }
 
+// AuthenticateUserFromForm authenticates a user using form values for username and password.
+func (ctx *Context) AuthenticateUserFromForm(
+	usernameKey string,
+	passwordKey string,
+	requireBanchoPresence bool,
+) (*schemas.User, error) {
+	return ctx.AuthenticateUser(
+		ctx.Request.PostFormValue(usernameKey),
+		ctx.Request.PostFormValue(passwordKey),
+		requireBanchoPresence,
+	)
+}
+
 // HandleUserAuthenticationSimple authenticates a user and handles the response in case of failure.
 func (ctx *Context) HandleUserAuthenticationSimple(
 	usernameKey string,
@@ -73,6 +86,33 @@ func (ctx *Context) HandleUserAuthenticationSimple(
 	requireBanchoPresence bool,
 ) (*schemas.User, bool) {
 	user, err := ctx.AuthenticateUserFromQuery(
+		usernameKey,
+		passwordKey,
+		requireBanchoPresence,
+	)
+
+	switch {
+	case errors.Is(err, ErrUserNotFound),
+		errors.Is(err, ErrInvalidPassword),
+		errors.Is(err, ErrBanchoPresenceNotFound):
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+	case err != nil:
+		ctx.Logger.Error("Failed to authenticate user", "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+	default:
+		return user, true
+	}
+	return nil, false
+}
+
+// HandleUserAuthenticationFormSimple authenticates a user from form values
+// and handles the response in case of failure.
+func (ctx *Context) HandleUserAuthenticationFormSimple(
+	usernameKey string,
+	passwordKey string,
+	requireBanchoPresence bool,
+) (*schemas.User, bool) {
+	user, err := ctx.AuthenticateUserFromForm(
 		usernameKey,
 		passwordKey,
 		requireBanchoPresence,
