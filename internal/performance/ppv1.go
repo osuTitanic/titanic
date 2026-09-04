@@ -108,10 +108,18 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		basePP *= 0.2
 	}
 
-	// Nerf "easy maps"... idk?
+	// Nerf maps with a high pass ratio, likely being very easy to play
 	if score.Mode != constants.ModeTaiko && passRatio > 0.3 {
 		basePP *= 0.2
 	}
+
+	// NOTE: This pass ratio nerf causes some trouble on Titanic due to
+	//	     a lot of maps having a low playcount.
+	// 		 Initially, the pass ratio may be low, but after a few plays,
+	// 		 the pass ratio can easily exceed 0.3, which will suddenly nerf
+	// 		 all scores at once.
+	// TODO: We could fix this by gradually applying this nerf in relation to playcount
+	//		 This would differ from the original system, but it would make players less confused
 
 	// TODO: Implement SS ratio
 	// 		 For the beatmap/mode top 800 scores:
