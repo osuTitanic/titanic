@@ -446,15 +446,15 @@ func (BeatmapRating) TableName() string {
 }
 
 type BeatmapComment struct {
-	Id         int            `gorm:"column:id;primaryKey;autoIncrement"`
-	TargetId   int            `gorm:"column:target_id"`
-	TargetType string         `gorm:"column:target_type"`
-	UserId     int            `gorm:"column:user_id"`
-	Mode       constants.Mode `gorm:"column:mode;default:0"`
-	Time       int            `gorm:"column:time"`
-	Comment    string         `gorm:"column:comment"`
-	Format     *string        `gorm:"column:format"`
-	Color      *string        `gorm:"column:color"`
+	Id         int                     `gorm:"column:id;primaryKey;autoIncrement"`
+	TargetId   int                     `gorm:"column:target_id"`
+	TargetType constants.CommentTarget `gorm:"column:target_type"`
+	UserId     int                     `gorm:"column:user_id"`
+	Mode       constants.Mode          `gorm:"column:mode;default:0"`
+	Time       int                     `gorm:"column:time"`
+	Comment    string                  `gorm:"column:comment"`
+	Format     *string                 `gorm:"column:format"`
+	Color      *string                 `gorm:"column:color"`
 
 	User *User `gorm:"foreignKey:UserId;references:Id"`
 }
