@@ -63,6 +63,15 @@ func (options *BeatmapsetSearchOptions) Normalize() {
 	if options.Order != constants.SearchOrderAscending {
 		options.Order = constants.SearchOrderDescending
 	}
+	if options.Genre != nil && !slices.Contains(constants.BeatmapGenres, *options.Genre) {
+		options.Genre = nil
+	}
+	if options.Language != nil && !slices.Contains(constants.BeatmapLanguages, *options.Language) {
+		options.Language = nil
+	}
+	if options.Mode != nil && !slices.Contains(constants.Modes, *options.Mode) {
+		options.Mode = nil
+	}
 	if options.Limit < 1 {
 		options.Limit = 50
 	}
