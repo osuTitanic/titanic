@@ -451,7 +451,7 @@ type BeatmapComment struct {
 	TargetType string         `gorm:"column:target_type"`
 	UserId     int            `gorm:"column:user_id"`
 	Mode       constants.Mode `gorm:"column:mode;default:0"`
-	Time       time.Time      `gorm:"column:time;autoCreateTime"`
+	Time       int            `gorm:"column:time"`
 	Comment    string         `gorm:"column:comment"`
 	Format     *string        `gorm:"column:format"`
 	Color      *string        `gorm:"column:color"`
