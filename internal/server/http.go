@@ -92,7 +92,7 @@ func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
 }
 
 // QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value
-func (ctx *HttpContext) QueryValueEnum[T interface{ Valid() bool }](name string) (T, error) {
+func (ctx *HttpContext) QueryValueEnum[T constants.HasValidator](name string) (T, error) {
 	var zero T
 
 	raw := ctx.QueryValue(name)
