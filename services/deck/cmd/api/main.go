@@ -17,6 +17,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/bancho_connect.php", routes.BanchoConnect)
 	server.Handle("GET /web/check-updates.php", routes.CheckUpdates)
 	server.Handle("GET /web/coins.php", routes.Coins)
+	server.Handle("POST /web/osu-comment.php", routes.Comments)
 	server.Handle("GET /web/osu-checktweets.php", routes.CheckTweets)
 	server.Handle("POST /web/osu-getbeatmapinfo.php", routes.BeatmapInfo)
 	server.Handle("GET /web/osu-getfriends.php", routes.Friends)
