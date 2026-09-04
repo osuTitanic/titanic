@@ -110,6 +110,8 @@ services:
       - POSTGRES_PORT=5432
       - REDIS_HOST=cache
       - REDIS_PORT=6379
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=80
     networks:
       - titanic
     # ports:
