@@ -7,6 +7,15 @@ const (
 	SearchOrderAscending  SearchOrder = 1
 )
 
+var SearchOrders = []SearchOrder{
+	SearchOrderDescending,
+	SearchOrderAscending,
+}
+
+func (order SearchOrder) Values() []SearchOrder {
+	return SearchOrders
+}
+
 type BeatmapSort int
 
 const (
@@ -22,6 +31,23 @@ const (
 	BeatmapSortUpdated    BeatmapSort = 9
 )
 
+var BeatmapSortingOptions = []BeatmapSort{
+	BeatmapSortTitle,
+	BeatmapSortArtist,
+	BeatmapSortCreator,
+	BeatmapSortDifficulty,
+	BeatmapSortRanked,
+	BeatmapSortRating,
+	BeatmapSortPlays,
+	BeatmapSortCreated,
+	BeatmapSortRelevance,
+	BeatmapSortUpdated,
+}
+
+func (sort BeatmapSort) Values() []BeatmapSort {
+	return BeatmapSortingOptions
+}
+
 type BeatmapCategory int
 
 const (
@@ -35,3 +61,19 @@ const (
 	BeatmapCategoryWIP         BeatmapCategory = 7
 	BeatmapCategoryGraveyard   BeatmapCategory = 8
 )
+
+var BeatmapCategories = []BeatmapCategory{
+	BeatmapCategoryAny,
+	BeatmapCategoryLeaderboard,
+	BeatmapCategoryRanked,
+	BeatmapCategoryQualified,
+	BeatmapCategoryLoved,
+	BeatmapCategoryApproved,
+	BeatmapCategoryPending,
+	BeatmapCategoryWIP,
+	BeatmapCategoryGraveyard,
+}
+
+func (category BeatmapCategory) Values() []BeatmapCategory {
+	return BeatmapCategories
+}
