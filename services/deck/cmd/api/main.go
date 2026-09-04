@@ -43,8 +43,8 @@ func main() {
 	defer app.Close()
 
 	deck := server.NewServer(
-		app.Config.ApiHost,
-		app.Config.ApiPort,
+		app.Config.WebHost,
+		app.Config.WebPort,
 		"deck", app,
 	)
 	InitializeRoutes(deck)
