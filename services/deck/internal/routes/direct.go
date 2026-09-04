@@ -16,6 +16,9 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
+const directSearchLimit = 100
+const directTimestampLayout = "2006-01-02 15:04:05.999999"
+
 type directDisplayMode int
 
 const (
@@ -30,8 +33,13 @@ const (
 	directDisplayModeLoved
 )
 
-const directSearchLimit = 100
-const directTimestampLayout = "2006-01-02 15:04:05.999999"
+func (d directDisplayMode) Values() []directDisplayMode {
+	return []directDisplayMode{
+		directDisplayModeRanked, directDisplayModeRankedStrict, directDisplayModePending,
+		directDisplayModeQualified, directDisplayModeAll, directDisplayModeGraveyard,
+		directDisplayModeApproved, directDisplayModeRankedPlayed, directDisplayModeLoved,
+	}
+}
 
 // /web/osu-search.php -> Search for beatmapsets through osu! direct
 func DirectSearch(ctx *server.Context) {
@@ -124,28 +132,26 @@ func buildDirectSearchOptions(ctx *server.Context, userId *int) (repositories.Be
 		UserId:      userId,
 		Limit:       directSearchLimit,
 	}
-
 	displayMode := directDisplayModeAll
-	if value := ctx.QueryValue("r"); value != "" {
-		displayMode, _ = ctx.QueryValueEnum[directDisplayMode]("r")
-	}
 
-	// The display mode will determine which statuses are included
-	// in the search results, e.g. ranked, pending, graveyard, ...
-	applyDirectDisplayMode(&options, displayMode)
-
-	if value := ctx.QueryValue("m"); value != "" {
-		mode, _ := ctx.QueryValueEnum[constants.Mode]("m")
-		if mode >= 0 {
-			options.Mode = new(mode)
-		}
-	}
-
+	// Some clients are limited to 100 results, while others can infinitely scroll
 	supportsPageOffset := ctx.Request.URL.Query().Has("p")
 	if supportsPageOffset {
 		page, _ := ctx.QueryValueInt("p")
 		options.Offset = page * directSearchLimit
 	}
+
+	if mode, err := ctx.QueryValueEnum[constants.Mode]("m"); err == nil {
+		options.Mode = new(mode)
+	}
+
+	if dm, err := ctx.QueryValueEnum[directDisplayMode]("r"); err == nil {
+		displayMode = dm
+	}
+
+	// The display mode will determine which statuses are included
+	// in the search results, e.g. ranked, pending, graveyard, ...
+	applyDirectDisplayMode(&options, displayMode)
 
 	// osu! direct doesn't have a separate query value that
 	// specifies the sort order. It sets it through the query
@@ -180,26 +186,16 @@ func applyDirectDisplayMode(options *repositories.BeatmapsetSearchOptions, displ
 	// https://github.com/osuTitanic/deck/pull/441
 	// https://github.com/osuTitanic/common/pull/26
 	switch displayMode {
-	case directDisplayModeRanked:
-		options.Statuses = []constants.BeatmapStatus{
-			constants.BeatmapStatusRanked,
-			constants.BeatmapStatusApproved,
-		}
-	case directDisplayModeRankedStrict:
-		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusRanked}
 	case directDisplayModePending:
 		options.Statuses = []constants.BeatmapStatus{
 			constants.BeatmapStatusWIP,
 			constants.BeatmapStatusPending,
 		}
-	case directDisplayModeQualified:
-		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusQualified}
-	case directDisplayModeAll:
-		options.Category = constants.BeatmapCategoryAny
-	case directDisplayModeGraveyard:
-		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusGraveyard}
-	case directDisplayModeApproved:
-		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusApproved}
+	case directDisplayModeRanked:
+		options.Statuses = []constants.BeatmapStatus{
+			constants.BeatmapStatusRanked,
+			constants.BeatmapStatusApproved,
+		}
 	case directDisplayModeRankedPlayed:
 		options.Statuses = []constants.BeatmapStatus{
 			constants.BeatmapStatusRanked,
@@ -209,8 +205,22 @@ func applyDirectDisplayMode(options *repositories.BeatmapsetSearchOptions, displ
 			options.UserId = new(0)
 		}
 		options.Played = true
+	case directDisplayModeRankedStrict:
+		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusRanked}
+	case directDisplayModeQualified:
+		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusQualified}
+	case directDisplayModeGraveyard:
+		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusGraveyard}
+	case directDisplayModeApproved:
+		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusApproved}
 	case directDisplayModeLoved:
 		options.Statuses = []constants.BeatmapStatus{constants.BeatmapStatusLoved}
+	case directDisplayModeAll:
+		options.Statuses = []constants.BeatmapStatus{}
+		options.Category = constants.BeatmapCategoryAny
+	default:
+		options.Statuses = []constants.BeatmapStatus{}
+		options.Category = constants.BeatmapCategoryAny
 	}
 }
 

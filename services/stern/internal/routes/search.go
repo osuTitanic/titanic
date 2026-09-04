@@ -2,7 +2,6 @@ package routes
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -18,7 +17,7 @@ func Search(ctx *server.Context) {
 		userId = &ctx.CurrentUser.Id
 	}
 
-	options, page := buildBeatmapsetSearchOptions(query, userId)
+	options, page := buildBeatmapsetSearchOptions(ctx, userId)
 	result, err := ctx.State.Repositories.Beatmapsets.SearchPage(options, "Beatmaps")
 	if err != nil {
 		ctx.Logger.Error("Failed to search beatmapsets", "options", options, "error", err)
@@ -43,53 +42,50 @@ func Search(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/public/search", view)
 }
 
-func buildBeatmapsetSearchOptions(query url.Values, userId *int) (repositories.BeatmapsetSearchOptions, int) {
+func buildBeatmapsetSearchOptions(ctx *server.Context, userId *int) (repositories.BeatmapsetSearchOptions, int) {
 	options := repositories.BeatmapsetSearchOptions{
-		QueryString: query.Get("query"),
+		QueryString: ctx.QueryValue("query"),
 		Order:       constants.SearchOrderDescending,
 		Category:    constants.BeatmapCategoryLeaderboard,
 		Sort:        constants.BeatmapSortRanked,
 		Limit:       50,
 	}
 
-	if genre, ok := parseInt(query.Get("genre")); ok {
-		value := constants.BeatmapGenre(genre)
-		options.Genre = &value
+	if genre, err := ctx.QueryValueEnum[constants.BeatmapGenre]("genre"); err == nil {
+		options.Genre = new(genre)
 	}
-	if language, ok := parseInt(query.Get("language")); ok {
-		value := constants.BeatmapLanguage(language)
-		options.Language = &value
+	if language, err := ctx.QueryValueEnum[constants.BeatmapLanguage]("language"); err == nil {
+		options.Language = new(language)
 	}
-	if category, ok := parseInt(query.Get("category")); ok {
-		options.Category = constants.BeatmapCategory(category)
+	if category, err := ctx.QueryValueEnum[constants.BeatmapCategory]("category"); err == nil {
+		options.Category = category
 	}
-	if sort, ok := parseInt(query.Get("sort")); ok {
-		options.Sort = constants.BeatmapSort(sort)
+	if sort, err := ctx.QueryValueEnum[constants.BeatmapSort]("sort"); err == nil {
+		options.Sort = sort
 	}
-	if order, ok := parseInt(query.Get("order")); ok {
-		options.Order = constants.SearchOrder(order)
+	if order, err := ctx.QueryValueEnum[constants.SearchOrder]("order"); err == nil {
+		options.Order = order
 	}
-	if mode, ok := parseInt(query.Get("mode")); ok {
-		value := constants.Mode(mode)
-		options.Mode = &value
+	if mode, err := ctx.QueryValueEnum[constants.Mode]("mode"); err == nil {
+		options.Mode = new(mode)
 	}
 
 	page := 1
-	if parsed, ok := parseInt(query.Get("page")); ok && parsed > 1 {
+	if parsed, err := ctx.QueryValueInt("page"); err == nil && parsed > 1 {
 		page = parsed
 	}
 	options.Offset = (page - 1) * options.Limit
 
-	options.HasVideo = query.Get("video") != ""
-	options.HasStoryboard = query.Get("storyboard") != ""
-	options.TitanicOnly = query.Get("titanic") != ""
+	options.HasVideo = ctx.QueryValue("video") != ""
+	options.HasStoryboard = ctx.QueryValue("storyboard") != ""
+	options.TitanicOnly = ctx.QueryValue("titanic") != ""
 
 	if userId != nil {
 		options.UserId = userId
-		options.Played = query.Get("played") != ""
-		options.Unplayed = query.Get("unplayed") != ""
-		options.Cleared = query.Get("cleared") != ""
-		options.Uncleared = query.Get("uncleared") != ""
+		options.Played = ctx.QueryValue("played") != ""
+		options.Unplayed = ctx.QueryValue("unplayed") != ""
+		options.Cleared = ctx.QueryValue("cleared") != ""
+		options.Uncleared = ctx.QueryValue("uncleared") != ""
 	}
 	return options, page
 }
