@@ -179,9 +179,11 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 		return
 	}
 
+	isCreator := beatmap.Beatmapset != nil &&
+		beatmap.Beatmapset.CreatorId != nil &&
+		*beatmap.Beatmapset.CreatorId == user.Id
 	isBAT := permissions.IsBat()
 	isDonator := permissions.IsDonator()
-	isCreator := beatmap.Beatmapset != nil && *beatmap.Beatmapset.CreatorId == user.Id
 	commentFormat := resolveCommentFormat(isCreator, isBAT, isDonator)
 
 	comment := &schemas.BeatmapComment{
