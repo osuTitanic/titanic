@@ -142,6 +142,17 @@ var modsOrder = []Mods{
 	Mirror,
 }
 
+const allMods = NoFail | Easy | NoVideo | Hidden | HardRock | SuddenDeath |
+	DoubleTime | Relax | HalfTime | Nightcore | Flashlight | Autoplay |
+	SpunOut | Autopilot | Perfect | Key4 | Key5 | Key6 | Key7 | Key8 |
+	FadeIn | Random | Cinema | Target | Key9 | KeyCoop | Key1 | Key3 |
+	Key2 | ScoreV2 | Mirror
+
+// Valid returns true if the given mod flag is a valid mod combination.
+func (m Mods) Valid() bool {
+	return m&^allMods == 0
+}
+
 // Has returns true if the given mod flag is enabled in mods.
 func (m Mods) Has(flag Mods) bool {
 	return m&flag != 0
