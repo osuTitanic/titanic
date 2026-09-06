@@ -123,7 +123,14 @@ func GetScores(ctx *server.Context) {
 
 	response, err := processLeaderboardRequest(request, ctx)
 	if err != nil {
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+
+	// This endpoint does not have any handling of beatmaps with "update available"
+	// since the only thing it provides is a checksum of the map
+	if request.Beatmap == nil {
+		ctx.RenderText(http.StatusOK, "-1")
 		return
 	}
 	if response.Type <= LeaderboardBeatmapNotSubmitted {
