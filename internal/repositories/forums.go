@@ -248,6 +248,18 @@ func (r *ForumPostRepository) FetchInitialByTopic(topicId int, preload ...string
 	return LookupResult(&post, err)
 }
 
+func (r *ForumPostRepository) FetchInitialIdByTopic(topicId int) (int64, error) {
+	var postId int64
+	err := r.db.Model(&schemas.ForumPost{}).
+		Select("id").
+		Where("topic_id = ?", topicId).
+		Where("hidden = ?", false).
+		Order("id ASC").
+		Limit(1).
+		Scan(&postId).Error
+	return postId, err
+}
+
 func (r *ForumPostRepository) FetchLastByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
 	var post schemas.ForumPost
 	err := Preloaded(r.db, preload).
