@@ -11,13 +11,33 @@ import (
 )
 
 const (
-	beatmapInfoMaxMaps     = 100
-	beatmapInfoMaxBodySize = 64 << 10
+	BeatmapInfoMaxMaps     = 100
+	BeatmapInfoMaxBodySize = 64 << 10
 )
 
-type beatmapInfoRequest struct {
+type BeatmapInfoRequest struct {
 	Filenames []string `json:"Filenames"`
 	Ids       []int    `json:"Ids"`
+}
+
+func (r BeatmapInfoRequest) Total() int {
+	return len(r.Filenames) + len(r.Ids)
+}
+
+func NewBeatmapInfoRequest(ctx *server.Context) (request BeatmapInfoRequest, ok bool) {
+	reader := http.MaxBytesReader(ctx.Response, ctx.Request.Body, BeatmapInfoMaxBodySize)
+	decoder := json.NewDecoder(reader)
+
+	if err := decoder.Decode(&request); err != nil {
+		return BeatmapInfoRequest{}, false
+	}
+	if request.Filenames == nil || request.Ids == nil {
+		return BeatmapInfoRequest{}, false
+	}
+	if request.Total() > BeatmapInfoMaxMaps {
+		return BeatmapInfoRequest{}, false
+	}
+	return request, true
 }
 
 // /web/osu-getbeatmapinfo.php -> Resolve beatmap metadata & pb's, similar to Bancho's BeatmapInfo packets
@@ -27,8 +47,9 @@ func BeatmapInfo(ctx *server.Context) {
 		return
 	}
 
-	request, ok := decodeBeatmapInfoRequest(ctx)
+	request, ok := NewBeatmapInfoRequest(ctx)
 	if !ok {
+		ctx.Response.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -45,7 +66,7 @@ func BeatmapInfo(ctx *server.Context) {
 	ctx.RenderText(http.StatusOK, formatBeatmapInfo(request, results))
 }
 
-func formatBeatmapInfo(request beatmapInfoRequest, results []repositories.BeatmapInfoResult) string {
+func formatBeatmapInfo(request BeatmapInfoRequest, results []repositories.BeatmapInfoResult) string {
 	var output strings.Builder
 
 	for _, result := range results {
@@ -60,25 +81,4 @@ func formatBeatmapInfo(request beatmapInfoRequest, results []repositories.Beatma
 		output.WriteString(beatmapInfoReply)
 	}
 	return output.String()
-}
-
-func decodeBeatmapInfoRequest(ctx *server.Context) (request beatmapInfoRequest, ok bool) {
-	reader := http.MaxBytesReader(ctx.Response, ctx.Request.Body, beatmapInfoMaxBodySize)
-	decoder := json.NewDecoder(reader)
-
-	if err := decoder.Decode(&request); err != nil {
-		ctx.Response.WriteHeader(http.StatusBadRequest)
-		return beatmapInfoRequest{}, false
-	}
-	if request.Filenames == nil || request.Ids == nil {
-		ctx.Response.WriteHeader(http.StatusBadRequest)
-		return beatmapInfoRequest{}, false
-	}
-
-	totalMaps := len(request.Filenames) + len(request.Ids)
-	if totalMaps > beatmapInfoMaxMaps {
-		ctx.RenderText(http.StatusOK, "")
-		return
-	}
-	return request, true
 }
