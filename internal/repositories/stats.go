@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -27,6 +28,13 @@ func (r *StatsRepository) Update(updates *schemas.Stats, columns ...string) (int
 		updates,
 		columns...,
 	)
+}
+
+func (r *StatsRepository) UpdateReplayViews(userId int, mode constants.Mode) error {
+	return r.db.Model(&schemas.Stats{}).
+		Where("id = ? AND mode = ?", userId, mode).
+		UpdateColumn("replay_views", gorm.Expr("replay_views + ?", 1)).
+		Error
 }
 
 func (r *StatsRepository) ByMode(userId int, mode int, preload ...string) (*schemas.Stats, error) {
