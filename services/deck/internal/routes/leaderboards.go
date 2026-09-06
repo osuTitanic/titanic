@@ -326,15 +326,21 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 
 func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*schemas.Beatmap, bool) {
 	beatmap, err := ctx.State.Beatmaps.ByChecksum(checksum, "Beatmapset")
-	if err == nil {
-		return beatmap, beatmap != nil
+	if err != nil {
+		return nil, false
+	}
+	if beatmap != nil {
+		return beatmap, true
 	}
 	if filename == "" {
 		return nil, false
 	}
 	beatmap, err = ctx.State.Beatmaps.ByFilename(filename, "Beatmapset")
-	if err == nil {
-		return beatmap, beatmap != nil
+	if err != nil {
+		return nil, false
+	}
+	if beatmap != nil {
+		return beatmap, true
 	}
 	return nil, false
 }
