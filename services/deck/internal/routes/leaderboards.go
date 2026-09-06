@@ -95,7 +95,46 @@ func GetScores6(ctx *server.Context) {
 
 // /web/osu-getscores5.php -> Added offset & display title metadata
 func GetScores5(ctx *server.Context) {
-	// TODO
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type == LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	lines := []string{
+		fmt.Sprint(response.Type),
+		strconv.Itoa(response.Beatmap.Beatmapset.Offset),
+		response.Beatmap.Beatmapset.DisplayTitleText(),
+	}
+	if response.Type <= LeaderboardBeatmapPending || request.SkipScores {
+		ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+		return
+	}
+
+	lines = append(lines, formatScore(
+		response.PersonalBest,
+		response.PersonalBestIndex,
+		request.RequestVersion,
+	))
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
 }
 
 // /web/osu-getscores4.php -> Added user's personal best to the response
@@ -400,12 +439,12 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*schemas.Beatmap, bool) {
 	if filename != "" {
 		beatmap, err := ctx.State.Beatmaps.ByFilename(filename, "Beatmapset")
-	if err != nil {
-		return nil, false
-	}
-	if beatmap != nil {
-		return beatmap, true
-	}
+		if err != nil {
+			return nil, false
+		}
+		if beatmap != nil {
+			return beatmap, true
+		}
 	}
 	if checksum != "" {
 		beatmap, err := ctx.State.Beatmaps.ByChecksum(checksum, "Beatmapset")
