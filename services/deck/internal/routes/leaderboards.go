@@ -307,7 +307,7 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 	}
 
 	if request.User != nil {
-		response.PersonalBest, err = ctx.State.Scores.FetchLeaderboardPersonalBest(filter, request.User.Id)
+		response.PersonalBest, err = ctx.State.Scores.FetchLeaderboardPersonalBest(filter, request.User.Id, "User")
 		if err != nil {
 			return response, fmt.Errorf("fetch personal best: %w", err)
 		}
