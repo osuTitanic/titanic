@@ -45,6 +45,7 @@ func (r *BeatmapsetRepository) ByPostId(postId int, preload ...string) (*schemas
 	err := Preloaded(r.db, preload).
 		Joins("JOIN forum_posts ON forum_posts.topic_id = beatmapsets.topic_id").
 		Where("forum_posts.id = ?", postId).
+		Where("forum_posts.hidden = ?", false).
 		First(&beatmapset).Error
 	return LookupResult(&beatmapset, err)
 }
