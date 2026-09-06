@@ -83,7 +83,7 @@ type Config struct {
 
 	// Score server configuration
 	WebHost                    string `env:"WEB_HOST" envDefault:"localhost"`
-	WebPort                    int    `env:"WEB_PORT" envDefault:"80"`
+	WebPort                    int    `env:"WEB_PORT" envDefault:"8000"`
 	WebWorkers                 int    `env:"WEB_WORKERS" envDefault:"5"`
 	ScoreResponseLimit         int    `env:"SCORE_RESPONSE_LIMIT" envDefault:"50"`
 	BeatmapFavoritesLimit      int    `env:"BEATMAP_FAVOURITES_LIMIT" envDefault:"100"`
