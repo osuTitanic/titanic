@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -11,6 +12,14 @@ import (
 
 type ScoreRepository struct {
 	db *gorm.DB
+}
+
+type BeatmapLeaderboardFilter struct {
+	BeatmapId int
+	Mode      constants.Mode
+	Mods      *constants.Mods
+	Country   *string
+	FriendsOf *int
 }
 
 func NewScoreRepository(db *gorm.DB) *ScoreRepository {
@@ -163,6 +172,73 @@ func (r *ScoreRepository) FetchRangeScoresMods(beatmapId int, mode constants.Mod
 		Limit(limit).
 		Find(&scores).Error
 	return scores, err
+}
+
+func (r *ScoreRepository) FetchLeaderboardScores(filter BeatmapLeaderboardFilter, limit int, preload ...string) ([]*schemas.Score, error) {
+	query, err := leaderboardQuery(filter, Preloaded(r.db, preload))
+	if err != nil {
+		return nil, err
+	}
+
+	var scores []*schemas.Score
+	err = query.
+		Order("scores.total_score DESC, scores.submitted_at ASC, scores.id ASC").
+		Limit(limit).
+		Find(&scores).
+		Error
+	return scores, err
+}
+
+func (r *ScoreRepository) FetchLeaderboardCount(filter BeatmapLeaderboardFilter) (int, error) {
+	query, err := leaderboardQuery(filter, r.db)
+	if err != nil {
+		return 0, err
+	}
+
+	var count int64
+	err = query.Count(&count).Error
+	return int(count), err
+}
+
+func (r *ScoreRepository) FetchLeaderboardPersonalBest(filter BeatmapLeaderboardFilter, userId int, preload ...string) (*schemas.Score, error) {
+	query, err := leaderboardQuery(filter, Preloaded(r.db, preload))
+	if err != nil {
+		return nil, err
+	}
+
+	var score schemas.Score
+	err = query.
+		Where("scores.user_id = ?", userId).
+		Order("scores.total_score DESC, scores.submitted_at ASC, scores.id ASC").
+		First(&score).
+		Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchLeaderboardScoreIndex(filter BeatmapLeaderboardFilter, score *schemas.Score) (int, error) {
+	if score == nil {
+		return 0, errors.New("score is nil")
+	}
+
+	query, err := leaderboardQuery(filter, r.db)
+	if err != nil {
+		return 0, err
+	}
+
+	rankedScoresSelect := fmt.Sprintf(
+		"scores.id, ROW_NUMBER() OVER (%s) AS leaderboard_rank",
+		"ORDER BY scores.total_score DESC, scores.submitted_at ASC, scores.id ASC",
+	)
+	rankedScores := query.Select(rankedScoresSelect)
+
+	var rank int
+	err = r.db.
+		Table("(?) AS ranked_scores", rankedScores).
+		Select("ranked_scores.leaderboard_rank").
+		Where("ranked_scores.id = ?", score.Id).
+		Scan(&rank).
+		Error
+	return rank, err
 }
 
 func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constants.Mode, preload ...string) (*schemas.Score, error) {
@@ -367,6 +443,15 @@ func (r *ScoreRepository) FetchSubmittedTimestamps(userId int, mode constants.Mo
 	return timestamps, err
 }
 
+func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
+	return query.
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status > ?", 1).
+		Where("hidden = ?", false).
+		Where("pinned = ?", true)
+}
+
 func bestScoresQuery(userId int, mode constants.Mode, excludeApproved bool, query *gorm.DB) *gorm.DB {
 	allowedStatus := []constants.BeatmapStatus{
 		constants.BeatmapStatusRanked,
@@ -389,11 +474,44 @@ func bestScoresQuery(userId int, mode constants.Mode, excludeApproved bool, quer
 		Where("scores.hidden = ?", false)
 }
 
-func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
-	return query.
-		Where("user_id = ?", userId).
-		Where("mode = ?", mode).
-		Where("status > ?", 1).
-		Where("hidden = ?", false).
-		Where("pinned = ?", true)
+func leaderboardQuery(filter BeatmapLeaderboardFilter, db *gorm.DB) (*gorm.DB, error) {
+	query := db.Model(&schemas.Score{}).
+		Where("scores.beatmap_id = ?", filter.BeatmapId).
+		Where("scores.mode = ?", filter.Mode).
+		Where("scores.hidden = ?", false)
+
+	if filter.Mods == nil {
+		query = query.
+			Where("scores.status_score = ?", constants.ScoreStatusBest)
+	} else {
+		query = query.
+			Where("scores.status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
+			Where("scores.mods = ?", *filter.Mods)
+	}
+
+	if filter.Country != nil {
+		query = query.
+			Joins("JOIN users AS leaderboard_users ON leaderboard_users.id = scores.user_id").
+			Where("leaderboard_users.country = ?", *filter.Country)
+	}
+	if filter.FriendsOf != nil {
+		query = query.Where(
+			// Select either the user or the user's friends
+			`(
+				scores.user_id = ?
+				OR EXISTS (
+					SELECT 1
+					FROM relationships AS leaderboard_relationships
+					WHERE leaderboard_relationships.user_id = ?
+						AND leaderboard_relationships.target_id = scores.user_id
+						AND leaderboard_relationships.status = ?
+				)
+			)`,
+			*filter.FriendsOf,
+			*filter.FriendsOf,
+			constants.RelationshipStatusFriend,
+		)
+	}
+
+	return query, nil
 }
