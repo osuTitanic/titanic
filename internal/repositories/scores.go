@@ -38,6 +38,13 @@ func (r *ScoreRepository) Update(updates *schemas.Score, columns ...string) (int
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ScoreRepository) UpdateReplayViews(scoreId int64) error {
+	return r.db.Model(&schemas.Score{}).
+		Where("id = ?", scoreId).
+		UpdateColumn("replay_views", gorm.Expr("replay_views + ?", 1)).
+		Error
+}
+
 func (r *ScoreRepository) UpdateByBeatmapId(updates *schemas.Score, columns ...string) (int64, error) {
 	if len(columns) == 0 {
 		return 0, errors.New("at least one column must be specified")

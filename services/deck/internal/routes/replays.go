@@ -84,11 +84,10 @@ func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server
 	if cooldown != "" {
 		return nil
 	}
-
-	defer ctx.State.Redis.Set(
+	ctx.State.Redis.Set(
 		ctx.Request.Context(),
 		cooldownKey, "1", replayViewCooldown,
-	).Err()
+	)
 
 	err = ctx.State.Histories.UpdateReplayViews(score.User.Id, score.Mode)
 	if err != nil {
@@ -100,8 +99,7 @@ func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server
 		return err
 	}
 
-	score.ReplayViews += 1
-	_, err = ctx.State.Scores.Update(score, "ReplayViews")
+	err = ctx.State.Scores.UpdateReplayViews(score.Id)
 	if err != nil {
 		return err
 	}
