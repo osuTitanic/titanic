@@ -85,7 +85,67 @@ func (r *LeaderboardRequest) Country() *string {
 
 // /web/osu-osz2-getscores.php -> Latest leaderboard endpoint / introduced filtered leaderboards
 func GetScoresOsz2(ctx *server.Context) {
-	// TODO
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "")
+		return
+	}
+
+	if response.Type == LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, "-1|false")
+		return
+	}
+	if response.Type == LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, "1|false")
+		return
+	}
+
+	// The second response field belonged to the now unused osu!magnet system,
+	// which allowed the client to keep osz2 files up-to-date through a p2p network
+	// I have no idea if we will ever be able to recreate this system
+	const hasOsz2Update = false
+
+	responseType := statusFromRequestVersion(
+		response.Type,
+		request.RequestVersion,
+	)
+	beatmapInfo := strings.Join([]string{
+		strconv.Itoa(responseType),
+		strconv.FormatBool(hasOsz2Update),
+		strconv.Itoa(response.Beatmap.Id),
+		strconv.Itoa(response.Beatmap.SetId),
+		strconv.Itoa(response.ScoreCount),
+		"", // Featured Artist Track ID
+		"", // Featured Artist License Text
+	}, "|")
+
+	lines := []string{
+		beatmapInfo,
+		strconv.Itoa(response.Beatmap.Beatmapset.Offset),
+		response.Beatmap.Beatmapset.DisplayTitleText(),
+		strconv.FormatFloat(response.Beatmap.Diff, 'f', 4, 64),
+	}
+	if response.Type <= LeaderboardBeatmapPending || request.SkipScores {
+		ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+		return
+	}
+
+	lines = append(lines, formatScore(
+		response.PersonalBest,
+		response.PersonalBestIndex,
+		request.RequestVersion,
+	))
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
 }
 
 // /web/osu-getscores6.php -> Last pre-osz2 leaderboard / added beatmap ratings
@@ -365,6 +425,12 @@ func NewLeaderboardRequest(ctx *server.Context) (*LeaderboardRequest, error) {
 		mods = nil
 	}
 
+	if mods != nil && mods.Has(constants.Nightcore) && mods.Has(constants.DoubleTime) {
+		// Weird osu! stable quirk: clients include DT with NC for some reason
+		// On Titanic we store NC scores without DT, so we filter it out
+		*mods &^= constants.DoubleTime
+	}
+
 	requestVersion, err := ctx.QueryValueInt("vv")
 	if err != nil {
 		requestVersion = 0
@@ -559,6 +625,33 @@ func formatScoreLegacy(score *schemas.Score, separator string) string {
 		score.User.AvatarFilename(),
 		score.SubmittedAt.Format("2006-01-02 15:04:05"),
 	}, separator)
+}
+
+func statusFromRequestVersion(status LeaderboardResponseType, requestVersion int) int {
+	switch requestVersion {
+	case 0, 1, 2:
+		// Request version 2 changed the score submission
+		// time format from a date string to a unix timestamp
+		switch status {
+		case LeaderboardBeatmapQualified:
+			return 3 // Approved
+		case LeaderboardBeatmapLoved:
+			return 3 // Approved
+		default:
+			return int(status)
+		}
+	case 3:
+		// Request version 3 introduced the "Qualified" status
+		switch status {
+		case LeaderboardBeatmapLoved:
+			return 3 // Approved
+		default:
+			return int(status)
+		}
+	default:
+		// Request version 4 introduced the "Loved" status
+		return int(status)
+	}
 }
 
 func format[T any, R any](values []T, fn func(T) R) []R {
