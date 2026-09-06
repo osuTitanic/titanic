@@ -50,6 +50,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/osu-markasread.php", routes.MarkAsRead)
 	server.Handle("GET /web/osu-rate.php", routes.OsuRate)
 	server.Handle("GET /web/osu-search.php", routes.DirectSearch)
+	server.Handle("GET /web/osu-search-set.php", routes.DirectSearchSet)
 	server.Handle("POST /web/osu-screenshot.php", routes.Screenshot)
 	server.Handle("GET /web/osu-stat.php", routes.UserStats)
 	server.Handle("GET /web/osu-statoth.php", routes.UserStatsOther)

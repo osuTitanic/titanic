@@ -101,6 +101,69 @@ func DirectSearch(ctx *server.Context) {
 	)
 }
 
+func DirectSearchSet(ctx *server.Context) {
+	user, err := ctx.AuthenticateUserFromQuery("u", "h", false)
+	authenticated := err == nil && user != nil
+
+	if !authenticated && !ctx.State.Config.AllowUnauthenticatedDirect {
+		ctx.Response.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	var beatmapset *schemas.Beatmapset
+
+	if setId, _ := ctx.QueryValueIntOptional("s"); setId != nil {
+		set, _ := ctx.State.Beatmapsets.ById(*setId, "Beatmaps")
+		if set != nil {
+			beatmapset = set
+		}
+	}
+
+	if beatmapId, _ := ctx.QueryValueIntOptional("b"); beatmapId != nil {
+		beatmap, _ := ctx.State.Beatmaps.ById(*beatmapId, "Beatmapset")
+		if beatmap != nil {
+			beatmapset = beatmap.Beatmapset
+		}
+	}
+
+	if checksum := ctx.QueryValueOptional("c"); checksum != nil {
+		beatmap, _ := ctx.State.Beatmaps.ByChecksum(*checksum, "Beatmapset")
+		if beatmap != nil {
+			beatmapset = beatmap.Beatmapset
+		}
+	}
+
+	if topicId, _ := ctx.QueryValueIntOptional("t"); topicId != nil {
+		set, _ := ctx.State.Beatmapsets.ByTopicId(*topicId, "Beatmaps")
+		if set != nil {
+			beatmapset = set
+		}
+	}
+
+	if postId, _ := ctx.QueryValueIntOptional("p"); postId != nil {
+		set, _ := ctx.State.Beatmapsets.ByPostId(*postId, "Beatmaps")
+		if set != nil {
+			beatmapset = set
+		}
+	}
+
+	if beatmapset == nil {
+		ctx.Response.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if beatmapset.TopicId == nil {
+		ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset, 0))
+		return
+	}
+
+	initialPostId, err := ctx.State.ForumPosts.FetchInitialIdByTopic(*beatmapset.TopicId)
+	if err != nil {
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset, initialPostId))
+}
+
 func authenticateDirectUser(ctx *server.Context) (*schemas.User, error) {
 	username := ctx.QueryValue("u")
 	password := cmp.Or(ctx.QueryValue("h"), ctx.QueryValue("c"))
@@ -256,6 +319,7 @@ func formatDirectBeatmap(beatmapset *schemas.Beatmapset, postId int64) string {
 	if beatmapset.TopicId != nil {
 		topicId = *beatmapset.TopicId
 	}
+	// TODO: Add strings.Replacer safety precaution
 
 	return strings.Join([]string{
 		filename,
@@ -304,5 +368,3 @@ func integerBoolean(value bool) int {
 	}
 	return 0
 }
-
-// TODO: /web/osu-search-set.php
