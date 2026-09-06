@@ -127,6 +127,22 @@ func GetScores2(ctx *server.Context) {
 		return
 	}
 
+	if response.Type > LeaderboardBeatmapRanked {
+		// This endpoint does not support approved, qualified, or loved beatmaps
+		response.Type = LeaderboardBeatmapRanked
+	}
+
+	// Note that if we respond with any status at all,
+	// the client will skip reading the scores, since
+	// statuses -1, 0 and 1 are unranked, and 2 is only
+	// being responded with when using SkipScores
+
+	if request.SkipScores {
+		// Later iterations of this endpoint added the "s" parameter to skip scores
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
 	formatter := func(score *schemas.Score) string {
 		return formatScoreLegacy(score, "|")
 	}
