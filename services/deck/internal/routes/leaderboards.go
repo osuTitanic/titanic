@@ -100,7 +100,46 @@ func GetScores5(ctx *server.Context) {
 
 // /web/osu-getscores4.php -> Added user's personal best to the response
 func GetScores4(ctx *server.Context) {
-	// TODO
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	if request.SkipScores {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	lines := []string{
+		fmt.Sprint(response.Type),
+		// Personal best is always the first line after the status code
+		// It may be empty if the user has no submitted score on this map
+		formatScore(
+			response.PersonalBest,
+			response.PersonalBestIndex,
+			request.RequestVersion,
+		),
+	}
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
 }
 
 // /web/osu-getscores3.php -> Added "approved" status to the response
@@ -381,6 +420,9 @@ func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*sch
 }
 
 func formatScore(score *schemas.Score, index int, requestVersion int) string {
+	if score == nil {
+		return ""
+	}
 	submittedAt := score.SubmittedAt.Format("2006-01-02 15:04:05")
 
 	if requestVersion >= 2 {
