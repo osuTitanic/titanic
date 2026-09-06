@@ -40,6 +40,15 @@ func (r *BeatmapsetRepository) ByTopicId(topicId int, preload ...string) (*schem
 	return LookupResult(&beatmapset, err)
 }
 
+func (r *BeatmapsetRepository) ByPostId(postId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Joins("JOIN forum_posts ON forum_posts.topic_id = beatmapsets.topic_id").
+		Where("forum_posts.id = ?", postId).
+		First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
 func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
 	if len(ids) == 0 {
 		return []*schemas.Beatmapset{}, nil
