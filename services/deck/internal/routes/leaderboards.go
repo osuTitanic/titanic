@@ -338,7 +338,7 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 		return LeaderboardResponse{Type: LeaderboardBeatmapNotSubmitted}, nil
 	}
 	if request.BeatmapNeedsUpdate {
-		return LeaderboardResponse{Type: LeaderboardBeatmapNeedsUpdate}, nil
+		return LeaderboardResponse{Type: LeaderboardBeatmapNeedsUpdate, Beatmap: request.Beatmap}, nil
 	}
 	response = LeaderboardResponse{
 		Beatmap: request.Beatmap,
