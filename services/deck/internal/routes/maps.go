@@ -14,7 +14,7 @@ import (
 // /web/maps/{query} -> Download a beatmap file by id, filename or checksum
 func BeatmapFile(ctx *server.Context) {
 	query := strings.TrimSpace(ctx.PathValue("query"))
-	beatmap, err := resolveBeatmap(query, ctx)
+	beatmap, err := resolveBeatmapFromQuery(query, ctx)
 	if err != nil {
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		return
@@ -47,7 +47,7 @@ func BeatmapFile(ctx *server.Context) {
 	io.Copy(ctx.Response, stream)
 }
 
-func resolveBeatmap(query string, ctx *server.Context) (*schemas.Beatmap, error) {
+func resolveBeatmapFromQuery(query string, ctx *server.Context) (*schemas.Beatmap, error) {
 	if id, err := strconv.Atoi(query); err == nil {
 		return ctx.State.Repositories.Beatmaps.ById(id)
 	}
