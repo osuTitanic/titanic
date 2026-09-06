@@ -132,7 +132,7 @@ func GetScores(ctx *server.Context) {
 	}
 
 	formatter := func(score *schemas.Score) string {
-		return formatScoreLegacy(score, "|")
+		return formatScoreLegacy(score, ":")
 	}
 	ctx.RenderText(http.StatusOK, strings.Join(format(response.Scores, formatter), "\n"))
 }
