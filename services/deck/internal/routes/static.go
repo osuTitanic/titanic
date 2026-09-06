@@ -207,8 +207,14 @@ func ScreenshotRedirect(ctx *server.Context) {
 }
 
 func Avatar(ctx *server.Context) {
-	avatarFilename := ctx.PathValue("filename")
+	serveAvatar(ctx, ctx.PathValue("filename"), resolveAvatarSize(ctx))
+}
 
+func AvatarForum(ctx *server.Context) {
+	serveAvatar(ctx, ctx.QueryValue("avatar"), defaultAvatarSize)
+}
+
+func serveAvatar(ctx *server.Context, avatarFilename string, size int) {
 	// Workaround for older clients that use file extensions
 	userIdString, _, _ := strings.Cut(avatarFilename, "_")
 	userId, err := strconv.Atoi(userIdString)
@@ -216,8 +222,6 @@ func Avatar(ctx *server.Context) {
 		DefaultAvatar(ctx)
 		return
 	}
-	size := resolveAvatarSize(ctx)
-
 	// If a cache key is provided, the avatar may be cached by the client
 	if ctx.QueryValue("c") != "" {
 		ctx.Response.Header().Set("Cache-Control", "public, max-age=604800, immutable")

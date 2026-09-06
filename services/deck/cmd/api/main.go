@@ -15,7 +15,9 @@ import (
 func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /a/", routes.DefaultAvatar)
 	server.Handle("GET /a/{filename}", routes.Avatar)
+	server.Handle("GET /forum/download.php", routes.AvatarForum)
 	server.Handle("GET /d/{filename}", routes.BeatmapDownload)
+	server.Handle("GET /bss/{filename}", routes.BeatmapDownload)
 	server.Handle("GET /preview/{filename}", routes.BeatmapAudioPreview)
 	server.Handle("GET /mp3/preview/{filename}", routes.BeatmapAudioPreview)
 	server.Handle("GET /mt/{filename}", routes.BeatmapThumbnail)
@@ -23,6 +25,8 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /images/map-thumb/{filename}", routes.BeatmapThumbnail)
 	server.Handle("GET /ss/{id}", routes.ScreenshotRedirect)
 	server.Handle("GET /ss/{id}/{checksum}", routes.ScreenshotImage)
+	server.Handle("GET /osu/{query}", routes.BeatmapFile)
+	server.Handle("GET /assets/menu-content.json", routes.MenuContent)
 
 	server.Handle("GET /web/maps/{query}", routes.BeatmapFile)
 	server.Handle("GET /web/bancho_connect.php", routes.BanchoConnect)
@@ -55,7 +59,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("POST /web/osu-screenshot.php", routes.Screenshot)
 	server.Handle("GET /web/osu-stat.php", routes.UserStats)
 	server.Handle("GET /web/osu-statoth.php", routes.UserStatsOther)
-	server.Handle("GET /web/osu-title-image.php", routes.TitleImage)
+	server.Handle("GET /web/osu-title-image.php", routes.MenuIcon)
 }
 
 func main() {

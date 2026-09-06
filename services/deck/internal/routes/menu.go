@@ -10,11 +10,42 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
-var titleImageCache = caching.NewValue[[]byte](time.Hour)
-var titleImageClient = &http.Client{Timeout: 8 * time.Second}
+var menuContentCache = caching.NewValue[[]byte](time.Hour)
+var menuContentClient = &http.Client{Timeout: 8 * time.Second}
+
+type MenuContentResponse struct {
+	Images []MenuContentImage `json:"images"`
+}
+
+type MenuContentImage struct {
+	Image     string     `json:"image"`
+	URL       string     `json:"url"`
+	IsCurrent bool       `json:"IsCurrent"`
+	Begins    *time.Time `json:"begins"`
+	Expires   *time.Time `json:"expires"`
+}
+
+// /menu-content.json -> Modern way of displaying menu content
+func MenuContent(ctx *server.Context) {
+	if ctx.State.Config.MenuIconImage == "" {
+		ctx.RenderJson(http.StatusOK, MenuContentResponse{})
+		return
+	}
+
+	response := MenuContentResponse{
+		Images: []MenuContentImage{{
+			Image:     ctx.State.Config.MenuIconImage,
+			URL:       ctx.State.Config.MenuIconUrl,
+			IsCurrent: true,
+		}},
+	}
+	if err := ctx.RenderJson(http.StatusOK, response); err != nil {
+		ctx.Logger.Error("Failed to render menu content", "error", err)
+	}
+}
 
 // /web/osu-title-image.php -> Menu icon image & on-click redirect
-func TitleImage(ctx *server.Context) {
+func MenuIcon(ctx *server.Context) {
 	// Clients additionally send "c" as an image checksum,
 	// which we don't use at the moment
 
@@ -38,7 +69,7 @@ func TitleImage(ctx *server.Context) {
 		return
 	}
 
-	image, err := titleImageCache.GetOrLoad(func() ([]byte, error) {
+	image, err := menuContentCache.GetOrLoad(func() ([]byte, error) {
 		// We'll assume the configured url is trusted and doesn't blow up the cache with a huge image
 		return fetchTitleImageContents(ctx)
 	})
@@ -69,7 +100,7 @@ func fetchTitleImageContents(ctx *server.Context) ([]byte, error) {
 		fmt.Sprintf("osuTitanic/deck (%s)", ctx.State.Config.DomainName),
 	)
 
-	response, err := titleImageClient.Do(request)
+	response, err := menuContentClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
