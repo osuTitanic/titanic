@@ -120,6 +120,20 @@ func (ctx *HttpContext) QueryValueEnum[T constants.HasValidator](name string) (T
 	return constants.ResolveEnum[T](raw)
 }
 
+// QueryValueEnumOptional attempts to get a query parameter from the request
+// and parse it as an enum value, returning nil if not present.
+func (ctx *HttpContext) QueryValueEnumOptional[T constants.HasValidator](name string) (*T, error) {
+	raw := ctx.QueryValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := constants.ResolveEnum[T](*raw)
+	if err != nil {
+		return nil, err
+	}
+	return &value, nil
+}
+
 // FormValue is a helper function to get form values from the request body.
 func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
