@@ -305,6 +305,12 @@ func formatDirectSearchResponse(beatmapsets []*schemas.Beatmapset, initialPostId
 }
 
 func formatDirectBeatmap(beatmapset *schemas.Beatmapset, postId int64) string {
+	replacer := strings.NewReplacer(
+		"|", "",
+		"\n", "",
+		"\r", "",
+	)
+
 	artist := pointerToString(beatmapset.Artist)
 	title := pointerToString(beatmapset.Title)
 	creator := pointerToString(beatmapset.Creator)
@@ -312,20 +318,22 @@ func formatDirectBeatmap(beatmapset *schemas.Beatmapset, postId int64) string {
 
 	versions := make([]string, len(beatmapset.Beatmaps))
 	for index, beatmap := range beatmapset.Beatmaps {
-		versions[index] = fmt.Sprintf("%s@%d", beatmap.Version, beatmap.Mode)
+		versions[index] = fmt.Sprintf(
+			"%s@%d",
+			replacer.Replace(beatmap.Version), beatmap.Mode,
+		)
 	}
 
 	topicId := 0
 	if beatmapset.TopicId != nil {
 		topicId = *beatmapset.TopicId
 	}
-	// TODO: Add strings.Replacer safety precaution
 
 	return strings.Join([]string{
-		filename,
-		artist,
-		title,
-		creator,
+		replacer.Replace(filename),
+		replacer.Replace(artist),
+		replacer.Replace(title),
+		replacer.Replace(creator),
 		strconv.Itoa(int(beatmapset.Status)),
 		strconv.FormatFloat(beatmapset.RatingAverage, 'f', -1, 64),
 		beatmapset.LastUpdate.Format(directTimestampLayout),
