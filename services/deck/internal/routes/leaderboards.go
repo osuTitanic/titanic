@@ -108,16 +108,36 @@ func GetScores3(ctx *server.Context) {
 	// TODO
 }
 
-// /web/osu-getscores2.php -> Added the beatmap status to the response
+// /web/osu-getscores2.php -> Added beatmap updating logic & pending/ranked status distinction
 func GetScores2(ctx *server.Context) {
-	// TODO
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		// Beatmap is pending, needs update, or not submitted
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	formatter := func(score *schemas.Score) string {
+		return formatScoreLegacy(score, "|")
+	}
+	ctx.RenderText(http.StatusOK, strings.Join(format(response.Scores, formatter), "\n"))
 }
 
 // /web/osu-getscores.php -> The most barebones way to get a leaderboard
 func GetScores(ctx *server.Context) {
 	request, err := NewLeaderboardRequest(ctx)
 	if err != nil {
-		ctx.Response.WriteHeader(http.StatusBadRequest)
+		ctx.RenderText(http.StatusBadRequest, "-1")
 		return
 	}
 
@@ -129,6 +149,7 @@ func GetScores(ctx *server.Context) {
 
 	// This endpoint does not have any handling of beatmaps with "update available"
 	// since the only thing it provides is a checksum of the map
+	// It also can't distinguish between pending and ranked maps
 	if request.Beatmap == nil {
 		ctx.RenderText(http.StatusOK, "-1")
 		return
