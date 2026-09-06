@@ -139,6 +139,8 @@ func GetScores2(ctx *server.Context) {
 
 	if request.SkipScores {
 		// Later iterations of this endpoint added the "s" parameter to skip scores
+		// This is used in the editor & multiplayer song-select screens,
+		// since it doesn't display any scores there
 		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
 		return
 	}
