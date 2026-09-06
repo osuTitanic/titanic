@@ -217,7 +217,7 @@ func (r *ScoreRepository) FetchLeaderboardPersonalBest(filter BeatmapLeaderboard
 
 func (r *ScoreRepository) FetchLeaderboardScoreIndex(filter BeatmapLeaderboardFilter, score *schemas.Score) (int, error) {
 	if score == nil {
-		return 0, errors.New("score is nil")
+		return 0, nil
 	}
 
 	query, err := leaderboardQuery(filter, r.db)
