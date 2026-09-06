@@ -150,6 +150,10 @@ func DirectSearchSet(ctx *server.Context) {
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return
 	}
+	if beatmapset.Status == constants.BeatmapStatusInactive {
+		ctx.Response.WriteHeader(http.StatusNotFound)
+		return
+	}
 
 	if beatmapset.TopicId == nil {
 		ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset, 0))
