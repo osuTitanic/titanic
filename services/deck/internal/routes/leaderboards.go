@@ -212,6 +212,9 @@ func NewLeaderboardRequest(ctx *server.Context) (*LeaderboardRequest, error) {
 	if err != nil {
 		mods = nil
 	}
+	if leaderboardType != LeaderboardMods {
+		mods = nil
+	}
 
 	requestVersion, err := ctx.QueryValueInt("vv")
 	if err != nil {
