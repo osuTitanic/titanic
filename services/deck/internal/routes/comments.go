@@ -42,9 +42,46 @@ func (r *CommentRequest) Validate() error {
 	return nil
 }
 
+func NewCommentRequest(ctx *server.Context) (CommentRequest, error) {
+	beatmapId, err := ctx.FormValueInt("b")
+	if err != nil {
+		return CommentRequest{}, err
+	}
+	replayId, err := ctx.FormValueIntOptional("r")
+	if err != nil {
+		return CommentRequest{}, err
+	}
+	setId, err := ctx.FormValueIntOptional("s")
+	if err != nil {
+		return CommentRequest{}, err
+	}
+	startTime, err := ctx.FormValueIntOptional("starttime")
+	if err != nil {
+		return CommentRequest{}, err
+	}
+	target, err := ctx.FormValueEnum[constants.CommentTarget]("target")
+	if err != nil {
+		target = constants.CommentTargetMap
+	}
+
+	// NOTE: Client also provides the mode as parameter "m"
+	// 		 We don't use it here though
+
+	return CommentRequest{
+		Action:    ctx.FormValue("a"),
+		Target:    target,
+		BeatmapId: beatmapId,
+		ReplayId:  replayId,
+		SetId:     setId,
+		StartTime: startTime,
+		Content:   ctx.FormValue("comment"),
+		Color:     ctx.FormValue("f"),
+	}, nil
+}
+
 // /web/osu-comment.php -> Retrieve or submit in-game beatmap comments
 func Comments(ctx *server.Context) {
-	request, err := decodeCommentRequest(ctx)
+	request, err := NewCommentRequest(ctx)
 	if err != nil {
 		ctx.Logger.Warn("Failed to decode comment request", "error", err)
 		ctx.Response.WriteHeader(http.StatusBadRequest)
@@ -187,43 +224,6 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 	}
 
 	ctx.RenderText(http.StatusOK, fmt.Sprintf("%d|%s\n", *request.StartTime, request.Content))
-}
-
-func decodeCommentRequest(ctx *server.Context) (CommentRequest, error) {
-	beatmapId, err := ctx.FormValueInt("b")
-	if err != nil {
-		return CommentRequest{}, err
-	}
-	replayId, err := ctx.FormValueIntOptional("r")
-	if err != nil {
-		return CommentRequest{}, err
-	}
-	setId, err := ctx.FormValueIntOptional("s")
-	if err != nil {
-		return CommentRequest{}, err
-	}
-	startTime, err := ctx.FormValueIntOptional("starttime")
-	if err != nil {
-		return CommentRequest{}, err
-	}
-	target, err := ctx.FormValueEnum[constants.CommentTarget]("target")
-	if err != nil {
-		target = constants.CommentTargetMap
-	}
-
-	// NOTE: Client also provides the mode as parameter "m"
-	// 		 We don't use it here though
-
-	return CommentRequest{
-		Action:    ctx.FormValue("a"),
-		Target:    target,
-		BeatmapId: beatmapId,
-		ReplayId:  replayId,
-		SetId:     setId,
-		StartTime: startTime,
-		Content:   ctx.FormValue("comment"),
-		Color:     ctx.FormValue("f"),
-	}, nil
 }
 
 func formatBeatmapComment(comment *schemas.BeatmapComment, legacy bool) string {
