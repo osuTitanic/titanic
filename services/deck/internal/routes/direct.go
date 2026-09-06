@@ -119,14 +119,14 @@ func DirectSearchSet(ctx *server.Context) {
 	}
 
 	if beatmapId, _ := ctx.QueryValueIntOptional("b"); beatmapId != nil {
-		beatmap, _ := ctx.State.Beatmaps.ById(*beatmapId, "Beatmapset")
+		beatmap, _ := ctx.State.Beatmaps.ById(*beatmapId, "Beatmapset.Beatmaps")
 		if beatmap != nil {
 			beatmapset = beatmap.Beatmapset
 		}
 	}
 
 	if checksum := ctx.QueryValueOptional("c"); checksum != nil {
-		beatmap, _ := ctx.State.Beatmaps.ByChecksum(*checksum, "Beatmapset")
+		beatmap, _ := ctx.State.Beatmaps.ByChecksum(*checksum, "Beatmapset.Beatmaps")
 		if beatmap != nil {
 			beatmapset = beatmap.Beatmapset
 		}
