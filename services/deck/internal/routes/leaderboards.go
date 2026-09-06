@@ -105,7 +105,38 @@ func GetScores4(ctx *server.Context) {
 
 // /web/osu-getscores3.php -> Added "approved" status to the response
 func GetScores3(ctx *server.Context) {
-	// TODO
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	if request.SkipScores {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	formatter := func(score *schemas.Score) string {
+		return formatScoreLegacy(score, "|")
+	}
+	lines := []string{fmt.Sprint(response.Type)}
+	lines = append(lines, format(response.Scores, formatter)...)
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
 }
 
 // /web/osu-getscores2.php -> Added beatmap updating logic & pending/ranked status distinction
@@ -328,6 +359,7 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 }
 
 func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*schemas.Beatmap, bool) {
+	// TODO: maybe return an error for this function
 	beatmap, err := ctx.State.Beatmaps.ByChecksum(checksum, "Beatmapset")
 	if err != nil {
 		return nil, false
