@@ -66,11 +66,17 @@ func BeatmapDownload(ctx *server.Context) {
 	}
 
 	ctx.Response.Header().Set(
+		"Content-Type",
+		"application/octet-stream",
+	)
+	ctx.Response.Header().Set(
 		"Content-Disposition",
 		mime.FormatMediaType("attachment", map[string]string{"filename": oszFilename}),
 	)
-	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
-	ctx.Response.Header().Set("Last-Modified", beatmapset.LastUpdate.Format("Mon, 02 Jan 2006 15:04:05 GMT"))
+	ctx.Response.Header().Set(
+		"Last-Modified",
+		beatmapset.LastUpdate.Format("Mon, 02 Jan 2006 15:04:05 GMT"),
+	)
 
 	if oszSize > 0 {
 		// Set content length if we can determine it, otherwise we'll use chunked transfer encoding

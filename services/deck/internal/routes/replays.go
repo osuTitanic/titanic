@@ -2,6 +2,7 @@ package routes
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -24,7 +25,7 @@ func Replay(ctx *server.Context) {
 	}
 
 	score, err := ctx.State.Scores.ById(
-		scoreId, "Beatmap", "Beatmap.Beatmapset", "User",
+		scoreId, "Beatmap.Beatmapset", "User",
 	)
 	if err != nil {
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
@@ -39,26 +40,37 @@ func Replay(ctx *server.Context) {
 		return
 	}
 
-	rawReplay, err := ctx.State.Storage.Read(strconv.FormatInt(score.Id, 10), "replays")
+	rawReplay, err := ctx.State.Storage.ReadStream(
+		strconv.FormatInt(score.Id, 10),
+		"replays",
+	)
 	if err != nil {
 		ctx.Logger.Warn("Replay requested for score with no replay data", "score_id", score.Id)
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	user, _ := ctx.AuthenticateUserFromQuery("u", "h", false)
-	err = increaseReplayViews(user, score, ctx)
-	if err != nil {
+	// If the user has authenticated themselves, we can increase the replay views
+	// for this score and the score's player, as well as the event / activity
+	user, _ := ctx.AuthenticateUserFromQuery(
+		"u", "h", false,
+	)
+	if err = increaseReplayViews(user, score, ctx); err != nil {
 		ctx.Logger.Warn(
 			"Failed to increase replay views",
 			"error", err, "score_id", score.Id, "viewer_id", user.Id,
 		)
 	}
 
-	ctx.Response.Header().Set("Content-Length", strconv.Itoa(len(rawReplay)))
 	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
 	ctx.Response.WriteHeader(http.StatusOK)
-	ctx.Response.Write(rawReplay)
+
+	if _, err = io.Copy(ctx.Response, rawReplay); err != nil {
+		ctx.Logger.Warn(
+			"Failed to write replay data to response",
+			"error", err, "score_id", score.Id,
+		)
+	}
 }
 
 func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server.Context) error {
@@ -93,12 +105,10 @@ func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server
 	if err != nil {
 		return err
 	}
-
 	err = ctx.State.Stats.UpdateReplayViews(score.User.Id, score.Mode)
 	if err != nil {
 		return err
 	}
-
 	err = ctx.State.Scores.UpdateReplayViews(score.Id)
 	if err != nil {
 		return err
