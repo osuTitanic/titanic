@@ -100,6 +100,11 @@ func (ctx *HttpContext) QueryValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.QueryValue(name)), 10, 64)
 }
 
+// QueryValueFloat returns a query parameter as a float64.
+func (ctx *HttpContext) QueryValueFloat(name string) (float64, error) {
+	return strconv.ParseFloat(strings.TrimSpace(ctx.QueryValue(name)), 64)
+}
+
 // QueryValueIntOptional returns a query parameter as an
 // integer pointer or nil if the parameter is not present.
 func (ctx *HttpContext) QueryValueIntOptional(name string) (*int, error) {
@@ -163,6 +168,11 @@ func (ctx *HttpContext) FormValueInt(name string) (int, error) {
 // FormValueInt64 returns a form value as an int64.
 func (ctx *HttpContext) FormValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.FormValue(name)), 10, 64)
+}
+
+// FormValueFloat returns a form value as a float64.
+func (ctx *HttpContext) FormValueFloat(name string) (float64, error) {
+	return strconv.ParseFloat(strings.TrimSpace(ctx.FormValue(name)), 64)
 }
 
 // FormValueIntOptional returns a form value as an integer
