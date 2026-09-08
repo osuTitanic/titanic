@@ -28,6 +28,15 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /osu/{query}", routes.BeatmapFile)
 	server.Handle("GET /assets/menu-content.json", routes.MenuContent)
 
+	server.Handle("GET /release/filter.txt", routes.ReleaseFilter)
+	server.Handle("GET /release/Localisation/{filename}", routes.ReleaseLocalisation)
+	server.Handle("GET /release/update", routes.ReleaseUpdate)
+	server.Handle("GET /release/patches.php", routes.ReleasePatches)
+	server.Handle("GET /release/update.php", routes.ReleaseUpdateCheck)
+	server.Handle("GET /release/update2.php", routes.ReleaseUpdateV2)
+	server.Handle("GET /release/{language}/{filename}", routes.ReleaseLegacyLocalisation)
+	server.Handle("GET /release/{filename}", routes.ReleaseFile)
+
 	server.Handle("GET /web/maps/{query}", routes.BeatmapFile)
 	server.Handle("GET /web/bancho_connect.php", routes.BanchoConnect)
 	server.Handle("GET /web/check-updates.php", routes.CheckUpdates)
