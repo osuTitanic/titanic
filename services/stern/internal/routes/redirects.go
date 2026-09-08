@@ -11,7 +11,10 @@ import (
 )
 
 func LegacyPageRedirect(ctx *server.Context) {
-	page := ctx.PathValue("page")
+	legacyPageRedirect(ctx, ctx.PathValue("page"))
+}
+
+func legacyPageRedirect(ctx *server.Context, page string) {
 	query := ctx.Request.URL.Query()
 
 	switch page {

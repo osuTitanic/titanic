@@ -16,6 +16,11 @@ const chatMessagesLimit = 10
 const newsLimit = 4
 
 func Home(ctx *server.Context) {
+	if page := ctx.QueryValue("p"); page != "" {
+		legacyPageRedirect(ctx, page)
+		return
+	}
+
 	view := templates.HomeView{
 		DefaultView:        buildDefaultView(ctx),
 		News:               fetchHomeNews(ctx),
