@@ -44,6 +44,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /rating/ingame-rate.php", routes.IngameRate)
 	server.Handle("GET /rating/ingame-rate2.php", routes.IngameRate2)
 	server.Handle("GET /web/osu-addfavourite.php", routes.AddFavourite)
+	server.Handle("POST /web/osu-benchmark.php", routes.Benchmark)
 	server.Handle("POST /web/osu-comment.php", routes.Comments)
 	server.Handle("GET /web/osu-checktweets.php", routes.CheckTweets)
 	server.Handle("POST /web/osu-error.php", routes.ErrorReport)
