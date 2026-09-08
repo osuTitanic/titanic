@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -156,6 +157,22 @@ func (r *ReleasesOfficialRepository) FetchFileById(id int) (*schemas.ReleaseFile
 func (r *ReleasesOfficialRepository) FetchFileByVersion(version int) (*schemas.ReleaseFiles, error) {
 	var file schemas.ReleaseFiles
 	err := r.db.Where("file_version = ?", version).First(&file).Error
+	return LookupResult(&file, err)
+}
+
+func (r *ReleasesOfficialRepository) FetchFileByChecksum(checksum string) (*schemas.ReleaseFiles, error) {
+	var file schemas.ReleaseFiles
+	err := r.db.Where("file_hash = ?", strings.TrimSpace(checksum)).First(&file).Error
+	return LookupResult(&file, err)
+}
+
+func (r *ReleasesOfficialRepository) FetchFileByPatchFilename(filename string) (*schemas.ReleaseFiles, error) {
+	var file schemas.ReleaseFiles
+	filename = strings.TrimSpace(filename)
+	err := r.db.
+		Where("RIGHT(url_patch, LENGTH(?)) = ?", filename, filename).
+		First(&file).
+		Error
 	return LookupResult(&file, err)
 }
 
