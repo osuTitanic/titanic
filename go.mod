@@ -10,6 +10,7 @@ require (
 	github.com/Lekuruu/bbgo v0.0.0-20260715201745-75b8f719535e
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
+	github.com/azihsoyn/rijndael256 v0.0.0-20200316065338-d14eefa2b66b
 	github.com/caarlos0/env/v11 v11.4.1
 	github.com/calemy/rosu-pp-go v0.0.0-20260712072956-76a9c6b69f7c
 	github.com/gofrs/flock v0.13.1
@@ -27,7 +28,6 @@ require (
 	github.com/wcharczuk/go-chart/v2 v2.1.2
 	github.com/yuin/goldmark v1.8.6
 	golang.org/x/crypto v0.56.0
-	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 	golang.org/x/image v0.45.0
 	golang.org/x/text v0.41.0
 	gorm.io/driver/postgres v1.6.2
