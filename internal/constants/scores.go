@@ -72,3 +72,24 @@ func (grade Grade) Value() int8 {
 		return -1
 	}
 }
+
+type IntegrityFlags uint16
+
+const IntegrityFlagsNone IntegrityFlags = 0
+
+const (
+	FlagFlashlightHackKeyBindingPressed IntegrityFlags = 1 << iota
+	FlagSpeedHackDetected
+	FlagIncorrectModValue
+	FlagMultipleOsuClients
+	FlagChecksumFailure
+	FlagFlashlightChecksumIncorrect
+	FlagOsuExecutableChecksum
+	FlagMissingProcessesInList
+	FlagFlashlightImageHack
+	FlagSpinnerHack
+	FlagTransparentWindow
+	FlagFastPress
+	FlagRawMouseDiscrepancy
+	FlagRawKeyboardDiscrepancy
+)
