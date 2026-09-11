@@ -55,7 +55,7 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 		}
 
 		result.Warnings = processor.PostProcess()
-		return nil
+		return nil // Commit transaction
 	})
 	return result, err
 }
