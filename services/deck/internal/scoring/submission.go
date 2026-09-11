@@ -14,6 +14,10 @@ type Result struct {
 	Submission *SubmissionContext
 }
 
+func (r *Result) Rejected() bool {
+	return r.Type != ResultAccepted
+}
+
 type ResultType uint8
 
 const (

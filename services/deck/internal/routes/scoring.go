@@ -28,8 +28,49 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 	}
 	password := endpoint.RequestValue(ctx.Request, "pass")
 
-	// TODO: Process the submission
-	_ = submission
-	_ = password
-	ctx.Response.WriteHeader(http.StatusNotImplemented)
+	processor := scoring.NewProcessor(ctx.State, submission)
+	result, err := processor.Process(password)
+	if err != nil {
+		ctx.Logger.Error("Failed to process score submission", "error", err)
+		ctx.RenderText(http.StatusInternalServerError, "")
+		return
+	}
+	for _, warning := range result.Warnings {
+		ctx.Logger.Warn("Score submission post-processing step failed", "error", warning)
+	}
+
+	if result.Rejected() {
+		writeSubmissionError(ctx, endpoint, result.Type)
+		return
+	}
+	writeSubmissionResponse(ctx, endpoint, result.Submission)
+}
+
+func writeSubmissionResponse(ctx *server.Context, endpoint scoring.Endpoint, result *scoring.SubmissionContext) {
+	// TODO: Render score submission response
+}
+
+func writeSubmissionError(ctx *server.Context, endpoint scoring.Endpoint, resultType scoring.ResultType) {
+	if !endpoint.UsesLegacyResponse() {
+		// use `error: <type>` response
+		ctx.RenderText(http.StatusOK, resultType.String())
+		return
+	}
+
+	// /web/osu-submit.php has no custom error response strings
+	// we'll just use http status codes
+
+	status := http.StatusBadRequest
+	switch resultType {
+	case scoring.ResultUserNotFound,
+		scoring.ResultInvalidPassword,
+		scoring.ResultInactive,
+		scoring.ResultBanned:
+		status = http.StatusUnauthorized
+	case scoring.ResultBeatmapUnavailable:
+		status = http.StatusNotFound
+	default:
+		status = http.StatusBadRequest
+	}
+	ctx.Response.WriteHeader(status)
 }
