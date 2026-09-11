@@ -59,8 +59,8 @@ type BeatmapRankingChart struct {
 	ToNextRank     int64
 }
 
-func newSubmissionCharts() SubmissionCharts {
-	return SubmissionCharts{
+func NewSubmissionCharts() *SubmissionCharts {
+	return &SubmissionCharts{
 		Overall: OverallChart{
 			ChartId:   "overall",
 			ChartName: "Overall Ranking",

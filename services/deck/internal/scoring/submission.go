@@ -104,7 +104,7 @@ type SubmissionContext struct {
 	OldBeatmapRank int
 	NewBeatmapRank int
 
-	Charts       SubmissionCharts
+	Charts       *SubmissionCharts
 	Achievements []*schemas.Achievement
 }
 
@@ -120,6 +120,6 @@ func NewSubmissionContext(endpoint Endpoint, score *schemas.Score) *SubmissionCo
 	return &SubmissionContext{
 		Score:    score,
 		Endpoint: endpoint,
-		Charts:   newSubmissionCharts(),
+		Charts:   NewSubmissionCharts(),
 	}
 }

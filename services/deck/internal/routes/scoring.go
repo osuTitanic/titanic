@@ -28,7 +28,7 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 	}
 	password := endpoint.RequestValue(ctx.Request, "pass")
 
-	processor := scoring.NewProcessor(ctx.State, submission)
+	processor := scoring.NewProcessor(ctx, submission)
 	result, err := processor.Process(password)
 	if err != nil {
 		ctx.Logger.Error("Failed to process score submission", "error", err)
@@ -40,6 +40,7 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 	}
 
 	if result.Rejected() {
+		ctx.Logger.Debug("Score submission rejected", "result", result.Type)
 		writeSubmissionError(ctx, endpoint, result.Type)
 		return
 	}
