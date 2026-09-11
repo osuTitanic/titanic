@@ -23,7 +23,7 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 	submission, err := scoring.ResolveSubmissionContext(ctx, endpoint)
 	if err != nil {
 		ctx.Logger.Warn("Failed to parse score submission", "error", err)
-		ctx.Response.WriteHeader(http.StatusBadRequest)
+		ctx.RenderText(http.StatusBadRequest, scoring.ResultRejected.String())
 		return
 	}
 	password := endpoint.RequestValue(ctx.Request, "pass")
