@@ -57,9 +57,9 @@ func removePKCS7Padding(data []byte, blockSize int) ([]byte, error) {
 	}
 	// Source: https://wgallagher86.medium.com/pkcs-7-padding-in-go-6da5d1d14590
 
-	// Validate that we got a valid padding length
+	// Ensure that we got a valid padding length
 	paddingLength := int(data[len(data)-1])
-	if paddingLength > len(data) || paddingLength > blockSize {
+	if paddingLength <= 0 || paddingLength > len(data) || paddingLength > blockSize {
 		return nil, fmt.Errorf("invalid PKCS7 padding length %d", paddingLength)
 	}
 
