@@ -139,9 +139,20 @@ func (ctx *HttpContext) QueryValueEnumOptional[T constants.HasValidator](name st
 	return &value, nil
 }
 
-// FormValue is a helper function to get form values from the request body.
+// EnsureMultipartForm limits the request body & parses it as multipart form data.
+func (ctx *HttpContext) EnsureMultipartForm(maxBodySize, maxMemory int64) error {
+	ctx.Request.Body = http.MaxBytesReader(ctx.Response, ctx.Request.Body, maxBodySize)
+	return ctx.Request.ParseMultipartForm(maxMemory)
+}
+
+// FormValue returns a form value using the precedence rules from net/http's FormValue.
 func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
+}
+
+// PostFormValue returns a form value from the request body, ignoring query parameters.
+func (ctx *HttpContext) PostFormValue(name string) string {
+	return ctx.Request.PostFormValue(name)
 }
 
 // FormValueDefault attempts to get a form value from the
