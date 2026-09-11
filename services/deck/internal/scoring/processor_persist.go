@@ -1,6 +1,8 @@
 package scoring
 
-func (processor *Processor) Persist() (ResultType, error) {
+import "github.com/osuTitanic/titanic/internal/state"
+
+func (processor *Processor) Persist(transaction *state.Repositories) (ResultType, error) {
 	// TODO: Take snapshot of user's stats before submission
 	// TODO: Load the current pp / score pb's for this beatmap
 	// TODO: Capture the previous user rank & beatmap rank
