@@ -1,6 +1,7 @@
 package scoring
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -66,20 +67,28 @@ func (endpoint Endpoint) UsesLegacyResponse() bool {
 	return endpoint == EndpointLegacy
 }
 
+func (endpoint Endpoint) RequestValue(request *http.Request, name string) string {
+	if endpoint.UsesLegacyResponse() {
+		return request.URL.Query().Get(name)
+	} else {
+		return request.PostFormValue(name)
+	}
+}
+
 type SubmissionContext struct {
 	*schemas.Score
 
 	Endpoint Endpoint
 
-	Username        string
 	BeatmapChecksum string
+	Username        string
 	Replay          []byte
 	FunSpoiler      string
-	ClientHash      *string
-	Processes       *string
+	ClientHash      string
+	Processes       string
 	Flags           constants.IntegrityFlags
 	Exited          bool
-	ClientPassed    bool
+	Passed          bool
 
 	PersonalBestPP    *schemas.Score
 	PersonalBestScore *schemas.Score
