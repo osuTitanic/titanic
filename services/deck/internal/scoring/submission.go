@@ -28,6 +28,7 @@ const (
 	ResultBanned
 	ResultRejected
 	ResultBeatmapUnavailable
+	ResultBanchoUnavailable // Will respond with a 503 error so client can retry
 )
 
 func (resultType ResultType) String() string {

@@ -51,6 +51,13 @@ func writeSubmissionResponse(ctx *server.Context, endpoint scoring.Endpoint, res
 }
 
 func writeSubmissionError(ctx *server.Context, endpoint scoring.Endpoint, resultType scoring.ResultType) {
+	if resultType == scoring.ResultBanchoUnavailable {
+		// Client will perform a delayed retry if an error occurs
+		// Let's hope it will connect to bancho in the meantime
+		ctx.Response.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
 	if !endpoint.UsesLegacyResponse() {
 		// use `error: <type>` response
 		ctx.RenderText(http.StatusOK, resultType.String())
