@@ -462,7 +462,7 @@ func (processor *Processor) resolvePreferredRanking() (rank int, value float64, 
 	user := processor.submission.User
 	mode := processor.submission.Mode
 
-	rankType := user.PreferredRanking.String()
+	rankType := user.PreferredRanking.Alias()
 	rankKey := processor.context.State.Rankings.RankingKey(mode, rankType, nil)
 
 	rank, err = processor.context.State.Rankings.Rank(
