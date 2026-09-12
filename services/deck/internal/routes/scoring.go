@@ -48,7 +48,7 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 }
 
 func writeSubmissionResponse(ctx *server.Context, endpoint scoring.Endpoint, result *scoring.SubmissionContext) {
-	// TODO: Render score submission response
+	ctx.RenderText(http.StatusOK, endpoint.FormatResponse(result))
 }
 
 func writeSubmissionError(ctx *server.Context, endpoint scoring.Endpoint, resultType scoring.ResultType) {

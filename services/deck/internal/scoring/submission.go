@@ -72,6 +72,10 @@ func (endpoint Endpoint) UsesLegacyResponse() bool {
 	return endpoint == EndpointLegacy
 }
 
+func (endpoint Endpoint) FormatResponse(result *SubmissionContext) string {
+	return FormatSubmissionResponse(endpoint, result)
+}
+
 func (endpoint Endpoint) RequestValue(request *http.Request, name string) string {
 	if endpoint.UsesLegacyResponse() {
 		return request.URL.Query().Get(name)
