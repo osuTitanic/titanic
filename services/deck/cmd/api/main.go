@@ -67,6 +67,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/osu-search.php", routes.DirectSearch)
 	server.Handle("GET /web/osu-search-set.php", routes.DirectSearchSet)
 	server.Handle("POST /web/osu-submit.php", routes.SubmitScore)
+	server.Handle("POST /web/osu-submit-new.php", routes.SubmitScore)
 	server.Handle("POST /web/osu-submit-modular.php", routes.SubmitScoreModular)
 	server.Handle("POST /web/osu-submit-modular-selector.php", routes.SubmitScoreModularSelector)
 	server.Handle("POST /web/osu-screenshot.php", routes.Screenshot)
