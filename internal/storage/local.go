@@ -67,8 +67,7 @@ func (storage *FileStorage) Save(key string, folder string, data []byte) error {
 		return err
 	}
 
-	os.WriteFile(fmt.Sprintf("%s/%s", path, key), data, os.ModePerm)
-	return nil
+	return os.WriteFile(fmt.Sprintf("%s/%s", path, key), data, os.ModePerm)
 }
 
 func (storage *FileStorage) SaveStream(key string, folder string, stream io.Reader) error {
