@@ -4,6 +4,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type StatsRepository struct {
@@ -40,6 +41,15 @@ func (r *StatsRepository) UpdateReplayViews(userId int, mode constants.Mode) err
 func (r *StatsRepository) ByMode(userId int, mode int, preload ...string) (*schemas.Stats, error) {
 	var stats schemas.Stats
 	err := Preloaded(r.db, preload).Where("id = ? AND mode = ?", userId, mode).First(&stats).Error
+	return LookupResult(&stats, err)
+}
+
+func (r *StatsRepository) ByModeWithLock(userId int, mode constants.Mode) (*schemas.Stats, error) {
+	var stats schemas.Stats
+	err := r.db.
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ? AND mode = ?", userId, mode).
+		First(&stats).Error
 	return LookupResult(&stats, err)
 }
 
