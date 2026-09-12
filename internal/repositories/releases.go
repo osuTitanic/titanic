@@ -34,6 +34,20 @@ func (r *ReleaseRepository) FetchAll() ([]*schemas.Release, error) {
 	return releases, err
 }
 
+func (r *ReleaseRepository) Exists(version int, checksum string) (bool, error) {
+	var exists bool
+	err := r.db.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM releases_titanic AS release,
+				jsonb_array_elements(release.hashes) AS file,
+				jsonb_array_elements_text(COALESCE(file->'md5', '[]'::jsonb)) AS hash
+			WHERE release.version = ? AND hash = ?
+		)
+	`, version, strings.TrimSpace(checksum)).Scan(&exists).Error
+	return exists, err
+}
+
 type ModdedReleaseRepository struct {
 	db *gorm.DB
 }
@@ -64,6 +78,19 @@ func (r *ModdedReleaseRepository) DeleteEntry(entry *schemas.ModdedReleaseEntrie
 
 func (r *ModdedReleaseRepository) UpdateEntry(updates *schemas.ModdedReleaseEntries, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *ModdedReleaseRepository) EntryExists(identifier, checksum string) (bool, error) {
+	var exists bool
+	err := r.db.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM releases_modding AS release
+			JOIN releases_modding_entries AS entry ON entry.mod_name = release.name
+			WHERE release.client_extension = ? AND entry.checksum = ?
+		)
+	`, strings.TrimSpace(identifier), strings.TrimSpace(checksum)).Scan(&exists).Error
+	return exists, err
 }
 
 func (r *ModdedReleaseRepository) CreateChangelog(changelog *schemas.ModdedReleaseChangelog) error {

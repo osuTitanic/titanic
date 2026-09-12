@@ -2,10 +2,9 @@ package routes
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 
-	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/clients"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
@@ -21,18 +20,12 @@ func BanchoConnect(ctx *server.Context) {
 	// The client may also send retry, u, h, fx, and fail as query parameters
 	// We don't really do anything with them though, since they primarily serve as analytical data
 
-	match := constants.OsuVersion.FindStringSubmatch(version)
-	if match == nil {
+	clientVersion, ok := clients.ParseVersion(version)
+	if !ok {
 		ctx.RenderText(http.StatusOK, "xx")
 		return
 	}
-
-	date, err := strconv.Atoi(match[1])
-	if err != nil {
-		ctx.RenderText(http.StatusOK, "xx")
-		return
-	}
-	if date <= 20130915 {
+	if clientVersion.Date <= 20130915 {
 		// TODO: forgot if this should be b20130815 or b20130915
 		// Either way, TCP clients use this endpoint to resolve the host ip address of the bancho server
 		// This was very quickly unused though, due to the switch to HTTP-based bancho connections
