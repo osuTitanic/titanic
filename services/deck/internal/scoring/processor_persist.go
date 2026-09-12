@@ -336,9 +336,9 @@ func (processor *Processor) assignScoreStatus(transaction *state.Repositories, c
 	if !processor.submission.Passed {
 		// Score was a fail or user exited the map
 		if processor.submission.Exited {
-			score.StatusPP = constants.ScoreStatusExited
+			score.StatusScore = constants.ScoreStatusExited
 		} else {
-			score.StatusPP = constants.ScoreStatusFailed
+			score.StatusScore = constants.ScoreStatusFailed
 		}
 		return nil
 	}
