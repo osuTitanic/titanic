@@ -279,6 +279,14 @@ func (b *Beatmap) Link() string {
 	return fmt.Sprintf("/b/%d", b.Id)
 }
 
+func (b *Beatmap) AwardsScore() bool {
+	return b.Status >= constants.BeatmapStatusRanked
+}
+
+func (b *Beatmap) AwardsPP() bool {
+	return b.Status == constants.BeatmapStatusRanked || b.Status == constants.BeatmapStatusApproved
+}
+
 func (b *Beatmap) DifficultyAlias() string {
 	difficulty := "expert"
 	if b.Diff < 2 {

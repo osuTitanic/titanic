@@ -164,6 +164,9 @@ func (processor *Processor) setBeatmapChartAfter() error {
 		return nil
 	}
 
+	// Don't display pp awards for loved / qualified maps
+	awardsPP := processor.submission.Beatmap.AwardsPP()
+
 	chart := &processor.submission.Charts.Ranking
 	oldScore := processor.submission.PersonalBestScore
 
@@ -174,7 +177,11 @@ func (processor *Processor) setBeatmapChartAfter() error {
 		chart.TotalScore.Before = new(oldScore.TotalScore)
 		chart.MaxCombo.Before = new(oldScore.MaxCombo)
 		chart.Accuracy.Before = new(accuracy)
+
 		chart.PP.Before = new(oldScore.PP)
+		if !awardsPP {
+			chart.PP.Before = nil
+		}
 	}
 
 	accuracy := processor.submission.Acc * 100
@@ -182,8 +189,12 @@ func (processor *Processor) setBeatmapChartAfter() error {
 	chart.RankedScore.After = new(processor.submission.TotalScore)
 	chart.TotalScore.After = new(processor.submission.TotalScore)
 	chart.MaxCombo.After = new(processor.submission.MaxCombo)
-	chart.PP.After = new(processor.submission.PP)
 	chart.Accuracy.After = new(accuracy)
+
+	chart.PP.After = new(processor.submission.PP)
+	if !awardsPP {
+		chart.PP.After = nil
+	}
 
 	scoreAbove, err := processor.repositories.Scores.FetchScoreAbove(
 		processor.submission.BeatmapId,

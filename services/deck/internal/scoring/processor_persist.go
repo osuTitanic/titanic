@@ -17,6 +17,7 @@ func (processor *Processor) persist(transaction *state.Repositories) (ResultType
 	if submission.Beatmap == nil {
 		return ResultAccepted, fmt.Errorf("submission beatmap missing")
 	}
+	awardsScore := submission.Beatmap.AwardsScore()
 
 	stats, err := transaction.Stats.ByModeWithLock(submission.UserId, submission.Mode)
 	if err != nil {
@@ -28,8 +29,6 @@ func (processor *Processor) persist(transaction *state.Repositories) (ResultType
 	previousStats := *stats
 	submission.PreviousStats = &previousStats
 	submission.CurrentStats = stats
-
-	awardsScore := submission.Beatmap.Status > constants.BeatmapStatusPending
 
 	// Populate "Before" section of charts
 	processor.setChartValuesBefore()
