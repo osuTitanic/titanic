@@ -130,12 +130,24 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		popularityFactor *
 		accFactor
 
-	score.PPv1 = ppv1
-	if _, err := service.scores.Update(score, "ppv1"); err != nil {
+	// Ensure ppv1 is not Inf or NaN
+	if !isFinite(ppv1) {
+		return 0, nil
+	}
+	return math.Max(0, ppv1), nil
+}
+
+// UpdatePerformance calculates ppv1 & updates the score in the database
+func (service *PPv1Service) UpdatePerformance(score *schemas.Score) (float64, error) {
+	ppv1, err := service.CalculatePerformance(score)
+	if err != nil {
 		return 0, err
 	}
-
-	return math.Max(0, score.PPv1), nil
+	score.PPv1 = ppv1
+	if _, err := service.scores.Update(score, "ppv1"); err != nil {
+		return ppv1, err
+	}
+	return ppv1, nil
 }
 
 // CalculateWeight calculates the sum of weighted performance points (v1) for each score
