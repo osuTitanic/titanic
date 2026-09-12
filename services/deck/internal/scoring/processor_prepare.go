@@ -61,18 +61,20 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 	processor.submission.Beatmap = beatmap
 
 	// Populate charts for the modular submission response
-	processor.submission.Charts.Beatmap.BeatmapId = beatmap.Id
-	processor.submission.Charts.Beatmap.BeatmapSetId = beatmap.SetId
-	processor.submission.Charts.Beatmap.BeatmapPlaycount = beatmap.Playcount
-	processor.submission.Charts.Beatmap.BeatmapPasscount = beatmap.Passcount
-	processor.submission.Charts.Beatmap.ApprovedDate = beatmap.Beatmapset.ApprovedAt
+	charts := processor.submission.Charts
+
+	charts.Beatmap.BeatmapId = beatmap.Id
+	charts.Beatmap.BeatmapSetId = beatmap.SetId
+	charts.Beatmap.BeatmapPlaycount = beatmap.Playcount
+	charts.Beatmap.BeatmapPasscount = beatmap.Passcount
+	charts.Beatmap.ApprovedDate = beatmap.Beatmapset.ApprovedAt
 
 	baseUrl := processor.context.State.Config.OsuBaseUrl()
-	processor.submission.Charts.Overall.ChartUrl = fmt.Sprintf(
+	charts.Overall.ChartUrl = fmt.Sprintf(
 		"%s/p/playerranking/?f=%s",
 		baseUrl, user.Name,
 	)
-	processor.submission.Charts.Ranking.ChartUrl = fmt.Sprintf(
+	charts.Ranking.ChartUrl = fmt.Sprintf(
 		"%s/b/%d",
 		baseUrl, beatmap.Id,
 	)
