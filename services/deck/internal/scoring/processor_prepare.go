@@ -7,10 +7,10 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
-func (processor *Processor) Prepare(password string) (ResultType, error) {
+func (processor *Processor) prepare(password string) (ResultType, error) {
 	// Authenticate the user & ensure they're eligible to submit a score
-	user, err := processor.Context.AuthenticateUser(
-		processor.Submission.Username, password,
+	user, err := processor.context.AuthenticateUser(
+		processor.submission.Username, password,
 		true, // We want them to be online on bancho
 	)
 	if err != nil {
@@ -35,7 +35,7 @@ func (processor *Processor) Prepare(password string) (ResultType, error) {
 	if user.IsBot {
 		return ResultRejected, nil
 	}
-	processor.Submission.User = user
+	processor.submission.User = user
 
 	// TODO: Check scores.submit permission
 	// TODO: Load bancho user presence from redis
@@ -43,8 +43,8 @@ func (processor *Processor) Prepare(password string) (ResultType, error) {
 	// TODO: Validate & set client version
 
 	// Resolve the beatmap that the user set a score on
-	beatmap, err := processor.Repositories.Beatmaps.ByChecksum(
-		processor.Submission.BeatmapChecksum, "Beatmapset",
+	beatmap, err := processor.repositories.Beatmaps.ByChecksum(
+		processor.submission.BeatmapChecksum, "Beatmapset",
 	)
 	if err != nil {
 		return ResultAccepted, nil
@@ -58,21 +58,21 @@ func (processor *Processor) Prepare(password string) (ResultType, error) {
 	if beatmap.Beatmapset.Status == constants.BeatmapStatusInactive {
 		return ResultBeatmapUnavailable, nil
 	}
-	processor.Submission.Beatmap = beatmap
+	processor.submission.Beatmap = beatmap
 
 	// Populate charts for the modular submission response
-	processor.Submission.Charts.Beatmap.BeatmapId = beatmap.Id
-	processor.Submission.Charts.Beatmap.BeatmapSetId = beatmap.SetId
-	processor.Submission.Charts.Beatmap.BeatmapPlaycount = beatmap.Playcount
-	processor.Submission.Charts.Beatmap.BeatmapPasscount = beatmap.Passcount
-	processor.Submission.Charts.Beatmap.ApprovedDate = beatmap.Beatmapset.ApprovedAt
+	processor.submission.Charts.Beatmap.BeatmapId = beatmap.Id
+	processor.submission.Charts.Beatmap.BeatmapSetId = beatmap.SetId
+	processor.submission.Charts.Beatmap.BeatmapPlaycount = beatmap.Playcount
+	processor.submission.Charts.Beatmap.BeatmapPasscount = beatmap.Passcount
+	processor.submission.Charts.Beatmap.ApprovedDate = beatmap.Beatmapset.ApprovedAt
 
-	baseUrl := processor.Context.State.Config.OsuBaseUrl()
-	processor.Submission.Charts.Overall.ChartUrl = fmt.Sprintf(
+	baseUrl := processor.context.State.Config.OsuBaseUrl()
+	processor.submission.Charts.Overall.ChartUrl = fmt.Sprintf(
 		"%s/p/playerranking/?f=%s",
 		baseUrl, user.Name,
 	)
-	processor.Submission.Charts.Ranking.ChartUrl = fmt.Sprintf(
+	processor.submission.Charts.Ranking.ChartUrl = fmt.Sprintf(
 		"%s/b/%d",
 		baseUrl, beatmap.Id,
 	)

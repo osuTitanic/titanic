@@ -70,6 +70,32 @@ func (r *BeatmapRepository) Update(updates *schemas.Beatmap, columns ...string) 
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *BeatmapRepository) IncrementPlayCounts(beatmapId int, passed bool) (playcount, passcount int64, err error) {
+	query := `
+		UPDATE beatmaps
+		SET playcount = playcount + 1, passcount = passcount + ?
+		WHERE id = ?
+		RETURNING playcount, passcount
+	`
+	passIncrement := 0
+	if passed {
+		passIncrement = 1
+	}
+	counts := struct {
+		Playcount int64
+		Passcount int64
+	}{}
+
+	result := r.db.Raw(query, passIncrement, beatmapId).Scan(&counts)
+	if result.Error != nil {
+		return 0, 0, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return 0, 0, gorm.ErrRecordNotFound
+	}
+	return counts.Playcount, counts.Passcount, nil
+}
+
 func (r *BeatmapRepository) UpdateBySetId(updates *schemas.Beatmap, columns ...string) (int64, error) {
 	if len(columns) == 0 {
 		return 0, errors.New("at least one column must be specified")

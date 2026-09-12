@@ -1,6 +1,6 @@
 package scoring
 
-func (processor *Processor) PostProcess() []error {
+func (processor *Processor) finalize() []error {
 	// TODO: Synchronize the redis rankings after the database commit
 	// TODO: Resolve the global, country, and beatmap ranks
 	// TODO: Check & unlock achievements

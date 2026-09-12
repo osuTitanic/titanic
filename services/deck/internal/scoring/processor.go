@@ -8,27 +8,31 @@ import (
 )
 
 type Processor struct {
-	Context      *server.Context
-	Submission   *SubmissionContext
-	Repositories *state.Repositories
+	context      *server.Context
+	submission   *SubmissionContext
+	repositories *state.Repositories
+	warnings     []error
+}
+
+func (processor *Processor) AddWarning(format string, a ...any) {
+	processor.warnings = append(processor.warnings, fmt.Errorf(format, a...))
 }
 
 func NewProcessor(ctx *server.Context, submission *SubmissionContext) *Processor {
 	return &Processor{
-		Context:      ctx,
-		Submission:   submission,
-		Repositories: ctx.State.Repositories,
+		context:      ctx,
+		submission:   submission,
+		repositories: ctx.State.Repositories,
 	}
 }
 
 func (processor *Processor) Process(password string) (result Result, err error) {
 	result = Result{
 		Type:       ResultAccepted,
-		Submission: processor.Submission,
-		Warnings:   []error{},
+		Submission: processor.submission,
 	}
 
-	result.Type, err = processor.Prepare(password)
+	result.Type, err = processor.prepare(password)
 	if err != nil {
 		return result, fmt.Errorf("prepare score submission: %w", err)
 	}
@@ -36,7 +40,7 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 		return result, nil
 	}
 
-	result.Type, err = processor.Validate()
+	result.Type, err = processor.validate()
 	if err != nil {
 		return result, fmt.Errorf("validate score submission: %w", err)
 	}
@@ -44,17 +48,15 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 		return result, nil
 	}
 
-	err = processor.Context.State.DatabaseTransaction(func(repos *state.Repositories) error {
-		result.Type, err = processor.Persist(repos)
+	err = processor.context.State.DatabaseTransaction(func(repos *state.Repositories) error {
+		result.Type, err = processor.persist(repos)
 		return err // Commit transaction, or rollback if err != nil
 	})
 	if err != nil {
 		return result, err
 	}
-	if result.Rejected() {
-		return result, nil
-	}
+	processor.finalize()
 
-	result.Warnings = processor.PostProcess()
-	return result, err
+	result.Warnings = processor.warnings
+	return result, nil
 }

@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"math"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -66,6 +67,51 @@ func (score *Score) Passed() bool {
 
 func (score *Score) Relaxing() bool {
 	return score.Mods.Has(constants.Relax) || score.Mods.Has(constants.Autopilot)
+}
+
+func (score *Score) HasScorePB() bool {
+	return score.StatusScore == constants.ScoreStatusBest
+}
+
+func (score *Score) HasPerformancePB() bool {
+	return score.StatusPP == constants.ScoreStatusBest
+}
+
+func (score *Score) HasPersonalBest() bool {
+	return score.HasScorePB() || score.HasPerformancePB()
+}
+
+func (score *Score) ElapsedTime() int {
+	if !score.Passed() {
+		return max(0, *score.Failtime/1000)
+	}
+	if score.Beatmap == nil {
+		return 0
+	}
+	return max(0, score.Beatmap.TotalLength)
+}
+
+func (score *Score) ComparePerformance(other *Score) bool {
+	better := score.PP > other.PP
+
+	if math.RoundToEven(score.PP) != math.RoundToEven(other.PP) {
+		return better
+	}
+
+	// Scores have the same pp, check total score
+	return score.CompareScore(other)
+}
+
+func (score *Score) CompareScore(other *Score) bool {
+	better := score.TotalScore > other.TotalScore
+
+	if score.TotalScore != other.TotalScore {
+		return better
+	}
+
+	// Scores had the same total score, check submission time
+	// (the score that was set earlier wins)
+	return score.SubmittedAt.Before(other.SubmittedAt)
 }
 
 func (score *Score) RequiresPPv1Update() bool {

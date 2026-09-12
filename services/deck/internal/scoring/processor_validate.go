@@ -1,6 +1,6 @@
 package scoring
 
-func (processor *Processor) Validate() (ResultType, error) {
+func (processor *Processor) validate() (ResultType, error) {
 	// TODO: Normalize score values & mod combinations
 	// TODO: Validate hit counts, total score, combo & mode
 	// TODO: Reject non-whitelisted builds, unranked mods, invalid mods, etc.
