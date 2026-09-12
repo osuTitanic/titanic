@@ -2,9 +2,6 @@ package replays
 
 import (
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
-	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -56,37 +53,8 @@ func Serialize(score *schemas.Score, replay []byte) []byte {
 	return buf.Bytes()
 }
 
-// OfflineScoreChecksum computes osu!'s replay score checksum.
-func OfflineScoreChecksum(score *schemas.Score, mods constants.Mods) string {
-	raw := fmt.Sprintf(
-		"%dp%do%do%dt%da%sr%de%sy%so%du%s%d%s",
-		score.Count100+score.Count300,
-		score.Count50,
-		score.CountGeki,
-		score.CountKatu,
-		score.CountMiss,
-		score.Beatmap.Checksum,
-		score.MaxCombo,
-		formattedBool(score.Perfect),
-		score.User.Name,
-		score.TotalScore,
-		string(score.Grade),
-		uint32(mods),
-		formattedBool(score.Passed()),
-	)
-	sum := md5.Sum([]byte(raw))
-	return hex.EncodeToString(sum[:])
-}
-
 func ticks(t time.Time) int64 {
 	t = t.UTC()
 	seconds := t.Unix() + dotNetEpochOffset
 	return seconds*ticksPerSecond + int64(t.Nanosecond())/100
-}
-
-func formattedBool(value bool) string {
-	if value {
-		return "True"
-	}
-	return "False"
 }
