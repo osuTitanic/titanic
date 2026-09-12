@@ -30,6 +30,10 @@ func (processor *Processor) calculatePPv2() {
 }
 
 func (processor *Processor) calculatePPv1() {
+	if !processor.submission.Passed {
+		return
+	}
+
 	pp, err := processor.context.State.PPv1.CalculatePerformance(processor.submission.Score)
 	if err != nil {
 		processor.AddWarning("calculate ppv1: %w", err)
