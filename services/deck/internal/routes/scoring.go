@@ -41,44 +41,10 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 
 	if result.Rejected() {
 		ctx.Logger.Debug("Score submission rejected", "result", result.Type)
-		writeSubmissionError(ctx, endpoint, result.Type)
-		return
-	}
-	writeSubmissionResponse(ctx, endpoint, result.Submission)
-}
-
-func writeSubmissionResponse(ctx *server.Context, endpoint scoring.Endpoint, result *scoring.SubmissionContext) {
-	ctx.RenderText(http.StatusOK, endpoint.FormatResponse(result))
-}
-
-func writeSubmissionError(ctx *server.Context, endpoint scoring.Endpoint, resultType scoring.ResultType) {
-	if resultType == scoring.ResultBanchoUnavailable {
-		// Client will perform a delayed retry if an error occurs
-		// Let's hope it will connect to bancho in the meantime
-		ctx.Response.WriteHeader(http.StatusServiceUnavailable)
+		status, text := endpoint.FormatError(result.Type)
+		ctx.RenderText(status, text)
 		return
 	}
 
-	if !endpoint.UsesLegacyResponse() {
-		// use `error: <type>` response
-		ctx.RenderText(http.StatusOK, resultType.String())
-		return
-	}
-
-	// /web/osu-submit.php has no custom error response strings
-	// we'll just use http status codes
-
-	status := http.StatusBadRequest
-	switch resultType {
-	case scoring.ResultUserNotFound,
-		scoring.ResultInvalidPassword,
-		scoring.ResultInactive,
-		scoring.ResultBanned:
-		status = http.StatusUnauthorized
-	case scoring.ResultBeatmapUnavailable:
-		status = http.StatusNotFound
-	default:
-		status = http.StatusBadRequest
-	}
-	ctx.Response.WriteHeader(status)
+	ctx.RenderText(http.StatusOK, endpoint.FormatResponse(result.Submission))
 }

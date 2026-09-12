@@ -52,6 +52,24 @@ func (resultType ResultType) String() string {
 	}
 }
 
+func (resultType ResultType) StatusCode() int {
+	// Used for /web/osu-submit.php which has
+	// no error response strings
+	switch resultType {
+	case ResultUserNotFound,
+		ResultInvalidPassword,
+		ResultInactive,
+		ResultBanned:
+		return http.StatusUnauthorized
+	case ResultBeatmapUnavailable:
+		return http.StatusNotFound
+	case ResultBanchoUnavailable:
+		return http.StatusServiceUnavailable
+	default:
+		return http.StatusBadRequest
+	}
+}
+
 type Endpoint uint8
 
 const (
@@ -74,6 +92,10 @@ func (endpoint Endpoint) UsesLegacyResponse() bool {
 
 func (endpoint Endpoint) FormatResponse(result *SubmissionContext) string {
 	return FormatSubmissionResponse(endpoint, result)
+}
+
+func (endpoint Endpoint) FormatError(result ResultType) (int, string) {
+	return FormatSubmissionError(endpoint, result)
 }
 
 func (endpoint Endpoint) RequestValue(request *http.Request, name string) string {

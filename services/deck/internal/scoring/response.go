@@ -3,6 +3,7 @@ package scoring
 import (
 	"fmt"
 	"math"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -49,8 +50,26 @@ func FormatSubmissionResponse(endpoint Endpoint, result *SubmissionContext) stri
 			return ""
 		}
 		return FormatSubmissionResponseLegacy(result)
+	} else {
+		return FormatSubmissionResponseModular(result, endpoint)
 	}
-	return FormatSubmissionResponseModular(result, endpoint)
+}
+
+func FormatSubmissionError(endpoint Endpoint, result ResultType) (int, string) {
+	if result == ResultBanchoUnavailable {
+		// Client will perform a delayed retry if an error occurs
+		// Let's hope it will connect to bancho in the meantime
+		return http.StatusServiceUnavailable, ""
+	}
+
+	if !endpoint.UsesLegacyResponse() {
+		// use `error: <type>` response
+		return http.StatusOK, result.String()
+	}
+
+	// /web/osu-submit.php has no custom error response strings
+	// we'll just use http status codes
+	return result.StatusCode(), ""
 }
 
 func FormatSubmissionResponseModular(result *SubmissionContext, endpoint Endpoint) string {
