@@ -122,11 +122,11 @@ func (processor *Processor) setChartValuesAfter() error {
 	}
 
 	// Use the preferred rank
-	charts.Overall.Rank.Before = new(preferredRank)
+	charts.Overall.Rank.After = new(preferredRank)
 
 	if user.PreferredRanking == constants.RankingTypePPv1 {
 		// Use ppv1 over ppv2 if the rank type is set accordingly
-		charts.Overall.PP.Before = new(preferredValue)
+		charts.Overall.PP.After = new(preferredValue)
 	}
 	return nil
 }
