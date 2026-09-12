@@ -17,8 +17,6 @@ func (processor *Processor) persist(transaction *state.Repositories) (ResultType
 	if submission.Beatmap == nil {
 		return ResultAccepted, fmt.Errorf("submission beatmap missing")
 	}
-	submission.UserId = submission.User.Id
-	submission.BeatmapId = submission.Beatmap.Id
 
 	stats, err := transaction.Stats.ByModeWithLock(submission.UserId, submission.Mode)
 	if err != nil {

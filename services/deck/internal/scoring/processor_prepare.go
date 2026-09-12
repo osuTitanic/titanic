@@ -36,6 +36,7 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 		return ResultRejected, nil
 	}
 	processor.submission.User = user
+	processor.submission.UserId = user.Id
 
 	// TODO: Check scores.submit permission
 	// TODO: Load bancho user presence from redis
@@ -59,6 +60,7 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 		return ResultBeatmapUnavailable, nil
 	}
 	processor.submission.Beatmap = beatmap
+	processor.submission.BeatmapId = beatmap.Id
 
 	// Populate charts for the modular submission response
 	charts := processor.submission.Charts
