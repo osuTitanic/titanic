@@ -59,6 +59,12 @@ func (r *ScoreRepository) ById(id int64, preload ...string) (*schemas.Score, err
 	return LookupResult(&score, err)
 }
 
+func (r *ScoreRepository) ByReplayChecksum(checksum string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := r.db.Where("replay_md5 = ?", checksum).First(&score).Error
+	return LookupResult(&score, err)
+}
+
 func (r *ScoreRepository) ManyById(ids []int64, preload ...string) ([]*schemas.Score, error) {
 	if len(ids) == 0 {
 		return []*schemas.Score{}, nil
