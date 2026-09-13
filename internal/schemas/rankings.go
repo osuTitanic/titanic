@@ -166,8 +166,8 @@ func (score *Score) TotalObjects() int {
 	}
 }
 
-// Accuracy returns the score's normalized accuracy in the range [0, 1].
-func (score *Score) Accuracy() float64 {
+// ComputeAccuracy returns the score's normalized accuracy in the range [0, 1].
+func (score *Score) ComputeAccuracy() float64 {
 	if score == nil {
 		return 0
 	}
@@ -238,7 +238,7 @@ func (score *Score) ComputeGrade() constants.Grade {
 		}
 
 	case constants.ModeCatch:
-		accuracy := score.Accuracy()
+		accuracy := score.ComputeAccuracy()
 		switch {
 		case accuracy == 1:
 			return xGrade
@@ -255,7 +255,7 @@ func (score *Score) ComputeGrade() constants.Grade {
 		}
 
 	case constants.ModeMania:
-		accuracy := score.Accuracy()
+		accuracy := score.ComputeAccuracy()
 		switch {
 		case accuracy == 1:
 			return xGrade
