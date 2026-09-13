@@ -8,6 +8,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ScoreRepository struct {
@@ -27,7 +28,7 @@ func NewScoreRepository(db *gorm.DB) *ScoreRepository {
 }
 
 func (r *ScoreRepository) Create(score *schemas.Score) error {
-	return r.db.Create(score).Error
+	return r.db.Omit(clause.Associations).Create(score).Error
 }
 
 func (r *ScoreRepository) Delete(score *schemas.Score) error {
