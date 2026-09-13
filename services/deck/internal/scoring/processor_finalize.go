@@ -20,7 +20,7 @@ func (processor *Processor) finalize() {
 
 		processor.context.Logger.Debug(
 			"Score submission task completed",
-			"step", name, "took", time.Since(start).String(),
+			"step", name, "took", time.Since(start),
 		)
 	}
 

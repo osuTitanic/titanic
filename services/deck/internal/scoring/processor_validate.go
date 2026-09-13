@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/clients"
+	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/replays"
 )
 
 type Validator func() (ResultType, error)
@@ -19,23 +21,31 @@ func (processor *Processor) validate() (ResultType, error) {
 
 		processor.context.Logger.Debug(
 			"Score submission task completed",
-			"step", name, "took", time.Since(start).String(),
+			"step", name, "took", time.Since(start),
 		)
 		return result, err
 	}
 
-	run("validate mods", processor.validateMods)
-	run("validate client", processor.validateClient)
+	if result, err := run("validate mods", processor.validateMods); wasRejected(result, err) {
+		return result, err
+	}
+	if result, err := run("validate client", processor.validateClient); wasRejected(result, err) {
+		return result, err
+	}
 
 	// TODO: Normalize score values
 	// TODO: Validate hit counts, total score, combo & mode
 	// TODO: Check for duplicate scores
 
-	// TODO: For passed scores, validate the replay
-	// TODO: Run touchscreen detection
-
-	run("calculate ppv2", processor.calculatePPv2)
-	run("calculate ppv1", processor.calculatePPv1)
+	if result, err := run("validate replay", processor.validateReplay); wasRejected(result, err) {
+		return result, err
+	}
+	if result, err := run("calculate ppv2", processor.calculatePPv2); wasRejected(result, err) {
+		return result, err
+	}
+	if result, err := run("calculate ppv1", processor.calculatePPv1); wasRejected(result, err) {
+		return result, err
+	}
 
 	// TODO: Check pp limit for user
 
@@ -162,4 +172,59 @@ func (processor *Processor) validateClient() (ResultType, error) {
 		return ResultRejected, nil
 	}
 	return ResultAccepted, nil
+}
+
+func (processor *Processor) validateReplay() (ResultType, error) {
+	submission := processor.submission
+	if !submission.Passed {
+		// Failed scores should not have replays
+		return ResultAccepted, nil
+	}
+	if len(submission.Replay) == 0 {
+		// hmmm... suspicious...
+		processor.AddWarning("passed score has no replay")
+		return ResultRejected, nil
+	}
+
+	// Decompress & parse the submitted replay frames to check their validity
+	frames, _, err := replays.DeserializeFrames(submission.Replay)
+	if err != nil {
+		processor.AddWarning("invalid replay: %w", err)
+		return ResultRejected, nil
+	}
+	if len(frames) < 100 {
+		processor.AddWarning(
+			"invalid replay: got %d frames, want at least %d",
+			len(frames), 100,
+		)
+		return ResultRejected, nil
+	}
+
+	if submission.Mode != constants.ModeOsu {
+		return ResultAccepted, nil
+	}
+
+	// Modern osu! clients have client-side touchscreen detection,
+	// but on Titanic, we're talking pre-2017 clients, where this
+	// kind of special technology did not exist.
+	// (https://osu.ppy.sh/community/forums/topics/665986)
+
+	// So, unfortunatly, we have to guess from the replay itself,
+	// which is better than nothing, I guess.
+
+	detected, score := replays.DetectTouchscreenUsage(frames, 0.8)
+	submission.Touchscreen = detected
+
+	if detected {
+		processor.context.Logger.Debug(
+			"touchscreen usage detected",
+			"score", score,
+			"checksum", submission.Checksum,
+		)
+	}
+	return ResultAccepted, nil
+}
+
+func wasRejected(result ResultType, err error) bool {
+	return result != ResultAccepted || err != nil
 }
