@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
+	"github.com/osuTitanic/titanic/internal/bancho"
 	"github.com/osuTitanic/titanic/internal/config"
 	"github.com/osuTitanic/titanic/internal/database"
 	"github.com/osuTitanic/titanic/internal/discord"
@@ -105,6 +106,8 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		Repositories:    repositories,
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repositories.Scores, repositories.Beatmaps),
+		BanchoUsers:     bancho.NewStatusStore(redisClient),
+		BanchoEvents:    bancho.NewEventDispatcher(redisClient),
 		Permissions:     permissions.New(repositories.Permissions, repositories.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),

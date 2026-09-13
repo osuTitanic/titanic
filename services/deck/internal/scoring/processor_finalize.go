@@ -1,7 +1,6 @@
 package scoring
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -38,7 +37,7 @@ func (processor *Processor) finalize() {
 	run("resolve next overall rank", processor.resolveNextRankOverall)
 	run("populate beatmap chart", processor.setBeatmapChartAfter)
 	run("upload replay", processor.uploadReplay)
-	run("notify bancho", processor.banchoUserUpdateSignal)
+	run("bancho user update", processor.banchoUserUpdate)
 
 	// TODO: Broadcast rank, beatmap, and performance highlights / activity
 }
@@ -236,32 +235,10 @@ func (processor *Processor) uploadReplay() error {
 	)
 }
 
-// TODO: Add a shared helper for sending bancho events
-//		 internal/activity could be a good place maybe?
-
-func (processor *Processor) banchoUserUpdateSignal() error {
-	type userUpdate struct {
-		UserId int            `json:"user_id"`
-		Mode   constants.Mode `json:"mode"`
-	}
-	type event struct {
-		Event  string     `json:"event"`
-		Args   []any      `json:"args"`
-		Kwargs userUpdate `json:"kwargs"`
-	}
-
-	payload, err := json.Marshal(event{
-		Event: "user_update",
-		Args:  []any{},
-		Kwargs: userUpdate{
-			UserId: processor.submission.UserId,
-			Mode:   processor.submission.Mode,
-		},
-	})
-	if err != nil {
-		return err
-	}
-
-	ctx := processor.context.Request.Context()
-	return processor.context.State.Redis.Publish(ctx, "bancho:events", payload).Err()
+func (processor *Processor) banchoUserUpdate() error {
+	return processor.context.State.BanchoEvents.UserUpdate(
+		processor.context.Request.Context(),
+		processor.submission.UserId,
+		processor.submission.Mode,
+	)
 }

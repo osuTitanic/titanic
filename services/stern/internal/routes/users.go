@@ -73,10 +73,10 @@ func UserProfile(ctx *server.Context) {
 		return
 	}
 
-	online, err := ctx.State.Redis.Exists(
+	online, err := ctx.State.BanchoUsers.Exists(
 		ctx.Request.Context(),
-		fmt.Sprintf("bancho:status:%d", user.Id),
-	).Result()
+		user.Id,
+	)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch online status", "user", user.Id, "error", err)
 	}
@@ -115,7 +115,7 @@ func UserProfile(ctx *server.Context) {
 		DefaultView:   buildDefaultViewWithPermissions(ctx),
 		User:          user,
 		Mode:          mode,
-		IsOnline:      online == 1,
+		IsOnline:      online,
 		Followers:     followers,
 		TotalPosts:    totalPosts,
 		PPRank:        general.PPRank,

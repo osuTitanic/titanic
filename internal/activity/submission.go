@@ -9,8 +9,6 @@ import (
 	"github.com/osuTitanic/titanic/internal/state"
 )
 
-const eventChannel = "bancho:events"
-
 // Submit broadcasts the activity on the redis pubsub queue
 // then stores it for profile timelines unless it is hidden.
 func Submit(
@@ -22,17 +20,17 @@ func Submit(
 	isAnnouncement bool,
 	isHidden bool,
 ) error {
-	publishEvent(app, userId, mode, activityType, data, isAnnouncement)
+	publishActivity(app, userId, mode, activityType, data, isAnnouncement)
 
 	if isHidden {
 		// Hidden activities are broadcast only, never stored in db
 		return nil
 	}
 
-	return storeEvent(app, userId, mode, activityType, data)
+	return storeActivity(app, userId, mode, activityType, data)
 }
 
-func publishEvent(
+func publishActivity(
 	app *state.State,
 	userId int,
 	mode *constants.Mode,
@@ -40,28 +38,19 @@ func publishEvent(
 	data map[string]any,
 	isAnnouncement bool,
 ) {
-	payload, err := json.Marshal(map[string]any{
-		"event": "bancho_event",
-		"args":  []any{},
-		"kwargs": map[string]any{
-			"user_id":         userId,
-			"mode":            mode,
-			"type":            int(activityType),
-			"data":            data,
-			"is_announcement": isAnnouncement,
-		},
-	})
-	if err != nil {
-		app.Logger.Error("Failed to encode activity event", "error", err)
-		return
-	}
-
-	if err := app.Redis.Publish(context.Background(), eventChannel, payload).Err(); err != nil {
+	if err := app.BanchoEvents.Activity(
+		context.Background(),
+		userId,
+		mode,
+		activityType,
+		data,
+		isAnnouncement,
+	); err != nil {
 		app.Logger.Warn("Failed to publish activity event", "error", err, "type", activityType)
 	}
 }
 
-func storeEvent(
+func storeActivity(
 	app *state.State,
 	userId int,
 	mode *constants.Mode,

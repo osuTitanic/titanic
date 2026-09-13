@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
+	"github.com/osuTitanic/titanic/internal/bancho"
 	"github.com/osuTitanic/titanic/internal/config"
 	"github.com/osuTitanic/titanic/internal/database"
 	"github.com/osuTitanic/titanic/internal/discord"
@@ -40,11 +41,13 @@ type State struct {
 	Location location.Provider
 
 	// Services
-	Permissions permissions.Resolver
-	Resources   resources.BeatmapResourceProvider
-	Rankings    *rankings.RankingsService
-	PPv1        *performance.PPv1Service
-	PPv2        performance.IPPv2Service
+	Permissions  permissions.Resolver
+	Resources    resources.BeatmapResourceProvider
+	Rankings     *rankings.RankingsService
+	PPv1         *performance.PPv1Service
+	PPv2         performance.IPPv2Service
+	BanchoUsers  *bancho.StatusStore
+	BanchoEvents *bancho.EventDispatcher
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -148,6 +151,8 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Resources:       beatmapResources,
 		PPv1:            ppv1Service,
 		PPv2:            ppv2Service,
+		BanchoUsers:     bancho.NewStatusStore(redisClient),
+		BanchoEvents:    bancho.NewEventDispatcher(redisClient),
 		Rankings:        rankings.NewRankingsService(redisClient),
 		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),

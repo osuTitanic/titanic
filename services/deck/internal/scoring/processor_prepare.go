@@ -40,8 +40,7 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 
 	// TODO: Check scores.submit permission
 	// TODO: Load bancho user presence from redis
-	// TODO: Validate client hash (and processes maybe?)
-	// TODO: Validate & set client version
+	// TODO: Validate the submitted process list
 
 	// Resolve the beatmap that the user set a score on
 	beatmap, err := processor.repositories.Beatmaps.ByChecksum(

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -39,14 +38,14 @@ func (ctx *Context) AuthenticateUser(
 		return user, nil
 	}
 
-	online, err := ctx.State.Redis.Exists(
+	online, err := ctx.State.BanchoUsers.Exists(
 		ctx.Request.Context(),
-		"bancho:status:"+strconv.Itoa(user.Id),
-	).Result()
+		user.Id,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("check bancho presence for user %d: %w", user.Id, err)
 	}
-	if online == 0 {
+	if !online {
 		return nil, ErrBanchoPresenceNotFound
 	}
 
