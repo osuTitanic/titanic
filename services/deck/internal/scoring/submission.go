@@ -29,6 +29,10 @@ const (
 	ResultRejected
 	ResultBeatmapUnavailable
 	ResultBanchoUnavailable // Will respond with a 503 error so client can retry
+	ResultOldVersion
+	ResultDisabledMod
+	ResultPasswordReset
+	ResultRequireVerification
 )
 
 func (resultType ResultType) String() string {
@@ -45,6 +49,14 @@ func (resultType ResultType) String() string {
 		return "error: ban"
 	case ResultBeatmapUnavailable:
 		return "error: beatmap"
+	case ResultOldVersion:
+		return "error: oldver"
+	case ResultDisabledMod:
+		return "error: disabled"
+	case ResultPasswordReset:
+		return "error: reset"
+	case ResultRequireVerification:
+		return "error: verify"
 	case ResultRejected:
 		return "error: no"
 	default:
