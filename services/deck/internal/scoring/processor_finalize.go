@@ -35,8 +35,9 @@ func (processor *Processor) finalize() {
 	run("populate beatmap chart", processor.setBeatmapChartAfter)
 	run("upload replay", processor.uploadReplay)
 	run("bancho user update", processor.banchoUserUpdate)
-
-	// TODO: Broadcast rank, beatmap, and performance highlights / activity
+	run("broadcast rank highlight", processor.broadcastRankHighlight)
+	run("broadcast beatmap highlight", processor.broadcastBeatmapHighlight)
+	run("broadcast performance highlight", processor.broadcastPerformanceHighlight)
 }
 
 func (processor *Processor) synchronizeRankings() error {
