@@ -46,9 +46,6 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 	processor.submission.CanBypassScoreValidation = permissions.Has("scores.validation.bypass")
 	processor.submission.CanBypassClientValidation = permissions.Has("clients.validation.bypass")
 
-	// TODO: Load bancho user presence from redis
-	// TODO: Validate the submitted process list
-
 	// Resolve the beatmap that the user set a score on
 	beatmap, err := processor.repositories.Beatmaps.ByChecksum(
 		processor.submission.BeatmapChecksum, "Beatmapset",
