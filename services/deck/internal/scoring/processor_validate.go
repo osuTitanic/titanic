@@ -1,6 +1,7 @@
 package scoring
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -33,10 +34,11 @@ func (processor *Processor) validate() (ResultType, error) {
 		return result, err
 	}
 
-	// TODO: Normalize score values
-	// TODO: Validate hit counts, total score, combo & mode
 	// TODO: Check for duplicate scores
 
+	if result, err := run("validate score", processor.validateScore); wasRejected(result, err) {
+		return result, err
+	}
 	if result, err := run("validate replay", processor.validateReplay); wasRejected(result, err) {
 		return result, err
 	}
@@ -222,6 +224,61 @@ func (processor *Processor) validateReplay() (ResultType, error) {
 			"checksum", submission.Checksum,
 		)
 	}
+	return ResultAccepted, nil
+}
+
+func (processor *Processor) validateScore() (ResultType, error) {
+	score := processor.submission.Score
+
+	hitCounts := []struct {
+		name  string
+		value int
+	}{
+		// Check if any of those are < 0
+		{"300", score.Count300},
+		{"100", score.Count100},
+		{"50", score.Count50},
+		{"miss", score.CountMiss},
+		{"geki", score.CountGeki},
+		{"katu", score.CountKatu},
+	}
+	for _, hitCount := range hitCounts {
+		if hitCount.value < 0 {
+			processor.AddWarning("negative %s count: %d", hitCount.name, hitCount.value)
+			return ResultRejected, nil
+		}
+	}
+
+	if score.TotalObjects() <= 0 {
+		processor.AddWarning("score did not pass any objects")
+		return ResultRejected, nil
+	}
+	if score.TotalScore <= 0 {
+		processor.AddWarning("invalid total score: %d", score.TotalScore)
+		return ResultRejected, nil
+	}
+	if score.MaxCombo <= 0 {
+		processor.AddWarning("invalid max combo: %d", score.MaxCombo)
+		return ResultRejected, nil
+	}
+	if !score.Mode.Valid() {
+		processor.AddWarning("invalid mode: %d", score.Mode)
+		return ResultRejected, nil
+	}
+
+	beatmap := score.Beatmap
+	if beatmap == nil {
+		// sanity check, should not really happen
+		return ResultAccepted, fmt.Errorf("validate score: beatmap is missing")
+	}
+	if beatmap.Mode != constants.ModeOsu && score.Mode == constants.ModeOsu {
+		processor.AddWarning(
+			"invalid mode conversion: %s score on %s beatmap",
+			score.Mode, beatmap.Mode,
+		)
+		return ResultRejected, nil
+	}
+
 	return ResultAccepted, nil
 }
 
