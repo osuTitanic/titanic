@@ -29,9 +29,7 @@ func (processor *Processor) finalize() {
 	run("update global rank", processor.updateGlobalRank)
 	run("update rank history", processor.updateRankHistory)
 	run("resolve beatmap rank", processor.resolveNewBeatmapRank)
-
-	// TODO: Check & unlock achievements
-
+	run("unlock achievements", processor.unlockAchievements)
 	run("populate chart values", processor.setChartValuesAfter)
 	run("resolve next overall rank", processor.resolveNextRankOverall)
 	run("populate beatmap chart", processor.setBeatmapChartAfter)

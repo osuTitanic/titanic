@@ -551,6 +551,38 @@ func (r *ScoreRepository) FetchSubmittedTimestamps(userId int, mode constants.Mo
 	return timestamps, err
 }
 
+func (r *ScoreRepository) FetchCompletedBeatmapsetIds(userId int) ([]int, error) {
+	var beatmapsetIds []int
+	err := r.db.Model(&schemas.Score{}).
+		Distinct("beatmaps.set_id").
+		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
+		Where("scores.user_id = ?", userId).
+		Where("scores.status = ?", constants.ScoreStatusBest).
+		Where("scores.hidden = ?", false).
+		Pluck("beatmaps.set_id", &beatmapsetIds).
+		Error
+	return beatmapsetIds, err
+}
+
+func (r *ScoreRepository) FetchAchievementMapActivity(userId, beatmapId int, mode constants.Mode, since time.Time) (playCount int, hadD bool, err error) {
+	var result struct {
+		PlayCount int
+		DCount    int
+	}
+	err = r.db.Model(&schemas.Score{}).
+		Select(
+			"COUNT(*) AS play_count, COALESCE(SUM(CASE WHEN grade = ? THEN 1 ELSE 0 END), 0) AS d_count",
+			constants.GradeD,
+		).
+		Where("user_id = ?", userId).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("submitted_at > ?", since).
+		Scan(&result).
+		Error
+	return result.PlayCount, result.DCount > 0, err
+}
+
 func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
 	return query.
 		Where("user_id = ?", userId).
