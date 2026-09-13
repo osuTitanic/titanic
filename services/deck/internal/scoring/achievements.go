@@ -30,8 +30,6 @@ func (processor *Processor) unlockAchievements() error {
 	if err != nil {
 		return err
 	}
-
-	// Concurrently check for new achievment matches
 	matched := context.Evaluate()
 
 	newAchievements := make([]*schemas.Achievement, 0, len(matched))
