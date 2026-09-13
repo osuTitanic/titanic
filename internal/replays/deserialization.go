@@ -25,11 +25,11 @@ type ButtonState int
 
 const (
 	NoButton ButtonState = 0
-	Left1    ButtonState = 1 << iota
-	Right1
-	Left2
-	Right2
-	Smoke
+	Left1    ButtonState = 1
+	Right1   ButtonState = 2
+	Left2    ButtonState = 4
+	Right2   ButtonState = 8
+	Smoke    ButtonState = 16
 )
 
 const allButtons = Left1 | Right1 | Left2 | Right2 | Smoke
