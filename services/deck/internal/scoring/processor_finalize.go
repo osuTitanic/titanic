@@ -17,11 +17,10 @@ func (processor *Processor) finalize() {
 		if err != nil {
 			processor.AddWarning("%s: %w", name, err)
 		}
-		elapsed := time.Since(start)
 
 		processor.context.Logger.Debug(
 			"Score submission task completed",
-			"step", name, "took", elapsed.String(),
+			"step", name, "took", time.Since(start).String(),
 		)
 	}
 

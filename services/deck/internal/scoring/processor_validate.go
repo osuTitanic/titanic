@@ -2,61 +2,89 @@ package scoring
 
 import (
 	"strings"
+	"time"
 
 	"github.com/osuTitanic/titanic/internal/clients"
 )
+
+type Validator func() (ResultType, error)
 
 func (processor *Processor) validate() (ResultType, error) {
 	if !processor.submission.CanSubmitScores {
 		return ResultRejected, nil
 	}
+	run := func(name string, action Validator) (ResultType, error) {
+		start := time.Now()
+		result, err := action()
+
+		processor.context.Logger.Debug(
+			"Score submission task completed",
+			"step", name, "took", time.Since(start).String(),
+		)
+		return result, err
+	}
+
+	run("validate mods", processor.validateMods)
+	run("validate client", processor.validateClient)
 
 	// TODO: Normalize score values
 	// TODO: Validate hit counts, total score, combo & mode
-	// TODO: Reject non-whitelisted builds, unranked mods, invalid mods, etc.
 	// TODO: Check for duplicate scores
+
 	// TODO: For passed scores, validate the replay
 	// TODO: Run touchscreen detection
+
+	run("calculate ppv2", processor.calculatePPv2)
+	run("calculate ppv1", processor.calculatePPv1)
+
 	// TODO: Check pp limit for user
 
-	// TODO: Add a run() wrapper similar to finalize()
-	result, err := processor.validateClient()
-	if err != nil {
-		return result, err
-	}
-	if result != ResultAccepted {
-		return result, nil
-	}
-
-	processor.calculatePPv2()
-	processor.calculatePPv1()
 	return ResultAccepted, nil
 }
 
-func (processor *Processor) calculatePPv2() {
+func (processor *Processor) validateMods() (ResultType, error) {
+	mods := processor.submission.Mods
+	if !mods.Valid() {
+		processor.AddWarning("unknown mod flags: %d", mods)
+		return ResultRejected, nil
+	}
+	if !mods.ValidCombination() {
+		processor.AddWarning("invalid mod combination: %s", mods)
+		return ResultRejected, nil
+	}
+	if mods.Unranked() {
+		return ResultRejected, nil
+	}
+	// TODO: Check mania mods in non-mania modes
+	return ResultAccepted, nil
+}
+
+func (processor *Processor) calculatePPv2() (ResultType, error) {
 	if !processor.context.State.PPv2.Available() {
-		return
+		return ResultAccepted, nil
 	}
 
 	pp, err := processor.context.State.PPv2.CalculatePerformance(processor.submission.Score)
 	if err != nil {
 		processor.AddWarning("calculate ppv2: %w", err)
-		return
+		return ResultAccepted, nil
 	}
 	processor.submission.PP = pp
+	return ResultAccepted, nil
 }
 
-func (processor *Processor) calculatePPv1() {
+func (processor *Processor) calculatePPv1() (ResultType, error) {
 	if !processor.submission.Passed {
-		return
+		return ResultAccepted, nil
 	}
 
 	pp, err := processor.context.State.PPv1.CalculatePerformance(processor.submission.Score)
 	if err != nil {
 		processor.AddWarning("calculate ppv1: %w", err)
-		return
+		return ResultAccepted, nil
 	}
 	processor.submission.PPv1 = pp
+	return ResultAccepted, nil
 }
 
 func (processor *Processor) validateClient() (ResultType, error) {

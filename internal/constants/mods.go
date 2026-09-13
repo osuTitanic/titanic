@@ -151,10 +151,15 @@ const FreeModAllowed = NoFail | Easy | Hidden | HardRock | SuddenDeath | Flashli
 
 var invalidModCombinations = []Mods{
 	Easy | HardRock,
-	HalfTime | DoubleTime,
-	HalfTime | Nightcore,
+	Hidden | FadeIn,
 	NoFail | SuddenDeath,
 	NoFail | Perfect,
+	NoFail | Relax,
+	NoFail | Autopilot,
+	SuddenDeath | Relax,
+	SuddenDeath | Autopilot,
+	HalfTime | DoubleTime,
+	HalfTime | Nightcore,
 	Relax | Autopilot,
 	SpunOut | Autopilot,
 	Autoplay,
