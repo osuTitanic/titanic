@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/osuTitanic/titanic/services/deck/internal/scoring"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
@@ -36,15 +38,30 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 		return
 	}
 	for _, warning := range result.Warnings {
-		ctx.Logger.Warn("Score submission post-processing step failed", "error", warning)
+		ctx.Logger.Warn("Score submission warning", "error", warning)
+		// TODO: Officer logging call
 	}
+
+	// After writing the response, we want to do some additional steps
+	// like uploading the replay, broadcasting announcements, etc.
+	defer processor.PostProcess()
+
+	status := http.StatusOK
+	response := endpoint.FormatResponse(result.Submission)
 
 	if result.Rejected() {
 		ctx.Logger.Debug("Score submission rejected", "result", result.Type)
-		status, text := endpoint.FormatError(result.Type)
-		ctx.RenderText(status, text)
-		return
+		status, response = endpoint.FormatError(result.Type)
 	}
 
-	ctx.RenderText(http.StatusOK, endpoint.FormatResponse(result.Submission))
+	if err := writeSubmissionResponse(ctx, status, response); err != nil {
+		ctx.Logger.Warn("Failed to write score submission response", "error", err)
+	}
+}
+
+func writeSubmissionResponse(ctx *server.Context, status int, response string) error {
+	ctx.Response.Header().Set("Content-Length", strconv.Itoa(len(response)))
+	writeErr := ctx.RenderText(status, response)
+	flushErr := http.NewResponseController(ctx.Response).Flush()
+	return errors.Join(writeErr, flushErr)
 }

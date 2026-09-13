@@ -12,6 +12,7 @@ type Processor struct {
 	submission   *SubmissionContext
 	repositories *state.Repositories
 	warnings     []error
+	committed    bool
 }
 
 func (processor *Processor) AddWarning(format string, a ...any) {
@@ -26,6 +27,8 @@ func NewProcessor(ctx *server.Context, submission *SubmissionContext) *Processor
 	}
 }
 
+// Process runs all important score submission steps: prepare, validate, persist & finalize.
+// Call PostProcess (after writing the response) to run the remaining work.
 func (processor *Processor) Process(password string) (result Result, err error) {
 	result = Result{
 		Type:       ResultAccepted,
@@ -58,6 +61,7 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 	if err != nil {
 		return result, err
 	}
+	processor.committed = true
 	processor.finalize()
 
 	return result, nil

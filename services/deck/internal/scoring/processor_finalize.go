@@ -2,8 +2,6 @@ package scoring
 
 import (
 	"errors"
-	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -27,17 +25,11 @@ func (processor *Processor) finalize() {
 	run("synchronize rankings", processor.synchronizeRankings)
 	run("synchronize leader rankings", processor.synchronizeLeaderRankings)
 	run("update global rank", processor.updateGlobalRank)
-	run("update rank history", processor.updateRankHistory)
 	run("resolve beatmap rank", processor.resolveNewBeatmapRank)
 	run("unlock achievements", processor.unlockAchievements)
 	run("populate chart values", processor.setChartValuesAfter)
 	run("resolve next overall rank", processor.resolveNextRankOverall)
 	run("populate beatmap chart", processor.setBeatmapChartAfter)
-	run("upload replay", processor.uploadReplay)
-	run("bancho user update", processor.banchoUserUpdate)
-	run("broadcast rank highlight", processor.broadcastRankHighlight)
-	run("broadcast beatmap highlight", processor.broadcastBeatmapHighlight)
-	run("broadcast performance highlight", processor.broadcastPerformanceHighlight)
 }
 
 func (processor *Processor) synchronizeRankings() error {
@@ -66,18 +58,6 @@ func (processor *Processor) updateGlobalRank() error {
 
 	stats.Rank = rank
 	_, err = processor.repositories.Stats.Update(stats, "rank")
-	return err
-}
-
-func (processor *Processor) updateRankHistory() error {
-	if processor.context.State.Config.FrozenRankUpdates {
-		return nil
-	}
-	_, err := processor.repositories.Histories.UpdateRank(
-		processor.submission.CurrentStats,
-		processor.submission.User.Country,
-		processor.context.State.Rankings,
-	)
 	return err
 }
 
@@ -208,35 +188,4 @@ func (processor *Processor) setBeatmapChartAfter() error {
 	chart.ToNextRank = scoreAbove.TotalScore - processor.submission.TotalScore
 	chart.ToNextRankUser = scoreAbove.User.Name
 	return nil
-}
-
-func (processor *Processor) uploadReplay() error {
-	submission := processor.submission
-	if !submission.Passed || len(submission.Replay) == 0 || submission.Id <= 0 {
-		return nil
-	}
-	if submission.StatusPP <= constants.ScoreStatusExited {
-		return nil
-	}
-	if len(submission.Replay) > MaxReplaySize {
-		return fmt.Errorf("replay exceeds 10 MB")
-	}
-
-	// TODO: Use NewBeatmapRank to determine if replay should be uploaded
-	// TODO: Defer upload to go routine
-	// TODO: Cache replay
-
-	return processor.context.State.Storage.Save(
-		strconv.FormatInt(submission.Id, 10),
-		"replays",
-		submission.Replay,
-	)
-}
-
-func (processor *Processor) banchoUserUpdate() error {
-	return processor.context.State.BanchoEvents.UserUpdate(
-		processor.context.Request.Context(),
-		processor.submission.UserId,
-		processor.submission.Mode,
-	)
 }
