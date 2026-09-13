@@ -32,7 +32,6 @@
         var apiBaseurl = "{{ .Config.ApiBaseUrl() }}";
         var osuBaseurl = "{{ .Config.OsuBaseUrl() }}";
         var staticBaseurl = "{{ .Config.StaticBaseUrl() }}";
-        var approvedRewards = {{ .Config.ApprovedMapRewards }};
         var currentUser = {{ if .CurrentUser }}{{ .CurrentUser.Id }}{{ else }}null{{ end }};
         var currentUsername = "{{ if .CurrentUser }}{{ .CurrentUser.Name }}{{ end }}";
         var csrfToken = "{{ .CSRFToken }}";

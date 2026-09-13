@@ -139,7 +139,6 @@ func (processor *Processor) updateSubmissionStatistics(transaction *state.Reposi
 	bestScores, err := transaction.Scores.FetchBest(
 		submission.UserId,
 		submission.Mode,
-		!processor.context.State.Config.ApprovedMapRewards,
 	)
 	if err != nil {
 		return fmt.Errorf("load performance bests: %w", err)

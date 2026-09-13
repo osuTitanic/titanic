@@ -89,7 +89,6 @@ type Config struct {
 	BeatmapFavoritesLimit      int    `env:"BEATMAP_FAVOURITES_LIMIT" envDefault:"100"`
 	AllowRelax                 bool   `env:"ALLOW_RELAX" envDefault:"false"`
 	AllowUnauthenticatedDirect bool   `env:"ALLOW_UNAUTHENTICATED_DIRECT" envDefault:"true"`
-	ApprovedMapRewards         bool   `env:"APPROVED_MAP_REWARDS" envDefault:"false"`
 	BeatmapSubmissionEnabled   bool   `env:"BEATMAP_SUBMISSION_ENABLED" envDefault:"false"`
 	FrozenRankUpdates          bool   `env:"FROZEN_RANK_UPDATES" envDefault:"false"`
 	FrozenPPv1Updates          bool   `env:"FROZEN_PPV1_UPDATES" envDefault:"false"`

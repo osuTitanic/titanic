@@ -444,7 +444,6 @@ func buildActivityPage(ctx *server.Context, userId int, mode constants.Mode, off
 }
 
 func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, section string, offset int, isOwner bool) (*templates.UserScorePage, error) {
-	approvedRewards := ctx.State.Config.ApprovedMapRewards
 	preload := "Beatmap.Beatmapset"
 
 	// Show fewer scores on the initial page load, then load a
@@ -465,9 +464,9 @@ func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, sectio
 			total, err = ctx.State.Repositories.Scores.FetchPinnedCount(userId, mode)
 		}
 	case "best":
-		scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, !approvedRewards, pageSize+1, offset, preload)
+		scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, pageSize+1, offset, preload)
 		if err == nil {
-			total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode, !approvedRewards)
+			total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode)
 		}
 	case "first":
 		scores, err = ctx.State.Repositories.Scores.FetchLeaderScores(userId, mode, pageSize+1, offset, preload)
@@ -486,16 +485,15 @@ func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, sectio
 	}
 
 	return &templates.UserScorePage{
-		UserId:          userId,
-		Mode:            mode,
-		Section:         section,
-		Scores:          scores,
-		Offset:          offset,
-		NextOffset:      offset + pageSize,
-		HasMore:         hasMore,
-		Total:           total,
-		IsOwner:         isOwner,
-		ApprovedRewards: approvedRewards,
+		UserId:     userId,
+		Mode:       mode,
+		Section:    section,
+		Scores:     scores,
+		Offset:     offset,
+		NextOffset: offset + pageSize,
+		HasMore:    hasMore,
+		Total:      total,
+		IsOwner:    isOwner,
 	}, nil
 }
 

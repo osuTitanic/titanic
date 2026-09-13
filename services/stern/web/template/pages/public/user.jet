@@ -570,7 +570,7 @@
 {{ block userScoreList() }}
 {{ page := . }}
 {{ range index, score := page.Scores }}
-    {{ loved := !page.ApprovedRewards && score.Beatmap.Status > 2 }}
+    {{ loved := score.Beatmap.Status > 2 }}
     <div class="score" id="score-{{ page.Section }}-{{ page.Offset + index }}" onclick="return scoreClicked(event, {{ score.Id }})">
         <table>
             <tbody>

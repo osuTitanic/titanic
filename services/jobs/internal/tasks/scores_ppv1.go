@@ -185,7 +185,6 @@ func updatePPv1ForUser(app *state.State, logger *slog.Logger, user *schemas.User
 			bestScores, err := repositories.Scores.FetchBest(
 				user.Id,
 				stats.Mode,
-				!app.Config.ApprovedMapRewards,
 				"Beatmap",
 			)
 			if err != nil {

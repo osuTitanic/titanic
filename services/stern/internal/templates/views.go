@@ -177,16 +177,15 @@ type UserTopPlaysTab struct {
 }
 
 type UserScorePage struct {
-	UserId          int
-	Mode            constants.Mode
-	Section         string // "pinned" | "best" | "first"
-	Scores          []*schemas.Score
-	Offset          int
-	NextOffset      int
-	HasMore         bool
-	Total           int
-	IsOwner         bool
-	ApprovedRewards bool
+	UserId     int
+	Mode       constants.Mode
+	Section    string // "pinned" | "best" | "first"
+	Scores     []*schemas.Score
+	Offset     int
+	NextOffset int
+	HasMore    bool
+	Total      int
+	IsOwner    bool
 }
 
 func (p *UserScorePage) IsFirstPage() bool {

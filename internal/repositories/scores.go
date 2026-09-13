@@ -125,14 +125,14 @@ func (r *ScoreRepository) FetchWithZeroPP(preload ...string) ([]*schemas.Score, 
 	return scores, err
 }
 
-func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, excludeApproved bool, preload ...string) ([]*schemas.Score, error) {
+func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
 	// A negative limit cancels the limit clause entirely -> it will fetch every pb
-	return r.FetchBestRange(userId, mode, excludeApproved, -1, 0, preload...)
+	return r.FetchBestRange(userId, mode, -1, 0, preload...)
 }
 
-func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, excludeApproved bool, limit, offset int, preload ...string) ([]*schemas.Score, error) {
+func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
-	err := bestScoresQuery(userId, mode, excludeApproved, "status", Preloaded(r.db, preload)).
+	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), Preloaded(r.db, preload)).
 		Order("scores.pp DESC").
 		Offset(offset).
 		Limit(limit).
@@ -140,16 +140,30 @@ func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, exclud
 	return scores, err
 }
 
-func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode, excludeApproved bool) (int, error) {
+func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode) (int, error) {
 	var count int64
-	err := bestScoresQuery(userId, mode, excludeApproved, "status", r.db.Model(&schemas.Score{})).
+	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), r.db.Model(&schemas.Score{})).
 		Count(&count).Error
 	return int(count), err
 }
 
+func (r *ScoreRepository) FetchPPRecord(mode constants.Mode, preload ...string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := Preloaded(r.db, preload).
+		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
+		Where("beatmaps.status IN ?", ppBeatmapStatuses()).
+		Where("scores.mode = ?", mode).
+		Where("scores.status >= ?", constants.ScoreStatusBest).
+		Where("scores.hidden = ?", false).
+		Order("scores.pp DESC, scores.submitted_at ASC, scores.id ASC").
+		First(&score).
+		Error
+	return LookupResult(&score, err)
+}
+
 func (r *ScoreRepository) FetchBestByScore(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
-	err := bestScoresQuery(userId, mode, false, "status_score", Preloaded(r.db, preload)).
+	err := bestScoresQuery(userId, mode, "status_score", scoreBeatmapStatuses(), Preloaded(r.db, preload)).
 		Order("total_score DESC, submitted_at ASC, id ASC").
 		Find(&scores).Error
 	return scores, err
@@ -592,26 +606,30 @@ func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
 		Where("pinned = ?", true)
 }
 
-func bestScoresQuery(userId int, mode constants.Mode, excludeApproved bool, statusColumn string, query *gorm.DB) *gorm.DB {
-	allowedStatus := []constants.BeatmapStatus{
-		constants.BeatmapStatusRanked,
-		constants.BeatmapStatusApproved,
-	}
-
-	if !excludeApproved {
-		allowedStatus = append(allowedStatus,
-			constants.BeatmapStatusQualified,
-			constants.BeatmapStatusLoved,
-		)
-	}
-
+func bestScoresQuery(userId int, mode constants.Mode, statusColumn string, statuses []constants.BeatmapStatus, query *gorm.DB) *gorm.DB {
 	return query.
 		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
-		Where("beatmaps.status IN ?", allowedStatus).
+		Where("beatmaps.status IN ?", statuses).
 		Where("scores.user_id = ?", userId).
 		Where("scores.mode = ?", mode).
 		Where("scores."+statusColumn+" = ?", constants.ScoreStatusBest).
 		Where("scores.hidden = ?", false)
+}
+
+func ppBeatmapStatuses() []constants.BeatmapStatus {
+	return []constants.BeatmapStatus{
+		constants.BeatmapStatusRanked,
+		constants.BeatmapStatusApproved,
+	}
+}
+
+func scoreBeatmapStatuses() []constants.BeatmapStatus {
+	return []constants.BeatmapStatus{
+		constants.BeatmapStatusRanked,
+		constants.BeatmapStatusApproved,
+		constants.BeatmapStatusQualified,
+		constants.BeatmapStatusLoved,
+	}
 }
 
 func leaderboardQuery(filter BeatmapLeaderboardFilter, db *gorm.DB) (*gorm.DB, error) {
