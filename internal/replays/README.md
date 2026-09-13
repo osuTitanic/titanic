@@ -63,6 +63,12 @@ if frame.Buttons.Has(replays.Left1) {
 
 The returned seed is read from the replay's optional RNG seed frame & is `0` when no matching frame is present. The seed is used for the osu!mania random mod.
 
-## Planned Features
+### Touchscreen detection
 
-Touchscreen detection is one of the planned feature to add in here. The old deck implementation currently lives in [here](https://github.com/osuTitanic/deck/blob/main/app/helpers/replays.py#L97). This would then also include validation of replay payloads.
+Pass deserialized frames & a decision threshold to `DetectTouchscreenUsage`:
+
+```go
+detected, score := replays.DetectTouchscreenUsage(frames, 0.8)
+```
+
+The detector returns its score alongside the decision, based on if the provided threshold was met. For more detail on how this algorithm works, check [touchscreen.go](./touchscreen.go).
