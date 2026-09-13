@@ -1,12 +1,14 @@
 package scoring
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/clients"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/replays"
+	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
 type Validator func() (ResultType, error)
@@ -32,9 +34,9 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("validate client", processor.validateClient); wasRejected(result, err) {
 		return result, err
 	}
-
-	// TODO: Check for duplicate scores
-
+	if result, err := run("check duplicate score", processor.checkDuplicateScore); wasRejected(result, err) {
+		return result, err
+	}
 	if result, err := run("validate score", processor.validateScore); wasRejected(result, err) {
 		return result, err
 	}
@@ -50,7 +52,6 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("check pp limit", processor.checkPPLimit); wasRejected(result, err) {
 		return result, err
 	}
-
 	return ResultAccepted, nil
 }
 
@@ -295,6 +296,43 @@ func (processor *Processor) checkPPLimit() (ResultType, error) {
 		)
 	}
 	return ResultAccepted, nil
+}
+
+func (processor *Processor) checkDuplicateScore() (ResultType, error) {
+	submission := processor.submission
+	if !submission.Passed {
+		return ResultAccepted, nil
+	}
+	if submission.ReplayMd5 == nil || *submission.ReplayMd5 == "" {
+		return ResultAccepted, nil
+	}
+
+	duplicate, err := processor.repositories.Scores.ByReplayChecksum(*submission.ReplayMd5)
+	if err != nil {
+		return ResultAccepted, fmt.Errorf("find duplicate replay: %w", err)
+	}
+
+	result, warning := evaluateDuplicateScore(duplicate, submission.UserId)
+	if warning != "" {
+		processor.AddWarning("%s (checksum: %s)", warning, *submission.ReplayMd5)
+	}
+	return result, nil
+}
+
+func evaluateDuplicateScore(duplicate *schemas.Score, userId int) (ResultType, string) {
+	if duplicate == nil {
+		return ResultAccepted, ""
+	}
+	if duplicate.UserId == userId {
+		return ResultRejected, fmt.Sprintf(
+			"duplicate replay from same user: score %d",
+			duplicate.Id,
+		)
+	}
+	return ResultRejected, fmt.Sprintf(
+		"duplicate replay from another user: score %d, user %d",
+		duplicate.Id, duplicate.UserId,
+	)
 }
 
 func ppLimit(createdAt, now time.Time) float64 {
