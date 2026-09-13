@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type AchievementRepository struct {
@@ -15,6 +16,14 @@ func NewAchievementRepository(db *gorm.DB) *AchievementRepository {
 
 func (r *AchievementRepository) Create(achievement *schemas.Achievement) error {
 	return r.db.Create(achievement).Error
+}
+
+func (r *AchievementRepository) CreateIfMissing(achievement *schemas.Achievement) (bool, error) {
+	result := r.db.Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "user_id"}, {Name: "name"}},
+		DoNothing: true,
+	}).Create(achievement)
+	return result.RowsAffected > 0, result.Error
 }
 
 func (r *AchievementRepository) Delete(achievement *schemas.Achievement) error {
