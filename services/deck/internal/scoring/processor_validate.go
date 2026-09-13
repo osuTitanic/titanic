@@ -1,7 +1,6 @@
 package scoring
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -48,8 +47,9 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("calculate ppv1", processor.calculatePPv1); wasRejected(result, err) {
 		return result, err
 	}
-
-	// TODO: Check pp limit for user
+	if result, err := run("check pp limit", processor.checkPPLimit); wasRejected(result, err) {
+		return result, err
+	}
 
 	return ResultAccepted, nil
 }
@@ -266,20 +266,40 @@ func (processor *Processor) validateScore() (ResultType, error) {
 		return ResultRejected, nil
 	}
 
-	beatmap := score.Beatmap
-	if beatmap == nil {
-		// sanity check, should not really happen
-		return ResultAccepted, fmt.Errorf("validate score: beatmap is missing")
-	}
-	if beatmap.Mode != constants.ModeOsu && score.Mode == constants.ModeOsu {
+	// Check converts from "minigames" ;) to standard
+	if score.Beatmap.Mode != constants.ModeOsu && score.Mode == constants.ModeOsu {
 		processor.AddWarning(
 			"invalid mode conversion: %s score on %s beatmap",
-			score.Mode, beatmap.Mode,
+			score.Mode, score.Beatmap.Mode,
 		)
 		return ResultRejected, nil
 	}
-
 	return ResultAccepted, nil
+}
+
+func (processor *Processor) checkPPLimit() (ResultType, error) {
+	score := processor.submission.Score
+	if !score.Beatmap.AwardsPP() {
+		return ResultAccepted, nil
+	}
+
+	// PP limit will scale up based on account age
+	limit := ppLimit(
+		score.User.CreatedAt,
+		time.Now(),
+	)
+	if score.PP >= limit {
+		processor.AddWarning(
+			"pp limit exceeded: got %.2f pp, limit %.2f pp",
+			score.PP, limit,
+		)
+	}
+	return ResultAccepted, nil
+}
+
+func ppLimit(createdAt, now time.Time) float64 {
+	accountAgeSeconds := now.Sub(createdAt).Seconds()
+	return min(1500.0, max(750.0, accountAgeSeconds/8))
 }
 
 func wasRejected(result ResultType, err error) bool {
