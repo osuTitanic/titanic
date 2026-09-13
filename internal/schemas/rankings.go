@@ -197,6 +197,83 @@ func (score *Score) Accuracy() float64 {
 	}
 }
 
+// ComputeGrade evaluates the score's grade.
+func (score *Score) ComputeGrade() constants.Grade {
+	if !score.Passed() {
+		return constants.GradeF
+	}
+
+	silverMods := constants.Hidden | constants.Flashlight
+	if score.Mode == constants.ModeMania {
+		silverMods |= constants.FadeIn
+	}
+
+	xGrade, sGrade := constants.GradeX, constants.GradeS
+	if score.Mods.Has(silverMods) {
+		xGrade, sGrade = constants.GradeXH, constants.GradeSH
+	}
+
+	switch score.Mode {
+	case constants.ModeOsu, constants.ModeTaiko:
+		totalObjects := score.TotalObjects()
+		if totalObjects == 0 {
+			return constants.GradeD
+		}
+
+		ratio300 := float64(score.Count300) / float64(totalObjects)
+		ratio50 := float64(score.Count50) / float64(totalObjects)
+		switch {
+		case ratio300 == 1:
+			return xGrade
+		case ratio300 > 0.9 && ratio50 <= 0.01 && score.CountMiss == 0:
+			return sGrade
+		case (ratio300 > 0.8 && score.CountMiss == 0) || ratio300 > 0.9:
+			return constants.GradeA
+		case (ratio300 > 0.7 && score.CountMiss == 0) || ratio300 > 0.8:
+			return constants.GradeB
+		case ratio300 > 0.6:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+
+	case constants.ModeCatch:
+		accuracy := score.Accuracy()
+		switch {
+		case accuracy == 1:
+			return xGrade
+		case accuracy > 0.98:
+			return sGrade
+		case accuracy > 0.94:
+			return constants.GradeA
+		case accuracy > 0.9:
+			return constants.GradeB
+		case accuracy > 0.85:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+
+	case constants.ModeMania:
+		accuracy := score.Accuracy()
+		switch {
+		case accuracy == 1:
+			return xGrade
+		case accuracy > 0.95:
+			return sGrade
+		case accuracy > 0.9:
+			return constants.GradeA
+		case accuracy > 0.8:
+			return constants.GradeB
+		case accuracy > 0.7:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+	}
+	return constants.GradeN
+}
+
 type RankHistory struct {
 	UserId      int            `gorm:"column:user_id;primaryKey"`
 	Time        time.Time      `gorm:"column:time;primaryKey;autoCreateTime"`

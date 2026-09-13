@@ -126,7 +126,7 @@ func ResolveSubmissionContext(ctx *server.Context, endpoint Endpoint) (*Submissi
 	}
 
 	submission.Acc = submission.Accuracy()
-	// TODO: Grade calc
+	submission.Grade = submission.ComputeGrade()
 	return submission, nil
 }
 
