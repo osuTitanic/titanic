@@ -38,6 +38,14 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 	processor.submission.User = user
 	processor.submission.UserId = user.Id
 
+	permissions, err := processor.context.State.Permissions.Resolve(user.Id)
+	if err != nil {
+		return ResultAccepted, err
+	}
+	processor.submission.CanSubmitScores = permissions.Has("scores.submit")
+	processor.submission.CanBypassScoreValidation = permissions.Has("scores.validation.bypass")
+	processor.submission.CanBypassClientValidation = permissions.Has("clients.validation.bypass")
+
 	// TODO: Check scores.submit permission
 	// TODO: Load bancho user presence from redis
 	// TODO: Validate the submitted process list

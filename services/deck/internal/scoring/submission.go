@@ -132,6 +132,10 @@ type SubmissionContext struct {
 
 	Charts       *SubmissionCharts
 	Achievements []*schemas.Achievement
+
+	CanSubmitScores           bool
+	CanBypassClientValidation bool
+	CanBypassScoreValidation  bool
 }
 
 func NewSubmissionContext(endpoint Endpoint, score *schemas.Score) *SubmissionContext {
