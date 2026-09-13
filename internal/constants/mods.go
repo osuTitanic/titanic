@@ -148,9 +148,31 @@ const allMods = NoFail | Easy | NoVideo | Hidden | HardRock | SuddenDeath |
 	FadeIn | Random | Cinema | Target | Key9 | KeyCoop | Key1 | Key3 |
 	Key2 | ScoreV2 | Mirror
 
-// Valid returns true if the given mod flag is a valid mod combination.
+var invalidModCombinations = []Mods{
+	Easy | HardRock,
+	HalfTime | DoubleTime,
+	HalfTime | Nightcore,
+	NoFail | SuddenDeath,
+	NoFail | Perfect,
+	Relax | Autopilot,
+	SpunOut | Autopilot,
+	Autoplay,
+	// There is prooooobably some more
+}
+
+// Valid returns true if mods contains only known flags.
 func (m Mods) Valid() bool {
 	return m&^allMods == 0
+}
+
+// ValidCombination returns true for mods with a valid combination (duh)
+func (m Mods) ValidCombination() bool {
+	for _, combination := range invalidModCombinations {
+		if m&combination == combination {
+			return false
+		}
+	}
+	return true
 }
 
 // Has returns true if the given mod flag is enabled in mods.

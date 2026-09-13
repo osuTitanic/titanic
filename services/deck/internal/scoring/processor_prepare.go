@@ -86,6 +86,5 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 		"%s/b/%d",
 		baseUrl, beatmap.Id,
 	)
-
 	return ResultAccepted, nil
 }
