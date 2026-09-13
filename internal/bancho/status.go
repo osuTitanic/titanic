@@ -19,6 +19,7 @@ type Status struct {
 	BeatmapId       int                    `redis:"beatmap_id"`
 	ClientHash      string                 `redis:"hash"`
 	ClientVersion   int                    `redis:"version"`
+	ClientString    string                 `redis:"version_string"`
 }
 
 var requiredStatusFields = [...]string{
@@ -30,6 +31,7 @@ var requiredStatusFields = [...]string{
 	"beatmap_id",
 	"hash",
 	"version",
+	"version_string",
 }
 
 type StatusStore struct {
