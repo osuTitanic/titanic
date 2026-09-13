@@ -142,11 +142,12 @@ var modsOrder = []Mods{
 	Mirror,
 }
 
-const allMods = NoFail | Easy | NoVideo | Hidden | HardRock | SuddenDeath |
-	DoubleTime | Relax | HalfTime | Nightcore | Flashlight | Autoplay |
-	SpunOut | Autopilot | Perfect | Key4 | Key5 | Key6 | Key7 | Key8 |
-	FadeIn | Random | Cinema | Target | Key9 | KeyCoop | Key1 | Key3 |
-	Key2 | ScoreV2 | Mirror
+const ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+const KeyMod = Key1 | Key2 | Key3 | Key4 | Key5 | Key6 | Key7 | Key8 | Key9 | KeyCoop
+
+// FreeModAllowed represents all mods that can be used with freemod in multiplayer lobbies
+const FreeModAllowed = NoFail | Easy | Hidden | HardRock | SuddenDeath | Flashlight |
+	FadeIn | Relax | Autopilot | SpunOut | KeyMod
 
 var invalidModCombinations = []Mods{
 	Easy | HardRock,
@@ -157,12 +158,30 @@ var invalidModCombinations = []Mods{
 	Relax | Autopilot,
 	SpunOut | Autopilot,
 	Autoplay,
-	// There is prooooobably some more
+}
+
+const allMods = NoFail | Easy | NoVideo | Hidden | HardRock | SuddenDeath |
+	DoubleTime | Relax | HalfTime | Nightcore | Flashlight | Autoplay |
+	SpunOut | Autopilot | Perfect | Key4 | Key5 | Key6 | Key7 | Key8 |
+	FadeIn | Random | Cinema | Target | Key9 | KeyCoop | Key1 | Key3 |
+	Key2 | ScoreV2 | Mirror
+
+const unrankedMods = Autoplay | Cinema | Target | ScoreV2 | Random |
+	KeyCoop | Key1 | Key2 | Key3
+
+// Has returns true if the given mod flag is enabled in mods.
+func (m Mods) Has(flag Mods) bool {
+	return m&flag != 0
 }
 
 // Valid returns true if mods contains only known flags.
 func (m Mods) Valid() bool {
 	return m&^allMods == 0
+}
+
+// Unranked returns whether the mod combination should be allowed for score submission.
+func (m Mods) Unranked() bool {
+	return m&unrankedMods != 0
 }
 
 // ValidCombination returns true for mods with a valid combination (duh)
@@ -173,11 +192,6 @@ func (m Mods) ValidCombination() bool {
 		}
 	}
 	return true
-}
-
-// Has returns true if the given mod flag is enabled in mods.
-func (m Mods) Has(flag Mods) bool {
-	return m&flag != 0
 }
 
 // Normalize returns mods with stable quirks removed.
