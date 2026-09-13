@@ -31,6 +31,9 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 		Type:       ResultAccepted,
 		Submission: processor.submission,
 	}
+	defer func() {
+		result.Warnings = processor.warnings
+	}()
 
 	result.Type, err = processor.prepare(password)
 	if err != nil {
@@ -57,6 +60,5 @@ func (processor *Processor) Process(password string) (result Result, err error) 
 	}
 	processor.finalize()
 
-	result.Warnings = processor.warnings
 	return result, nil
 }
