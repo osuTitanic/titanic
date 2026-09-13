@@ -65,6 +65,9 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 	processor.submission.Beatmap = beatmap
 	processor.submission.BeatmapId = beatmap.Id
 
+	// Normalize the mods to remove osu! stable quirks e.g. DTNC / SDPF
+	processor.submission.Mods = processor.submission.Mods.Normalize()
+
 	// Populate charts for the modular submission response
 	charts := processor.submission.Charts
 
@@ -83,5 +86,6 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 		"%s/b/%d",
 		baseUrl, beatmap.Id,
 	)
+
 	return ResultAccepted, nil
 }

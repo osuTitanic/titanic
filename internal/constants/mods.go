@@ -158,6 +158,18 @@ func (m Mods) Has(flag Mods) bool {
 	return m&flag != 0
 }
 
+// Normalize returns mods with stable quirks removed.
+// https://github.com/ppy/osu-api/wiki#mods
+func (m Mods) Normalize() Mods {
+	if m.Has(Nightcore) && m.Has(DoubleTime) {
+		m &^= DoubleTime
+	}
+	if m.Has(Perfect) && m.Has(SuddenDeath) {
+		m &^= SuddenDeath
+	}
+	return m
+}
+
 // String returns the concatenated short representation of the enabled mods, in
 // bit order, e.g. "HDDT". Returns "NM" when no mods are set.
 func (m Mods) String() string {

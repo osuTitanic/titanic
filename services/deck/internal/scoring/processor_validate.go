@@ -11,7 +11,7 @@ func (processor *Processor) validate() (ResultType, error) {
 		return ResultRejected, nil
 	}
 
-	// TODO: Normalize score values & mod combinations
+	// TODO: Normalize score values
 	// TODO: Validate hit counts, total score, combo & mode
 	// TODO: Reject non-whitelisted builds, unranked mods, invalid mods, etc.
 	// TODO: Check for duplicate scores
