@@ -7,6 +7,10 @@ import (
 )
 
 func (processor *Processor) validate() (ResultType, error) {
+	if !processor.submission.CanSubmitScores {
+		return ResultRejected, nil
+	}
+
 	// TODO: Normalize score values & mod combinations
 	// TODO: Validate hit counts, total score, combo & mode
 	// TODO: Reject non-whitelisted builds, unranked mods, invalid mods, etc.
