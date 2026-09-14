@@ -31,6 +31,9 @@ type User struct {
 	AvatarHash       *string               `gorm:"column:avatar_hash"`
 	AvatarLastUpdate time.Time             `gorm:"column:avatar_last_changed;autoCreateTime"`
 	FriendOnlyDMs    bool                  `gorm:"column:friendonly_dms;default:false"`
+	Kudosu           int                   `gorm:"column:kudosu;default:0"`
+	KudosuEarned     int                   `gorm:"column:kudosu_earned;default:0"`
+	KudosuSpent      int                   `gorm:"column:kudosu_spent;default:0"`
 
 	Userpage  *string `gorm:"column:userpage_about"`
 	Signature *string `gorm:"column:userpage_signature"`
