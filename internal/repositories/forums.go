@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -68,6 +69,7 @@ func (r *ForumRepository) FetchTopicCount(forumId int) (int, error) {
 	err := r.db.Model(&schemas.ForumTopic{}).
 		Where("forum_id = ?", forumId).
 		Where("hidden = ?", false).
+		Where("announcement = ?", false).
 		Count(&count).Error
 	return int(count), err
 }
@@ -127,6 +129,27 @@ func (r *ForumTopicRepository) FetchRecentByLastPost(forumId int, limit int, off
 		Where("forum_id = ?", forumId).
 		Where("hidden = ?", false).
 		Order("last_post_at DESC").
+		Offset(offset).
+		Limit(limit).
+		Find(&topics).Error
+	return topics, err
+}
+
+func (r *ForumTopicRepository) FetchListing(forumId int, limit int, offset int, useStarPriority bool, preload ...string) ([]*schemas.ForumTopic, error) {
+	var topics []*schemas.ForumTopic
+	query := Preloaded(r.db, preload).
+		Where("forum_id = ?", forumId).
+		Where("hidden = ?", false).
+		Where("announcement = ?", false).
+		Order("pinned DESC")
+	if useStarPriority {
+		query = query.
+			Order(fmt.Sprintf("COALESCE(icon = %d, false) DESC", constants.ForumIconBubble)).
+			Order("star_priority DESC")
+	}
+	err := query.
+		Order("last_post_at DESC").
+		Order("id DESC").
 		Offset(offset).
 		Limit(limit).
 		Find(&topics).Error
