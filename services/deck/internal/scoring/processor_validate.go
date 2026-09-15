@@ -52,6 +52,9 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("check pp limit", processor.checkPPLimit); wasRejected(result, err) {
 		return result, err
 	}
+	if result, err := run("normalize relax score", processor.normalizeRelaxScore); wasRejected(result, err) {
+		return result, err
+	}
 	return ResultAccepted, nil
 }
 
@@ -317,6 +320,20 @@ func (processor *Processor) checkDuplicateScore() (ResultType, error) {
 		processor.AddWarning("%s (checksum: %s)", warning, *submission.ReplayMd5)
 	}
 	return result, nil
+}
+
+func (processor *Processor) normalizeRelaxScore() (ResultType, error) {
+	submission := processor.submission
+	if !submission.Relaxing() {
+		return ResultAccepted, nil
+	}
+
+	totalScore, err := EstimateTotalScore(submission.Score)
+	if err != nil {
+		return ResultAccepted, err
+	}
+	submission.TotalScore = totalScore
+	return ResultAccepted, nil
 }
 
 func evaluateDuplicateScore(duplicate *schemas.Score, userId int) (ResultType, string) {

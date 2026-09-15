@@ -68,8 +68,6 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 	// Normalize the mods to remove osu! stable quirks e.g. DTNC / SDPF
 	processor.submission.Mods = processor.submission.Mods.Normalize()
 
-	// TODO: Normalize / recalculate relax score
-
 	// Populate charts for the modular submission response
 	charts := processor.submission.Charts
 
