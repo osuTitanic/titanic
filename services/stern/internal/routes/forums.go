@@ -216,6 +216,7 @@ func forumSupportsStarPriority(forumId int) bool {
 	switch forumId {
 	case constants.ForumBeatmapsPending,
 		constants.ForumBeatmapsWIP,
+		constants.ForumBeatmapsRequests,
 		constants.ForumBeatmapsGraveyard:
 		return true
 	default:

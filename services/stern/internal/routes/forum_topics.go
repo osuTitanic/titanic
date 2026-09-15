@@ -444,13 +444,23 @@ func fetchKudosuForPosts(postIds []int, linkedBeatmapset *schemas.Beatmapset, ct
 }
 
 func canReceiveKudosuStars(set *schemas.Beatmapset, topic *schemas.ForumTopic) bool {
-	if set == nil || topic.Hidden {
+	if set == nil || topic == nil || topic.Hidden {
 		return false
 	}
 	if set.TopicId == nil || *set.TopicId != topic.Id {
 		return false
 	}
-	return set.Status == constants.BeatmapStatusPending || set.Status == constants.BeatmapStatusWIP
+
+	switch topic.ForumId {
+	case constants.ForumBeatmapsPending:
+		return set.Status == constants.BeatmapStatusPending
+	case constants.ForumBeatmapsWIP:
+		return set.Status == constants.BeatmapStatusWIP
+	case constants.ForumBeatmapsRequests:
+		return true
+	default:
+		return false
+	}
 }
 
 func resolveBeatmapStarShooters(stars []*schemas.BeatmapsetStar) []*templates.BeatmapStarShooter {
