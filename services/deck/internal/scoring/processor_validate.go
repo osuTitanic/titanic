@@ -55,6 +55,7 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("normalize relax score", processor.normalizeRelaxScore); wasRejected(result, err) {
 		return result, err
 	}
+	// TODO: Add checks for client-side score integrity flags
 	return ResultAccepted, nil
 }
 
