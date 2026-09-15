@@ -415,7 +415,6 @@ type ForumTopicView struct {
 	Posts           []*ForumPostPreview
 	Pagination      PaginationView
 	ActiveUsers     []*ForumActiveUser
-	Beatmapset      *schemas.Beatmapset
 	PostCount       int
 	IsSubscribed    bool
 	IsBookmarked    bool
@@ -424,6 +423,11 @@ type ForumTopicView struct {
 	ReplyLocked     bool
 	MetaDescription string
 	MetaImage       string
+
+	Beatmapset            *schemas.Beatmapset
+	BeatmapStarShooters   []*BeatmapStarShooter
+	ShowKudosuStarBalance bool
+	CanSpendKudosuStar    bool
 }
 
 func (v ForumTopicView) TopicLocked() bool {
@@ -432,6 +436,11 @@ func (v ForumTopicView) TopicLocked() bool {
 
 func (v ForumTopicView) HasBeatmapset() bool {
 	return v.Beatmapset != nil
+}
+
+type BeatmapStarShooter struct {
+	User  *schemas.User
+	Count int
 }
 
 type ForumSearchView struct {

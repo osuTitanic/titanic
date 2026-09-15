@@ -113,15 +113,33 @@ func ForumTopicView(ctx *server.Context) {
 		linkedBeatmapset = nil
 	}
 
+	beatmapStarShooters := []*templates.BeatmapStarShooter{}
+	if linkedBeatmapset != nil {
+		stars, err := ctx.State.BeatmapsetStars.BySetId(
+			linkedBeatmapset.Id,
+			"User", "User.Groups.Group",
+		)
+		if err != nil {
+			ctx.Logger.Error("Failed to fetch beatmapset stars", "error", err, "beatmapset", linkedBeatmapset.Id)
+			InternalServerError(ctx)
+			return
+		}
+		beatmapStarShooters = resolveBeatmapStarShooters(stars)
+	}
+
+	authenticated := ctx.CurrentUser != nil
+	canReceiveStars := canReceiveKudosuStars(linkedBeatmapset, topic)
+	showKudosuStarBalance := authenticated && canReceiveStars
+	canSpendKudosuStar := showKudosuStarBalance && ctx.CurrentUser.Kudosu >= 1
+
 	isSubscribed := false
 	isBookmarked := false
-	if ctx.CurrentUser != nil {
+	if authenticated {
 		isSubscribed, _ = ctx.State.ForumSubscribers.Exists(topic.Id, ctx.CurrentUser.Id)
 		isBookmarked, _ = ctx.State.ForumBookmarks.Exists(topic.Id, ctx.CurrentUser.Id)
 	}
 
 	// Resolve the permissions that gate the topic & post actions
-	authenticated := ctx.CurrentUser != nil
 	canCreatePosts := authenticated && ctx.HasPermission("forum.posts.create")
 	canEditOwn := authenticated && ctx.HasPermission("forum.posts.edit")
 	canDeleteOwn := authenticated && ctx.HasPermission("forum.posts.delete")
@@ -192,22 +210,25 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	view := templates.ForumTopicView{
-		DefaultView:     buildDefaultViewWithPermissions(ctx),
-		Forum:           topic.Forum,
-		ForumJump:       buildForumJumpView(ctx, topic.ForumId),
-		Topic:           topic,
-		Parents:         fetchForumParents(ctx, topic.Forum),
-		Posts:           previews,
-		ActiveUsers:     fetchActiveForumUsers(ctx, topic.ForumId),
-		Beatmapset:      linkedBeatmapset,
-		PostCount:       postCount,
-		IsSubscribed:    isSubscribed,
-		IsBookmarked:    isBookmarked,
-		CanCreatePosts:  canCreatePosts,
-		CanReply:        canCreatePosts && (!topicLocked || canBypassTopicLock),
-		ReplyLocked:     topicLocked && !canBypassTopicLock,
-		MetaDescription: strings.SplitN(initialPost.Content, "\n", 2)[0],
-		MetaImage:       metaImage,
+		DefaultView:           buildDefaultViewWithPermissions(ctx),
+		Forum:                 topic.Forum,
+		ForumJump:             buildForumJumpView(ctx, topic.ForumId),
+		Topic:                 topic,
+		Posts:                 previews,
+		Parents:               fetchForumParents(ctx, topic.Forum),
+		ActiveUsers:           fetchActiveForumUsers(ctx, topic.ForumId),
+		Beatmapset:            linkedBeatmapset,
+		BeatmapStarShooters:   beatmapStarShooters,
+		ShowKudosuStarBalance: showKudosuStarBalance,
+		CanSpendKudosuStar:    canSpendKudosuStar,
+		PostCount:             postCount,
+		IsSubscribed:          isSubscribed,
+		IsBookmarked:          isBookmarked,
+		CanCreatePosts:        canCreatePosts,
+		CanReply:              canCreatePosts && (!topicLocked || canBypassTopicLock),
+		ReplyLocked:           topicLocked && !canBypassTopicLock,
+		MetaDescription:       strings.SplitN(initialPost.Content, "\n", 2)[0],
+		MetaImage:             metaImage,
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id),
 			Query:       ctx.Request.URL.Query(),
@@ -420,6 +441,38 @@ func fetchKudosuForPosts(postIds []int, linkedBeatmapset *schemas.Beatmapset, ct
 	}
 
 	return kudosuTotals, latestKudosu
+}
+
+func canReceiveKudosuStars(set *schemas.Beatmapset, topic *schemas.ForumTopic) bool {
+	if set == nil || topic.Hidden {
+		return false
+	}
+	if set.TopicId == nil || *set.TopicId != topic.Id {
+		return false
+	}
+	return set.Status == constants.BeatmapStatusPending || set.Status == constants.BeatmapStatusWIP
+}
+
+func resolveBeatmapStarShooters(stars []*schemas.BeatmapsetStar) []*templates.BeatmapStarShooter {
+	// this sounds really wrong ...
+	shooters := make([]*templates.BeatmapStarShooter, 0)
+	byUserId := make(map[int]*templates.BeatmapStarShooter)
+
+	for _, star := range stars {
+		if star.User == nil {
+			continue
+		}
+
+		shooter, exists := byUserId[star.UserId]
+		if !exists {
+			shooter = &templates.BeatmapStarShooter{User: star.User}
+			byUserId[star.UserId] = shooter
+			shooters = append(shooters, shooter)
+		}
+		shooter.Count++
+	}
+
+	return shooters
 }
 
 func resolveSubmittedIcon(ctx *server.Context, canEdit bool) *constants.ForumIcon {

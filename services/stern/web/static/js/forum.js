@@ -171,6 +171,36 @@ function resetKudos(postId, beatmapsetId) {
     return false;
 }
 
+var kudosuStarRequests = {}; // for blocking multiple requests
+
+function spendKudosuStar(beatmapsetId) {
+    if (kudosuStarRequests[beatmapsetId]) {
+        return false;
+    }
+    if (!confirm("You are about to shoot a kudosu star at this map.\nAre you sure you want to do this?")) {
+        return false;
+    }
+
+    var actions = $(".kudosu-star-action-" + beatmapsetId);
+    kudosuStarRequests[beatmapsetId] = true;
+    actions.addClass("kudosu-star-action-disabled");
+
+    performApiRequest(
+        "POST",
+        "/beatmapsets/" + beatmapsetId + "/kudosu/spend",
+        null,
+        function (xhr) {
+            window.location.reload();
+        },
+        function (xhr) {
+            kudosuStarRequests[beatmapsetId] = false;
+            actions.removeClass("kudosu-star-action-disabled");
+            apiErrorAlert(xhr, "Failed to shoot a kudosu star.");
+        }
+    );
+    return false;
+}
+
 function jumpToPage() {
     var page = prompt("Enter the page to jump to:");
 
