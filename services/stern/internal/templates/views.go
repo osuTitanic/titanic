@@ -325,33 +325,48 @@ type ForumSubforum struct {
 
 type ForumView struct {
 	DefaultView
-	Forum          *schemas.Forum
-	ForumJump      ForumJumpView
-	Parents        []*schemas.Forum
-	Subforums      []*schemas.Forum
-	SubforumRecent map[int]*schemas.ForumPost
-	Announcements  []*ForumTopicPreview
-	Topics         []*ForumTopicPreview
-	ActiveUsers    []*ForumActiveUser
-	HasCustomIcons bool
-	TopicCount     int
-	CanCreateTopic bool
-	Pagination     PaginationView
+	Forum                 *schemas.Forum
+	ForumJump             ForumJumpView
+	Parents               []*schemas.Forum
+	Subforums             []*schemas.Forum
+	SubforumRecent        map[int]*schemas.ForumPost
+	Announcements         []*ForumTopicPreview
+	Topics                []*ForumTopicPreview
+	ActiveUsers           []*ForumActiveUser
+	HasCustomIcons        bool
+	TopicCount            int
+	CanCreateTopic        bool
+	Pagination            PaginationView
+	SupportsStarPriority  bool
+	UsesStarPriority      bool
+	StarPriorityToggleUrl string
 }
 
 func (v ForumView) HasTopics() bool {
 	return len(v.Announcements) > 0 || len(v.Topics) > 0
 }
 
+func (v ForumView) TopicColumnCount() int {
+	columns := 5
+	if v.HasCustomIcons {
+		columns++
+	}
+	if v.SupportsStarPriority {
+		columns++
+	}
+	return columns
+}
+
 type ForumTopicPreview struct {
-	Topic          *schemas.ForumTopic
-	PreviewPost    *schemas.ForumPost
-	StatusIcon     string
-	PageCount      int
-	Index          int
-	HasCustomIcons bool
-	CurrentUserId  int
-	ShowForum      bool
+	Topic            *schemas.ForumTopic
+	PreviewPost      *schemas.ForumPost
+	StatusIcon       string
+	PageCount        int
+	Index            int
+	HasCustomIcons   bool
+	CurrentUserId    int
+	ShowForum        bool
+	ShowStarPriority bool
 }
 
 func (p ForumTopicPreview) PreviewTruncated() bool {

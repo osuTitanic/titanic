@@ -36,6 +36,13 @@
 {{ end }}
 
 {{ block forumHeader() }}
+{{ if .SupportsStarPriority }}
+<div class="forum-priority-options">
+    <b>Priority Options:</b>
+    <input onclick="window.location.href='{{ .StarPriorityToggleUrl }}'" type="checkbox" name="ignore_sp" id="ignore-sp"
+        {{ if !.UsesStarPriority }}checked{{ end }}><label for="ignore-sp"> Ignore Star Priority</label>
+</div>
+{{ end }}
 <table width="100%">
     <tbody>
     {{ if .CanCreateTopic && len(.Topics) > 12 }}
@@ -95,7 +102,9 @@
     <table width="100%" class="topics-table">
         <thead>
             <tr>
-                {{ if .HasCustomIcons }}
+                {{ if .SupportsStarPriority && .HasCustomIcons }}
+                <th colspan="4">Topics</th>
+                {{ else if .SupportsStarPriority || .HasCustomIcons }}
                 <th colspan="3">Topics</th>
                 {{ else }}
                 <th colspan="2">Topics</th>
@@ -108,7 +117,7 @@
         <tbody>
             {{ if len(.Announcements) > 0 }}
             <tr class="table-header">
-                <td colspan=4 class="topic-header">Announcements</td>
+                <td colspan="{{ .TopicColumnCount() }}" class="topic-header">Announcements</td>
             </tr>
             {{ range _, preview := .Announcements }}
                 {{ yield forumTopicRow() preview }}
@@ -116,7 +125,7 @@
             {{ end }}
             {{ if len(.Topics) > 0 }}
             <tr class="table-header">
-                <td colspan=4 class="topic-header">Topics</td>
+                <td colspan="{{ .TopicColumnCount() }}" class="topic-header">Topics</td>
             </tr>
             {{ range _, preview := .Topics }}
                 {{ yield forumTopicRow() preview }}
@@ -145,6 +154,14 @@
     <td align="center" width="4%">
         {{ if topic.Icon }}
         <img src="{{ topic.Icon.Location }}" alt="{{ topic.Icon.Name }}" width="20">
+        {{ end }}
+    </td>
+    {{ end }}
+
+    {{ if .ShowStarPriority }}
+    <td class="topic-star-priority" align="center">
+        {{ if topic.StarPriority > 0 }}
+        <span class="topic-star-priority-icon" title="Star Priority">{{ topic.StarPriority }}</span>
         {{ end }}
     </td>
     {{ end }}
