@@ -51,7 +51,7 @@ func (processor *Processor) prepare(password string) (ResultType, error) {
 		processor.submission.BeatmapChecksum, "Beatmapset",
 	)
 	if err != nil {
-		return ResultAccepted, nil
+		return ResultAccepted, err
 	}
 	if beatmap == nil {
 		return ResultBeatmapUnavailable, nil
