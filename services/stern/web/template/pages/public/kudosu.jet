@@ -33,6 +33,7 @@
             <th>Rank</th>
             <th>User</th>
             <th>Earned</th>
+            <th>Available</th>
             <th>Spent</th>
         </tr>
     </thead>
@@ -64,9 +65,13 @@
             <td>
                 {{ entry.Kudosu | formatNumber }}
             </td>
+            {* Available *}
+            <td>
+                {{ entry.User.Kudosu | formatNumber }}
+            </td>
             {* Spent *}
             <td>
-                N/A
+                {{ entry.User.KudosuSpent | formatNumber }}
             </td>
         </tr>
     {{ end }}
