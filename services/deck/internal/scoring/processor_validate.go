@@ -271,6 +271,18 @@ func (processor *Processor) validateScore() (ResultType, error) {
 		return ResultRejected, nil
 	}
 
+	if score.ClientVersion <= 504 && score.Mode == constants.ModeCatch {
+		// b504 and below let players change the catcher size through their skin,
+		// giving an unfair advantage when using a very wide catcher
+		processor.AddWarning("unsupported catch submission: %s (%d)", score.ClientString, score.ClientVersion)
+		return ResultRejected, nil
+	}
+	if score.ClientVersion < 452 && score.Mods.Has(constants.Nightcore) {
+		// Prevent "Taiko" mod (later used as Nightcore) scores from being submitted
+		processor.AddWarning("unsupported nightcore / taiko submission: %s (%d)", score.ClientString, score.ClientVersion)
+		return ResultRejected, nil
+	}
+
 	// Check converts from "minigames" ;) to standard
 	if score.Beatmap.Mode != constants.ModeOsu && score.Mode == constants.ModeOsu {
 		processor.AddWarning(
