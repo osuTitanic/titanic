@@ -33,6 +33,7 @@ func (ctx *Context) AuthenticateUser(
 	if !authentication.VerifyPasswordHashFromMd5(password, user.Bcrypt) {
 		return nil, ErrInvalidPassword
 	}
+	// TODO: Update user activity timestamp
 
 	if !requireBanchoPresence {
 		return user, nil
