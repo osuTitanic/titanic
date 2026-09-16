@@ -213,7 +213,7 @@ type UserKudosuTab struct {
 
 type UserKudosuEntry struct {
 	Time        time.Time
-	Status      string // "received" | "gave" | "revoked"
+	Status      string // "received" | "gave" | "revoked" | "denied"
 	Preposition string // "from" | "to"
 	Amount      int
 	ActorId     int
@@ -480,6 +480,7 @@ type ForumPostPreview struct {
 	BeatmapsetId    int
 	ShowKudosuBox   bool
 	CanManageKudosu bool
+	CanRewardKudosu bool
 	CanResetKudosu  bool
 	CanRevokeKudosu bool
 	KudosuTotal     int
@@ -502,6 +503,10 @@ func (p ForumPostPreview) HasKudosuExcludedIcon() bool {
 
 func (p ForumPostPreview) KudosuStatusColor() string {
 	switch {
+	case p.IsKudosuExempt():
+		return "black"
+	case p.LatestKudosu != nil && p.LatestKudosu.Amount <= 0:
+		return "red"
 	case p.KudosuTotal > 0:
 		return "green"
 	case p.KudosuTotal == 0:
@@ -511,11 +516,12 @@ func (p ForumPostPreview) KudosuStatusColor() string {
 	}
 }
 
-func (p ForumPostPreview) AbsoluteKudosuTotal() int {
-	if p.KudosuTotal < 0 {
-		return -p.KudosuTotal
-	}
-	return p.KudosuTotal
+func (p ForumPostPreview) IsKudosuExempt() bool {
+	return p.LatestKudosu != nil && p.LatestKudosu.Amount == -2
+}
+
+func (p ForumPostPreview) IsKudosuDenied() bool {
+	return p.LatestKudosu != nil && p.LatestKudosu.Amount <= 0
 }
 
 type ForumCreateTopicView struct {

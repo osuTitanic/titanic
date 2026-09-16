@@ -184,20 +184,32 @@ func ForumTopicView(ctx *server.Context) {
 		}
 
 		if linkedBeatmapset != nil && linkedBeatmapset.CreatorId != nil {
-			canForceRewardKudosu := authenticated && ctx.HasPermission("beatmaps.moderation.force_nominate")
 			isBeatmapsetCreator := authenticated && *linkedBeatmapset.CreatorId == ctx.CurrentUser.Id
+			isApproved := linkedBeatmapset.IsApproved()
 
-			preview.BeatmapsetId = linkedBeatmapset.Id
-			preview.CanResetKudosu = authenticated && ctx.HasPermission("forum.kudosu.reset")   // && !linkedBeatmapset.IsApproved()
-			preview.CanRevokeKudosu = authenticated && ctx.HasPermission("forum.kudosu.revoke") // && !linkedBeatmapset.IsApproved()
+			canResetKudosu := authenticated && ctx.HasPermission("forum.kudosu.reset")
+			canRevokeKudosu := authenticated && ctx.HasPermission("forum.kudosu.revoke")
+			canRewardKudosu := authenticated && ctx.HasPermission("forum.kudosu.reward")
+			canForceRewardKudosu := authenticated && ctx.HasPermission("forum.kudosu.force_reward")
+
+			canRewardAsCreator := isBeatmapsetCreator && !isApproved
+			canRewardAsModerator := canRevokeKudosu && !isApproved
+			canRewardAtAnyStatus := canForceRewardKudosu
+			hasRewardAuthority := canRewardAsCreator || canRewardAsModerator || canRewardAtAnyStatus
+
+			preview.CanRewardKudosu = !isOwn && canRewardKudosu && hasRewardAuthority
+			preview.CanRevokeKudosu = canRevokeKudosu
+			preview.CanResetKudosu = canResetKudosu
+
 			preview.ShowKudosuBox = post.UserId != *linkedBeatmapset.CreatorId && !preview.HasKudosuExcludedIcon()
+			preview.BeatmapsetId = linkedBeatmapset.Id
 
-			// When the user is owner of the set -> allow kudsou awards while set is unranked
-			// When the user is a BAT member -> allow deny / reset actions even when set it ranked
-			// When the user is a BAT manager -> allow all kudosu actions even when set it ranked
+			// When the user is owner of the set -> allow kudosu awards while set is unranked
+			// When the user is a BAT member -> allow kudosu awards while set is unranked & allow denials at any status
+			// When the user is a BAT manager -> allow kudosu awards even when ranked
+			// When the user can reset kudosu -> allow resetting denied posts regardless of the set status
 
-			preview.CanManageKudosu = (isBeatmapsetCreator && !linkedBeatmapset.IsApproved()) || canForceRewardKudosu
-			preview.CanManageKudosu = preview.CanManageKudosu || (preview.CanResetKudosu || preview.CanRevokeKudosu)
+			preview.CanManageKudosu = preview.CanRewardKudosu || preview.CanResetKudosu || preview.CanRevokeKudosu
 		}
 
 		previews = append(previews, preview)

@@ -327,24 +327,34 @@ function unlinkTopicFromBeatmap() {
     {{ kudosu := .LatestKudosu }}
     <div class="kudosu-box">
         <p style="color: {{ .KudosuStatusColor() }}" id="kudosu-status-{{ .Post.Id }}">
-            {{ if .KudosuTotal > 0 }}
-            Earned {{ .KudosuTotal|formatNumber }} kudosu.
-            {{ else if .KudosuTotal == 0 }}
-            No kudosu yet.
+            {{ if .IsKudosuExempt() }}
+            Post is exempt of kudosu.
+            {{ else if .IsKudosuDenied() }}
+            <b>Denied kudosu.</b>
+            {{ else if .KudosuTotal > 0 }}
+            <b>Earned {{ .KudosuTotal|formatNumber }} kudosu.</b>
             {{ else }}
-            Lost {{ .AbsoluteKudosuTotal()|formatNumber }} kudosu.
+            No kudosu yet.
             {{ end }}
         </p>
         {{ if .CanManageKudosu }}
-            {{ if kudosu && kudosu.Amount > 0 && .CanRevokeKudosu }}
+            {{ if kudosu && kudosu.Amount > 0 }}
+                {{ if .CanRevokeKudosu }}
                 {* BATs can revoke existing kudosu *}
-                <a onclick="revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a>
-            {{ else if kudosu && .CanResetKudosu }}
+                <div><b><a href="#" onclick="return revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a></b></div>
+                {{ end }}
+            {{ else if kudosu }}
+                {{ if .CanResetKudosu }}
                 {* Kudosu was revoked -> BATs have the option to reset it *}
-                <a onclick="resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a>
-            {{ else if !kudosu }}
-                {* Eligible posts without kudosu can be rewarded *}
-                <a onclick="giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a>
+                <div><b><a href="#" onclick="return resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a></b></div>
+                {{ end }}
+            {{ else }}
+                {{ if .CanRewardKudosu }}
+                <div><b><a href="#" onclick="return giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a></b></div>
+                {{ end }}
+                {{ if .CanRevokeKudosu }}
+                <div><b><a href="#" onclick="return revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a></b></div>
+                {{ end }}
             {{ end }}
         {{ end }}
     </div>
