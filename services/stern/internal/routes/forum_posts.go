@@ -754,9 +754,6 @@ func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, 
 	// This should reward users for modding beatmaps that have been inactive for a while.
 	editor.ShowKudosuHint = true
 	editor.BeatmapsetId = beatmapset.Id
-	editor.KudosuReward = 2
-	if time.Since(topic.LastPostAt) <= 7*24*time.Hour {
-		editor.KudosuReward = 1
-	}
+	editor.KudosuReward = kudosuRewardForPost(topic.LastPostAt, time.Now())
 	editor.ShowKudosuIconNote = canEditForumIcon(ctx, topic.CanChangeIcon)
 }

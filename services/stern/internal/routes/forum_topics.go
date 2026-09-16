@@ -131,6 +131,8 @@ func ForumTopicView(ctx *server.Context) {
 	canReceiveStars := canReceiveKudosuStars(linkedBeatmapset, topic)
 	showKudosuStarBalance := authenticated && canReceiveStars
 	canSpendKudosuStar := showKudosuStarBalance && ctx.CurrentUser.Kudosu >= 1
+	showKudosuEarningHint := showKudosuStarBalance && ctx.CurrentUser.Id != topic.CreatorId
+	kudosuReward := kudosuRewardForPost(topic.LastPostAt, time.Now())
 
 	isSubscribed := false
 	isBookmarked := false
@@ -234,6 +236,8 @@ func ForumTopicView(ctx *server.Context) {
 		ShowStarPriorityPanel: canReceiveStars,
 		ShowKudosuStarBalance: showKudosuStarBalance,
 		CanSpendKudosuStar:    canSpendKudosuStar,
+		ShowKudosuEarningHint: showKudosuEarningHint,
+		KudosuReward:          kudosuReward,
 		PostCount:             postCount,
 		IsSubscribed:          isSubscribed,
 		IsBookmarked:          isBookmarked,

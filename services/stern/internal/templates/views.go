@@ -429,6 +429,8 @@ type ForumTopicView struct {
 	ShowStarPriorityPanel bool
 	ShowKudosuStarBalance bool
 	CanSpendKudosuStar    bool
+	ShowKudosuEarningHint bool
+	KudosuReward          int
 }
 
 func (v ForumTopicView) TopicLocked() bool {

@@ -170,6 +170,9 @@ function unlinkTopicFromBeatmap() {
 
             <div class="star-priority-balance">
                 You have <b><span class="kudosu-balance-value">{{ .CurrentUser.Kudosu }}</span> kudosu</b> remaining.
+                {{ if .ShowKudosuEarningHint }}
+                You can earn kudosu by helping mod this map! You will gain <b>{{ .KudosuReward }} kudosu</b> if you mod this map.
+                {{ end }}
             </div>
         {{ end }}
     </div>
