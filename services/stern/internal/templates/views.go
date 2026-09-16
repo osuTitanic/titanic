@@ -426,6 +426,7 @@ type ForumTopicView struct {
 
 	Beatmapset            *schemas.Beatmapset
 	BeatmapStarShooters   []*BeatmapStarShooter
+	ShowStarPriorityPanel bool
 	ShowKudosuStarBalance bool
 	CanSpendKudosuStar    bool
 }

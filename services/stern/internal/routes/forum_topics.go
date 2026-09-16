@@ -219,6 +219,7 @@ func ForumTopicView(ctx *server.Context) {
 		ActiveUsers:           fetchActiveForumUsers(ctx, topic.ForumId),
 		Beatmapset:            linkedBeatmapset,
 		BeatmapStarShooters:   beatmapStarShooters,
+		ShowStarPriorityPanel: canReceiveStars,
 		ShowKudosuStarBalance: showKudosuStarBalance,
 		CanSpendKudosuStar:    canSpendKudosuStar,
 		PostCount:             postCount,

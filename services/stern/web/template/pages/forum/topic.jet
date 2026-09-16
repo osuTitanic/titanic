@@ -125,15 +125,14 @@ function unlinkTopicFromBeatmap() {
 {{ end }}
 {{ end }}
 
-{{ block beatmapStarPriorityPanel() }}
-<div class="star-priority-panel">
+{{ block beatmapStarPriorityHistory() }}
     {{ if len(.BeatmapStarShooters) > 0 }}
     <div class="star-priority-history">
         {{ range _, shooter := .BeatmapStarShooters }}
         <span class="beatmap-star-shooter">
             <img src="{{ cachedUrl("/images/icons/stars/kudos.png") }}" width="16" height="16" alt="">
             <a href="/u/{{ shooter.User.Id }}"
-               style="color: {{ shooter.User.DisplayColor() != "" ? shooter.User.DisplayColor() : " #000" }};">
+               style="color: {{ shooter.User.DisplayColor() != "" ? shooter.User.DisplayColor() : "#000" }};">
                 {{ shooter.User.Name }}
             </a>
             {{ if shooter.Count > 1 }}
@@ -143,7 +142,14 @@ function unlinkTopicFromBeatmap() {
         {{ end }}
     </div>
     {{ end }}
+{{ end }}
 
+{{ block beatmapStarPriorityPanel() }}
+{{ if .ShowStarPriorityPanel || len(.BeatmapStarShooters) > 0 }}
+<div class="star-priority-panel">
+    {{ yield beatmapStarPriorityHistory() }}
+
+    {{ if .ShowStarPriorityPanel }}
     <div class="star-priority-controls">
         <div class="star-priority-current">
             <span class="star-priority-label">Current Priority:</span>
@@ -167,7 +173,9 @@ function unlinkTopicFromBeatmap() {
             </div>
         {{ end }}
     </div>
+    {{ end }}
 </div>
+{{ end }}
 {{ end }}
 
 {{ block forumTopicPost() }}
