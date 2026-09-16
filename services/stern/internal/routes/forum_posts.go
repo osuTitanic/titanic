@@ -755,7 +755,7 @@ func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, 
 	editor.ShowKudosuHint = true
 	editor.BeatmapsetId = beatmapset.Id
 	editor.KudosuReward = 2
-	if time.Since(topic.LastPostAt) < 7*24*time.Hour {
+	if time.Since(topic.LastPostAt) <= 7*24*time.Hour {
 		editor.KudosuReward = 1
 	}
 	editor.ShowKudosuIconNote = canEditForumIcon(ctx, topic.CanChangeIcon)
