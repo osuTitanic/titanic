@@ -150,14 +150,14 @@
                 {{ end }}
             </td>
             <td class="beatmap-stats-info">
-                {{ formatDateShort(.Beatmapset.CreatedAt) }}
+                <span>{{ formatDateShort(.Beatmapset.CreatedAt) }}</span>
                 {{ if .Beatmapset.Status > 0 && .Beatmapset.ApprovedAt }}
-                <br>{{ formatDateShort(.Beatmapset.ApprovedAt) }}
+                <br><span>{{ formatDateShort(.Beatmapset.ApprovedAt) }}</span>
                 {{ else }}
-                <br>{{ formatDateShort(.Beatmapset.LastUpdate) }}
+                <br><span>{{ formatDateShort(.Beatmapset.LastUpdate) }}</span>
                 {{ end }}
                 {{ if .Beatmapset.Status == 3 }}
-                <br>{{ formatDateShort(.Beatmapset.RankDate()) }}
+                <br><span>{{ formatDateShort(.Beatmapset.RankDate()) }}</span>
                 {{ end }}
             </td>
             <td>Average Rating:</td>
