@@ -40,6 +40,9 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("validate score", processor.validateScore); wasRejected(result, err) {
 		return result, err
 	}
+	if result, err := run("check integrity flags", processor.checkIntegrityFlags); wasRejected(result, err) {
+		return result, err
+	}
 	if result, err := run("validate replay", processor.validateReplay); wasRejected(result, err) {
 		return result, err
 	}
@@ -55,7 +58,6 @@ func (processor *Processor) validate() (ResultType, error) {
 	if result, err := run("normalize relax score", processor.normalizeRelaxScore); wasRejected(result, err) {
 		return result, err
 	}
-	// TODO: Add checks for client-side score integrity flags
 	return ResultAccepted, nil
 }
 
@@ -290,6 +292,14 @@ func (processor *Processor) validateScore() (ResultType, error) {
 			score.Mode, score.Beatmap.Mode,
 		)
 		return ResultRejected, nil
+	}
+	return ResultAccepted, nil
+}
+
+func (processor *Processor) checkIntegrityFlags() (ResultType, error) {
+	flags := processor.submission.Flags
+	if flags.Suspicious() {
+		processor.AddWarning("suspicious score integrity flags: %s", flags)
 	}
 	return ResultAccepted, nil
 }
