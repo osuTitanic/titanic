@@ -26,7 +26,7 @@
 
 {{ block beatmapHeader() }}
 <h1 class="header-text">
-    <a href="/beatmapsets">Beatmap Listing</a> » {{ .Beatmapset.Name() }}
+    <span><a href="/beatmapsets">Beatmap Listing</a> » {{ .Beatmapset.Name() }}</span>
     {{ if .Beatmapset.Server == 0 }}
         <p>
             View on <a href="https://osu.ppy.sh/b/{{ .Beatmap.Id }}">osu.ppy.sh</a>
