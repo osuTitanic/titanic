@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
@@ -179,9 +178,6 @@ func Benchmark(ctx *server.Context) {
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	ctx.Logger.Info("Submitted benchmark", "user_id", user.Id, "id", benchmark.Id)
 	ctx.RenderText(http.StatusOK, strconv.Itoa(benchmark.Id))

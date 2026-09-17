@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/osuTitanic/titanic/internal/activity"
@@ -97,9 +96,6 @@ func Comments(ctx *server.Context) {
 	if !ok {
 		return
 	}
-
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	switch request.Action {
 	case "get":

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"slices"
 	"strconv"
-	"time"
 
 	"github.com/osuTitanic/titanic/internal/activity"
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -48,9 +47,6 @@ func Screenshot(ctx *server.Context) {
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	err := activity.Submit(
 		ctx.State,

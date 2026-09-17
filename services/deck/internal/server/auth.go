@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -33,7 +34,8 @@ func (ctx *Context) AuthenticateUser(
 	if !authentication.VerifyPasswordHashFromMd5(password, user.Bcrypt) {
 		return nil, ErrInvalidPassword
 	}
-	// TODO: Update user activity timestamp
+	user.LatestActivity = time.Now()
+	ctx.State.Users.Update(user, "latest_activity")
 
 	if !requireBanchoPresence {
 		return user, nil

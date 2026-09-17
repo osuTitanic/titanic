@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/osuTitanic/titanic/internal/activity"
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -24,8 +23,6 @@ func GetFavourites(ctx *server.Context) {
 	if !ok {
 		return
 	}
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	favourites, err := ctx.State.Favourites.ManyByUserId(user.Id)
 	if err != nil {
@@ -58,8 +55,6 @@ func AddFavourite(ctx *server.Context) {
 	if !ok {
 		return
 	}
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	count, err := ctx.State.Favourites.CountByUserId(user.Id)
 	if err != nil {

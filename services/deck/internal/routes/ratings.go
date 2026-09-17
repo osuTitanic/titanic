@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/osuTitanic/titanic/internal/activity"
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -120,8 +119,6 @@ func processRating(ctx *server.Context) (RatingResult, error) {
 	case err != nil:
 		return RatingResult{}, fmt.Errorf("authenticate user: %w", err)
 	}
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	checksum := ctx.QueryValue("c")
 	beatmap, err := ctx.State.Beatmaps.ByChecksum(checksum, "Beatmapset")

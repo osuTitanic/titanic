@@ -36,8 +36,6 @@ func LegacyLogin(ctx *server.Context) {
 		ctx.RenderText(http.StatusOK, "0")
 		return
 	}
-	user.LatestActivity = time.Now()
-	ctx.State.Users.Update(user, "latest_activity")
 
 	// On Titanic, we usually ask for an IRC token upon login
 	// However, if the client has called this endpoint in the right
