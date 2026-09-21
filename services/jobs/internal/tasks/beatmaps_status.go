@@ -141,6 +141,14 @@ func moveBeatmapTopic(app *state.State, beatmapset *schemas.Beatmapset, status c
 		return
 	}
 
+	topic, err := app.Repositories.ForumTopics.ById(*beatmapset.TopicId)
+	if err != nil {
+		return
+	}
+	if !canAutoMoveBeatmapTopic(beatmapset, topic) {
+		return
+	}
+
 	var forumId int
 	switch status {
 	case constants.BeatmapStatusPending:
@@ -217,4 +225,14 @@ func hideScoresForSet(app *state.State, beatmapset *schemas.Beatmapset) {
 		}
 		app.Repositories.Scores.UpdateByBeatmapId(scoreUpdate, "status", "hidden")
 	}
+}
+
+func canAutoMoveBeatmapTopic(beatmapset *schemas.Beatmapset, topic *schemas.ForumTopic) bool {
+	if topic == nil {
+		return false
+	}
+	if beatmapset.Server != constants.BeatmapServerTitanic {
+		return false
+	}
+	return constants.BeatmapForumIds[topic.ForumId]
 }
