@@ -11,6 +11,11 @@ import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
+const (
+	ppv1WeightBaseLimit = 1000.0 / 6.0
+	ppv2WeightBaseLimit = 20.0
+)
+
 // PPv1Service is responsible for calculating performance points (v1) for scores.
 // ppv1 reference: https://gist.github.com/peppy/4f8fcb6629d300c56ebe80156b20b76c
 type PPv1Service struct {
@@ -193,6 +198,16 @@ func (service *PPv1Service) RecalculateWeightFromScores(scores []*schemas.Score)
 		}
 	}
 	return service.CalculateWeightFromScores(scores), nil
+}
+
+// PPv1ToHumanReadable converts a raw ppv1 score to its display value
+func PPv1ToHumanReadable(score float64) float64 {
+	return math.Max(0, math.Log(score+1)*400)
+}
+
+// PPv1ToV2Estimate converts a raw ppv1 score to an estimated ppv2 value
+func PPv1ToV2Estimate(score float64) float64 {
+	return PPv1ToHumanReadable(score*ppv1WeightBaseLimit) / ppv2WeightBaseLimit
 }
 
 // ResolveEyupStarRating calculates & caches the eyup star rating for a beatmap
