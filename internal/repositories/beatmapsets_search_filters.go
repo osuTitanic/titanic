@@ -36,6 +36,7 @@ var (
 		"od":         numberSearchFilter("beatmaps.od"),
 		"hp":         numberSearchFilter("beatmaps.hp"),
 		"enhanced":   booleanSearchFilter("beatmapsets.enhanced"),
+		"explicit":   booleanSearchFilter("beatmapsets.explicit"),
 		"video":      booleanSearchFilter("beatmapsets.has_video"),
 		"storyboard": booleanSearchFilter("beatmapsets.has_storyboard"),
 	}
