@@ -413,7 +413,7 @@
 {{ block scoreboard() }}
 {{ if len(.Scores) > 0 }}
 {{ if .Mods != "" }}
-<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Scores[0].Mods }})</h2>
+<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
 {{ else }}
 <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
 {{ end }}
