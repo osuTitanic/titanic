@@ -411,12 +411,15 @@
 {{ end }}
 
 {{ block scoreboard() }}
-{{ if len(.Scores) > 0 }}
 {{ if .Mods != "" }}
 <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
 {{ else }}
 <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
 {{ end }}
+{{ if .IsAuthenticated() }}
+{{ yield modSelector() }}
+{{ end }}
+{{ if len(.Scores) > 0 }}
 <table class="scores">
     <thead class="scores-header">
         <tr>
@@ -516,6 +519,47 @@
     </tbody>
 </table>
 {{ end }}
+{{ end }}
+
+{{ block modSelector() }}
+<div class="spoiler beatmap-mod-selector">
+    <button
+        type="button"
+        class="spoiler-head beatmap-mod-selector-toggle"
+        onclick="return toggleSpoiler(this);"
+        aria-controls="beatmap-mod-selector-options">
+        Select Mods
+    </button>
+    <div class="spoiler-body" id="beatmap-mod-selector-options">
+        <form action="/b/{{ .Beatmap.Id }}" method="get">
+            <input type="hidden" name="mode" value="{{ .Mode.Value() }}">
+            <div class="beatmap-mod-groups">
+                {{ yield modSelectorGroups() .ModGroups }}
+            </div>
+            <div class="beatmap-mod-actions">
+                <input type="submit" value="Apply">
+            </div>
+        </form>
+    </div>
+</div>
+{{ end }}
+
+{{ block modSelectorGroups() }}
+    {{ range _, group := . }}
+    <div class="beatmap-mod-group">
+        <b class="beatmap-mod-group-name">
+            {{ group.Name }}
+        </b>
+        <span class="beatmap-mod-options">
+            {{ range _, mod := group.Mods }}
+            <label class="beatmap-mod-option">
+                <input type="checkbox" name="mods" value="{{ mod.Acronym }}"{{ if mod.Selected }} checked{{ end }}>
+                {{ mod.Label }}
+            </label>
+            {{ end }}
+        </span>
+    </div>
+    {{ end }}
 {{ end }}
 
 {{ block beatmapComments() }}
