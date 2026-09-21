@@ -335,8 +335,16 @@ func resolveBeatmapMode(ctx *server.Context, beatmapMode constants.Mode) constan
 }
 
 func resolveMods(ctx *server.Context) (*constants.Mods, string) {
-	mods := ctx.QueryValue("mods")
-	mods = strings.TrimPrefix(strings.TrimSpace(mods), "+")
+	// e.g. ?mods=HR&mods=HD&mods=DT -> []string{"HR", "HD", "DT"}
+	values := ctx.QueryValues("mods")
+
+	var builder strings.Builder
+	for _, value := range values {
+		value = strings.TrimPrefix(strings.TrimSpace(value), "+")
+		builder.WriteString(value)
+	}
+
+	mods := builder.String()
 	if mods == "" {
 		return nil, ""
 	}
