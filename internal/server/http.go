@@ -73,6 +73,11 @@ func (ctx *HttpContext) QueryValue(name string) string {
 	return ctx.Request.URL.Query().Get(name)
 }
 
+// QueryValues returns all values for a query parameter.
+func (ctx *HttpContext) QueryValues(name string) []string {
+	return ctx.Request.URL.Query()[name]
+}
+
 // QueryValueInt returns a query parameter as an integer.
 func (ctx *HttpContext) QueryValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.QueryValue(name)))
