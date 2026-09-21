@@ -152,6 +152,32 @@ func stringSearchFilter(columns ...string) searchFilter {
 	}
 }
 
+func booleanSearchFilter(column string) searchFilter {
+	return func(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
+		var value bool
+		switch strings.ToLower(condition.Value) {
+		case "true", "1":
+			value = true
+		case "false", "0":
+			value = false
+		default:
+			return query, false, fmt.Errorf("invalid boolean value")
+		}
+
+		var operator string
+		switch condition.Operator {
+		case "=":
+			operator = "="
+		case "!=":
+			operator = "<>"
+		default:
+			return query, false, fmt.Errorf("invalid boolean operator")
+		}
+
+		return query.Where(column+" "+operator+" ?", value), false, nil
+	}
+}
+
 func statusSearchFilter(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
 	status, ok := parseBeatmapStatus(condition.Value)
 	if !ok {
