@@ -412,14 +412,16 @@
 
 {{ block scoreboard() }}
 {{ if .Mods != "" }}
-<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
+    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
+    {{ yield modSelector() }}
 {{ else }}
-<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
+    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
+    {* No need to display mod selection if no scores have ever been set *}
+    {{ if len(.Scores) > 0 }}
+    {{ yield modSelector() }}
+    {{ end }}
 {{ end }}
 {{ if len(.Scores) > 0 }}
-{{ if .IsAuthenticated() }}
-{{ yield modSelector() }}
-{{ end }}
 <table class="scores">
     <thead class="scores-header">
         <tr>
