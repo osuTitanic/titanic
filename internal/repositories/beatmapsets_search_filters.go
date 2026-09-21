@@ -36,6 +36,8 @@ var (
 		"od":         numberSearchFilter("beatmaps.od"),
 		"hp":         numberSearchFilter("beatmaps.hp"),
 		"enhanced":   booleanSearchFilter("beatmapsets.enhanced"),
+		"video":      booleanSearchFilter("beatmapsets.has_video"),
+		"storyboard": booleanSearchFilter("beatmapsets.has_storyboard"),
 	}
 
 	// Mapping of beatmap status names to their corresponding constants, used in `parseBeatmapStatus`
