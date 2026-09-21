@@ -878,8 +878,12 @@
     {{ range _, entry := .Entries }}
         <span class="timeago" datetime="{{ entry.Time.Format("2006-01-02T15:04:05Z07:00") }}"></span> -
         <a href="/u/{{ entry.ActorId }}">{{ entry.ActorName }}</a>
+        {{ if entry.Status == "denied" }}
+        denied kudosu for a post by
+        {{ else }}
         {{ entry.Status }}
         <b>{{ entry.Amount }} kudos</b> {{ entry.Preposition }} a post by
+        {{ end }}
         <a href="/u/{{ entry.OtherId }}">{{ entry.OtherName }}</a>
         in <a href="/forum/p/{{ entry.PostId }}">{{ entry.TopicTitle }}</a><br>
     {{ end }}

@@ -74,6 +74,11 @@ func (ctx *HttpContext) QueryValue(name string) string {
 	return ctx.Request.URL.Query().Get(name)
 }
 
+// QueryValues returns all values for a query parameter.
+func (ctx *HttpContext) QueryValues(name string) []string {
+	return ctx.Request.URL.Query()[name]
+}
+
 // QueryValueDefault attempts to get a query parameter from
 // the request while falling back to the given if not present.
 func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {

@@ -7,7 +7,7 @@ go 1.27.1
 require (
 	github.com/7mochi/osu-native-go v0.0.0-20260810174832-58149246cddd
 	github.com/CloudyKit/jet/v6 v6.3.2
-	github.com/Lekuruu/bbgo v0.0.0-20260715201745-75b8f719535e
+	github.com/Lekuruu/bbgo v0.0.0-20260921170824-78e5ddece2f6
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/azihsoyn/rijndael256 v0.0.0-20200316065338-d14eefa2b66b

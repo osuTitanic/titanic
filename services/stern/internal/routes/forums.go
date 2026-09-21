@@ -3,9 +3,11 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"slices"
 	"time"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
@@ -109,6 +111,9 @@ func ForumView(ctx *server.Context) {
 	}
 	offset := (page - 1) * forumTopicsPerPage
 
+	supportsStarPriority := forumSupportsStarPriority(forum.Id)
+	usesStarPriority := supportsStarPriority && ctx.QueryValue("ignore_sp") != "1"
+
 	subForums, err := ctx.State.Forums.FetchSubForums(forum.Id)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch sub forums", "error", err, "forum", forum.Id)
@@ -123,16 +128,15 @@ func ForumView(ctx *server.Context) {
 		return
 	}
 
-	recentTopics, err := ctx.State.ForumTopics.FetchRecentByLastPost(forum.Id, forumTopicsPerPage, offset, topicPreloads...)
+	topics, err := ctx.State.ForumTopics.FetchListing(
+		forum.Id,
+		forumTopicsPerPage,
+		offset,
+		usesStarPriority,
+		topicPreloads...,
+	)
 	if err != nil {
-		ctx.Logger.Error("Failed to fetch recent topics", "error", err, "forum", forum.Id)
-		InternalServerError(ctx)
-		return
-	}
-
-	pinnedTopics, err := ctx.State.ForumTopics.FetchPinnedByForumId(forum.Id, topicPreloads...)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch pinned topics", "error", err, "forum", forum.Id)
+		ctx.Logger.Error("Failed to fetch forum topics", "error", err, "forum", forum.Id)
 		InternalServerError(ctx)
 		return
 	}
@@ -143,9 +147,6 @@ func ForumView(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-
-	// Merge pinned topics into the recent listing so they float to the top
-	topics := mergeForumTopics(pinnedTopics, recentTopics)
 
 	topicIds := make([]int, 0, len(topics)+len(announcements))
 	for _, topic := range topics {
@@ -185,18 +186,21 @@ func ForumView(ctx *server.Context) {
 	}
 
 	view := templates.ForumView{
-		DefaultView:    buildDefaultView(ctx),
-		Forum:          forum,
-		ForumJump:      buildForumJumpView(ctx, forum.Id),
-		Subforums:      subForums,
-		SubforumRecent: subforumRecent,
-		Parents:        fetchForumParents(ctx, forum),
-		Announcements:  buildTopicPreviews(announcements, lastPosts, readStatuses, averageViews, hasCustomIcons, currentUserId, false),
-		Topics:         buildTopicPreviews(topics, lastPosts, readStatuses, averageViews, hasCustomIcons, currentUserId, false),
-		ActiveUsers:    fetchActiveForumUsers(ctx, forum.Id),
-		CanCreateTopic: canCreateForumTopic(ctx, forum),
-		HasCustomIcons: hasCustomIcons,
-		TopicCount:     topicCount,
+		DefaultView:           buildDefaultView(ctx),
+		Forum:                 forum,
+		ForumJump:             buildForumJumpView(ctx, forum.Id),
+		Subforums:             subForums,
+		SubforumRecent:        subforumRecent,
+		Parents:               fetchForumParents(ctx, forum),
+		Announcements:         buildTopicPreviews(announcements, lastPosts, readStatuses, averageViews, hasCustomIcons, supportsStarPriority, currentUserId, false),
+		Topics:                buildTopicPreviews(topics, lastPosts, readStatuses, averageViews, hasCustomIcons, supportsStarPriority, currentUserId, false),
+		ActiveUsers:           fetchActiveForumUsers(ctx, forum.Id),
+		CanCreateTopic:        canCreateForumTopic(ctx, forum),
+		HasCustomIcons:        hasCustomIcons,
+		SupportsStarPriority:  supportsStarPriority,
+		UsesStarPriority:      usesStarPriority,
+		StarPriorityToggleUrl: forumStarPriorityToggleUrl(forum.Id, ctx.Request.URL.Query(), usesStarPriority),
+		TopicCount:            topicCount,
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        fmt.Sprintf("/forum/%d", forum.Id),
 			Query:       ctx.Request.URL.Query(),
@@ -208,34 +212,29 @@ func ForumView(ctx *server.Context) {
 	ctx.RenderTemplate(http.StatusOK, "pages/forum/forum", view)
 }
 
-func mergeForumTopics(pinned, recent []*schemas.ForumTopic) []*schemas.ForumTopic {
-	seen := make(map[int]bool, len(pinned)+len(recent))
-	merged := make([]*schemas.ForumTopic, 0, len(pinned)+len(recent))
-
-	for _, topic := range pinned {
-		if !seen[topic.Id] {
-			seen[topic.Id] = true
-			merged = append(merged, topic)
-		}
+func forumSupportsStarPriority(forumId int) bool {
+	switch forumId {
+	case constants.ForumBeatmapsPending,
+		constants.ForumBeatmapsWIP,
+		constants.ForumBeatmapsRequests,
+		constants.ForumBeatmapsGraveyard:
+		return true
+	default:
+		return false
 	}
-	for _, topic := range recent {
-		if !seen[topic.Id] {
-			seen[topic.Id] = true
-			merged = append(merged, topic)
-		}
+}
+
+func forumStarPriorityToggleUrl(forumId int, currentQuery url.Values, usesStarPriority bool) string {
+	path := fmt.Sprintf("/forum/%d", forumId)
+	query := filterQuery(currentQuery, "page", "ignore_sp")
+	if usesStarPriority {
+		query.Set("ignore_sp", "1")
 	}
 
-	// Sort the merged topics so that pinned topics appear first
-	slices.SortStableFunc(merged, func(a, b *schemas.ForumTopic) int {
-		if a.Pinned != b.Pinned {
-			if a.Pinned {
-				return -1
-			}
-			return 1
-		}
-		return b.LastPostAt.Compare(a.LastPostAt)
-	})
-	return merged
+	if encoded := query.Encode(); encoded != "" {
+		return path + "?" + encoded
+	}
+	return path
 }
 
 // long ass function definition incoming, beware
@@ -246,20 +245,22 @@ func buildTopicPreviews(
 	readStatuses map[int]bool,
 	averageViews float64,
 	hasCustomIcons bool,
+	showStarPriority bool,
 	currentUserId int,
 	showForum bool,
 ) []*templates.ForumTopicPreview {
 	previews := make([]*templates.ForumTopicPreview, 0, len(topics))
 	for index, topic := range topics {
 		previews = append(previews, &templates.ForumTopicPreview{
-			Topic:          topic,
-			PreviewPost:    previewPosts[topic.Id],
-			StatusIcon:     topicStatusIcon(topic, readStatuses[topic.Id], averageViews),
-			PageCount:      (topic.PostCount + forumPostsPerPage - 1) / forumPostsPerPage,
-			Index:          index,
-			HasCustomIcons: hasCustomIcons,
-			CurrentUserId:  currentUserId,
-			ShowForum:      showForum,
+			Topic:            topic,
+			PreviewPost:      previewPosts[topic.Id],
+			StatusIcon:       topicStatusIcon(topic, readStatuses[topic.Id], averageViews),
+			PageCount:        (topic.PostCount + forumPostsPerPage - 1) / forumPostsPerPage,
+			Index:            index,
+			HasCustomIcons:   hasCustomIcons,
+			ShowStarPriority: showStarPriority,
+			CurrentUserId:    currentUserId,
+			ShowForum:        showForum,
 		})
 	}
 	return previews

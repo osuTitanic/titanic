@@ -98,8 +98,15 @@ func sanitizeRedirectTarget(target string) string {
 		return "/"
 	}
 
+	// Check the decoded & encoded paths for double slashes or
+	// backslashes to prevent open redirect vulnerabilities
 	requestURI := parsed.RequestURI()
-	if requestURI == "" || !strings.HasPrefix(requestURI, "/") || strings.HasPrefix(requestURI, "//") {
+
+	if requestURI == "" || !strings.HasPrefix(requestURI, "/") ||
+		strings.HasPrefix(requestURI, "//") || strings.HasPrefix(requestURI, `/\`) {
+		return "/"
+	}
+	if strings.HasPrefix(parsed.Path, "//") || strings.HasPrefix(parsed.Path, `/\`) {
 		return "/"
 	}
 

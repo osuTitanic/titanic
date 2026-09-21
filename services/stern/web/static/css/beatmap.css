@@ -149,6 +149,48 @@
     margin-top: 5px;
 }
 
+.beatmap-mod-selector {
+    margin: 0;
+    font-size: 75%;
+}
+
+.beatmap-mod-selector-toggle {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid #b7c9ff;
+    background-color: #eae0ff;
+    color: #cc2e8a;
+}
+
+.beatmap-mod-groups {
+    padding: 5px;
+}
+
+.beatmap-mod-group {
+    margin-bottom: 4px;
+}
+
+.beatmap-mod-group-name {
+    display: inline-block;
+    width: 150px;
+    vertical-align: top;
+}
+
+.beatmap-mod-option {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.beatmap-mod-actions {
+    padding-left: 4px;
+    padding-bottom: 5px;
+}
+
+.beatmap-mod-actions input[type="submit"] {
+    padding: 1px 5px 1px 5px;
+}
+
 .score-header {
     width: 100%;
     text-align: left;

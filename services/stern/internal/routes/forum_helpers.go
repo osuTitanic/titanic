@@ -16,6 +16,13 @@ import (
 const forumTitleMaxLength = 128
 const forumPostMaxLength = 1 << 14
 
+func kudosuRewardForPost(lastPostAt, now time.Time) int {
+	if now.Sub(lastPostAt) <= 7*24*time.Hour {
+		return 1
+	}
+	return 2
+}
+
 func isPostingRejected(ctx *server.Context) bool {
 	if ctx.CurrentUser == nil {
 		return false

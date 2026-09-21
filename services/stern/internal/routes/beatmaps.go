@@ -126,6 +126,11 @@ func Beatmap(ctx *server.Context) {
 	mode := resolveBeatmapMode(ctx, beatmap.Mode)
 	mods, modsString := resolveMods(ctx)
 
+	selectedMods := constants.NoMod
+	if mods != nil {
+		selectedMods = *mods
+	}
+
 	personalBest, personalBestRank, err := fetchUserScore(ctx, beatmap, mode)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch user pb", "beatmap", beatmap.Id, "error", err)
@@ -189,6 +194,7 @@ func Beatmap(ctx *server.Context) {
 		Beatmapset:            beatmap.Beatmapset,
 		Mode:                  mode,
 		Mods:                  modsString,
+		ModGroups:             templates.BuildBeatmapModGroups(mode, selectedMods),
 		Scores:                scores,
 		PersonalBest:          personalBest,
 		PersonalBestRank:      personalBestRank,
@@ -335,8 +341,16 @@ func resolveBeatmapMode(ctx *server.Context, beatmapMode constants.Mode) constan
 }
 
 func resolveMods(ctx *server.Context) (*constants.Mods, string) {
-	mods := ctx.QueryValue("mods")
-	mods = strings.TrimPrefix(strings.TrimSpace(mods), "+")
+	// e.g. ?mods=HR&mods=HD&mods=DT -> []string{"HR", "HD", "DT"}
+	values := ctx.QueryValues("mods")
+
+	var builder strings.Builder
+	for _, value := range values {
+		value = strings.TrimPrefix(strings.TrimSpace(value), "+")
+		builder.WriteString(value)
+	}
+
+	mods := builder.String()
 	if mods == "" {
 		return nil, ""
 	}

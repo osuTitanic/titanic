@@ -113,15 +113,35 @@ func ForumTopicView(ctx *server.Context) {
 		linkedBeatmapset = nil
 	}
 
+	beatmapStarShooters := []*templates.BeatmapStarShooter{}
+	if linkedBeatmapset != nil {
+		stars, err := ctx.State.BeatmapsetStars.BySetId(
+			linkedBeatmapset.Id,
+			"User", "User.Groups.Group",
+		)
+		if err != nil {
+			ctx.Logger.Error("Failed to fetch beatmapset stars", "error", err, "beatmapset", linkedBeatmapset.Id)
+			InternalServerError(ctx)
+			return
+		}
+		beatmapStarShooters = resolveBeatmapStarShooters(stars)
+	}
+
+	authenticated := ctx.CurrentUser != nil
+	canReceiveStars := canReceiveKudosuStars(linkedBeatmapset, topic)
+	showKudosuStarBalance := authenticated && canReceiveStars
+	canSpendKudosuStar := showKudosuStarBalance && ctx.CurrentUser.Kudosu >= 1
+	showKudosuEarningHint := showKudosuStarBalance && ctx.CurrentUser.Id != topic.CreatorId
+	kudosuReward := kudosuRewardForPost(topic.LastPostAt, time.Now())
+
 	isSubscribed := false
 	isBookmarked := false
-	if ctx.CurrentUser != nil {
+	if authenticated {
 		isSubscribed, _ = ctx.State.ForumSubscribers.Exists(topic.Id, ctx.CurrentUser.Id)
 		isBookmarked, _ = ctx.State.ForumBookmarks.Exists(topic.Id, ctx.CurrentUser.Id)
 	}
 
 	// Resolve the permissions that gate the topic & post actions
-	authenticated := ctx.CurrentUser != nil
 	canCreatePosts := authenticated && ctx.HasPermission("forum.posts.create")
 	canEditOwn := authenticated && ctx.HasPermission("forum.posts.edit")
 	canDeleteOwn := authenticated && ctx.HasPermission("forum.posts.delete")
@@ -166,20 +186,32 @@ func ForumTopicView(ctx *server.Context) {
 		}
 
 		if linkedBeatmapset != nil && linkedBeatmapset.CreatorId != nil {
-			canForceRewardKudosu := authenticated && ctx.HasPermission("beatmaps.moderation.force_nominate")
 			isBeatmapsetCreator := authenticated && *linkedBeatmapset.CreatorId == ctx.CurrentUser.Id
+			isApproved := linkedBeatmapset.IsApproved()
 
-			preview.BeatmapsetId = linkedBeatmapset.Id
-			preview.CanResetKudosu = authenticated && ctx.HasPermission("forum.kudosu.reset")   // && !linkedBeatmapset.IsApproved()
-			preview.CanRevokeKudosu = authenticated && ctx.HasPermission("forum.kudosu.revoke") // && !linkedBeatmapset.IsApproved()
+			canResetKudosu := authenticated && ctx.HasPermission("forum.kudosu.reset")
+			canRevokeKudosu := authenticated && ctx.HasPermission("forum.kudosu.revoke")
+			canRewardKudosu := authenticated && ctx.HasPermission("forum.kudosu.reward")
+			canForceRewardKudosu := authenticated && ctx.HasPermission("forum.kudosu.force_reward")
+
+			canRewardAsCreator := isBeatmapsetCreator && !isApproved
+			canRewardAsModerator := canRevokeKudosu && !isApproved
+			canRewardAtAnyStatus := canForceRewardKudosu
+			hasRewardAuthority := canRewardAsCreator || canRewardAsModerator || canRewardAtAnyStatus
+
+			preview.CanRewardKudosu = !isOwn && canRewardKudosu && hasRewardAuthority
+			preview.CanRevokeKudosu = canRevokeKudosu
+			preview.CanResetKudosu = canResetKudosu
+
 			preview.ShowKudosuBox = post.UserId != *linkedBeatmapset.CreatorId && !preview.HasKudosuExcludedIcon()
+			preview.BeatmapsetId = linkedBeatmapset.Id
 
-			// When the user is owner of the set -> allow kudsou awards while set is unranked
-			// When the user is a BAT member -> allow deny / reset actions even when set it ranked
-			// When the user is a BAT manager -> allow all kudosu actions even when set it ranked
+			// When the user is owner of the set -> allow kudosu awards while set is unranked
+			// When the user is a BAT member -> allow kudosu awards while set is unranked & allow denials at any status
+			// When the user is a BAT manager -> allow kudosu awards even when ranked
+			// When the user can reset kudosu -> allow resetting denied posts regardless of the set status
 
-			preview.CanManageKudosu = (isBeatmapsetCreator && !linkedBeatmapset.IsApproved()) || canForceRewardKudosu
-			preview.CanManageKudosu = preview.CanManageKudosu || (preview.CanResetKudosu || preview.CanRevokeKudosu)
+			preview.CanManageKudosu = preview.CanRewardKudosu || preview.CanResetKudosu || preview.CanRevokeKudosu
 		}
 
 		previews = append(previews, preview)
@@ -192,22 +224,28 @@ func ForumTopicView(ctx *server.Context) {
 	}
 
 	view := templates.ForumTopicView{
-		DefaultView:     buildDefaultViewWithPermissions(ctx),
-		Forum:           topic.Forum,
-		ForumJump:       buildForumJumpView(ctx, topic.ForumId),
-		Topic:           topic,
-		Parents:         fetchForumParents(ctx, topic.Forum),
-		Posts:           previews,
-		ActiveUsers:     fetchActiveForumUsers(ctx, topic.ForumId),
-		Beatmapset:      linkedBeatmapset,
-		PostCount:       postCount,
-		IsSubscribed:    isSubscribed,
-		IsBookmarked:    isBookmarked,
-		CanCreatePosts:  canCreatePosts,
-		CanReply:        canCreatePosts && (!topicLocked || canBypassTopicLock),
-		ReplyLocked:     topicLocked && !canBypassTopicLock,
-		MetaDescription: strings.SplitN(initialPost.Content, "\n", 2)[0],
-		MetaImage:       metaImage,
+		DefaultView:           buildDefaultViewWithPermissions(ctx),
+		Forum:                 topic.Forum,
+		ForumJump:             buildForumJumpView(ctx, topic.ForumId),
+		Topic:                 topic,
+		Posts:                 previews,
+		Parents:               fetchForumParents(ctx, topic.Forum),
+		ActiveUsers:           fetchActiveForumUsers(ctx, topic.ForumId),
+		Beatmapset:            linkedBeatmapset,
+		BeatmapStarShooters:   beatmapStarShooters,
+		ShowStarPriorityPanel: canReceiveStars,
+		ShowKudosuStarBalance: showKudosuStarBalance,
+		CanSpendKudosuStar:    canSpendKudosuStar,
+		ShowKudosuEarningHint: showKudosuEarningHint,
+		KudosuReward:          kudosuReward,
+		PostCount:             postCount,
+		IsSubscribed:          isSubscribed,
+		IsBookmarked:          isBookmarked,
+		CanCreatePosts:        canCreatePosts,
+		CanReply:              canCreatePosts && (!topicLocked || canBypassTopicLock),
+		ReplyLocked:           topicLocked && !canBypassTopicLock,
+		MetaDescription:       strings.SplitN(initialPost.Content, "\n", 2)[0],
+		MetaImage:             metaImage,
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id),
 			Query:       ctx.Request.URL.Query(),
@@ -420,6 +458,48 @@ func fetchKudosuForPosts(postIds []int, linkedBeatmapset *schemas.Beatmapset, ct
 	}
 
 	return kudosuTotals, latestKudosu
+}
+
+func canReceiveKudosuStars(set *schemas.Beatmapset, topic *schemas.ForumTopic) bool {
+	if set == nil || topic == nil || topic.Hidden {
+		return false
+	}
+	if set.TopicId == nil || *set.TopicId != topic.Id {
+		return false
+	}
+
+	switch topic.ForumId {
+	case constants.ForumBeatmapsPending:
+		return set.Status == constants.BeatmapStatusPending
+	case constants.ForumBeatmapsWIP:
+		return set.Status == constants.BeatmapStatusWIP
+	case constants.ForumBeatmapsRequests:
+		return true
+	default:
+		return false
+	}
+}
+
+func resolveBeatmapStarShooters(stars []*schemas.BeatmapsetStar) []*templates.BeatmapStarShooter {
+	// this sounds really wrong ...
+	shooters := make([]*templates.BeatmapStarShooter, 0)
+	byUserId := make(map[int]*templates.BeatmapStarShooter)
+
+	for _, star := range stars {
+		if star.User == nil {
+			continue
+		}
+
+		shooter, exists := byUserId[star.UserId]
+		if !exists {
+			shooter = &templates.BeatmapStarShooter{User: star.User}
+			byUserId[star.UserId] = shooter
+			shooters = append(shooters, shooter)
+		}
+		shooter.Count++
+	}
+
+	return shooters
 }
 
 func resolveSubmittedIcon(ctx *server.Context, canEdit bool) *constants.ForumIcon {

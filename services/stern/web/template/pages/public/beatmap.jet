@@ -26,7 +26,7 @@
 
 {{ block beatmapHeader() }}
 <h1 class="header-text">
-    <a href="/beatmapsets">Beatmap Listing</a> » {{ .Beatmapset.Name() }}
+    <span><a href="/beatmapsets">Beatmap Listing</a> » {{ .Beatmapset.Name() }}</span>
     {{ if .Beatmapset.Server == 0 }}
         <p>
             View on <a href="https://osu.ppy.sh/b/{{ .Beatmap.Id }}">osu.ppy.sh</a>
@@ -150,14 +150,14 @@
                 {{ end }}
             </td>
             <td class="beatmap-stats-info">
-                {{ formatDateShort(.Beatmapset.CreatedAt) }}
+                <span>{{ formatDateShort(.Beatmapset.CreatedAt) }}</span>
                 {{ if .Beatmapset.Status > 0 && .Beatmapset.ApprovedAt }}
-                <br>{{ formatDateShort(.Beatmapset.ApprovedAt) }}
+                <br><span>{{ formatDateShort(.Beatmapset.ApprovedAt) }}</span>
                 {{ else }}
-                <br>{{ formatDateShort(.Beatmapset.LastUpdate) }}
+                <br><span>{{ formatDateShort(.Beatmapset.LastUpdate) }}</span>
                 {{ end }}
                 {{ if .Beatmapset.Status == 3 }}
-                <br>{{ formatDateShort(.Beatmapset.RankDate()) }}
+                <br><span>{{ formatDateShort(.Beatmapset.RankDate()) }}</span>
                 {{ end }}
             </td>
             <td>Average Rating:</td>
@@ -411,12 +411,17 @@
 {{ end }}
 
 {{ block scoreboard() }}
-{{ if len(.Scores) > 0 }}
 {{ if .Mods != "" }}
-<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Scores[0].Mods }})</h2>
+    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
+    {{ yield modSelector() }}
 {{ else }}
-<h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
+    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
+    {* No need to display mod selection if no scores have ever been set *}
+    {{ if len(.Scores) > 0 }}
+    {{ yield modSelector() }}
+    {{ end }}
 {{ end }}
+{{ if len(.Scores) > 0 }}
 <table class="scores">
     <thead class="scores-header">
         <tr>
@@ -516,6 +521,47 @@
     </tbody>
 </table>
 {{ end }}
+{{ end }}
+
+{{ block modSelector() }}
+<div class="spoiler beatmap-mod-selector">
+    <button
+        type="button"
+        class="spoiler-head beatmap-mod-selector-toggle"
+        onclick="return toggleSpoiler(this);"
+        aria-controls="beatmap-mod-selector-options">
+        Select Mods
+    </button>
+    <div class="spoiler-body" id="beatmap-mod-selector-options">
+        <form action="/b/{{ .Beatmap.Id }}" method="get">
+            <input type="hidden" name="mode" value="{{ .Mode.Value() }}">
+            <div class="beatmap-mod-groups">
+                {{ yield modSelectorGroups() .ModGroups }}
+            </div>
+            <div class="beatmap-mod-actions">
+                <input type="submit" value="Apply">
+            </div>
+        </form>
+    </div>
+</div>
+{{ end }}
+
+{{ block modSelectorGroups() }}
+    {{ range _, group := . }}
+    <div class="beatmap-mod-group">
+        <b class="beatmap-mod-group-name">
+            {{ group.Name }}
+        </b>
+        <span class="beatmap-mod-options">
+            {{ range _, mod := group.Mods }}
+            <label class="beatmap-mod-option">
+                <input type="checkbox" name="mods" value="{{ mod.Acronym }}"{{ if mod.Selected }} checked{{ end }}>
+                {{ mod.Label }}
+            </label>
+            {{ end }}
+        </span>
+    </div>
+    {{ end }}
 {{ end }}
 
 {{ block beatmapComments() }}

@@ -212,7 +212,7 @@ type UserKudosuTab struct {
 
 type UserKudosuEntry struct {
 	Time        time.Time
-	Status      string // "received" | "gave" | "revoked"
+	Status      string // "received" | "gave" | "revoked" | "denied"
 	Preposition string // "from" | "to"
 	Amount      int
 	ActorId     int
@@ -324,33 +324,48 @@ type ForumSubforum struct {
 
 type ForumView struct {
 	DefaultView
-	Forum          *schemas.Forum
-	ForumJump      ForumJumpView
-	Parents        []*schemas.Forum
-	Subforums      []*schemas.Forum
-	SubforumRecent map[int]*schemas.ForumPost
-	Announcements  []*ForumTopicPreview
-	Topics         []*ForumTopicPreview
-	ActiveUsers    []*ForumActiveUser
-	HasCustomIcons bool
-	TopicCount     int
-	CanCreateTopic bool
-	Pagination     PaginationView
+	Forum                 *schemas.Forum
+	ForumJump             ForumJumpView
+	Parents               []*schemas.Forum
+	Subforums             []*schemas.Forum
+	SubforumRecent        map[int]*schemas.ForumPost
+	Announcements         []*ForumTopicPreview
+	Topics                []*ForumTopicPreview
+	ActiveUsers           []*ForumActiveUser
+	HasCustomIcons        bool
+	TopicCount            int
+	CanCreateTopic        bool
+	Pagination            PaginationView
+	SupportsStarPriority  bool
+	UsesStarPriority      bool
+	StarPriorityToggleUrl string
 }
 
 func (v ForumView) HasTopics() bool {
 	return len(v.Announcements) > 0 || len(v.Topics) > 0
 }
 
+func (v ForumView) TopicColumnCount() int {
+	columns := 5
+	if v.HasCustomIcons {
+		columns++
+	}
+	if v.SupportsStarPriority {
+		columns++
+	}
+	return columns
+}
+
 type ForumTopicPreview struct {
-	Topic          *schemas.ForumTopic
-	PreviewPost    *schemas.ForumPost
-	StatusIcon     string
-	PageCount      int
-	Index          int
-	HasCustomIcons bool
-	CurrentUserId  int
-	ShowForum      bool
+	Topic            *schemas.ForumTopic
+	PreviewPost      *schemas.ForumPost
+	StatusIcon       string
+	PageCount        int
+	Index            int
+	HasCustomIcons   bool
+	CurrentUserId    int
+	ShowForum        bool
+	ShowStarPriority bool
 }
 
 func (p ForumTopicPreview) PreviewTruncated() bool {
@@ -399,7 +414,6 @@ type ForumTopicView struct {
 	Posts           []*ForumPostPreview
 	Pagination      PaginationView
 	ActiveUsers     []*ForumActiveUser
-	Beatmapset      *schemas.Beatmapset
 	PostCount       int
 	IsSubscribed    bool
 	IsBookmarked    bool
@@ -408,6 +422,14 @@ type ForumTopicView struct {
 	ReplyLocked     bool
 	MetaDescription string
 	MetaImage       string
+
+	Beatmapset            *schemas.Beatmapset
+	BeatmapStarShooters   []*BeatmapStarShooter
+	ShowStarPriorityPanel bool
+	ShowKudosuStarBalance bool
+	CanSpendKudosuStar    bool
+	ShowKudosuEarningHint bool
+	KudosuReward          int
 }
 
 func (v ForumTopicView) TopicLocked() bool {
@@ -416,6 +438,11 @@ func (v ForumTopicView) TopicLocked() bool {
 
 func (v ForumTopicView) HasBeatmapset() bool {
 	return v.Beatmapset != nil
+}
+
+type BeatmapStarShooter struct {
+	User  *schemas.User
+	Count int
 }
 
 type ForumSearchView struct {
@@ -454,6 +481,7 @@ type ForumPostPreview struct {
 	BeatmapsetId    int
 	ShowKudosuBox   bool
 	CanManageKudosu bool
+	CanRewardKudosu bool
 	CanResetKudosu  bool
 	CanRevokeKudosu bool
 	KudosuTotal     int
@@ -476,6 +504,10 @@ func (p ForumPostPreview) HasKudosuExcludedIcon() bool {
 
 func (p ForumPostPreview) KudosuStatusColor() string {
 	switch {
+	case p.IsKudosuExempt():
+		return "black"
+	case p.LatestKudosu != nil && p.LatestKudosu.Amount <= 0:
+		return "red"
 	case p.KudosuTotal > 0:
 		return "green"
 	case p.KudosuTotal == 0:
@@ -485,11 +517,12 @@ func (p ForumPostPreview) KudosuStatusColor() string {
 	}
 }
 
-func (p ForumPostPreview) AbsoluteKudosuTotal() int {
-	if p.KudosuTotal < 0 {
-		return -p.KudosuTotal
-	}
-	return p.KudosuTotal
+func (p ForumPostPreview) IsKudosuExempt() bool {
+	return p.LatestKudosu != nil && p.LatestKudosu.Amount == -2
+}
+
+func (p ForumPostPreview) IsKudosuDenied() bool {
+	return p.LatestKudosu != nil && p.LatestKudosu.Amount <= 0
 }
 
 type ForumCreateTopicView struct {
@@ -577,6 +610,7 @@ type BeatmapView struct {
 	Beatmapset            *schemas.Beatmapset
 	Mode                  constants.Mode
 	Mods                  string
+	ModGroups             []BeatmapModGroup
 	Scores                []*schemas.Score
 	PersonalBest          *schemas.Score
 	PersonalBestRank      int

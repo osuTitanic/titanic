@@ -16,6 +16,7 @@ var (
 	// Example: bpm>180, ar<=9, status=ranked, ...
 	searchFilters = map[string]searchFilter{
 		"status":     statusSearchFilter,
+		"server":     serverSearchFilter,
 		"artist":     stringSearchFilter("beatmapsets.artist", "beatmapsets.artist_unicode"),
 		"title":      stringSearchFilter("beatmapsets.title", "beatmapsets.title_unicode"),
 		"creator":    stringSearchFilter("beatmapsets.creator"),
@@ -34,6 +35,10 @@ var (
 		"cs":         numberSearchFilter("beatmaps.cs"),
 		"od":         numberSearchFilter("beatmaps.od"),
 		"hp":         numberSearchFilter("beatmaps.hp"),
+		"enhanced":   booleanSearchFilter("beatmapsets.enhanced"),
+		"explicit":   booleanSearchFilter("beatmapsets.explicit"),
+		"video":      booleanSearchFilter("beatmapsets.has_video"),
+		"storyboard": booleanSearchFilter("beatmapsets.has_storyboard"),
 	}
 
 	// Mapping of beatmap status names to their corresponding constants, used in `parseBeatmapStatus`
@@ -48,6 +53,12 @@ var (
 		"approved":         constants.BeatmapStatusApproved,
 		"qualified":        constants.BeatmapStatusQualified,
 		"loved":            constants.BeatmapStatusLoved,
+	}
+
+	// Mapping of server aliases to their corresponding constants, used in `parseBeatmapServer`
+	beatmapServerByName = map[string]constants.BeatmapServer{
+		"bancho":  constants.BeatmapServerBancho,
+		"titanic": constants.BeatmapServerTitanic,
 	}
 
 	// Supported operators for number-based filters
@@ -145,12 +156,46 @@ func stringSearchFilter(columns ...string) searchFilter {
 	}
 }
 
+func booleanSearchFilter(column string) searchFilter {
+	return func(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
+		var value bool
+		switch strings.ToLower(condition.Value) {
+		case "true", "1":
+			value = true
+		case "false", "0":
+			value = false
+		default:
+			return query, false, fmt.Errorf("invalid boolean value")
+		}
+
+		var operator string
+		switch condition.Operator {
+		case "=":
+			operator = "="
+		case "!=":
+			operator = "<>"
+		default:
+			return query, false, fmt.Errorf("invalid boolean operator")
+		}
+
+		return query.Where(column+" "+operator+" ?", value), false, nil
+	}
+}
+
 func statusSearchFilter(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
 	status, ok := parseBeatmapStatus(condition.Value)
 	if !ok {
 		return query, false, fmt.Errorf("invalid status")
 	}
 	return applyNumberCondition(query, "beatmapsets.submission_status", condition.Operator, status, false)
+}
+
+func serverSearchFilter(query *gorm.DB, condition searchFilterCondition) (*gorm.DB, bool, error) {
+	server, ok := parseBeatmapServer(condition.Value)
+	if !ok {
+		return query, false, fmt.Errorf("invalid server")
+	}
+	return applyNumberCondition(query, "beatmapsets.server", condition.Operator, server, false)
 }
 
 func yearSearchFilter(expression string) searchFilter {
@@ -246,6 +291,27 @@ func parseBeatmapStatus(value string) (constants.BeatmapStatus, bool) {
 	// Its more likely for users to search by the status name, so we support that too
 	status, ok := beatmapStatusByName[strings.ToLower(value)]
 	return status, ok
+}
+
+func parseBeatmapServer(value string) (constants.BeatmapServer, bool) {
+	// Example: "bancho" -> constants.BeatmapServerBancho
+	// 			"titanic" -> constants.BeatmapServerTitanic
+	// 			"0" -> constants.BeatmapServerBancho
+	// 			"1" -> constants.BeatmapServerTitanic
+
+	server, err := strconv.Atoi(value)
+	if err != nil {
+		server, ok := beatmapServerByName[strings.ToLower(value)]
+		return server, ok
+	}
+
+	parsed := constants.BeatmapServer(server)
+	switch parsed {
+	case constants.BeatmapServerBancho, constants.BeatmapServerTitanic:
+		return parsed, true
+	default:
+		return 0, false
+	}
 }
 
 func parseSearchDateRange(value string) (time.Time, time.Time, error) {

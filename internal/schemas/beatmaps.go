@@ -52,7 +52,9 @@ type Beatmapset struct {
 
 	CreatorUser    *User                `gorm:"foreignKey:CreatorId;references:Id"`
 	ApprovedByUser *User                `gorm:"foreignKey:ApprovedBy;references:Id"`
+	Topic          *ForumTopic          `gorm:"foreignKey:TopicId;references:Id"`
 	Beatmaps       []*Beatmap           `gorm:"foreignKey:SetId;references:Id"`
+	Stars          []*BeatmapsetStar    `gorm:"foreignKey:SetId;references:Id"`
 	Nominations    []*BeatmapNomination `gorm:"foreignKey:SetId;references:Id"`
 	Modding        []*BeatmapModding    `gorm:"foreignKey:SetId;references:Id"`
 	Favourites     []*BeatmapFavourite  `gorm:"foreignKey:SetId;references:Id"`
@@ -480,4 +482,20 @@ type BeatmapMirror struct {
 
 func (BeatmapMirror) TableName() string {
 	return "resource_mirrors"
+}
+
+type BeatmapsetStar struct {
+	Id           int64     `gorm:"column:id;primaryKey;autoIncrement"`
+	SetId        int       `gorm:"column:set_id"`
+	UserId       int       `gorm:"column:user_id"`
+	KudosuCost   int       `gorm:"column:kudosu_cost;default:1"`
+	StarPriority int       `gorm:"column:star_priority;default:1"`
+	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime"`
+
+	User       *User       `gorm:"foreignKey:UserId;references:Id"`
+	Beatmapset *Beatmapset `gorm:"foreignKey:SetId;references:Id"`
+}
+
+func (BeatmapsetStar) TableName() string {
+	return "beatmapset_stars"
 }

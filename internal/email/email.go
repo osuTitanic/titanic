@@ -6,6 +6,8 @@ import (
 	"mime"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/osuTitanic/titanic/internal/config"
 )
@@ -38,30 +40,47 @@ type Message struct {
 	Headers  map[string]string
 }
 
-// Validate ensures the message has the required fields populated
-func (m *Message) Validate() error {
-	if m == nil {
+// Validate ensures required fields exist & header injection is not a thing
+func (message *Message) Validate() error {
+	if message == nil {
 		return errors.New("email: message is nil")
 	}
 
-	if len(m.To) == 0 {
+	if len(message.To) == 0 {
 		return errors.New("email: at least one recipient is required")
 	}
 
-	if m.Subject == "" {
+	if message.Subject == "" {
 		return errors.New("email: subject is required")
 	}
 
-	if m.TextBody == "" && m.HTMLBody == "" {
+	if message.TextBody == "" && message.HTMLBody == "" {
 		return errors.New("email: text or HTML body is required")
+	}
+
+	for _, recipient := range message.To {
+		if err := validateHeader("To", recipient); err != nil {
+			return err
+		}
+	}
+	for name, value := range message.Headers {
+		if err := validateHeader(name, value); err != nil {
+			return err
+		}
+	}
+	if err := validateHeader("Subject", message.Subject); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (message *Message) BuildMimeMessage(from string) ([]byte, error) {
-	if len(message.To) == 0 {
-		return nil, errors.New("email: no recipients provided")
+	if err := message.Validate(); err != nil {
+		return nil, err
+	}
+	if err := validateHeader("From", from); err != nil {
+		return nil, err
 	}
 
 	var builder strings.Builder
@@ -72,7 +91,8 @@ func (message *Message) BuildMimeMessage(from string) ([]byte, error) {
 	builder.WriteString("MIME-Version: 1.0\r\n")
 
 	for header, value := range message.Headers {
-		if header == "From" || header == "To" || header == "Subject" {
+		switch strings.ToLower(header) {
+		case "from", "to", "subject", "date", "mime-version", "content-type", "content-transfer-encoding":
 			continue
 		}
 		builder.WriteString(header + ": " + value + "\r\n")
@@ -108,4 +128,24 @@ func (message *Message) BuildMimeMessage(from string) ([]byte, error) {
 
 	builder.WriteString("\r\n")
 	return []byte(builder.String()), nil
+}
+
+func validateHeader(name, value string) error {
+	if name == "" {
+		return errors.New("email: header name is required")
+	}
+	if !utf8.ValidString(value) {
+		return fmt.Errorf("email: invalid UTF-8 in %s header", name)
+	}
+	for _, c := range name {
+		if c < '!' || c > '~' || c == ':' {
+			return errors.New("email: invalid header name")
+		}
+	}
+	for _, c := range value {
+		if c != '\t' && unicode.IsControl(c) {
+			return fmt.Errorf("email: invalid control character in %s header", name)
+		}
+	}
+	return nil
 }

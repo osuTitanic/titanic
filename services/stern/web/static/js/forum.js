@@ -107,7 +107,6 @@ function giveKudos(postId, beatmapsetId) {
         "/beatmapsets/" + beatmapsetId + "/kudosu/" + postId + "/reward",
         null,
         function (xhr) {
-            var data = JSON.parse(xhr.responseText);
             var kudosuStatus = document.getElementById("kudosu-status-" + postId);
             var kudosuActions = kudosuStatus.parentElement.getElementsByTagName("a");
 
@@ -115,8 +114,9 @@ function giveKudos(postId, beatmapsetId) {
                 kudosuActions[0].parentNode.removeChild(kudosuActions[0]);
             }
 
-            $(kudosuStatus).text("Earned " + data.amount + " kudosu.");
+            $(kudosuStatus).text("Thanks for your cooperation!");
             kudosuStatus.style.color = "green";
+            kudosuStatus.style.fontWeight = "bold";
         },
         function (xhr) {
             apiErrorAlert(xhr, "Failed to give kudosu.");
@@ -140,6 +140,7 @@ function revokeKudos(postId, beatmapsetId) {
 
             $(kudosuStatus).text("Successfully revoked kudosu.");
             kudosuStatus.style.color = "red";
+            kudosuStatus.style.fontWeight = "bold";
         },
         function (xhr) {
             apiErrorAlert(xhr, "Failed to revoke kudosu.");
@@ -162,10 +163,41 @@ function resetKudos(postId, beatmapsetId) {
             }
 
             $(kudosuStatus).text("Successfully reset kudosu.");
-            kudosuStatus.style.color = "blue";
+            kudosuStatus.style.color = "red";
+            kudosuStatus.style.fontWeight = "bold";
         },
         function (xhr) {
             apiErrorAlert(xhr, "Failed to reset kudosu.");
+        }
+    );
+    return false;
+}
+
+var kudosuStarRequests = {}; // for blocking multiple requests
+
+function spendKudosuStar(beatmapsetId) {
+    if (kudosuStarRequests[beatmapsetId]) {
+        return false;
+    }
+    if (!confirm("You are about to shoot a kudosu star at this map.\nAre you sure you want to do this?")) {
+        return false;
+    }
+
+    var actions = $(".kudosu-star-action-" + beatmapsetId);
+    kudosuStarRequests[beatmapsetId] = true;
+    actions.addClass("kudosu-star-action-disabled");
+
+    performApiRequest(
+        "POST",
+        "/beatmapsets/" + beatmapsetId + "/kudosu/spend",
+        null,
+        function (xhr) {
+            window.location.reload();
+        },
+        function (xhr) {
+            kudosuStarRequests[beatmapsetId] = false;
+            actions.removeClass("kudosu-star-action-disabled");
+            apiErrorAlert(xhr, "Failed to shoot a kudosu star.");
         }
     );
     return false;

@@ -549,6 +549,8 @@ func buildKudosuEntries(userId int, mods []*schemas.BeatmapModding) []*templates
 		switch {
 		case mod.Amount < 0:
 			status = "revoked"
+		case mod.Amount == 0:
+			status = "denied"
 		case mod.TargetId == userId:
 			status = "received"
 		}

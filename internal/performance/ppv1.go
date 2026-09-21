@@ -11,6 +11,11 @@ import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
+const (
+	ppv1WeightBaseLimit = 1000.0 / 6.0
+	ppv2WeightBaseLimit = 20.0
+)
+
 // PPv1Service is responsible for calculating performance points (v1) for scores.
 // ppv1 reference: https://gist.github.com/peppy/4f8fcb6629d300c56ebe80156b20b76c
 type PPv1Service struct {
@@ -108,10 +113,18 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		basePP *= 0.2
 	}
 
-	// Nerf "easy maps"... idk?
+	// Nerf maps with a high pass ratio, likely being very easy to play
 	if score.Mode != constants.ModeTaiko && passRatio > 0.3 {
 		basePP *= 0.2
 	}
+
+	// NOTE: This pass ratio nerf causes some trouble on Titanic due to
+	//	     a lot of maps having a low playcount.
+	// 		 Initially, the pass ratio may be low, but after a few plays,
+	// 		 the pass ratio can easily exceed 0.3, which will suddenly nerf
+	// 		 all scores at once.
+	// TODO: We could fix this by gradually applying this nerf in relation to playcount
+	//		 This would differ from the original system, but it would make players less confused
 
 	// TODO: Implement SS ratio
 	// 		 For the beatmap/mode top 800 scores:
@@ -197,6 +210,16 @@ func (service *PPv1Service) RecalculateWeightFromScores(scores []*schemas.Score)
 		}
 	}
 	return service.CalculateWeightFromScores(scores), nil
+}
+
+// PPv1ToHumanReadable converts a raw ppv1 score to its display value
+func PPv1ToHumanReadable(score float64) float64 {
+	return math.Max(0, math.Log(score+1)*400)
+}
+
+// PPv1ToV2Estimate converts a raw ppv1 score to an estimated ppv2 value
+func PPv1ToV2Estimate(score float64) float64 {
+	return PPv1ToHumanReadable(score*ppv1WeightBaseLimit) / ppv2WeightBaseLimit
 }
 
 // ResolveEyupStarRating calculates & caches the eyup star rating for a beatmap

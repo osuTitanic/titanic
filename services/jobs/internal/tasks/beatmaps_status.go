@@ -102,6 +102,18 @@ func handlePendingSet(app *state.State, logger *slog.Logger, beatmapset *schemas
 	graveyardTime := PendingToGraveyardTime
 
 	if lastUpdate < graveyardTime {
+		logger.Debug("Beatmapset is still within the pending time window.", "id", beatmapset.Id, "time_left", graveyardTime-lastUpdate)
+		return
+	}
+
+	hasNominations, err := app.Repositories.Nominations.ExistsForSet(beatmapset.Id)
+	if err != nil {
+		logger.Error("Failed to check nominations for beatmapset.", "id", beatmapset.Id, "error", err)
+		return
+	}
+	if hasNominations {
+		// TODO: would be nice to remind users in the forum thread about the pending nomination
+		logger.Info("Beatmapset has nominations, skipping graveyard.", "id", beatmapset.Id, "name", beatmapset.Name())
 		return
 	}
 
@@ -126,6 +138,14 @@ func handlePendingSet(app *state.State, logger *slog.Logger, beatmapset *schemas
 
 func moveBeatmapTopic(app *state.State, beatmapset *schemas.Beatmapset, status constants.BeatmapStatus) {
 	if beatmapset.TopicId == nil {
+		return
+	}
+
+	topic, err := app.Repositories.ForumTopics.ById(*beatmapset.TopicId)
+	if err != nil {
+		return
+	}
+	if !canAutoMoveBeatmapTopic(beatmapset, topic) {
 		return
 	}
 
@@ -205,4 +225,14 @@ func hideScoresForSet(app *state.State, beatmapset *schemas.Beatmapset) {
 		}
 		app.Repositories.Scores.UpdateByBeatmapId(scoreUpdate, "status", "hidden")
 	}
+}
+
+func canAutoMoveBeatmapTopic(beatmapset *schemas.Beatmapset, topic *schemas.ForumTopic) bool {
+	if topic == nil {
+		return false
+	}
+	if beatmapset.Server != constants.BeatmapServerTitanic {
+		return false
+	}
+	return constants.BeatmapForumIds[topic.ForumId]
 }

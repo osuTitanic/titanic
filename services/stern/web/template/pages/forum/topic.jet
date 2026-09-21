@@ -106,6 +106,7 @@ function unlinkTopicFromBeatmap() {
             Regular users are not able to view it.
         </div>
         {{ else if .HasBeatmapset() }}
+        {{ yield beatmapStarPriorityPanel() }}
         <div class="post-info">
             This topic is linked to a beatmapset.
             Click <a href="/s/{{ .Beatmapset.Id }}">here</a> to view it!
@@ -121,6 +122,62 @@ function unlinkTopicFromBeatmap() {
     {{ end }}
     {{ yield forumTopicPost() post }}
     {{ end }}
+{{ end }}
+{{ end }}
+
+{{ block beatmapStarPriorityHistory() }}
+    {{ if len(.BeatmapStarShooters) > 0 }}
+    <div class="star-priority-history">
+        {{ range _, shooter := .BeatmapStarShooters }}
+        <span class="beatmap-star-shooter">
+            <img src="{{ cachedUrl("/images/icons/stars/kudos.png") }}" width="16" height="16" alt="">
+            <a href="/u/{{ shooter.User.Id }}"
+               style="color: {{ shooter.User.DisplayColor() != "" ? shooter.User.DisplayColor() : "#000" }};">
+                {{ shooter.User.Name }}
+            </a>
+            {{ if shooter.Count > 1 }}
+            <span class="beatmap-star-count">x{{ shooter.Count }}</span>
+            {{ end }}
+        </span>
+        {{ end }}
+    </div>
+    {{ end }}
+{{ end }}
+
+{{ block beatmapStarPriorityPanel() }}
+{{ if .ShowStarPriorityPanel || len(.BeatmapStarShooters) > 0 }}
+<div class="star-priority-panel">
+    {{ yield beatmapStarPriorityHistory() }}
+
+    {{ if .ShowStarPriorityPanel }}
+    <div class="star-priority-controls">
+        <div class="star-priority-current">
+            <span class="star-priority-label">Current Priority:</span>
+            +<span class="star-priority-value-{{ .Beatmapset.Id }}">{{ .Beatmapset.StarPriority }}</span>
+        </div>
+
+        {{ if .ShowKudosuStarBalance }}
+            {{ if .CanSpendKudosuStar }}
+                <div class="star-priority-action">
+                <a href="#"
+                class="kudosu-star-action kudosu-star-action-{{ .Beatmapset.Id }}"
+                style="font-size:120%; width:250px;"
+                onclick="return spendKudosuStar({{ .Beatmapset.Id }})">
+                    Shoot a Kudosu Star! (-1 kudosu)
+                </a>
+            </div>
+            {{ end }}
+
+            <div class="star-priority-balance">
+                You have <b><span class="kudosu-balance-value">{{ .CurrentUser.Kudosu }}</span> kudosu</b> remaining.
+                {{ if .ShowKudosuEarningHint }}
+                You can earn kudosu by helping mod this map! You will gain <b>{{ .KudosuReward }} kudosu</b> if you mod this map.
+                {{ end }}
+            </div>
+        {{ end }}
+    </div>
+    {{ end }}
+</div>
 {{ end }}
 {{ end }}
 
@@ -273,24 +330,34 @@ function unlinkTopicFromBeatmap() {
     {{ kudosu := .LatestKudosu }}
     <div class="kudosu-box">
         <p style="color: {{ .KudosuStatusColor() }}" id="kudosu-status-{{ .Post.Id }}">
-            {{ if .KudosuTotal > 0 }}
-            Earned {{ .KudosuTotal|formatNumber }} kudosu.
-            {{ else if .KudosuTotal == 0 }}
-            No kudosu yet.
+            {{ if .IsKudosuExempt() }}
+            Post is exempt of kudosu.
+            {{ else if .IsKudosuDenied() }}
+            <b>Denied kudosu.</b>
+            {{ else if .KudosuTotal > 0 }}
+            <b>Earned {{ .KudosuTotal|formatNumber }} kudosu.</b>
             {{ else }}
-            Lost {{ .AbsoluteKudosuTotal()|formatNumber }} kudosu.
+            No kudosu yet.
             {{ end }}
         </p>
         {{ if .CanManageKudosu }}
-            {{ if kudosu && kudosu.Amount > 0 && .CanRevokeKudosu }}
+            {{ if kudosu && kudosu.Amount > 0 }}
+                {{ if .CanRevokeKudosu }}
                 {* BATs can revoke existing kudosu *}
-                <a onclick="revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a>
-            {{ else if kudosu && .CanResetKudosu }}
+                <div><b><a href="#" onclick="return revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a></b></div>
+                {{ end }}
+            {{ else if kudosu }}
+                {{ if .CanResetKudosu }}
                 {* Kudosu was revoked -> BATs have the option to reset it *}
-                <a onclick="resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a>
-            {{ else if !kudosu }}
-                {* Eligible posts without kudosu can be rewarded *}
-                <a onclick="giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a>
+                <div><b><a href="#" onclick="return resetKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Reset Kudos</a></b></div>
+                {{ end }}
+            {{ else }}
+                {{ if .CanRewardKudosu }}
+                <div><b><a href="#" onclick="return giveKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Give Kudos</a></b></div>
+                {{ end }}
+                {{ if .CanRevokeKudosu }}
+                <div><b><a href="#" onclick="return revokeKudos({{ .Post.Id }}, {{ .BeatmapsetId }})">Deny Kudos</a></b></div>
+                {{ end }}
             {{ end }}
         {{ end }}
     </div>

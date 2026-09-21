@@ -53,6 +53,7 @@ type ForumTopic struct {
 	IconId        *constants.ForumIcon `gorm:"column:icon"`
 	CanChangeIcon bool                 `gorm:"column:can_change_icon;default:true"`
 	CanStar       bool                 `gorm:"column:can_star;default:false"`
+	StarPriority  int                  `gorm:"column:star_priority;default:0"`
 	Announcement  bool                 `gorm:"column:announcement;default:false"`
 	Hidden        bool                 `gorm:"column:hidden;default:false"`
 	Pinned        bool                 `gorm:"column:pinned;default:false"`
