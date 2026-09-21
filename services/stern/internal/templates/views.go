@@ -611,6 +611,7 @@ type BeatmapView struct {
 	Beatmapset            *schemas.Beatmapset
 	Mode                  constants.Mode
 	Mods                  string
+	ModGroups             []BeatmapModGroup
 	Scores                []*schemas.Score
 	PersonalBest          *schemas.Score
 	PersonalBestRank      int
