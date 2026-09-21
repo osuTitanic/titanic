@@ -83,6 +83,13 @@ func AccountProfileUpdate(ctx *server.Context) {
 		mode = constants.Mode(parsed)
 	}
 
+	// TODO: Move to enum system after deck rewrite
+	ranking := ctx.CurrentUser.PreferredRanking
+	switch parsed := ctx.FormValue("ranking"); parsed {
+	case "global", "ppv1", "rscore", "tscore", "clears":
+		ranking = constants.RankingType(parsed)
+	}
+
 	var twitterUrl *string
 	if twitter != nil {
 		formatted := "https://twitter.com/" + twitterHandle(*twitter)
@@ -90,18 +97,20 @@ func AccountProfileUpdate(ctx *server.Context) {
 	}
 
 	updates := &schemas.User{
-		Id:            ctx.CurrentUser.Id,
-		PreferredMode: mode,
-		Interests:     interests,
-		Location:      location,
-		Website:       website,
-		Discord:       discord,
-		Twitter:       twitterUrl,
+		Id:               ctx.CurrentUser.Id,
+		PreferredMode:    mode,
+		PreferredRanking: ranking,
+		Interests:        interests,
+		Location:         location,
+		Website:          website,
+		Discord:          discord,
+		Twitter:          twitterUrl,
 	}
 
 	_, err := ctx.State.Users.Update(
 		updates,
 		"preferred_mode",
+		"preferred_ranking",
 		"userpage_interests",
 		"userpage_location",
 		"userpage_website",
@@ -116,6 +125,7 @@ func AccountProfileUpdate(ctx *server.Context) {
 
 	// Reflect the changes on the in-memory user for the re-rendered form
 	ctx.CurrentUser.PreferredMode = mode
+	ctx.CurrentUser.PreferredRanking = ranking
 	ctx.CurrentUser.Interests = interests
 	ctx.CurrentUser.Location = location
 	ctx.CurrentUser.Website = website

@@ -87,6 +87,17 @@
             </dd>
         </div>
 
+        <div class="inner-section">
+            <dt><label></label><b>Preferred Ranking:</b></label></dt>
+            <dd>
+                <input type="radio" name="ranking" value="global" {{ if .CurrentUser.PreferredRanking == "global" || .CurrentUser.PreferredRanking == "performance" }}checked{{ end }}>PPv2</input>
+                <input type="radio" name="ranking" value="ppv1" {{ if .CurrentUser.PreferredRanking == "ppv1" }}checked{{ end }}>PPv1</input>
+                <input type="radio" name="ranking" value="rscore" {{ if .CurrentUser.PreferredRanking == "rscore" }}checked{{ end }}>Ranked Score</input>
+                <input type="radio" name="ranking" value="tscore" {{ if .CurrentUser.PreferredRanking == "tscore" }}checked{{ end }}>Total Score</input>
+                <input type="radio" name="ranking" value="clears" {{ if .CurrentUser.PreferredRanking == "clears" }}checked{{ end }}>Clears</input>
+            </dd>
+        </div>
+
         <dd><input class="submit-button" type="submit" name="submit" value="Save"></dd>
     </dl>
     <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}"/>
