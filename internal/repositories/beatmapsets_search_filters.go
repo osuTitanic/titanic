@@ -35,6 +35,7 @@ var (
 		"cs":         numberSearchFilter("beatmaps.cs"),
 		"od":         numberSearchFilter("beatmaps.od"),
 		"hp":         numberSearchFilter("beatmaps.hp"),
+		"enhanced":   booleanSearchFilter("beatmapsets.enhanced"),
 	}
 
 	// Mapping of beatmap status names to their corresponding constants, used in `parseBeatmapStatus`
