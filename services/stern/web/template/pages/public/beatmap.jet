@@ -416,10 +416,10 @@
 {{ else }}
 <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
 {{ end }}
+{{ if len(.Scores) > 0 }}
 {{ if .IsAuthenticated() }}
 {{ yield modSelector() }}
 {{ end }}
-{{ if len(.Scores) > 0 }}
 <table class="scores">
     <thead class="scores-header">
         <tr>
