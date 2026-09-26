@@ -221,7 +221,7 @@ func (processor *Processor) validateReplay() (ResultType, error) {
 	// So, unfortunatly, we have to guess from the replay itself,
 	// which is better than nothing, I guess.
 
-	detected, score := replays.DetectTouchscreenUsage(frames, 0.8)
+	detected, score := replays.DetectTouchscreenUsage(frames, 0.45)
 	submission.Touchscreen = detected
 
 	if detected {
