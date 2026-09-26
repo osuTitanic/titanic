@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/ulikunitz/xz/lzma"
 )
 
@@ -115,4 +117,152 @@ func DeserializeFrames(data []byte) (frames []Frame, seed int64, err error) {
 		})
 	}
 	return frames, seed, nil
+}
+
+func Deserialize(data []byte) (*schemas.Score, []Frame, int64, error) {
+	reader := bytes.NewReader(data)
+
+	mode, err := readU8(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read mode: %w", err)
+	}
+
+	clientVersion, err := readS32(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read client version: %w", err)
+	}
+
+	beatmapChecksum, err := readString(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read beatmap checksum: %w", err)
+	}
+
+	username, err := readString(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read username: %w", err)
+	}
+
+	scoreChecksum, err := readString(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read score checksum: %w", err)
+	}
+
+	count300, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read count300: %w", err)
+	}
+
+	count100, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read count100: %w", err)
+	}
+
+	count50, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read count50: %w", err)
+	}
+
+	countGeki, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read countGeki: %w", err)
+	}
+
+	countKatu, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read countKatu: %w", err)
+	}
+
+	countMiss, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read countMiss: %w", err)
+	}
+
+	totalScore, err := readU32(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read total score: %w", err)
+	}
+
+	maxCombo, err := readU16(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read max combo: %w", err)
+	}
+
+	perfect, err := readBool(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read perfect: %w", err)
+	}
+
+	mods, err := readU32(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read mods: %w", err)
+	}
+
+	if _, err := readString(reader); err != nil {
+		return nil, nil, 0, fmt.Errorf("read hp graph: %w", err)
+	}
+
+	timestamp, err := readS64(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read timestamp: %w", err)
+	}
+
+	replayLength, err := readU32(reader)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read replay length: %w", err)
+	}
+
+	if int(replayLength) > reader.Len() {
+		return nil, nil, 0, fmt.Errorf(
+			"invalid replay length: %d bytes requested, %d remaining",
+			replayLength, reader.Len(),
+		)
+	}
+
+	replayData := make([]byte, replayLength)
+	if _, err := io.ReadFull(reader, replayData); err != nil {
+		return nil, nil, 0, fmt.Errorf("read replay data: %w", err)
+	}
+
+	var scoreId uint64
+
+	if clientVersion >= 20140721 {
+		scoreId, err = readU64(reader)
+	} else {
+		var id uint32
+		id, err = readU32(reader)
+		scoreId = uint64(id)
+	}
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("read score id: %w", err)
+	}
+
+	frames, seed, err := DeserializeFrames(replayData)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("deserialize replay frames: %w", err)
+	}
+
+	score := &schemas.Score{
+		Id:            int64(scoreId),
+		ClientVersion: int(clientVersion),
+		Checksum:      scoreChecksum,
+		Mode:          constants.Mode(mode),
+		Count300:      int(count300),
+		Count100:      int(count100),
+		Count50:       int(count50),
+		CountGeki:     int(countGeki),
+		CountKatu:     int(countKatu),
+		CountMiss:     int(countMiss),
+		TotalScore:    int64(totalScore),
+		MaxCombo:      int(maxCombo),
+		Perfect:       perfect,
+		Mods:          constants.Mods(mods),
+		SubmittedAt:   timeFromTicks(timestamp),
+		Beatmap: &schemas.Beatmap{
+			Checksum: beatmapChecksum,
+		},
+		User: &schemas.User{
+			Name: username,
+		},
+	}
+	return score, frames, seed, nil
 }

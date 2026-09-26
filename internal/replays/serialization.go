@@ -58,3 +58,15 @@ func ticks(t time.Time) int64 {
 	seconds := t.Unix() + dotNetEpochOffset
 	return seconds*ticksPerSecond + int64(t.Nanosecond())/100
 }
+
+func timeFromTicks(ticks int64) time.Time {
+	unixTicks := ticks - dotNetEpochOffset*ticksPerSecond
+	remainingTicks := unixTicks % ticksPerSecond
+	seconds := unixTicks / ticksPerSecond
+
+	if remainingTicks < 0 {
+		seconds--
+		remainingTicks += ticksPerSecond
+	}
+	return time.Unix(seconds, remainingTicks*100).UTC()
+}
