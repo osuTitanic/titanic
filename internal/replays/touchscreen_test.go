@@ -1,10 +1,16 @@
 package replays
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 )
+
+var touchscreenUsers = []string{
+	"skita",
+	"wyoming",
+}
 
 func TestTouchscreenUsage(t *testing.T) {
 	dir, err := testdata.ReadDir("testdata")
@@ -14,15 +20,18 @@ func TestTouchscreenUsage(t *testing.T) {
 
 	for _, entry := range dir {
 		t.Run(entry.Name(), func(t *testing.T) {
-			score, frames, _ := replayFixtureDeserialized(t, entry.Name())
-			if score.Mode != constants.ModeOsu {
+			s, frames, _ := replayFixtureDeserialized(t, entry.Name())
+			if s.Mode != constants.ModeOsu {
 				t.Skip("not an osu standard replay")
 			}
 
-			detected, confidence := DetectTouchscreenUsage(frames, 0.5)
-			t.Logf("detected: %t, score: %f", detected, confidence)
+			detected, score := DetectTouchscreenUsage(frames, 0.45)
+			t.Logf("detected: %t, score: %f", detected, score)
 
-			// TODO: Add assertions
+			isTouchscreenUser := slices.Contains(touchscreenUsers, s.User.Name)
+			if detected != isTouchscreenUser {
+				t.Errorf("detected: %t, expected: %t", detected, isTouchscreenUser)
+			}
 		})
 	}
 }
