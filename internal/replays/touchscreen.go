@@ -110,10 +110,9 @@ func isPressAfterTeleport(pressTime, lastTeleportTime int, hasTeleport bool) boo
 func calculateTouchscreenScore(teleportRatio, pressTeleportRatio, p95Speed float64) float64 {
 	teleportScore := min(teleportRatio/0.06, 1.0)
 	pressScore := min(pressTeleportRatio/0.30, 1.0)
-	speedScore := min(p95Speed/4.0, 1.0)
+	speedScore := normalize(p95Speed, 3.0, 6.0) // as it turns out, this is actually not a very useful factor
 
-	// TODO: figure out weighting for these factors, currently just a guess
-	return teleportScore*0.35 + pressScore*0.45 + speedScore*0.20
+	return teleportScore*0.25 + pressScore*0.70 + speedScore*0.05
 }
 
 // Adapted from https://github.com/montanaflynn/stats/blob/master/percentile.go (MIT)
@@ -140,4 +139,14 @@ func calculatePercentile(input []float64, percent float64) float64 {
 	}
 
 	return c[k]
+}
+
+func normalize(value, low, high float64) float64 {
+	if value <= low {
+		return 0
+	}
+	if value >= high {
+		return 1
+	}
+	return (value - low) / (high - low)
 }
