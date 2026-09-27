@@ -26,7 +26,7 @@ func TestFileStorageSetup(t *testing.T) {
 	}
 
 	storage := NewFileStorage(dataPath)
-	if err := storage.Setup(); err != nil {
+	if err := storage.Setup(t.Context()); err != nil {
 		t.Fatalf("Setup() failed: %v", err)
 	}
 
@@ -44,5 +44,3 @@ func TestFileStorageSetup(t *testing.T) {
 
 	// TODO: `Save`, `Exists`, `Get` & `Remove` roundtrip tests
 }
-
-// TODO: S3 storage backend test (requires mocking the S3 API)
