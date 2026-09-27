@@ -41,7 +41,7 @@ func LegacyLogin(ctx *server.Context) {
 	// However, if the client has called this endpoint in the right
 	// time frame we allow them to connect without a token using this lock
 	key := "bancho:irc_login:" + user.SafeName
-	if err := ctx.State.Redis.Set(ctx.Request.Context(), key, ctx.IP(), loginLockTTL).Err(); err != nil {
+	if err := ctx.State.Redis.Set(ctx.Context(), key, ctx.IP(), loginLockTTL).Err(); err != nil {
 		ctx.Logger.Error("Failed to create login lock", "user_id", user.Id, "error", err)
 		ctx.RenderText(http.StatusInternalServerError, "0")
 		return

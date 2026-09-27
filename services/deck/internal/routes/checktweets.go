@@ -14,7 +14,7 @@ import (
 // twitter, which would be displayed on the client side.
 func CheckTweets(ctx *server.Context) {
 	message, err := ctx.State.Redis.Get(
-		ctx.Request.Context(),
+		ctx.Context(),
 		"bancho:statusmessage",
 	).Result()
 

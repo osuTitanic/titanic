@@ -83,7 +83,7 @@ func ScoreReplayDownload(ctx *server.Context) {
 		return
 	}
 
-	data, err := ctx.State.Storage.Read(ctx.Request.Context(), strconv.FormatInt(score.Id, 10), "replays")
+	data, err := ctx.State.Storage.Read(ctx.Context(), strconv.FormatInt(score.Id, 10), "replays")
 	if err != nil {
 		// No replay data stored for this score
 		NotFound(ctx)

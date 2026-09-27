@@ -32,7 +32,7 @@ func Screenshot(ctx *server.Context) {
 		return
 	}
 
-	image, err := ctx.State.Storage.Read(ctx.Request.Context(), strconv.Itoa(id), "screenshots")
+	image, err := ctx.State.Storage.Read(ctx.Context(), strconv.Itoa(id), "screenshots")
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return

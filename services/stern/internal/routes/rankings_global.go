@@ -259,7 +259,7 @@ func resolveTotalBeatmaps(ctx *server.Context, mode constants.Mode) (int, error)
 		keys[i] = fmt.Sprintf("bancho:totalbeatmaps:%d:%d", mode.Value(), status.Value())
 	}
 
-	counts, err := ctx.State.Redis.MGet(ctx.Request.Context(), keys...).Result()
+	counts, err := ctx.State.Redis.MGet(ctx.Context(), keys...).Result()
 	if err != nil {
 		return 0, err
 	}

@@ -24,7 +24,7 @@ func BeatmapFile(ctx *server.Context) {
 		return
 	}
 
-	stream, err := ctx.State.Resources.Osu(ctx.Request.Context(), beatmap.Id)
+	stream, err := ctx.State.Resources.Osu(ctx.Context(), beatmap.Id)
 	if err != nil {
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return

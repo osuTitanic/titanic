@@ -37,7 +37,7 @@ func Coins(ctx *server.Context) {
 	key := "bancho:coins:" + strconv.Itoa(user.Id)
 
 	// Set to initial coin balance if it doesn't exist (NX)
-	if err := ctx.State.Redis.SetNX(ctx.Request.Context(), key, initialCoinBalance, 0).Err(); err != nil {
+	if err := ctx.State.Redis.SetNX(ctx.Context(), key, initialCoinBalance, 0).Err(); err != nil {
 		ctx.Logger.Error("Failed to initialize coin balance", "user_id", user.Id, "error", err)
 		ctx.Response.WriteHeader(http.StatusInternalServerError)
 		return
@@ -58,16 +58,16 @@ func Coins(ctx *server.Context) {
 	switch action {
 	case "earn":
 		amount = 1
-		coins, err = ctx.State.Redis.IncrBy(ctx.Request.Context(), key, amount).Result()
+		coins, err = ctx.State.Redis.IncrBy(ctx.Context(), key, amount).Result()
 	case "use":
 		amount = -1
-		coins, err = ctx.State.Redis.IncrBy(ctx.Request.Context(), key, amount).Result()
+		coins, err = ctx.State.Redis.IncrBy(ctx.Context(), key, amount).Result()
 	case "recharge":
 		amount = rechargeCoinBalance
 		coins = rechargeCoinBalance
-		err = ctx.State.Redis.Set(ctx.Request.Context(), key, coins, 0).Err()
+		err = ctx.State.Redis.Set(ctx.Context(), key, coins, 0).Err()
 	default:
-		coins, err = ctx.State.Redis.Get(ctx.Request.Context(), key).Int64()
+		coins, err = ctx.State.Redis.Get(ctx.Context(), key).Int64()
 	}
 	if err != nil {
 		ctx.Logger.Error("Failed to update coin balance", "user_id", user.Id, "action", action, "error", err)

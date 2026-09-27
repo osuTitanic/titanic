@@ -94,7 +94,7 @@ func renderStatsResponse(username string, ctx *server.Context) {
 func resolveAvatarChecksum(userId int, ctx *server.Context) (string, error) {
 	// Check if the avatar checksum is already cached
 	result := ctx.State.Redis.Get(
-		ctx.Request.Context(),
+		ctx.Context(),
 		fmt.Sprintf("bancho:avatar_hash:%d", userId),
 	)
 
@@ -109,7 +109,7 @@ func resolveAvatarChecksum(userId int, ctx *server.Context) (string, error) {
 	}
 
 	ctx.State.Redis.Set(
-		ctx.Request.Context(),
+		ctx.Context(),
 		fmt.Sprintf("bancho:avatar_hash:%d", userId),
 		checksum, time.Hour*24,
 	)

@@ -42,7 +42,7 @@ func (ctx *Context) AuthenticateUser(
 	}
 
 	online, err := ctx.State.BanchoUsers.Exists(
-		ctx.Request.Context(),
+		ctx.Context(),
 		user.Id,
 	)
 	if err != nil {

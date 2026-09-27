@@ -160,7 +160,7 @@ func proxyReleaseAsset(ctx *server.Context, target string) {
 }
 
 func serveLocalReleaseFile(ctx *server.Context, key string, downloadFilename string) bool {
-	stream, size, err := ctx.State.Storage.ReadStreamAt(ctx.Request.Context(), key, "release")
+	stream, size, err := ctx.State.Storage.ReadStreamAt(ctx.Context(), key, "release")
 	if err != nil {
 		return false
 	}
@@ -230,7 +230,7 @@ func serveRemoteReleaseFile(ctx *server.Context, file *schemas.ReleaseFiles, tar
 
 func newReleaseRequest(ctx *server.Context, target string) (*http.Request, error) {
 	request, err := http.NewRequestWithContext(
-		ctx.Request.Context(),
+		ctx.Context(),
 		http.MethodGet, target, nil,
 	)
 	if err != nil {

@@ -103,16 +103,16 @@ func AccountLogin(ctx *server.Context) {
 	remember := ctx.Request.FormValue("remember") != ""
 	sessionTTL, persistCookie := resolveWebsiteSessionLifetime(remember)
 
-	session, err := ctx.State.SessionStore.Create(ctx.Request.Context(), user.Id, time.Now(), sessionTTL)
+	session, err := ctx.State.SessionStore.Create(ctx.Context(), user.Id, time.Now(), sessionTTL)
 	if err != nil {
 		ctx.Logger.Error("Failed to create website session", "user_id", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	token, err := ctx.State.CSRFStore.Upsert(ctx.Request.Context(), user.Id)
+	token, err := ctx.State.CSRFStore.Upsert(ctx.Context(), user.Id)
 	if err != nil {
-		ctx.State.SessionStore.Delete(ctx.Request.Context(), session.Id)
+		ctx.State.SessionStore.Delete(ctx.Context(), session.Id)
 		ctx.Logger.Error("Failed to create csrf token", "user_id", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
@@ -185,7 +185,7 @@ func resolveLoginUser(ctx *server.Context, identifier string) (*schemas.User, er
 
 func hasTooManyLoginAttempts(ctx *server.Context) (bool, error) {
 	key := "logins:" + ctx.IP()
-	attempts, err := ctx.State.Redis.Get(ctx.Request.Context(), key).Int()
+	attempts, err := ctx.State.Redis.Get(ctx.Context(), key).Int()
 	if err == nil {
 		return attempts > 30, nil
 	}
@@ -197,8 +197,8 @@ func hasTooManyLoginAttempts(ctx *server.Context) (bool, error) {
 
 func recordLoginAttempt(ctx *server.Context) error {
 	key := "logins:" + ctx.IP()
-	if err := ctx.State.Redis.Incr(ctx.Request.Context(), key).Err(); err != nil {
+	if err := ctx.State.Redis.Incr(ctx.Context(), key).Err(); err != nil {
 		return err
 	}
-	return ctx.State.Redis.Expire(ctx.Request.Context(), key, 30*time.Second).Err()
+	return ctx.State.Redis.Expire(ctx.Context(), key, 30*time.Second).Err()
 }

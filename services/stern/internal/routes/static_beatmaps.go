@@ -23,7 +23,7 @@ func BeatmapThumbnail(ctx *server.Context) {
 		return
 	}
 
-	stream, err := ctx.State.Resources.Background(ctx.Request.Context(), setId, large)
+	stream, err := ctx.State.Resources.Background(ctx.Context(), setId, large)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -52,7 +52,7 @@ func BeatmapAudioPreview(ctx *server.Context) {
 		return
 	}
 
-	stream, err := ctx.State.Resources.Preview(ctx.Request.Context(), setId)
+	stream, err := ctx.State.Resources.Preview(ctx.Context(), setId)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -96,7 +96,7 @@ func BeatmapDownload(ctx *server.Context) {
 	// noVideo can only be true if the beatmapset has videos
 	noVideo = noVideo && beatmapset.HasVideo
 
-	oszStream, oszSize, err := ctx.State.Resources.Osz(ctx.Request.Context(), setId, noVideo)
+	oszStream, oszSize, err := ctx.State.Resources.Osz(ctx.Context(), setId, noVideo)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return

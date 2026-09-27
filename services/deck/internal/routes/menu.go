@@ -87,7 +87,7 @@ func MenuIcon(ctx *server.Context) {
 
 func fetchTitleImageContents(ctx *server.Context) ([]byte, error) {
 	request, err := http.NewRequestWithContext(
-		ctx.Request.Context(),
+		ctx.Context(),
 		http.MethodGet,
 		ctx.State.Config.MenuIconImage,
 		nil,

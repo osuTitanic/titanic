@@ -41,7 +41,7 @@ func Replay(ctx *server.Context) {
 	}
 
 	rawReplay, err := ctx.State.Storage.ReadStream(
-		ctx.Request.Context(),
+		ctx.Context(),
 		strconv.FormatInt(score.Id, 10),
 		"replays",
 	)
@@ -87,7 +87,7 @@ func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server
 		viewer.Id, score.User.Id,
 	)
 	cooldown, err := ctx.State.Redis.Get(
-		ctx.Request.Context(),
+		ctx.Context(),
 		cooldownKey,
 	).Result()
 
@@ -98,7 +98,7 @@ func increaseReplayViews(viewer *schemas.User, score *schemas.Score, ctx *server
 		return nil
 	}
 	ctx.State.Redis.Set(
-		ctx.Request.Context(),
+		ctx.Context(),
 		cooldownKey, "1", replayViewCooldown,
 	)
 

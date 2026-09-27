@@ -41,7 +41,7 @@ func Screenshot(ctx *server.Context) {
 	}
 
 	key := strconv.Itoa(screenshot.Id)
-	if err := ctx.State.Storage.Save(ctx.Request.Context(), key, "screenshots", image); err != nil {
+	if err := ctx.State.Storage.Save(ctx.Context(), key, "screenshots", image); err != nil {
 		ctx.Logger.Error("Failed to store screenshot", "id", screenshot.Id, "error", err)
 		deleteScreenshotRecord(ctx, screenshot)
 		ctx.Response.WriteHeader(http.StatusInternalServerError)

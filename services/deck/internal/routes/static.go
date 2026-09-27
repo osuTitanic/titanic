@@ -53,7 +53,7 @@ func BeatmapDownload(ctx *server.Context) {
 	// noVideo can only be true if the beatmapset has videos
 	noVideo = noVideo && beatmapset.HasVideo
 
-	oszStream, oszSize, err := ctx.State.Resources.Osz(ctx.Request.Context(), setId, noVideo)
+	oszStream, oszSize, err := ctx.State.Resources.Osz(ctx.Context(), setId, noVideo)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -100,7 +100,7 @@ func BeatmapThumbnail(ctx *server.Context) {
 		return
 	}
 
-	stream, err := ctx.State.Resources.Background(ctx.Request.Context(), setId, large)
+	stream, err := ctx.State.Resources.Background(ctx.Context(), setId, large)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -129,7 +129,7 @@ func BeatmapAudioPreview(ctx *server.Context) {
 		return
 	}
 
-	stream, err := ctx.State.Resources.Preview(ctx.Request.Context(), setId)
+	stream, err := ctx.State.Resources.Preview(ctx.Context(), setId)
 	if err != nil {
 		ctx.Response.WriteHeader(404)
 		return
@@ -164,7 +164,7 @@ func ScreenshotImage(ctx *server.Context) {
 		return
 	}
 
-	image, err := ctx.State.Storage.Read(ctx.Request.Context(), strconv.Itoa(id), "screenshots")
+	image, err := ctx.State.Storage.Read(ctx.Context(), strconv.Itoa(id), "screenshots")
 	if err != nil {
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return
@@ -242,7 +242,7 @@ func serveAvatar(ctx *server.Context, avatarFilename string, size int) {
 		return
 	}
 
-	avatar, err := ctx.State.Storage.Read(ctx.Request.Context(), strconv.Itoa(userId), "avatars")
+	avatar, err := ctx.State.Storage.Read(ctx.Context(), strconv.Itoa(userId), "avatars")
 	if err != nil {
 		ctx.Logger.Error("Failed to read avatar", "userId", userId, "error", err)
 		DefaultAvatar(ctx)
@@ -267,7 +267,7 @@ func serveAvatar(ctx *server.Context, avatarFilename string, size int) {
 }
 
 func DefaultAvatar(ctx *server.Context) {
-	defaultAvatar, err := ctx.State.Storage.ReadStream(ctx.Request.Context(), "unknown", "avatars")
+	defaultAvatar, err := ctx.State.Storage.ReadStream(ctx.Context(), "unknown", "avatars")
 	if err != nil {
 		ctx.Logger.Error("Failed to read default avatar", "error", err)
 		ctx.Response.WriteHeader(404)
