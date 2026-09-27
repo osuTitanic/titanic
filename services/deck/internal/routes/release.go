@@ -160,7 +160,7 @@ func proxyReleaseAsset(ctx *server.Context, target string) {
 }
 
 func serveLocalReleaseFile(ctx *server.Context, key string, downloadFilename string) bool {
-	stream, size, err := ctx.State.Storage.ReadStreamAt(key, "release")
+	stream, size, err := ctx.State.Storage.ReadStreamAt(ctx.Request.Context(), key, "release")
 	if err != nil {
 		return false
 	}

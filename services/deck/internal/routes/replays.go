@@ -41,6 +41,7 @@ func Replay(ctx *server.Context) {
 	}
 
 	rawReplay, err := ctx.State.Storage.ReadStream(
+		ctx.Request.Context(),
 		strconv.FormatInt(score.Id, 10),
 		"replays",
 	)

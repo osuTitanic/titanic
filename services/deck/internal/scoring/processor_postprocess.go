@@ -68,6 +68,7 @@ func (processor *Processor) uploadReplay() error {
 	// TODO: Cache replay if not in rank range
 
 	return processor.context.State.Storage.Save(
+		context.WithoutCancel(processor.context.Request.Context()),
 		strconv.FormatInt(submission.Id, 10),
 		"replays",
 		submission.Replay,
