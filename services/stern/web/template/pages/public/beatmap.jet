@@ -569,6 +569,10 @@
     TODO: Add Disqus-like frontend, but 1st party instead of relying on Disqus itself.
           Also archive all of the disqus comments, they are not going to be around forever.
 *}
+{*
+    NOTE: Seems like disqus is dead... and we don't have an archive...
+}*
+{*
 {{ if .Beatmapset.Server == 0 }}
 <div id="disqus_thread" style="margin-top: 10px; padding-left: 7px; padding-right: 8px"></div>
 <script type="text/javascript">
@@ -590,6 +594,7 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 {{ end }}
+*}
 {{ end }}
 
 {{ block beatmapScripts() }}
