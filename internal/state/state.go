@@ -81,7 +81,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		}
 	}
 
-	if err := storageProvider.Setup(); err != nil {
+	if err := storageProvider.Setup(context.Background()); err != nil {
 		return nil, fmt.Errorf("state: failed to setup storage: %w", err)
 	}
 
@@ -128,7 +128,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		repos.ResourceMirrors,
 		repos.Beatmapsets,
 	)
-	if err := beatmapResources.Setup(); err != nil {
+	if err := beatmapResources.Setup(context.Background()); err != nil {
 		geolocation.Close()
 		database.CloseSession(db)
 		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)

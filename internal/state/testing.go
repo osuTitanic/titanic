@@ -3,6 +3,7 @@
 package state
 
 import (
+	"context"
 	"log/slog"
 	"net"
 	"strconv"
@@ -79,7 +80,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 	}
 
 	storage := storage.NewFileStorage(cfg.DataPath)
-	if err := storage.CreateDefaultFolders(); err != nil {
+	if err := storage.CreateDefaultFolders(context.Background()); err != nil {
 		t.Fatalf("failed to setup storage: %v", err)
 	}
 	repositories := NewRepositories(db)
@@ -89,7 +90,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		repositories.ResourceMirrors,
 		repositories.Beatmapsets,
 	)
-	if err := beatmapResources.Setup(); err != nil {
+	if err := beatmapResources.Setup(context.Background()); err != nil {
 		t.Fatalf("failed to setup beatmap resources: %v", err)
 	}
 
