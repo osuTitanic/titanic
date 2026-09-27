@@ -23,6 +23,7 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	return templates.DefaultView{
 		Stats:             buildStatistics(ctx.State),
 		Query:             ctx.Request.URL.Query(),
+		Referer:           ctx.Request.Referer(),
 		Config:            ctx.State.Config,
 		CSRFToken:         ctx.CSRFToken,
 		CurrentUser:       ctx.CurrentUser,

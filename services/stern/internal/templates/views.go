@@ -31,6 +31,7 @@ type DefaultView struct {
 	CSRFToken         string
 	CurrentPath       string
 	CurrentURI        string
+	Referer           string
 	NotificationCount int
 	IsModernBrowser   bool
 	IsIE              bool
