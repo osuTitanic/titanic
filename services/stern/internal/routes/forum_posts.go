@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"cmp"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -68,6 +69,10 @@ func ForumPostEditorView(ctx *server.Context) {
 	}
 	actionId, _ := ctx.QueryValueInt64("id")
 
+	// When clicking on "Cancel" we want to go back to the previous page preferably
+	defaultCancelUrl := fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id)
+	cancelUrl := cmp.Or(ctx.Request.Referer(), defaultCancelUrl)
+
 	// The post being edited or quoted, if any
 	var referencedPost *schemas.ForumPost
 	if action == forumActionEdit || action == forumActionQuote {
@@ -107,7 +112,7 @@ func ForumPostEditorView(ctx *server.Context) {
 	editor := templates.ForumEditorContext{
 		Content:          content,
 		SubmitText:       strings.Title(action),
-		CancelUrl:        fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id),
+		CancelUrl:        cancelUrl,
 		FocusBody:        true,
 		Subject:          topic.Title,
 		ShowSubject:      editingInitialPost,
