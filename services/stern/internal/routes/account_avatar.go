@@ -85,7 +85,7 @@ func AccountAvatarUpdate(ctx *server.Context) {
 		return
 	}
 
-	if err := ctx.State.Storage.Save(strconv.Itoa(user.Id), "avatars", resized); err != nil {
+	if err := ctx.State.Storage.Save(ctx.Request.Context(), strconv.Itoa(user.Id), "avatars", resized); err != nil {
 		ctx.Logger.Error("Failed to upload avatar", "user", user.Id, "error", err)
 		InternalServerError(ctx)
 		return

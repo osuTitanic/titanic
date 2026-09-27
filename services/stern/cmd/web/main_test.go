@@ -341,7 +341,7 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 		if updated.AvatarHash == nil || *updated.AvatarHash == "" {
 			t.Fatal("avatar hash was not updated")
 		}
-		if !app.Storage.Exists(strconv.Itoa(data.user.Id), "avatars") {
+		if !app.Storage.Exists(t.Context(), strconv.Itoa(data.user.Id), "avatars") {
 			t.Fatal("avatar file was not saved")
 		}
 	})

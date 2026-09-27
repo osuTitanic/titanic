@@ -47,7 +47,7 @@ func Avatar(ctx *server.Context) {
 		return
 	}
 
-	avatar, err := ctx.State.Storage.Read(strconv.Itoa(userId), "avatars")
+	avatar, err := ctx.State.Storage.Read(ctx.Request.Context(), strconv.Itoa(userId), "avatars")
 	if err != nil {
 		ctx.Logger.Error("Failed to read avatar", "userId", userId, "error", err)
 		DefaultAvatar(ctx)
@@ -72,7 +72,7 @@ func Avatar(ctx *server.Context) {
 }
 
 func DefaultAvatar(ctx *server.Context) {
-	defaultAvatar, err := ctx.State.Storage.ReadStream("unknown", "avatars")
+	defaultAvatar, err := ctx.State.Storage.ReadStream(ctx.Request.Context(), "unknown", "avatars")
 	if err != nil {
 		ctx.Logger.Error("Failed to read default avatar", "error", err)
 		ctx.Response.WriteHeader(404)
