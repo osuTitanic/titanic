@@ -2,6 +2,7 @@ package resources
 
 import (
 	"archive/zip"
+	"context"
 	"io"
 	"path"
 	"strings"
@@ -32,8 +33,8 @@ func IsVideoFile(name string) bool {
 	return ok
 }
 
-func StreamWithoutVideo(store storage.Storage, key string) (io.ReadCloser, int64, error) {
-	source, size, err := store.ReadStreamAt(key, "osz")
+func StreamWithoutVideo(ctx context.Context, store storage.Storage, key string) (io.ReadCloser, int64, error) {
+	source, size, err := store.ReadStreamAt(ctx, key, "osz")
 	if err != nil {
 		return nil, 0, err
 	}

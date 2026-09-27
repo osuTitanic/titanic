@@ -2,6 +2,7 @@ package resources
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"log/slog"
 	"strconv"
@@ -32,48 +33,47 @@ func NewStorageResolver(store storage.Storage) *StorageResolver {
 	}
 }
 
-func (resolver *StorageResolver) Setup() error {
-	// guh
-	return nil
+func (resolver *StorageResolver) Setup(ctx context.Context) error {
+	return ctx.Err()
 }
 
-func (resolver *StorageResolver) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
+func (resolver *StorageResolver) Osz(ctx context.Context, setId int, noVideo bool) (io.ReadCloser, int64, error) {
 	resolver.logger.Debug("Reading osz from storage...", "set_id", setId, "no_video", noVideo)
 
 	if !noVideo {
-		return resolver.ReadStreamAndSize(strconv.Itoa(setId), "osz")
+		return resolver.ReadStreamAndSize(ctx, strconv.Itoa(setId), "osz")
 	}
 
-	stream, size, err := StreamWithoutVideo(resolver.storage, strconv.Itoa(setId))
+	stream, size, err := StreamWithoutVideo(ctx, resolver.storage, strconv.Itoa(setId))
 	if err != nil {
 		resolver.logger.Warn(
 			"Failed to start no-video osz stream, serving original anyway",
 			"set_id", setId, "error", err.Error(),
 		)
-		return resolver.ReadStreamAndSize(strconv.Itoa(setId), "osz")
+		return resolver.ReadStreamAndSize(ctx, strconv.Itoa(setId), "osz")
 	}
 
 	return stream, size, nil
 }
 
-func (resolver *StorageResolver) Osu(beatmapId int) (io.ReadCloser, error) {
+func (resolver *StorageResolver) Osu(ctx context.Context, beatmapId int) (io.ReadCloser, error) {
 	resolver.logger.Debug("Reading beatmap from storage...", "beatmap_id", beatmapId)
-	return resolver.ReadStream(strconv.Itoa(beatmapId), "beatmaps")
+	return resolver.ReadStream(ctx, strconv.Itoa(beatmapId), "beatmaps")
 }
 
-func (resolver *StorageResolver) Preview(setId int) (io.ReadCloser, error) {
+func (resolver *StorageResolver) Preview(ctx context.Context, setId int) (io.ReadCloser, error) {
 	resolver.logger.Debug("Reading preview from storage...", "set_id", setId)
-	return resolver.ReadStream(strconv.Itoa(setId), "audio")
+	return resolver.ReadStream(ctx, strconv.Itoa(setId), "audio")
 }
 
-func (resolver *StorageResolver) Background(setId int, large bool) (io.ReadCloser, error) {
+func (resolver *StorageResolver) Background(ctx context.Context, setId int, large bool) (io.ReadCloser, error) {
 	resolver.logger.Debug(
 		"Reading background from storage...",
 		"set_id", setId,
 		"large", large,
 	)
 
-	stream, err := resolver.ReadStream(strconv.Itoa(setId), "thumbnails")
+	stream, err := resolver.ReadStream(ctx, strconv.Itoa(setId), "thumbnails")
 	if err != nil {
 		return nil, err
 	}
@@ -102,16 +102,16 @@ func (resolver *StorageResolver) Background(setId int, large bool) (io.ReadClose
 	return io.NopCloser(bytes.NewReader(resized)), nil
 }
 
-func (resolver *StorageResolver) ReadStream(key string, bucket string) (io.ReadSeekCloser, error) {
-	stream, err := resolver.storage.ReadStream(key, bucket)
+func (resolver *StorageResolver) ReadStream(ctx context.Context, key string, bucket string) (io.ReadSeekCloser, error) {
+	stream, err := resolver.storage.ReadStream(ctx, key, bucket)
 	if err != nil {
 		return nil, ErrResourceNotFound
 	}
 	return stream, nil
 }
 
-func (resolver *StorageResolver) ReadStreamAndSize(key string, bucket string) (io.ReadSeekCloser, int64, error) {
-	stream, err := resolver.storage.ReadStream(key, bucket)
+func (resolver *StorageResolver) ReadStreamAndSize(ctx context.Context, key string, bucket string) (io.ReadSeekCloser, int64, error) {
+	stream, err := resolver.storage.ReadStream(ctx, key, bucket)
 	if err != nil {
 		return nil, 0, ErrResourceNotFound
 	}

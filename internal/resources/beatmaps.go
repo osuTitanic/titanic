@@ -54,40 +54,40 @@ func NewBeatmapProvider(
 	}
 }
 
-func (provider *BeatmapProvider) Setup() error {
+func (provider *BeatmapProvider) Setup(ctx context.Context) error {
 	for _, resolver := range provider.resolvers {
-		if err := resolver.Setup(); err != nil {
+		if err := resolver.Setup(ctx); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (provider *BeatmapProvider) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
-	return provider.ResolverForSet(setId).Osz(setId, noVideo)
+func (provider *BeatmapProvider) Osz(ctx context.Context, setId int, noVideo bool) (io.ReadCloser, int64, error) {
+	return provider.ResolverForSet(setId).Osz(ctx, setId, noVideo)
 }
 
-func (provider *BeatmapProvider) Osu(beatmapId int) (io.ReadCloser, error) {
+func (provider *BeatmapProvider) Osu(ctx context.Context, beatmapId int) (io.ReadCloser, error) {
 	key := fmt.Sprintf("osu:%d", beatmapId)
-	return provider.Cached(key, cacheTTLBeatmap, func() (io.ReadCloser, error) {
-		return provider.ResolverForBeatmap(beatmapId).Osu(beatmapId)
+	return provider.Cached(ctx, key, cacheTTLBeatmap, func() (io.ReadCloser, error) {
+		return provider.ResolverForBeatmap(beatmapId).Osu(ctx, beatmapId)
 	})
 }
 
-func (provider *BeatmapProvider) Preview(setId int) (io.ReadCloser, error) {
+func (provider *BeatmapProvider) Preview(ctx context.Context, setId int) (io.ReadCloser, error) {
 	key := fmt.Sprintf("mp3:%d", setId)
-	return provider.Cached(key, cacheTTLPreview, func() (io.ReadCloser, error) {
-		return provider.ResolverForSet(setId).Preview(setId)
+	return provider.Cached(ctx, key, cacheTTLPreview, func() (io.ReadCloser, error) {
+		return provider.ResolverForSet(setId).Preview(ctx, setId)
 	})
 }
 
-func (provider *BeatmapProvider) Background(setId int, large bool) (io.ReadCloser, error) {
+func (provider *BeatmapProvider) Background(ctx context.Context, setId int, large bool) (io.ReadCloser, error) {
 	key := fmt.Sprintf("mt:%d", setId)
 	if large {
 		key += "l"
 	}
-	return provider.Cached(key, cacheTTLBackground, func() (io.ReadCloser, error) {
-		return provider.ResolverForSet(setId).Background(setId, large)
+	return provider.Cached(ctx, key, cacheTTLBackground, func() (io.ReadCloser, error) {
+		return provider.ResolverForSet(setId).Background(ctx, setId, large)
 	})
 }
 
@@ -127,9 +127,7 @@ func (provider *BeatmapProvider) ResolverForBeatmap(beatmapId int) BeatmapResour
 // Cached returns a stream for the given key, serving it from redis when available.
 // On a cache miss it calls `fetch`, caches the result under the key with the
 // provided ttl & returns a stream over the fetched bytes.
-func (provider *BeatmapProvider) Cached(key string, ttl time.Duration, fetch func() (io.ReadCloser, error)) (io.ReadCloser, error) {
-	ctx := context.Background()
-
+func (provider *BeatmapProvider) Cached(ctx context.Context, key string, ttl time.Duration, fetch func() (io.ReadCloser, error)) (io.ReadCloser, error) {
 	if data, err := provider.cache.Get(ctx, key).Bytes(); err == nil && len(data) > 0 {
 		provider.logger.Debug("Serving resource from cache", "key", key)
 		return io.NopCloser(bytes.NewReader(data)), nil
