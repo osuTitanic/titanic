@@ -5,6 +5,7 @@ package performance
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -208,7 +209,7 @@ func (service *PPv2ServiceNative) LoadBeatmap(beatmapId int) (*osunative.Beatmap
 		return nil, constants.ModeOsu, fmt.Errorf("load beatmap %d: beatmap resource provider is nil", beatmapId)
 	}
 
-	stream, err := service.provider.Osu(beatmapId)
+	stream, err := service.provider.Osu(context.Background(), beatmapId)
 	if err != nil {
 		return nil, constants.ModeOsu, fmt.Errorf("load beatmap %d: %w", beatmapId, err)
 	}

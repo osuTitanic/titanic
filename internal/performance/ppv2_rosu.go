@@ -3,6 +3,7 @@
 package performance
 
 import (
+	"context"
 	"fmt"
 	"io"
 
@@ -117,7 +118,7 @@ func (service *PPv2ServiceRosu) LoadBeatmap(beatmapId int) (*rosu.Beatmap, error
 		return nil, fmt.Errorf("load beatmap %d: beatmap resource provider is nil", beatmapId)
 	}
 
-	stream, err := service.provider.Osu(beatmapId)
+	stream, err := service.provider.Osu(context.Background(), beatmapId)
 	if err != nil {
 		return nil, fmt.Errorf("load beatmap %d: %w", beatmapId, err)
 	}

@@ -2,6 +2,7 @@ package performance
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 
@@ -18,15 +19,15 @@ type testProvider struct {
 	closed bool
 }
 
-func (*testProvider) Setup() error {
+func (*testProvider) Setup(context.Context) error {
 	return nil
 }
 
-func (*testProvider) Osz(int, bool) (io.ReadCloser, int64, error) {
+func (*testProvider) Osz(context.Context, int, bool) (io.ReadCloser, int64, error) {
 	return nil, 0, errors.New("not implemented")
 }
 
-func (provider *testProvider) Osu(int) (io.ReadCloser, error) {
+func (provider *testProvider) Osu(context.Context, int) (io.ReadCloser, error) {
 	return &trackedReadCloser{
 		// TODO: Test both disco prince & freedom dive
 		Reader: bytes.NewReader(beatmapDataDiscoPrince),
@@ -34,11 +35,11 @@ func (provider *testProvider) Osu(int) (io.ReadCloser, error) {
 	}, nil
 }
 
-func (*testProvider) Preview(int) (io.ReadCloser, error) {
+func (*testProvider) Preview(context.Context, int) (io.ReadCloser, error) {
 	return nil, errors.New("not implemented")
 }
 
-func (*testProvider) Background(int, bool) (io.ReadCloser, error) {
+func (*testProvider) Background(context.Context, int, bool) (io.ReadCloser, error) {
 	return nil, errors.New("not implemented")
 }
 
