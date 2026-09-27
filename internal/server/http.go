@@ -31,6 +31,10 @@ type HttpContext struct {
 	Logger   *slog.Logger
 }
 
+func (ctx *HttpContext) Context() context.Context {
+	return ctx.Request.Context()
+}
+
 func (ctx *HttpContext) IP() string {
 	return GetRequestIP(ctx.Request)
 }
