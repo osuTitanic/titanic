@@ -413,11 +413,11 @@
 {{ block scoreboard() }}
 {{ if .Mods != "" }}
     <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard ({{ .Mods }})</h2>
+    {* Always show mod selection if mods are specified *}
     {{ yield modSelector() }}
 {{ else }}
-    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
-    {* No need to display mod selection if no scores have ever been set *}
     {{ if len(.Scores) > 0 }}
+    <h2>Top {{ .Config.ScoreResponseLimit }} Scoreboard</h2>
     {{ yield modSelector() }}
     {{ end }}
 {{ end }}
