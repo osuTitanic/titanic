@@ -34,27 +34,50 @@ func (server *Server) IsDebug() bool {
 
 // HandleFileSystem registers a static file handler under the provided prefix.
 func (server *Server) HandleFileSystem(prefix string, instance fs.FS) {
-	var handler http.Handler
-
 	if strings.HasSuffix(prefix, "/") {
-		// We are serving a directory
-		handler = http.StripPrefix(prefix, http.FileServerFS(instance))
-	} else {
-		// We are only serving a single file
-		filename := path.Base(prefix)
-		handler = http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-			http.ServeFileFS(response, request, instance, filename)
-		})
+		server.serveDirectory(prefix, instance)
+		return
 	}
+	server.serveFile(prefix, instance)
+}
 
-	server.Router.Handle("GET "+prefix, http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		server.SetCacheHeaders(response.Header(), request)
-		handler.ServeHTTP(response, request)
+func (server *Server) serveDirectory(prefix string, instance fs.FS) {
+	fileServer := http.FileServerFS(instance)
+
+	handler := http.StripPrefix(prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		name := strings.TrimPrefix(
+			path.Clean(r.URL.Path), // path traversal prevention
+			"/",                    // strip leading slash
+		)
+
+		// Go's FileServerFS exposes the directory structure
+		// by default which is not what we want
+		if info, err := fs.Stat(instance, name); err == nil && info.IsDir() {
+			http.NotFound(w, r)
+			return
+		}
+		fileServer.ServeHTTP(w, r)
+	}))
+
+	server.Router.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server.setCacheHeaders(w.Header(), r)
+		handler.ServeHTTP(w, r)
 	}))
 }
 
-// SetCacheHeaders sets the appropriate cache headers for static assets based on the request path & query parameters.
-func (server *Server) SetCacheHeaders(header http.Header, request *http.Request) {
+func (server *Server) serveFile(prefix string, instance fs.FS) {
+	filename := path.Base(prefix)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFileFS(w, r, instance, filename)
+	})
+
+	server.Router.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		server.setCacheHeaders(w.Header(), r)
+		handler.ServeHTTP(w, r)
+	}))
+}
+
+func (server *Server) setCacheHeaders(header http.Header, request *http.Request) {
 	if server.IsDebug() {
 		// No caching in debug mode pretty please
 		return
@@ -113,6 +136,7 @@ func NewContextFactory(state *state.State, engine *templates.Engine) server.Http
 	}
 }
 
+// RequireLogin redirects the user to the login page if they are not authenticated.
 func (ctx *Context) RequireLogin() bool {
 	if ctx.IsAuthenticated() {
 		return true
@@ -124,6 +148,7 @@ func (ctx *Context) RequireLogin() bool {
 	return false
 }
 
+// HasPermission returns true if the user has the specified permission.
 func (ctx *Context) HasPermission(permission string) bool {
 	return ctx.Permissions().Has(permission)
 }
@@ -149,6 +174,7 @@ func (ctx *Context) Permissions() *permissions.Set {
 	return ctx.resolvedPermissions
 }
 
+// RenderTemplate renders the specified template with the given context & writes the result to the response.
 func (ctx *Context) RenderTemplate(status int, name string, data any) error {
 	if ctx.Templates == nil {
 		err := errors.New("templates engine is not configured")
