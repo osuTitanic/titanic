@@ -8,6 +8,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BeatmapRepository struct {
@@ -149,6 +150,27 @@ func (r *BeatmapRepository) ManyById(ids []int, preload ...string) ([]*schemas.B
 
 	var beatmaps []*schemas.Beatmap
 	err := Preloaded(r.db, preload).Where("id IN ?", ids).Find(&beatmaps).Error
+	return beatmaps, err
+}
+
+func (r *BeatmapRepository) ManyBySetId(setId int, preload ...string) ([]*schemas.Beatmap, error) {
+	var beatmaps []*schemas.Beatmap
+	err := Preloaded(r.db, preload).
+		Where("set_id = ?", setId).
+		Order("id ASC").
+		Find(&beatmaps).
+		Error
+	return beatmaps, err
+}
+
+func (r *BeatmapRepository) ManyBySetIdWithLock(setId int, preload ...string) ([]*schemas.Beatmap, error) {
+	var beatmaps []*schemas.Beatmap
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("set_id = ?", setId).
+		Order("id ASC").
+		Find(&beatmaps).
+		Error
 	return beatmaps, err
 }
 

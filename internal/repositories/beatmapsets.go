@@ -4,6 +4,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BeatmapsetRepository struct {
@@ -29,6 +30,16 @@ func (r *BeatmapsetRepository) Update(updates *schemas.Beatmapset, columns ...st
 func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmapset, error) {
 	var beatmapset schemas.Beatmapset
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
+func (r *BeatmapsetRepository) ByIdWithLock(id int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", id).
+		First(&beatmapset).
+		Error
 	return LookupResult(&beatmapset, err)
 }
 
