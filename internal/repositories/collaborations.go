@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BeatmapCollaborationRepository struct {
@@ -41,6 +42,19 @@ func (r *BeatmapCollaborationRepository) FetchByUser(userId int, preload ...stri
 		Joins("JOIN beatmaps ON beatmaps.id = beatmap_collaboration.beatmap_id").
 		Where("beatmap_collaboration.user_id = ?", userId).
 		Order("beatmaps.last_updated DESC").
+		Find(&collaborations).Error
+	return collaborations, err
+}
+
+func (r *BeatmapCollaborationRepository) FetchByUserAndBeatmapsWithLock(userId int, beatmapIds []int, preload ...string) ([]*schemas.BeatmapCollaboration, error) {
+	if len(beatmapIds) == 0 {
+		return []*schemas.BeatmapCollaboration{}, nil
+	}
+	var collaborations []*schemas.BeatmapCollaboration
+
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("user_id = ? AND beatmap_id IN ?", userId, beatmapIds).
 		Find(&collaborations).Error
 	return collaborations, err
 }

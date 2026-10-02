@@ -17,6 +17,7 @@ type SubmissionContext struct {
 	User       *schemas.User
 	Beatmapset *schemas.Beatmapset
 	Beatmaps   []*PreparedBeatmap
+	Access     *SubmissionAccess
 
 	// Metadata is the set metadata sourced from an
 	// osz2 package or from one of the beatmap files

@@ -33,7 +33,7 @@ func CheckBeatmapRemovals(submission *SubmissionContext, beatmaps []*schemas.Bea
 	if len(beatmaps) == 0 {
 		return nil
 	}
-	if submission.Beatmapset.CreatorId == nil || *submission.Beatmapset.CreatorId != submission.User.Id {
+	if submission.Access == nil || !submission.Access.Owner {
 		return ErrBeatmapRemovalNotAllowed
 	}
 	for _, beatmap := range beatmaps {

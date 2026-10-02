@@ -65,6 +65,10 @@ func PrepareBeatmaps(submission *SubmissionContext, transaction *state.Repositor
 func PrepareBeatmap(submission *SubmissionContext, transaction *state.Repositories, requestedId int) (*PreparedBeatmap, error) {
 	target := reusableBeatmap(submission, requestedId)
 	if target == nil {
+		if submission.Access == nil || !submission.Access.Owner {
+			return nil, ErrBeatmapCreationNotAllowed
+		}
+
 		target = &schemas.Beatmap{
 			SetId:  submission.Beatmapset.Id,
 			Status: constants.BeatmapStatusInactive,
