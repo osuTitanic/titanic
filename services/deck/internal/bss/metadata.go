@@ -47,8 +47,18 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
 }
 
-// ApplyBeatmapMetadata applies the parsed & derived difficulty metadata.
-func ApplyBeatmapMetadata(repositories *state.Repositories, target *schemas.Beatmap, source *beatmaps.Beatmap, metadata BeatmapMetadata) error {
+// ApplyBeatmapMetadata applies a prepared beatmap's parsed & derived metadata.
+func ApplyBeatmapMetadata(submission *SubmissionContext, repositories *state.Repositories, beatmap *PreparedBeatmap) error {
+	if beatmap.Source == nil {
+		return errors.New("bss: beatmap not set")
+	}
+	if err := CheckBeatmapAccess(submission, beatmap.Target); err != nil {
+		return err
+	}
+	target := beatmap.Target
+	source := beatmap.Source
+	metadata := beatmap.Metadata
+
 	mode := constants.Mode(source.Mode)
 	if !mode.Valid() {
 		return fmt.Errorf("bss: invalid beatmap mode %d", source.Mode)
