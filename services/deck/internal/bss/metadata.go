@@ -8,6 +8,7 @@ import (
 	"github.com/Lekuruu/osz2-go/pkg/osz2"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
+	"github.com/osuTitanic/titanic/internal/state"
 	"gorm.io/gorm"
 )
 
@@ -26,17 +27,9 @@ type BeatmapMetadata struct {
 	DifficultyEyup float64
 }
 
-type BeatmapsetMetadataRepository interface {
-	Update(updates *schemas.Beatmapset, columns ...string) (int64, error)
-}
-
-type BeatmapMetadataRepository interface {
-	Update(updates *schemas.Beatmap, columns ...string) (int64, error)
-}
-
 // ApplyBeatmapsetMetadata applies the metadata to the given set.
 // Only metadata keys which are present are updated.
-func ApplyBeatmapsetMetadata(repository BeatmapsetMetadataRepository, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
+func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
 	columns := make([]string, 0, 8)
 	setMetadata(metadata, osz2.Title, &beatmapset.Title, "title", &columns)
 	setMetadata(metadata, osz2.TitleUnicode, &beatmapset.TitleUnicode, "title_unicode", &columns)
@@ -50,12 +43,12 @@ func ApplyBeatmapsetMetadata(repository BeatmapsetMetadataRepository, beatmapset
 	if len(columns) == 0 {
 		return nil
 	}
-	rowsAffected, err := repository.Update(beatmapset, columns...)
+	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset, columns...)
 	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
 }
 
 // ApplyBeatmapMetadata applies the parsed & derived difficulty metadata.
-func ApplyBeatmapMetadata(repository BeatmapMetadataRepository, target *schemas.Beatmap, source *beatmaps.Beatmap, metadata BeatmapMetadata) error {
+func ApplyBeatmapMetadata(repositories *state.Repositories, target *schemas.Beatmap, source *beatmaps.Beatmap, metadata BeatmapMetadata) error {
 	mode := constants.Mode(source.Mode)
 	if !mode.Valid() {
 		return fmt.Errorf("bss: invalid beatmap mode %d", source.Mode)
@@ -85,7 +78,7 @@ func ApplyBeatmapMetadata(repository BeatmapMetadataRepository, target *schemas.
 	target.DiffEyup = metadata.DifficultyEyup
 	target.SliderMultiplier = source.SliderMultiplier
 
-	rowsAffected, err := repository.Update(target,
+	rowsAffected, err := repositories.Beatmaps.Update(target,
 		"mode",
 		"md5",
 		"version",
