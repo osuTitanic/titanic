@@ -9,6 +9,8 @@ require (
 	github.com/CloudyKit/jet/v6 v6.3.2
 	github.com/Lekuruu/bbgo v0.0.0-20260921170824-78e5ddece2f6
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
+	github.com/Lekuruu/gosu v0.0.0-20260925150626-dd673391cf08
+	github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/azihsoyn/rijndael256 v0.0.0-20200316065338-d14eefa2b66b
 	github.com/caarlos0/env/v11 v11.4.1
