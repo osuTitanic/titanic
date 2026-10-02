@@ -1,6 +1,7 @@
 package bss
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -25,6 +26,28 @@ type BeatmapMetadata struct {
 	MaxCombo       int
 	Difficulty     float64
 	DifficultyEyup float64
+}
+
+// SetBeatmap assigns a parsed beatmap & its metadata to a beatmapId.
+func SetBeatmap(submission *SubmissionContext, beatmapId int, source *beatmaps.Beatmap, metadata BeatmapMetadata) (*PreparedBeatmap, error) {
+	for _, beatmap := range submission.Beatmaps {
+		if beatmap.Target.Id != beatmapId {
+			continue
+		}
+		if err := CheckBeatmapAccess(submission, beatmap.Target); err != nil {
+			return nil, err
+		}
+		if beatmap.Source != nil {
+			return nil, fmt.Errorf("bss: beatmap already set: %d", beatmapId)
+		}
+
+		source.MapID = int64(beatmap.Target.Id)
+		source.SetID = int64(submission.Beatmapset.Id)
+		beatmap.Source = source
+		beatmap.Metadata = metadata
+		return beatmap, nil
+	}
+	return nil, fmt.Errorf("bss: beatmap not prepared %d", beatmapId)
 }
 
 // ApplyBeatmapsetMetadata applies the metadata to the given set.
