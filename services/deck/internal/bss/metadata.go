@@ -47,9 +47,6 @@ func ApplyBeatmapsetMetadata(repository BeatmapsetMetadataRepository, beatmapset
 	setMetadata(metadata, osz2.SourceUnicode, &beatmapset.SourceUnicode, "source_unicode", &columns)
 	setMetadata(metadata, osz2.Tags, &beatmapset.Tags, "tags", &columns)
 
-	// TODO: setMetadata doesn't remove any empty values which could be bad I think?
-	// 		 check if that leads to chaos
-
 	if len(columns) == 0 {
 		return nil
 	}
