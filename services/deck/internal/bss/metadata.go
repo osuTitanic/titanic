@@ -35,7 +35,7 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 // Please check for beatmap access before calling this.
 func ApplyBeatmapMetadata(repositories *state.Repositories, beatmap *schemas.Beatmap) error {
 	// NOTE: Beatmap metadata will already be applied
-	// 		 by the beatmap parser through `SetBeatmap`
+	// 		 by the beatmap parser through `AssignBeatmapContent`
 	rowsAffected, err := repositories.Beatmaps.Update(beatmap,
 		"mode",
 		"md5",
