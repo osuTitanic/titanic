@@ -149,19 +149,3 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	}
 	return nil
 }
-
-func validatePackageFilename(filename string) error {
-	if filename == "" || filename == "." || strings.HasSuffix(filename, "/") {
-		return fmt.Errorf("bss: invalid package filename %q", filename)
-	}
-	if path.IsAbs(filename) || path.Clean(filename) != filename || !fs.ValidPath(filename) {
-		return fmt.Errorf("bss: invalid package filename %q", filename)
-	}
-	if strings.ContainsAny(filename, "\\\x00") {
-		return fmt.Errorf("bss: invalid package filename %q", filename)
-	}
-	if first, _, _ := strings.Cut(filename, "/"); strings.Contains(first, ":") {
-		return fmt.Errorf("bss: invalid package filename %q", filename)
-	}
-	return nil
-}
