@@ -100,6 +100,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		Database:        db,
 		Redis:           redisClient,
 		Storage:         storage,
+		StorageOsz2:     storage,
 		Email:           email.NewNoopEmail(cfg.EmailSender),
 		Officer:         discord.NewOfficerFromConfig(cfg),
 		Location:        geolocation,

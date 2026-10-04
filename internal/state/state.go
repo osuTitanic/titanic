@@ -31,14 +31,15 @@ type State struct {
 	*Repositories
 
 	// Core components
-	Config   *config.Config
-	Logger   *slog.Logger
-	Database *gorm.DB
-	Redis    *redis.Client
-	Storage  storage.Storage
-	Email    email.Email
-	Officer  *discord.Officer
-	Location location.Provider
+	Config      *config.Config
+	Logger      *slog.Logger
+	Database    *gorm.DB
+	Redis       *redis.Client
+	Storage     storage.Storage
+	StorageOsz2 storage.Storage
+	Email       email.Email
+	Officer     *discord.Officer
+	Location    location.Provider
 
 	// Services
 	Permissions  permissions.Resolver
@@ -68,7 +69,13 @@ func NewState(environmentFiles ...string) (*State, error) {
 	logging.SetDefault("titanic", logLevel)
 	logger := slog.Default()
 
-	var storageProvider storage.Storage = storage.NewFileStorage(cfg.DataPath)
+	// osz2-specific storage stays local only for now
+	// bss is simply just way faster when using local storage
+	// though, we should probabl add configuration for this in the future
+
+	localStorage := storage.NewFileStorage(cfg.DataPath)
+	var storageProvider storage.Storage = localStorage
+	var storageOsz2 storage.Storage = localStorage
 	var s3Config = cfg.S3Config()
 
 	if cfg.S3Enabled && s3Config == nil {
@@ -142,6 +149,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Config:          cfg,
 		Database:        db,
 		Storage:         storageProvider,
+		StorageOsz2:     storageOsz2,
 		Logger:          logger,
 		Email:           mailer,
 		Officer:         discord.NewOfficerFromConfig(cfg),
