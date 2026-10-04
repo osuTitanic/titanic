@@ -3,10 +3,48 @@ package bss
 import (
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 )
+
+var (
+	ErrSubmissionDisabled     = errors.New("bss: beatmap submission disabled")
+	ErrUserNotAuthenticated   = errors.New("bss: user not authenticated")
+	ErrUserNotActivated       = errors.New("bss: user not activated")
+	ErrUserRestricted         = errors.New("bss: user restricted")
+	ErrUserSilenced           = errors.New("bss: user silenced")
+	ErrUserIsBot              = errors.New("bss: bot users cannot submit beatmaps")
+	ErrUploadPermissionDenied = errors.New("bss: beatmap upload permission denied")
+)
+
+// CheckSubmissionEligibility ensures that the user is eligible to submit beatmaps.
+func (submission *SubmissionContext) CheckSubmissionEligibility(submissionEnabled bool, userPermissions *permissions.Set) error {
+	if !submissionEnabled {
+		return ErrSubmissionDisabled
+	}
+	if submission.User == nil {
+		return ErrUserNotAuthenticated
+	}
+	if !submission.User.Activated {
+		return ErrUserNotActivated
+	}
+	if submission.User.Restricted {
+		return ErrUserRestricted
+	}
+	if submission.User.SilenceEnd != nil && submission.User.SilenceEnd.After(time.Now()) {
+		return ErrUserSilenced
+	}
+	if submission.User.IsBot {
+		return ErrUserIsBot
+	}
+	if !userPermissions.Has("beatmaps.upload") {
+		return ErrUploadPermissionDenied
+	}
+	return nil
+}
 
 /*
  * Unlike the official beatmap submission system, Titanic! has its own collaboration
