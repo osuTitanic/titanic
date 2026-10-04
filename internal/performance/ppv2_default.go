@@ -28,4 +28,8 @@ func (service *PPv2ServiceDummy) CalculateDifficulty(beatmapId int, mode constan
 	return nil, errors.New("ppv2 service is not available")
 }
 
+func (service *PPv2ServiceDummy) CalculateDifficultyFromBytes(data []byte, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
+	return nil, errors.New("ppv2 service is not available")
+}
+
 func (service *PPv2ServiceDummy) SetCacheLayer(cache PPv2CacheLayer) { /* stub */ }

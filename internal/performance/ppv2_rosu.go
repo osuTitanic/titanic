@@ -113,6 +113,44 @@ func (service *PPv2ServiceRosu) CalculateDifficulty(beatmapId int, mode constant
 	}, nil
 }
 
+func (service *PPv2ServiceRosu) CalculateDifficultyFromBytes(data []byte, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
+	beatmap, err := rosu.BeatmapFromBytes(data)
+	if err != nil {
+		return nil, fmt.Errorf("parse submitted beatmap: %w", err)
+	}
+	defer beatmap.Free()
+
+	if !beatmap.Safe() {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: beatmap is too suspicious")
+	}
+
+	rosuMods := rosu.ModsFromBits(uint32(mods))
+	defer rosuMods.Free()
+
+	calculator := rosu.NewDifficulty()
+	attributes, err := calculator.
+		Mods(rosuMods).
+		Lazer(false).
+		CalculateSafe(*beatmap)
+	if err != nil {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: %w", err)
+	}
+
+	return &DifficultyAttributes{
+		Mode:       constants.Mode(attributes.Mode),
+		IsConvert:  attributes.IsConvert,
+		StarRating: attributes.Stars,
+		Aim:        attributes.Aim,
+		Speed:      attributes.Speed,
+		Flashlight: attributes.Flashlight,
+		Stamina:    attributes.Stamina,
+		Rhythm:     attributes.Rhythm,
+		Color:      attributes.Color,
+		Reading:    attributes.Reading,
+		MaxCombo:   attributes.MaxCombo,
+	}, nil
+}
+
 func (service *PPv2ServiceRosu) LoadBeatmap(beatmapId int) (*rosu.Beatmap, error) {
 	if service == nil || service.provider == nil {
 		return nil, fmt.Errorf("load beatmap %d: beatmap resource provider is nil", beatmapId)

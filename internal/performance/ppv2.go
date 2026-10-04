@@ -12,6 +12,7 @@ type IPPv2Service interface {
 	Available() bool
 	CalculatePerformance(score *schemas.Score) (float64, error)
 	CalculateDifficulty(beatmapId int, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error)
+	CalculateDifficultyFromBytes(data []byte, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error)
 	SetCacheLayer(cache PPv2CacheLayer)
 }
 

@@ -171,6 +171,44 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	return result, nil
 }
 
+func (service *PPv2ServiceNative) CalculateDifficultyFromBytes(data []byte, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
+	adjustedMods := normalizeNativeMods(mods, mode)
+	beatmap, err := osunative.NewBeatmapFromText(string(data))
+	if err != nil {
+		return nil, fmt.Errorf("parse submitted beatmap: %w", err)
+	}
+	defer beatmap.Close()
+
+	ruleset, err := osunative.NewRulesetFromID(mode.Value())
+	if err != nil {
+		return nil, fmt.Errorf("create ruleset for submitted beatmap: %w", err)
+	}
+	defer ruleset.Close()
+
+	nativeMods, err := newNativeMods(adjustedMods)
+	if err != nil {
+		return nil, fmt.Errorf("create mods for submitted beatmap: %w", err)
+	}
+	defer nativeMods.Close()
+
+	calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
+	if err != nil {
+		return nil, fmt.Errorf("create difficulty calculator for submitted beatmap: %w", err)
+	}
+	defer calculator.Close()
+
+	attributes, err := calculator.Calculate(nativeMods)
+	if err != nil {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: %w", err)
+	}
+
+	result, err := newDifficultyAttributes(mode, mode != nativeBeatmapMode(data), attributes)
+	if err != nil {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: %w", err)
+	}
+	return result, nil
+}
+
 func normalizeNativeMods(mods constants.Mods, mode constants.Mode) constants.Mods {
 	if mods.Has(constants.Nightcore) && !mods.Has(constants.DoubleTime) {
 		mods |= constants.DoubleTime
