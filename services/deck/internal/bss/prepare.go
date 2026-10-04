@@ -9,7 +9,7 @@ import (
 )
 
 // PrepareBeatmapset locks & reloads an existing beatmapset and all of its difficulties.
-func PrepareBeatmapset(submission *SubmissionContext, transaction *state.Repositories, beatmapsetId int) error {
+func (submission *SubmissionContext) PrepareBeatmapset(transaction *state.Repositories, beatmapsetId int) error {
 	beatmapset, err := transaction.Beatmapsets.ByIdWithLock(beatmapsetId)
 	if err != nil {
 		return fmt.Errorf("bss: prepare beatmapset %d: %w", beatmapsetId, err)
@@ -29,7 +29,7 @@ func PrepareBeatmapset(submission *SubmissionContext, transaction *state.Reposit
 }
 
 // PrepareNewBeatmapset creates an inactive beatmapset owned by the authenticated user.
-func PrepareNewBeatmapset(submission *SubmissionContext, transaction *state.Repositories) error {
+func (submission *SubmissionContext) PrepareNewBeatmapset(transaction *state.Repositories) error {
 	beatmapset := &schemas.Beatmapset{
 		Creator:        &submission.User.Name,
 		DisplayTitle:   new(""),
@@ -51,9 +51,9 @@ func PrepareNewBeatmapset(submission *SubmissionContext, transaction *state.Repo
 // PrepareBeatmaps prepares the requested beatmap IDs in request order.
 // This keeps every assigned ID at the same position as its submitted difficulty, which is
 // important because the client expects the order to be the same when processing the repsonse.
-func PrepareBeatmaps(submission *SubmissionContext, transaction *state.Repositories, requestedIds []int) error {
+func (submission *SubmissionContext) PrepareBeatmaps(transaction *state.Repositories, requestedIds []int) error {
 	for _, requestedId := range requestedIds {
-		if _, err := PrepareBeatmap(submission, transaction, requestedId); err != nil {
+		if _, err := submission.PrepareBeatmap(transaction, requestedId); err != nil {
 			return err
 		}
 	}
@@ -62,8 +62,8 @@ func PrepareBeatmaps(submission *SubmissionContext, transaction *state.Repositor
 
 // PrepareBeatmap assigns the requested ID a matching beatmap, i.e.
 // a map that is already part of the set or a placeholder map for new beatmaps.
-func PrepareBeatmap(submission *SubmissionContext, transaction *state.Repositories, requestedId int) (*PreparedBeatmap, error) {
-	target := reusableBeatmap(submission, requestedId)
+func (submission *SubmissionContext) PrepareBeatmap(transaction *state.Repositories, requestedId int) (*PreparedBeatmap, error) {
+	target := submission.reusableBeatmap(requestedId)
 	if target == nil {
 		if submission.Access == nil || !submission.Access.Owner {
 			return nil, ErrBeatmapCreationNotAllowed
@@ -85,7 +85,7 @@ func PrepareBeatmap(submission *SubmissionContext, transaction *state.Repositori
 
 // RemovedBeatmaps returns existing difficulties which were not prepared for this submission.
 // They will eventually be removed from the set when the submission is processed.
-func RemovedBeatmaps(submission *SubmissionContext) []*schemas.Beatmap {
+func (submission *SubmissionContext) RemovedBeatmaps() []*schemas.Beatmap {
 	prepared := make(map[int]struct{}, len(submission.Beatmaps))
 	for _, beatmap := range submission.Beatmaps {
 		prepared[beatmap.Target.Id] = struct{}{}
@@ -100,7 +100,7 @@ func RemovedBeatmaps(submission *SubmissionContext) []*schemas.Beatmap {
 	return removed
 }
 
-func reusableBeatmap(submission *SubmissionContext, requestedId int) *schemas.Beatmap {
+func (submission *SubmissionContext) reusableBeatmap(requestedId int) *schemas.Beatmap {
 	if requestedId <= 0 {
 		// new beatmap
 		return nil

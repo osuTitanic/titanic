@@ -15,8 +15,8 @@ github.com/Lekuruu/bbgo v0.0.0-20260921170824-78e5ddece2f6 h1:hdExuPNu2b8E20Vb4w
 github.com/Lekuruu/bbgo v0.0.0-20260921170824-78e5ddece2f6/go.mod h1:BRKU1vxbnPtJBr+gGHQONX0DF7QwiFVCQstnQ0TC3d8=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735 h1:AwbABgwDVM0koi2RBrNC1/YVSGkgEsROlmpg1wQaAMQ=
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735/go.mod h1:rUO3pVDrDhmuYLR+TrHig7IadSJwO4he5Q9904z5Mnc=
-github.com/Lekuruu/gosu v0.0.0-20260925150626-dd673391cf08 h1:32VpRY8C/BwhyNl+xvUZQYehvXuRtSt/4Qtr7tL55q4=
-github.com/Lekuruu/gosu v0.0.0-20260925150626-dd673391cf08/go.mod h1:s+8ptGR0cfvD0VtGn2Pf9S/shIXl3HnLw8bwARrH/NI=
+github.com/Lekuruu/gosu v0.0.0-20261004113517-7e0f6f205d33 h1:VyWJ1wnnnS1Ry4hzJVx8jigW83OKdRKbBOeESVvhV+o=
+github.com/Lekuruu/gosu v0.0.0-20261004113517-7e0f6f205d33/go.mod h1:s+8ptGR0cfvD0VtGn2Pf9S/shIXl3HnLw8bwARrH/NI=
 github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed h1:atBt1uhiTvxwUaOaIcHjHZf4grCLqi9fEerk2d6wvNY=
 github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed/go.mod h1:ekiDjUKFW+wrYoiqrsQx6+RKoke3SIm8w6vutK7sTu0=
 github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034 h1:XgWmskBCaNGxp7KWMQPsB0GmS4as1hvsXfUO98IzLtk=

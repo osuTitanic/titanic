@@ -43,7 +43,7 @@ func (access *SubmissionAccess) CanUpdateBeatmap(beatmapId int) bool {
 }
 
 // ResolveAccess resolves beatmap & resource access for the authenticated user.
-func ResolveAccess(submission *SubmissionContext, transaction *state.Repositories) error {
+func (submission *SubmissionContext) ResolveAccess(transaction *state.Repositories) error {
 	owner := submission.Beatmapset.CreatorId != nil &&
 		*submission.Beatmapset.CreatorId == submission.User.Id
 	access := &SubmissionAccess{
@@ -83,7 +83,7 @@ func ResolveAccess(submission *SubmissionContext, transaction *state.Repositorie
 }
 
 // CheckBeatmapAccess ensures that the authenticated user may update a difficulty.
-func CheckBeatmapAccess(submission *SubmissionContext, beatmap *schemas.Beatmap) error {
+func (submission *SubmissionContext) CheckBeatmapAccess(beatmap *schemas.Beatmap) error {
 	if beatmap.SetId != submission.Beatmapset.Id {
 		return ErrBeatmapAccessNotAllowed
 	}
@@ -94,7 +94,7 @@ func CheckBeatmapAccess(submission *SubmissionContext, beatmap *schemas.Beatmap)
 }
 
 // RequireResourceAccess ensures that the user is allowed to update beatmapset resources.
-func RequireResourceAccess(submission *SubmissionContext) error {
+func (submission *SubmissionContext) RequireResourceAccess() error {
 	if submission.Access == nil || !submission.Access.CanUpdateResources {
 		return ErrResourceAccessNotAllowed
 	}

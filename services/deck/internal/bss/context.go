@@ -9,6 +9,13 @@ import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
+// PreparedBeatmap holds a beatmap source and target,
+// used for beatmap submission operations.
+type PreparedBeatmap struct {
+	Source *beatmaps.Beatmap
+	Target *schemas.Beatmap
+}
+
 // SubmissionContext contains the state shared by
 // beatmap submission operations during one request.
 type SubmissionContext struct {
@@ -27,15 +34,18 @@ type SubmissionContext struct {
 	FS fs.FS
 }
 
-type PreparedBeatmap struct {
-	Source   *beatmaps.Beatmap
-	Target   *schemas.Beatmap
-	Metadata BeatmapMetadata
-}
-
 func NewSubmissionContext(ctx context.Context) *SubmissionContext {
 	return &SubmissionContext{
 		Context:  ctx,
 		Beatmaps: make([]*PreparedBeatmap, 0),
 	}
+}
+
+func (s *SubmissionContext) BeatmapById(beatmapId int) *PreparedBeatmap {
+	for _, beatmap := range s.Beatmaps {
+		if beatmap.Target.Id == beatmapId {
+			return beatmap
+		}
+	}
+	return nil
 }

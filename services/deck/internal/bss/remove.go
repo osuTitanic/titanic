@@ -11,8 +11,8 @@ import (
 var ErrBeatmapRemovalNotAllowed = errors.New("bss: beatmap removal not allowed")
 
 // RemoveBeatmaps deletes difficulties and their dependent records.
-func RemoveBeatmaps(submission *SubmissionContext, transaction *state.Repositories, beatmaps []*schemas.Beatmap) error {
-	if err := CheckBeatmapRemovals(submission, beatmaps); err != nil {
+func (submission *SubmissionContext) RemoveBeatmaps(transaction *state.Repositories, beatmaps []*schemas.Beatmap) error {
+	if err := submission.CheckBeatmapRemovals(beatmaps); err != nil {
 		return err
 	}
 
@@ -29,7 +29,7 @@ func RemoveBeatmaps(submission *SubmissionContext, transaction *state.Repositori
 
 // CheckBeatmapRemovals ensures that the user is allowed to remove the given difficulties.
 // Collaborators should not be able to delete difficulties from a beatmapset.
-func CheckBeatmapRemovals(submission *SubmissionContext, beatmaps []*schemas.Beatmap) error {
+func (submission *SubmissionContext) CheckBeatmapRemovals(beatmaps []*schemas.Beatmap) error {
 	if len(beatmaps) == 0 {
 		return nil
 	}
