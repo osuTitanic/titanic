@@ -41,6 +41,12 @@ func NewSubmissionContext(ctx context.Context) *SubmissionContext {
 	}
 }
 
+func (s *SubmissionContext) IsCanceled() bool {
+	return s != nil &&
+		s.Context != nil &&
+		s.Context.Err() != nil
+}
+
 func (s *SubmissionContext) BeatmapById(beatmapId int) *PreparedBeatmap {
 	for _, beatmap := range s.Beatmaps {
 		if beatmap.Target.Id == beatmapId {

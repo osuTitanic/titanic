@@ -72,10 +72,8 @@ func (submission *SubmissionContext) ValidateFS() error {
 	if submission.FS == nil {
 		return errors.New("bss: package filesystem not set")
 	}
-	if submission.Context != nil {
-		if err := submission.Context.Err(); err != nil {
-			return err
-		}
+	if submission.IsCanceled() {
+		return submission.Context.Err()
 	}
 
 	paths := make(map[string]packagePath)

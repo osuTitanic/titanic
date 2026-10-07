@@ -19,10 +19,8 @@ func (submission *SubmissionContext) SetFS(source fs.FS) error {
 	if submission.FS != nil {
 		return errors.New("bss: filesystem already set")
 	}
-	if submission.Context != nil {
-		if err := submission.Context.Err(); err != nil {
-			return err
-		}
+	if submission.IsCanceled() {
+		return submission.Context.Err()
 	}
 
 	root, err := fs.Stat(source, ".")
@@ -141,8 +139,8 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	if submission.Context == nil {
 		return errors.New("bss: nil submission context")
 	}
-	if err := submission.Context.Err(); err != nil {
-		return err
+	if submission.IsCanceled() {
+		return submission.Context.Err()
 	}
 	if submission.Beatmapset == nil || submission.Beatmapset.Id <= 0 {
 		return errors.New("bss: beatmapset not prepared")
