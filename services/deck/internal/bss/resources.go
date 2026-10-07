@@ -210,3 +210,33 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	}
 	return nil
 }
+
+func (submission *SubmissionContext) readFile(filename string, maxSize int64) (contents []byte, err error) {
+	file, err := submission.FS.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err = errors.Join(err, file.Close())
+	}()
+
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() || info.Size() < 0 {
+		return nil, errors.New("not a regular file")
+	}
+	if info.Size() > maxSize {
+		return nil, fmt.Errorf("file exceeds maximum size of %d bytes", maxSize)
+	}
+
+	contents, err = io.ReadAll(io.LimitReader(file, maxSize+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(contents)) > maxSize {
+		return nil, fmt.Errorf("file exceeds maximum size of %d bytes", maxSize)
+	}
+	return contents, nil
+}

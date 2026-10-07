@@ -5,12 +5,46 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"path"
+	"strings"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/performance"
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
+
+// AssignBeatmapFile reads a prepared beatmap from the submission filesystem,
+// parses it & applies its metadata to the target beatmap.
+func (submission *SubmissionContext) AssignBeatmapFile(beatmapId int, filename string) (*PreparedBeatmap, []byte, error) {
+	if submission.FS == nil {
+		return nil, nil, errors.New("bss: filesystem not set")
+	}
+	if submission.IsCanceled() {
+		return nil, nil, submission.Context.Err()
+	}
+
+	if err := validatePackageFilename(filename); err != nil {
+		return nil, nil, err
+	}
+	if !strings.EqualFold(path.Ext(filename), ".osu") {
+		return nil, nil, fmt.Errorf("bss: invalid beatmap filename %q", filename)
+	}
+
+	contents, err := submission.readFile(filename, MaxBeatmapFileSize)
+	if err != nil {
+		return nil, nil, fmt.Errorf("bss: read beatmap file %q: %w", filename, err)
+	}
+	if submission.IsCanceled() {
+		return nil, nil, submission.Context.Err()
+	}
+
+	beatmap, err := submission.AssignBeatmapContent(beatmapId, filename, contents)
+	if err != nil {
+		return nil, nil, err
+	}
+	return beatmap, contents, nil
+}
 
 // AssignBeatmapContent parses the given beatmap contents
 // & applies it to the matching prepared beatmap.
