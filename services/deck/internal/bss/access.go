@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
@@ -42,6 +43,30 @@ func (submission *SubmissionContext) CheckSubmissionEligibility(submissionEnable
 	}
 	if !userPermissions.Has("beatmaps.upload") {
 		return ErrUploadPermissionDenied
+	}
+	return nil
+}
+
+var (
+	ErrBeatmapsetNotPrepared = errors.New("bss: beatmapset not prepared")
+	ErrBeatmapsetWrongServer = errors.New("bss: beatmapset is hosted on bancho")
+	ErrBeatmapsetRanked      = errors.New("bss: beatmapset is approved")
+	ErrBeatmapsetGraveyarded = errors.New("bss: beatmapset is graveyarded")
+)
+
+// CheckBeatmapsetEligibility ensures that the beatmapset can be updated.
+func (submission *SubmissionContext) CheckBeatmapsetEligibility() error {
+	if submission.Beatmapset == nil {
+		return ErrBeatmapsetNotPrepared
+	}
+	if submission.Beatmapset.Server != constants.BeatmapServerTitanic {
+		return ErrBeatmapsetWrongServer
+	}
+	if submission.Beatmapset.Status >= constants.BeatmapStatusRanked {
+		return ErrBeatmapsetRanked
+	}
+	if submission.Beatmapset.Status == constants.BeatmapStatusGraveyard {
+		return ErrBeatmapsetGraveyarded
 	}
 	return nil
 }
