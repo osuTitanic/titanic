@@ -26,6 +26,10 @@ func (r *BeatmapPlaysRepository) DeleteByBeatmapId(beatmapId int) error {
 	return r.db.Where("beatmap_id = ?", beatmapId).Delete(&schemas.BeatmapPlays{}).Error
 }
 
+func (r *BeatmapPlaysRepository) DeleteBySetId(setId int) error {
+	return r.db.Where("set_id = ?", setId).Delete(&schemas.BeatmapPlays{}).Error
+}
+
 func (r *BeatmapPlaysRepository) Update(updates *schemas.BeatmapPlays, columns ...string) (int64, error) {
 	return CommonUpdate(
 		r.db.Where("user_id = ? AND beatmap_id = ?", updates.UserId, updates.BeatmapId),

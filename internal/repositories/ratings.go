@@ -30,6 +30,10 @@ func (r *BeatmapRatingRepository) Delete(rating *schemas.BeatmapRating) error {
 	return r.db.Delete(rating).Error
 }
 
+func (r *BeatmapRatingRepository) DeleteBySetId(setId int) error {
+	return r.db.Where("set_id = ?", setId).Delete(&schemas.BeatmapRating{}).Error
+}
+
 func (r *BeatmapRatingRepository) Update(updates *schemas.BeatmapRating, columns ...string) (int64, error) {
 	return CommonUpdate(
 		r.db.Where("user_id = ? AND map_checksum = ?", updates.UserId, updates.MapChecksum),

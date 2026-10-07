@@ -21,6 +21,10 @@ func (r *BeatmapModdingRepository) Delete(modding *schemas.BeatmapModding) error
 	return r.db.Delete(modding).Error
 }
 
+func (r *BeatmapModdingRepository) DeleteBySetId(setId int) error {
+	return r.db.Where("set_id = ?", setId).Delete(&schemas.BeatmapModding{}).Error
+}
+
 func (r *BeatmapModdingRepository) Update(updates *schemas.BeatmapModding, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }

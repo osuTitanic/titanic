@@ -30,6 +30,10 @@ func (r *BeatmapFavouriteRepository) Delete(favourite *schemas.BeatmapFavourite)
 	return r.db.Delete(favourite).Error
 }
 
+func (r *BeatmapFavouriteRepository) DeleteBySetId(setId int) error {
+	return r.db.Where("set_id = ?", setId).Delete(&schemas.BeatmapFavourite{}).Error
+}
+
 func (r *BeatmapFavouriteRepository) Update(updates *schemas.BeatmapFavourite, columns ...string) (int64, error) {
 	return CommonUpdate(
 		r.db.Where("user_id = ? AND set_id = ?", updates.UserId, updates.SetId),
