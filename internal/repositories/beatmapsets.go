@@ -92,6 +92,18 @@ func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) 
 	return beatmapsets, err
 }
 
+func (r *BeatmapsetRepository) FetchInactiveByCreatorWithLock(creatorId int, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status = ?", constants.BeatmapStatusInactive).
+		Order("id ASC").
+		Find(&beatmapsets).
+		Error
+	return beatmapsets, err
+}
+
 func (r *BeatmapsetRepository) CountUnrankedByCreator(creatorId int) (int, error) {
 	var count int64
 	err := r.db.Model(&schemas.Beatmapset{}).
