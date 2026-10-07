@@ -92,6 +92,26 @@ func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) 
 	return beatmapsets, err
 }
 
+func (r *BeatmapsetRepository) CountUnrankedByCreator(creatorId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status <= ?", constants.BeatmapStatusPending).
+		Count(&count).
+		Error
+	return int(count), err
+}
+
+func (r *BeatmapsetRepository) CountRankedByCreator(creatorId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status > ?", constants.BeatmapStatusPending).
+		Count(&count).
+		Error
+	return int(count), err
+}
+
 func (r *BeatmapsetRepository) FetchDownloadServer(id int) (constants.BeatmapServer, error) {
 	var server constants.BeatmapServer
 	err := r.db.Model(&schemas.Beatmapset{}).
