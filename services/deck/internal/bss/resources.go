@@ -35,6 +35,69 @@ func (submission *SubmissionContext) SetFS(source fs.FS) error {
 	return nil
 }
 
+// PutFS copies included files from the submission filesystem into an osz.
+func (submission *SubmissionContext) PutFS(writer *zip.Writer, include func(filename string) bool) error {
+	if submission.FS == nil {
+		return errors.New("bss: filesystem not set")
+	}
+	if submission.IsCanceled() {
+		return submission.Context.Err()
+	}
+
+	return fs.WalkDir(submission.FS, ".", func(filename string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return fmt.Errorf("bss: walk package file %q: %w", filename, err)
+		}
+		if filename == "." || entry.IsDir() {
+			return nil
+		}
+		if submission.IsCanceled() {
+			return submission.Context.Err()
+		}
+
+		if include != nil && !include(filename) {
+			return nil
+		}
+		if err := validatePackageFilename(filename); err != nil {
+			return err
+		}
+
+		info, err := entry.Info()
+		if err != nil {
+			return fmt.Errorf("bss: get package file info %q: %w", filename, err)
+		}
+		if !info.Mode().IsRegular() {
+			return fmt.Errorf("bss: package file %q is not regular file", filename)
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return fmt.Errorf("bss: create package header %q: %w", filename, err)
+		}
+		header.Name = filename
+		header.Method = zip.Deflate
+
+		target, err := writer.CreateHeader(header)
+		if err != nil {
+			return fmt.Errorf("bss: create package file %q: %w", filename, err)
+		}
+		source, err := submission.FS.Open(filename)
+		if err != nil {
+			return fmt.Errorf("bss: open package file %q: %w", filename, err)
+		}
+
+		written, copyErr := io.Copy(target, source)
+		closeErr := source.Close()
+		if err := errors.Join(copyErr, closeErr); err != nil {
+			return fmt.Errorf("bss: write package file %q: %w", filename, err)
+		}
+		if written != info.Size() {
+			return fmt.Errorf("bss: write package file %q: %w", filename, io.ErrUnexpectedEOF)
+		}
+		return nil
+	})
+}
+
 // PutBeatmap writes a prepared difficulty to an
 // osz archive without changing its metadata.
 func (submission *SubmissionContext) PutBeatmap(writer *zip.Writer, beatmapId int, contents []byte) error {
