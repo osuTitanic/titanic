@@ -380,3 +380,10 @@ func integerBoolean(value bool) int {
 	}
 	return 0
 }
+
+func stringBoolean(value bool) string {
+	if value {
+		return "true"
+	}
+	return "false"
+}

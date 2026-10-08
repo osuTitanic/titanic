@@ -619,7 +619,7 @@ func formatScoreLegacy(score *schemas.Score, separator string) string {
 		strconv.Itoa(score.CountMiss),
 		strconv.Itoa(score.CountKatu),
 		strconv.Itoa(score.CountGeki),
-		strconv.Itoa(integerBoolean(score.Perfect)),
+		stringBoolean(score.Perfect),
 		strconv.Itoa(int(score.Mods)),
 		strconv.Itoa(score.UserId),
 		score.User.AvatarFilename(),
