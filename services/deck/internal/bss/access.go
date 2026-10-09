@@ -71,6 +71,30 @@ func (submission *SubmissionContext) CheckBeatmapsetEligibility() error {
 	return nil
 }
 
+// RemainingUploadSlots returns how many new beatmapsets the user can upload.
+func (submission *SubmissionContext) RemainingUploadSlots(transaction *state.Repositories, userPermissions *permissions.Set) (int, error) {
+	if userPermissions.IsBat() {
+		return 99, nil
+	}
+
+	unranked, err := transaction.Beatmapsets.CountUnrankedByCreator(submission.User.Id)
+	if err != nil {
+		return 0, fmt.Errorf("bss: count unranked beatmapsets for user %d: %w", submission.User.Id, err)
+	}
+	ranked, err := transaction.Beatmapsets.CountRankedByCreator(submission.User.Id)
+	if err != nil {
+		return 0, fmt.Errorf("bss: count ranked beatmapsets for user %d: %w", submission.User.Id, err)
+	}
+
+	baseLimit := 4
+	rankedBonusLimit := 4
+	if userPermissions.Has("beatmaps.upload.extended_limit") {
+		baseLimit = 8
+		rankedBonusLimit = 12
+	}
+	return baseLimit - unranked + min(ranked, rankedBonusLimit), nil
+}
+
 /*
  * Unlike the official beatmap submission system, Titanic! has its own collaboration
  * system, allowing updates on individual difficulties, if the user is a collaborator.
