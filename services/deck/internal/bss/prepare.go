@@ -15,7 +15,7 @@ func (submission *SubmissionContext) PrepareBeatmapset(transaction *state.Reposi
 		return fmt.Errorf("bss: prepare beatmapset %d: %w", beatmapsetId, err)
 	}
 	if beatmapset == nil {
-		return fmt.Errorf("bss: beatmapset not found: %d", beatmapsetId)
+		return fmt.Errorf("%w: %d", ErrBeatmapsetNotFound, beatmapsetId)
 	}
 
 	difficulties, err := transaction.Beatmaps.ManyBySetIdWithLock(beatmapset.Id)

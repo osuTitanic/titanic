@@ -1,7 +1,6 @@
 package bss
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -9,16 +8,6 @@ import (
 	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
-)
-
-var (
-	ErrSubmissionDisabled     = errors.New("bss: beatmap submission disabled")
-	ErrUserNotAuthenticated   = errors.New("bss: user not authenticated")
-	ErrUserNotActivated       = errors.New("bss: user not activated")
-	ErrUserRestricted         = errors.New("bss: user restricted")
-	ErrUserSilenced           = errors.New("bss: user silenced")
-	ErrUserIsBot              = errors.New("bss: bot users cannot submit beatmaps")
-	ErrUploadPermissionDenied = errors.New("bss: beatmap upload permission denied")
 )
 
 // CheckSubmissionEligibility ensures that the user is eligible to submit beatmaps.
@@ -46,13 +35,6 @@ func (submission *SubmissionContext) CheckSubmissionEligibility(submissionEnable
 	}
 	return nil
 }
-
-var (
-	ErrBeatmapsetNotPrepared = errors.New("bss: beatmapset not prepared")
-	ErrBeatmapsetWrongServer = errors.New("bss: beatmapset is hosted on bancho")
-	ErrBeatmapsetRanked      = errors.New("bss: beatmapset is approved")
-	ErrBeatmapsetGraveyarded = errors.New("bss: beatmapset is graveyarded")
-)
 
 // CheckBeatmapsetEligibility ensures that the beatmapset can be updated.
 func (submission *SubmissionContext) CheckBeatmapsetEligibility() error {
@@ -102,13 +84,6 @@ func (submission *SubmissionContext) RemainingUploadSlots(transaction *state.Rep
  * Collaborators may only update their assigned beatmaps. Only with a separate permission
  * they are able to update beatmapset resources (e.g. sb files).
  */
-
-var (
-	ErrBeatmapsetAccessNotAllowed = errors.New("bss: beatmapset access not allowed")
-	ErrBeatmapAccessNotAllowed    = errors.New("bss: beatmap access not allowed")
-	ErrBeatmapCreationNotAllowed  = errors.New("bss: beatmap creation not allowed")
-	ErrResourceAccessNotAllowed   = errors.New("bss: resource access not allowed")
-)
 
 // SubmissionAccess describes which parts of
 // a beatmapset the user may update.

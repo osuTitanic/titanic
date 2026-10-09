@@ -1,14 +1,11 @@
 package bss
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 )
-
-var ErrBeatmapRemovalNotAllowed = errors.New("bss: beatmap removal not allowed")
 
 // RemoveInactiveBeatmapsets removes all inactive (placeholder or deleted) beatmapsets owned by the user.
 // The "placeholder" state means that a set was reserved by the user but was never populated with metadata.
