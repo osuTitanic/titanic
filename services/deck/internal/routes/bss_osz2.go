@@ -89,8 +89,8 @@ func NewOsz2GetIdRequest(ctx *server.Context) (request Osz2GetIdRequest, err err
 	}, nil
 }
 
-// BeatmapSubmissionOsz2GetId prepares an osz2 submission and
-// generates its server-side beatmapset & beatmap IDs.
+// /web/osu-osz2-bmsubmit-getid.php -> Prepares an osz2 submission
+// and generates its server-side beatmapset & beatmap IDs.
 func BeatmapSubmissionOsz2GetId(ctx *server.Context) {
 	request, err := NewOsz2GetIdRequest(ctx)
 	if err != nil {
