@@ -291,7 +291,3 @@ func renderBssError(ctx *server.Context, err error) {
 	}
 	ctx.RenderText(http.StatusOK, response)
 }
-
-// TODO: /web/osu-osz2-bmsubmit-upload.php
-// TODO: /web/osu-osz2-bmsubmit-post.php
-// TODO: /web/osu-get-beatmap-topic.php
