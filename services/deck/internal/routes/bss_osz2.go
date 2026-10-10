@@ -265,9 +265,9 @@ func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset boo
 	defer stream.Close()
 
 	hash := md5.New()
-	_, copyErr := io.Copy(hash, stream)
+	_, err = io.Copy(hash, stream)
 
-	if copyErr != nil {
+	if err != nil {
 		ctx.Logger.Warn("Failed to hash server-side osz2", "set_id", setId, "error", err)
 		return osz2SubmissionFull
 	}
