@@ -58,6 +58,7 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/osu-getscores4.php", routes.GetScores4)
 	server.Handle("GET /web/osu-getscores5.php", routes.GetScores5)
 	server.Handle("GET /web/osu-getscores6.php", routes.GetScores6)
+	server.Handle("GET /web/osu-osz2-bmsubmit-getid.php", routes.BeatmapSubmissionOsz2GetId)
 	server.Handle("GET /web/osu-osz2-getscores.php", routes.GetScoresOsz2)
 	server.Handle("GET /web/osu-getseasonal.php", routes.SeasonalBackgrounds)
 	server.Handle("GET /web/osu-getstatus.php", routes.BeatmapStatus)
