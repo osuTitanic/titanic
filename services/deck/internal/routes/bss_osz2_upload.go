@@ -1,13 +1,19 @@
 package routes
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 
+	"github.com/Lekuruu/osz2-go/pkg/osz2"
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/internal/storage"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
@@ -164,7 +170,52 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
-		// TODO: Load & process submitted osz2
+		var osz2Source io.ReaderAt = request.File
+		var osz2Size = request.Size()
+
+		if request.SubmissionType == osz2SubmissionPatch {
+			// We have received a patch file for the existing server-side osz2
+			// This is used to speed up submission time & save bandwidth
+
+			// We will use the osz2 base & the patch to create the new osz2
+			// that contains the actual submission (streamed into a temporary file)
+			// If the patch is successful, we can use it as our new base osz2 later on
+			patchedFile, patchedSize, err := resolvePatchedOsz2(
+				submission.Context,
+				ctx.State.StorageOsz2,
+				request.SetId,
+				request.File,
+				request.Size(),
+			)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				patchedFile.Close()
+				os.Remove(patchedFile.Name())
+			}()
+
+			osz2Source = patchedFile
+			osz2Size = patchedSize
+		}
+
+		osz2Reader, err := osz2.NewReader(
+			osz2Source,
+			osz2Size,
+			osz2.KeyTypeOsz2,
+		)
+		if err != nil {
+			return fmt.Errorf("%w: open package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
+		}
+		if err := osz2Reader.Verify(); err != nil {
+			return fmt.Errorf("%w: verify package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
+		}
+		if err := submission.SetFS(osz2Reader); err != nil {
+			return err
+		}
+		submission.Metadata = osz2Reader.Metadata()
+
+		// TODO: Process verified osz2
 		return nil
 	})
 	if err != nil {
@@ -173,4 +224,54 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 	}
 
 	ctx.RenderText(http.StatusOK, "0")
+}
+
+func resolvePatchedOsz2(
+	ctx context.Context,
+	store storage.Storage,
+	setId int,
+	patch io.ReaderAt,
+	patchSize int64,
+) (output *os.File, size int64, err error) {
+	if err := ctx.Err(); err != nil {
+		return nil, 0, err
+	}
+	if store == nil {
+		return nil, 0, bss.ErrOsz2NotFound
+	}
+
+	source, sourceSize, err := store.ReadStreamAt(ctx, strconv.Itoa(setId), "osz2")
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: read cached package for set %d: %v", bss.ErrOsz2NotFound, setId, err)
+	}
+	defer source.Close()
+
+	output, err = os.CreateTemp("", "bss-osz2-*")
+	if err != nil {
+		return nil, 0, fmt.Errorf("create temporary osz2: %w", err)
+	}
+	defer func() {
+		// Only close & remove the file if an error occured
+		// We want to keep the file open otherwise
+		if err != nil {
+			err = errors.Join(err, output.Close(), os.Remove(output.Name()))
+			output = nil
+		}
+	}()
+
+	size, err = osz2.ApplyPatch(
+		source,
+		sourceSize,
+		patch,
+		patchSize,
+		bss.MaxPackageFileSize,
+		output,
+	)
+	if err != nil {
+		return nil, 0, fmt.Errorf("%w: apply patch for set %d: %v", bss.ErrOsz2Invalid, setId, err)
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, 0, err
+	}
+	return output, size, nil
 }
