@@ -75,12 +75,16 @@ func (submission *SubmissionContext) ValidateFS() error {
 	if submission.IsCanceled() {
 		return submission.Context.Err()
 	}
+	return ValidateFS(submission.FS)
+}
 
+// ValidateFS validates all files in a read-only beatmap package.
+func ValidateFS(source fs.FS) error {
 	paths := make(map[string]packagePath)
 	hasBeatmap := false
 	files := 0
 
-	err := fs.WalkDir(submission.FS, ".", func(name string, entry fs.DirEntry, err error) error {
+	err := fs.WalkDir(source, ".", func(name string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("bss: walk package file %q: %w", name, err)
 		}
