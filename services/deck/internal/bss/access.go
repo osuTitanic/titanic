@@ -2,8 +2,10 @@ package bss
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/Lekuruu/osz2-go/pkg/osz2"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -159,6 +161,35 @@ func (submission *SubmissionContext) CheckBeatmapAccess(beatmap *schemas.Beatmap
 func (submission *SubmissionContext) RequireResourceAccess() error {
 	if submission.Access == nil || !submission.Access.CanUpdateResources {
 		return ErrResourceAccessNotAllowed
+	}
+	return nil
+}
+
+// ValidateOwnership ensures that creator names belong to the beatmapset owner or one of the collaborators.
+func (submission *SubmissionContext) ValidateOwnership(allowedUsernames []string) error {
+	allowed := make(map[string]bool, len(allowedUsernames))
+
+	for _, username := range allowedUsernames {
+		username = strings.ToLower(strings.TrimSpace(username))
+		if username != "" {
+			allowed[username] = true
+		}
+	}
+
+	isAllowed := func(username string) bool {
+		_, ok := allowed[strings.ToLower(strings.TrimSpace(username))]
+		return ok
+	}
+
+	// Check osz2 metadata
+	if creator := submission.Metadata[osz2.Creator]; creator != "" && !isAllowed(creator) {
+		return ErrBeatmapOwnershipNotAllowed
+	}
+	// Check beatmap files
+	for _, beatmap := range submission.Beatmaps {
+		if beatmap.Source != nil && !isAllowed(beatmap.Source.Creator) {
+			return ErrBeatmapOwnershipNotAllowed
+		}
 	}
 	return nil
 }

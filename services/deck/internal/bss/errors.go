@@ -34,6 +34,7 @@ var (
 
 	ErrBeatmapsetNotPrepared = errors.New("bss: beatmapset not prepared")
 	ErrBeatmapsetNotFound    = errors.New("bss: beatmapset not found")
+	ErrReservedSetNotFound   = errors.New("bss: reserved beatmapset not found")
 	ErrBeatmapsetWrongServer = errors.New("bss: beatmapset is hosted on bancho")
 	ErrBeatmapsetRanked      = errors.New("bss: beatmapset is approved")
 	ErrBeatmapsetGraveyarded = errors.New("bss: beatmapset is graveyarded")
@@ -44,6 +45,13 @@ var (
 	ErrBeatmapRemovalNotAllowed   = errors.New("bss: beatmap removal not allowed")
 	ErrResourceAccessNotAllowed   = errors.New("bss: resource access not allowed")
 	ErrNoUploadSlots              = errors.New("bss: no remaining upload slots")
+	ErrBeatmapOwnershipNotAllowed = errors.New("bss: beatmap creator is not allowed")
+	ErrDuplicateBeatmap           = errors.New("bss: duplicate beatmap")
+	ErrBeatmapTooShort            = errors.New("bss: beatmap is too short")
+
+	ErrOsz2Invalid  = errors.New("bss: invalid osz2")
+	ErrOsz2TooLarge = errors.New("bss: osz2 is too large")
+	ErrOsz2NotFound = errors.New("bss: server-side osz2 not found")
 )
 
 func NewErrorResponse(code ErrorCode) ErrorResponse {
@@ -66,7 +74,11 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponse(ErrorCodeGraveyarded), true
 	case errors.Is(err, ErrNoUploadSlots):
 		return NewErrorResponse(ErrorCodeQuotaExceeded), true
-	case errors.Is(err, ErrBeatmapsetAccessNotAllowed), errors.Is(err, ErrBeatmapAccessNotAllowed), errors.Is(err, ErrResourceAccessNotAllowed), errors.Is(err, ErrBeatmapsetWrongServer):
+	case errors.Is(err, ErrBeatmapsetAccessNotAllowed),
+		errors.Is(err, ErrBeatmapAccessNotAllowed),
+		errors.Is(err, ErrResourceAccessNotAllowed),
+		errors.Is(err, ErrBeatmapsetWrongServer),
+		errors.Is(err, ErrBeatmapOwnershipNotAllowed):
 		return NewErrorResponse(ErrorCodeOwnership), true
 	case errors.Is(err, ErrInvalidSubmissionRequest):
 		return NewErrorResponseMessage("Invalid beatmap submission request."), true
@@ -86,8 +98,20 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponseMessage("You do not have permission to upload beatmaps."), true
 	case errors.Is(err, ErrBeatmapCreationNotAllowed):
 		return NewErrorResponseMessage("You are not allowed to add difficulties to this beatmapset."), true
+	case errors.Is(err, ErrReservedSetNotFound):
+		return NewErrorResponseMessage("The reserved beatmapset no longer exists. Please try again!"), true
 	case errors.Is(err, ErrBeatmapRemovalNotAllowed):
 		return NewErrorResponseMessage("Please ask the owner of this beatmapset to delete any difficulties."), true
+	case errors.Is(err, ErrDuplicateBeatmap):
+		return NewErrorResponseMessage("It seems like one of your beatmaps was already uploaded by someone else. Please try again!"), true
+	case errors.Is(err, ErrOsz2NotFound):
+		return NewErrorResponseMessage("Something went wrong while processing your submission. Please try again!"), true
+	case errors.Is(err, ErrBeatmapTooShort):
+		return NewErrorResponseMessage("Your beatmap is too short. Please try to make it longer and try again!"), true
+	case errors.Is(err, ErrOsz2TooLarge):
+		return NewErrorResponseMessage("Your beatmap is too big. Try to reduce its filesize and try again!"), true
+	case errors.Is(err, ErrOsz2Invalid):
+		return NewErrorResponseMessage("Something went wrong while processing your beatmap. Please try again!"), true
 	default:
 		return ErrorResponse{}, false
 	}
