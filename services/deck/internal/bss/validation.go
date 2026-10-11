@@ -7,6 +7,9 @@ import (
 	"math"
 	"path"
 	"strings"
+
+	"github.com/osuTitanic/titanic/internal/schemas"
+	"github.com/osuTitanic/titanic/internal/state"
 )
 
 const (
@@ -65,6 +68,54 @@ func PackageSizeLimit(maxBeatmapLength float64) int64 {
 
 	limit := 10_000_000 + int64(10_000_000*(maxBeatmapLength/60))
 	return min(limit, int64(MaxPackageFileSize))
+}
+
+// ValidateBeatmapUniqueness rejects submitted filenames / checksums already
+// belonging to another mapper, while allowing the same mapper to re-use them.
+func (submission *SubmissionContext) ValidateBeatmapUniqueness(repositories *state.Repositories) error {
+	if submission.Beatmapset == nil {
+		return ErrBeatmapsetNotPrepared
+	}
+
+	isDuplicateBeatmap := func(submittedId int, existing *schemas.Beatmap) bool {
+		if existing == nil {
+			return false
+		}
+		if existing.Id == submittedId {
+			return false
+		}
+		if existing.SetId == submission.Beatmapset.Id {
+			return true
+		}
+		if existing.Beatmapset.CreatorId == nil || submission.Beatmapset.CreatorId == nil {
+			// should not happen... well... *should*
+			return true
+		}
+		return *existing.Beatmapset.CreatorId != *submission.Beatmapset.CreatorId
+	}
+
+	for _, beatmap := range submission.Beatmaps {
+		if beatmap.Source == nil {
+			continue
+		}
+
+		byFilename, err := repositories.Beatmaps.ByFilename(beatmap.Target.Filename, "Beatmapset")
+		if err != nil {
+			return fmt.Errorf("bss: beatmap by filename %q: %w", beatmap.Target.Filename, err)
+		}
+		if isDuplicateBeatmap(beatmap.Target.Id, byFilename) {
+			return ErrDuplicateBeatmap
+		}
+
+		byChecksum, err := repositories.Beatmaps.ByChecksum(beatmap.Target.Checksum, "Beatmapset")
+		if err != nil {
+			return fmt.Errorf("bss: beatmap by checksum %q: %w", beatmap.Target.Checksum, err)
+		}
+		if isDuplicateBeatmap(beatmap.Target.Id, byChecksum) {
+			return ErrDuplicateBeatmap
+		}
+	}
+	return nil
 }
 
 // ValidateFS validates all files in the assigned package.
