@@ -193,3 +193,57 @@ func (submission *SubmissionContext) ValidateOwnership(allowedUsernames []string
 	}
 	return nil
 }
+
+// AllowedUsernames returns all usernames that are valid for submission.
+// This includes the set owner, set collaborators and all of their previous usernames.
+func (submission *SubmissionContext) AllowedUsernames(transaction *state.Repositories) ([]string, error) {
+	// Add current user that is submitting
+	userIds := map[int]bool{submission.User.Id: true}
+	usernames := []string{submission.User.Name}
+
+	// Add set owner
+	if submission.Beatmapset.Creator != nil {
+		usernames = append(usernames, *submission.Beatmapset.Creator)
+	}
+	if submission.Beatmapset.CreatorId != nil {
+		userIds[*submission.Beatmapset.CreatorId] = true
+	}
+
+	// Collect all beatmap IDs to fetch collaborators
+	beatmapIds := make([]int, len(submission.Beatmaps))
+	for i, beatmap := range submission.Beatmaps {
+		beatmapIds[i] = beatmap.Target.Id
+	}
+
+	collaborations, err := transaction.Collaborations.FetchByBeatmaps(beatmapIds, "User")
+	if err != nil {
+		return nil, fmt.Errorf("bss: fetch collaborators for set %d: %w", submission.Beatmapset.Id, err)
+	}
+
+	// Add all collaborators for this set
+	for _, collaboration := range collaborations {
+		userIds[collaboration.UserId] = true
+		usernames = append(usernames, collaboration.User.Name)
+	}
+
+	// For each user that we collected, fetch their previous names
+	// from the name history & add it to the allowed list
+	for userId := range userIds {
+		user, err := transaction.Users.ById(userId)
+		if err != nil {
+			return nil, fmt.Errorf("bss: fetch submission participant %d: %w", userId, err)
+		}
+		if user != nil {
+			usernames = append(usernames, user.Name)
+		}
+
+		names, err := transaction.Names.ManyByUserId(userId)
+		if err != nil {
+			return nil, fmt.Errorf("bss: fetch name history for submission participant %d: %w", userId, err)
+		}
+		for _, name := range names {
+			usernames = append(usernames, name.Name)
+		}
+	}
+	return usernames, nil
+}
