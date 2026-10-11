@@ -36,23 +36,25 @@ func (submission *SubmissionContext) SetFS(source fs.FS) error {
 }
 
 // PutFS copies included files from the submission filesystem into an osz.
-func (submission *SubmissionContext) PutFS(writer *zip.Writer, include func(filename string) bool) error {
-	if submission.FS == nil {
+func (submission *SubmissionContext) PutFS(target *zip.Writer, include func(filename string) bool) error {
+	return submission.PutFSFrom(target, submission.FS, include)
+}
+
+// PutFSFrom copies included files from a read-only filesystem into an osz.
+func (submission *SubmissionContext) PutFSFrom(target *zip.Writer, sourceFS fs.FS, include func(filename string) bool) error {
+	if sourceFS == nil {
 		return errors.New("bss: filesystem not set")
 	}
 	if submission.IsCanceled() {
 		return submission.Context.Err()
 	}
 
-	return fs.WalkDir(submission.FS, ".", func(filename string, entry fs.DirEntry, err error) error {
+	return fs.WalkDir(sourceFS, ".", func(filename string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return fmt.Errorf("bss: walk package file %q: %w", filename, err)
 		}
 		if filename == "." || entry.IsDir() {
 			return nil
-		}
-		if submission.IsCanceled() {
-			return submission.Context.Err()
 		}
 
 		if include != nil && !include(filename) {
@@ -77,11 +79,11 @@ func (submission *SubmissionContext) PutFS(writer *zip.Writer, include func(file
 		header.Name = filename
 		header.Method = zip.Deflate
 
-		target, err := writer.CreateHeader(header)
+		target, err := target.CreateHeader(header)
 		if err != nil {
 			return fmt.Errorf("bss: create package file %q: %w", filename, err)
 		}
-		source, err := submission.FS.Open(filename)
+		source, err := sourceFS.Open(filename)
 		if err != nil {
 			return fmt.Errorf("bss: open package file %q: %w", filename, err)
 		}
