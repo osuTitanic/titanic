@@ -200,6 +200,17 @@ func (submission *SubmissionContext) SaveBeatmap(store storage.Storage, beatmapI
 	return nil
 }
 
+// OszSizeWithoutVideo returns the size of a zip archive with videos removed.
+func OszSizeWithoutVideo(reader *zip.Reader, fallbackSize int64) int64 {
+	size, ok := zipstream.ArchiveSizeFiltered(reader.File, func(file *zip.File) bool {
+		return !resources.IsVideoFile(file.Name)
+	})
+	if !ok {
+		return fallbackSize
+	}
+	return size
+}
+
 func (submission *SubmissionContext) validateResourceStorage(store storage.Storage) error {
 	if store == nil {
 		return errors.New("bss: nil resource storage")
