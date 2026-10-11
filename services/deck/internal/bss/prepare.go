@@ -83,6 +83,31 @@ func (submission *SubmissionContext) PrepareBeatmap(transaction *state.Repositor
 	return beatmap, nil
 }
 
+// PrepareExistingBeatmaps prepares every difficulty already loaded with the beatmapset.
+// Unlike PrepareBeatmaps, this does not reconcile IDs or create database rows.
+func (submission *SubmissionContext) PrepareExistingBeatmaps() error {
+	if submission.Beatmapset == nil {
+		return ErrBeatmapsetNotPrepared
+	}
+	if len(submission.Beatmaps) != 0 {
+		return fmt.Errorf("bss: beatmaps already prepared")
+	}
+	beatmaps := make([]*PreparedBeatmap, len(submission.Beatmapset.Beatmaps))
+
+	for i, target := range submission.Beatmapset.Beatmaps {
+		if target == nil {
+			return fmt.Errorf("bss: invalid beatmap at index %d", i)
+		}
+		if target.SetId != submission.Beatmapset.Id {
+			return fmt.Errorf("bss: invalid beatmap at index %d", i)
+		}
+		beatmaps[i] = &PreparedBeatmap{Target: target}
+	}
+
+	submission.Beatmaps = beatmaps
+	return nil
+}
+
 // RemovedBeatmaps returns existing difficulties which were not prepared for this submission.
 // They will eventually be removed from the set when the submission is processed.
 func (submission *SubmissionContext) RemovedBeatmaps() []*schemas.Beatmap {
