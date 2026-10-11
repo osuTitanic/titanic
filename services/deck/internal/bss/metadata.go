@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ApplyBeatmapsetMetadata applies the metadata to the given set.
+// ApplyBeatmapsetMetadata applies the generic metadata to the given set.
 // Only metadata keys which are present are updated.
 func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
 	columns := make([]string, 0, 8)
@@ -31,12 +31,32 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
 }
 
+// ApplySubmissionMetadata applies the metadata that is updated
+// by the bss itself rather than the user.
+func ApplySubmissionMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset) error {
+	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset,
+		"submission_status",
+		"display_title",
+		"has_video",
+		"has_storyboard",
+		"available",
+		"last_updated",
+		"osz_filesize",
+		"osz_filesize_novideo",
+		"meta_hash",
+		"info_hash",
+		"body_hash",
+	)
+	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
+}
+
 // ApplyBeatmapMetadata commits beatmap metadata to the database.
 // Please check for beatmap access before calling this.
 func ApplyBeatmapMetadata(repositories *state.Repositories, beatmap *schemas.Beatmap) error {
 	// NOTE: Beatmap metadata will already be applied
 	// 		 by the beatmap parser through `AssignBeatmapContent`
 	rowsAffected, err := repositories.Beatmaps.Update(beatmap,
+		"status",
 		"mode",
 		"md5",
 		"version",
@@ -55,6 +75,7 @@ func ApplyBeatmapMetadata(repositories *state.Repositories, beatmap *schemas.Bea
 		"diff",
 		"diff_eyup",
 		"slider_multiplier",
+		"last_updated",
 	)
 	return metadataUpdateResult("beatmap", beatmap.Id, rowsAffected, err)
 }
