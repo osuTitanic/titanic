@@ -9,7 +9,7 @@ require (
 	github.com/CloudyKit/jet/v6 v6.3.2
 	github.com/Lekuruu/bbgo v0.0.0-20260921170824-78e5ddece2f6
 	github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735
-	github.com/Lekuruu/gosu v0.0.0-20261004113517-7e0f6f205d33
+	github.com/Lekuruu/gosu v0.0.0-20261011114013-53f7bffbed54
 	github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed
 	github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034
 	github.com/azihsoyn/rijndael256 v0.0.0-20200316065338-d14eefa2b66b
@@ -32,7 +32,7 @@ require (
 	github.com/yuin/goldmark v1.8.6
 	golang.org/x/crypto v0.56.0
 	golang.org/x/image v0.45.0
-	golang.org/x/text v0.41.0
+	golang.org/x/text v0.43.0
 	gorm.io/driver/postgres v1.6.2
 	gorm.io/gorm v1.31.2
 )
@@ -106,7 +106,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/net v0.58.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	gopkg.in/ini.v1 v1.67.3 // indirect
 )
