@@ -9,11 +9,12 @@ import (
 	"github.com/osuTitanic/titanic/internal/schemas"
 )
 
-// PreparedBeatmap holds a beatmap source and target,
-// used for beatmap submission operations.
+// PreparedBeatmap holds a the parsed beatmap source,
+// target database schema & file contents.
 type PreparedBeatmap struct {
-	Source *beatmaps.Beatmap
-	Target *schemas.Beatmap
+	Source   *beatmaps.Beatmap
+	Target   *schemas.Beatmap
+	Contents []byte
 }
 
 // SubmissionContext contains the state shared by

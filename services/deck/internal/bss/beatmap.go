@@ -93,6 +93,7 @@ func (submission *SubmissionContext) AssignBeatmapContent(beatmapId int, filenam
 	source.MapID = int64(beatmap.Target.Id)
 	source.SetID = int64(submission.Beatmapset.Id)
 	beatmap.Source = source
+	beatmap.Contents = contents
 	beatmap.Target.Filename = filename
 	beatmap.Target.Checksum = fmt.Sprintf("%x", md5.Sum(contents))
 	return beatmap, nil
@@ -100,7 +101,7 @@ func (submission *SubmissionContext) AssignBeatmapContent(beatmapId int, filenam
 
 // CalculateDifficulty calculates modern / eyup star rating
 // as well as max combo, and applies the results to the beatmap.
-func (p *PreparedBeatmap) CalculateDifficulty(contents []byte, ppv1 *performance.PPv1Service, ppv2 performance.IPPv2Service) error {
+func (p *PreparedBeatmap) CalculateDifficulty(ppv1 *performance.PPv1Service, ppv2 performance.IPPv2Service) error {
 	if p.Source == nil {
 		return errors.New("bss: beatmap not parsed")
 	}
@@ -117,7 +118,7 @@ func (p *PreparedBeatmap) CalculateDifficulty(contents []byte, ppv1 *performance
 	}
 
 	attributes, err := ppv2.CalculateDifficultyFromBytes(
-		contents,
+		p.Contents,
 		mode,
 		constants.NoMod,
 	)
