@@ -14,7 +14,8 @@ import (
 // ApplyBeatmapsetMetadata applies the generic metadata to the given set.
 // Only metadata keys which are present are updated.
 func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
-	columns := make([]string, 0, 8)
+	previousName := beatmapset.Name()
+	columns := make([]string, 0, 9)
 	setMetadata(metadata, osz2.Title, &beatmapset.Title, "title", &columns)
 	setMetadata(metadata, osz2.TitleUnicode, &beatmapset.TitleUnicode, "title_unicode", &columns)
 	setMetadata(metadata, osz2.Artist, &beatmapset.Artist, "artist", &columns)
@@ -25,8 +26,18 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 	setMetadata(metadata, osz2.Tags, &beatmapset.Tags, "tags", &columns)
 
 	if len(columns) == 0 {
+		// Nothing was updated
 		return nil
 	}
+
+	nameChanged := beatmapset.Name() != previousName
+	if nameChanged {
+		// If the artist or title changed, we want to update the display title
+		// (https://osu.ppy.sh/wiki/en/Beatmap/Title_text)
+		beatmapset.DisplayTitle = new(beatmapset.DefaultDisplayTitle())
+		columns = append(columns, "display_title")
+	}
+
 	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset, columns...)
 	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
 }
@@ -36,7 +47,6 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 func ApplySubmissionMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset) error {
 	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset,
 		"submission_status",
-		"display_title",
 		"has_video",
 		"has_storyboard",
 		"available",

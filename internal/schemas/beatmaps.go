@@ -166,6 +166,13 @@ func (b *Beatmapset) DescriptionText() string {
 	return ""
 }
 
+func (b *Beatmapset) TagsText() string {
+	if b.Tags != nil {
+		return *b.Tags
+	}
+	return ""
+}
+
 func (b *Beatmapset) DisplayTitleText() string {
 	if b.DisplayTitle != nil {
 		return *b.DisplayTitle
@@ -173,11 +180,26 @@ func (b *Beatmapset) DisplayTitleText() string {
 	return ""
 }
 
-func (b *Beatmapset) TagsText() string {
-	if b.Tags != nil {
-		return *b.Tags
+func (b *Beatmapset) DefaultDisplayTitle() string {
+	title := ""
+	titleFormatting := "[]"
+	if b.Title != nil {
+		title = *b.Title
 	}
-	return ""
+	if b.TitleUnicode != nil {
+		title = *b.TitleUnicode
+	}
+
+	artist := ""
+	artistFormatting := "[bold:0,size:20]"
+	if b.Artist != nil {
+		artist = *b.Artist
+	}
+	if b.ArtistUnicode != nil {
+		artist = *b.ArtistUnicode
+	}
+
+	return fmt.Sprintf("%s%s|%s%s", artistFormatting, artist, titleFormatting, title)
 }
 
 func (b *Beatmapset) IsApproved() bool {
