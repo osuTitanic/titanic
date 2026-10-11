@@ -36,6 +36,18 @@ func (r *BeatmapCollaborationRepository) FetchByBeatmap(beatmapId int, preload .
 	return collaborations, err
 }
 
+func (r *BeatmapCollaborationRepository) FetchByBeatmaps(beatmapIds []int, preload ...string) ([]*schemas.BeatmapCollaboration, error) {
+	if len(beatmapIds) == 0 {
+		return []*schemas.BeatmapCollaboration{}, nil
+	}
+
+	var collaborations []*schemas.BeatmapCollaboration
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id IN ?", beatmapIds).
+		Find(&collaborations).Error
+	return collaborations, err
+}
+
 func (r *BeatmapCollaborationRepository) FetchByUser(userId int, preload ...string) ([]*schemas.BeatmapCollaboration, error) {
 	var collaborations []*schemas.BeatmapCollaboration
 	err := Preloaded(r.db, preload).
