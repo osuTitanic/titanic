@@ -229,6 +229,10 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
+		if err := populateOsz2Beatmaps(ctx, submission, osz2Reader); err != nil {
+			return err
+		}
+
 		// TODO: Process verified osz2
 		return nil
 	})
@@ -358,6 +362,38 @@ func validateOsz2BeatmapIds(reader *osz2.Reader, beatmaps []*bss.PreparedBeatmap
 		_, missing := expectedIds[beatmapId]
 		if missing {
 			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrOsz2Invalid, beatmapId)
+		}
+	}
+	return nil
+}
+
+func populateOsz2Beatmaps(ctx *server.Context, submission *bss.SubmissionContext, reader *osz2.Reader) error {
+	if submission.Access == nil {
+		return errors.New("assign osz2 beatmaps: submission access not resolved")
+	}
+
+	for _, beatmap := range submission.Beatmaps {
+		beatmapId := beatmap.Target.Id
+		canUpdate := submission.Access.CanUpdateBeatmap(beatmapId)
+		if !canUpdate {
+			continue
+		}
+
+		entry, exists := reader.EntryForBeatmap(int32(beatmapId))
+		if !exists {
+			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrOsz2Invalid, beatmapId)
+		}
+
+		_, _, err := submission.AssignBeatmapFile(
+			beatmapId,
+			entry.Path(),
+		)
+		if err != nil {
+			return fmt.Errorf("%w: assign beatmap ID %d: %v", bss.ErrOsz2Invalid, beatmapId, err)
+		}
+
+		if err := beatmap.CalculateDifficulty(ctx.State.PPv1, ctx.State.PPv2); err != nil {
+			return fmt.Errorf("calculate difficulty for beatmap %d: %w", beatmap.Target.Id, err)
 		}
 	}
 	return nil
