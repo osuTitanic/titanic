@@ -233,13 +233,31 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
-		// TODO: Process verified osz2
+		// TODO: Validate creator names
+		// TODO: Validate beatmap uniqueness
+		// TODO: Reject too short submission
+
+		// TODO: Build final osz / save it into a temp file
+		// TODO: Validate package size in accordance to max beatmap length
+		// TODO: Determine video & storyboard flags
+		// TODO: Calculate regular & no-video osz sizes
+
+		// TODO: Apply database updates including
+		// 		 status, update timestamp, osz sizes,
+		// 		 osz2 hashes, generic metadata (artist, title, creator, ...)
+
+		// TODO: Save .osz & .osu files
+		// TODO: Save new osz2 base
 		return nil
 	})
 	if err != nil {
 		renderBssError(ctx, err)
 		return
 	}
+
+	// Post-commit stuff:
+	// TODO: Generate thumbnail & audio preview
+	// TODO: Broadcast events
 
 	ctx.RenderText(http.StatusOK, "0")
 }
