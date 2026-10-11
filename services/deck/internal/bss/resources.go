@@ -103,6 +103,63 @@ func (submission *SubmissionContext) PutFSFrom(target *zip.Writer, sourceFS fs.F
 	})
 }
 
+// PutFSWithAccess writes the package contents accounting for
+// collaboration status, which determines what they can edit
+func (submission *SubmissionContext) PutFSWithAccess(writer *zip.Writer, existingFS fs.FS) error {
+	if submission.Access == nil {
+		return errors.New("bss: submission access not resolved")
+	}
+	if submission.Access.Owner {
+		// We are the owner of this mapset, we can do anything™
+		return submission.PutFS(writer, nil)
+	}
+
+	// We are a collaborator, and are limited to what we are
+	// able to update in this beatmapset
+
+	retainedBeatmaps := make(map[string]bool)
+	submittedBeatmaps := make(map[string]bool)
+
+	for _, beatmap := range submission.Beatmaps {
+		filename := beatmap.Target.Filename
+		if submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
+			// Collaborator is allowed to update this beatmap
+			submittedBeatmaps[filename] = true
+			continue
+		}
+
+		info, err := fs.Stat(existingFS, filename)
+		if err != nil || !info.Mode().IsRegular() {
+			return fmt.Errorf("bss: existing package has no beatmap file for ID %d", beatmap.Target.Id)
+		}
+
+		// Retain the original file, because collaborator is not allowed to update it
+		retainedBeatmaps[filename] = true
+	}
+
+	putFiles := func(source fs.FS, beatmaps map[string]bool, includeResources bool) error {
+		return submission.PutFSFrom(writer, source, func(filename string) bool {
+			if strings.EqualFold(path.Ext(filename), ".osu") {
+				// Can we update this beatmap?
+				return beatmaps[filename]
+			}
+			// Are we allowed to update resources (e.g. background / video / sb assets)
+			return includeResources
+		})
+	}
+
+	// Write all beatmaps that should be retained
+	// If the collaborator can update resources: don't include the existing resources
+	// If the collaborator can't update resources: include the existing resources
+	if err := putFiles(existingFS, retainedBeatmaps, !submission.Access.CanUpdateResources); err != nil {
+		return err
+	}
+
+	// Finally, write the beatmaps that the collaborator is able to update
+	// as well as resource files, if they are allowed to update those
+	return putFiles(submission.FS, submittedBeatmaps, submission.Access.CanUpdateResources)
+}
+
 // CheckFSIncludes checks whether the submission contains a file specified by include.
 func (submission *SubmissionContext) CheckFSIncludes(include func(filename string) bool) (bool, error) {
 	if submission.FS == nil {
