@@ -17,10 +17,16 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
+type Osz2SubmissionType int
+
 const (
-	osz2SubmissionFull  = 1
-	osz2SubmissionPatch = 2
+	osz2SubmissionFull Osz2SubmissionType = iota + 1
+	osz2SubmissionPatch
 )
+
+func (submissionType Osz2SubmissionType) Valid() bool {
+	return submissionType == osz2SubmissionFull || submissionType == osz2SubmissionPatch
+}
 
 type Osz2GetIdRequest struct {
 	SetId        int
@@ -31,7 +37,7 @@ type Osz2GetIdRequest struct {
 type Osz2GetIdResult struct {
 	SetId          int
 	BeatmapIds     []int
-	SubmissionType int
+	SubmissionType Osz2SubmissionType
 	RemainingSlots *int
 	Bubbled        bool
 	NewBeatmapset  bool
@@ -57,7 +63,7 @@ func (result Osz2GetIdResult) FormatResponse() string {
 		"0", // status / error code (0 = success)
 		strconv.Itoa(result.SetId),
 		strings.Join(beatmapIds, ","),
-		strconv.Itoa(result.SubmissionType),
+		strconv.Itoa(int(result.SubmissionType)),
 		remainingSlots,
 		bubbled,
 	}, "\n")
@@ -246,7 +252,7 @@ func isBubbledBeatmapset(transaction *state.Repositories, beatmapset *schemas.Be
 	return isBubbled, nil
 }
 
-func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset bool, clientChecksum string) int {
+func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset bool, clientChecksum string) Osz2SubmissionType {
 	if newBeatmapset || clientChecksum == "" {
 		return osz2SubmissionFull
 	}
