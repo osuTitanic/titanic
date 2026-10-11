@@ -11,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Lekuruu/gosu/pkg/beatmaps"
+	"github.com/Lekuruu/zipstream"
+	"github.com/osuTitanic/titanic/internal/resources"
 	"github.com/osuTitanic/titanic/internal/storage"
 )
 
