@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -207,6 +208,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		if err != nil {
 			return fmt.Errorf("%w: open package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
 		}
+
 		if err := osz2Reader.Verify(); err != nil {
 			return fmt.Errorf("%w: verify package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
 		}
@@ -214,6 +216,15 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 		submission.Metadata = osz2Reader.Metadata()
+
+		// Check if the osz2 lines up with the submission request data
+
+		if err := validateOsz2BeatmapsetId(submission.Metadata, submission.Beatmapset.Id); err != nil {
+			return err
+		}
+		if err := validateOsz2BeatmapIds(osz2Reader, submission.Beatmaps); err != nil {
+			return err
+		}
 
 		// TODO: Process verified osz2
 		return nil
@@ -274,4 +285,77 @@ func resolvePatchedOsz2(
 		return nil, 0, err
 	}
 	return output, size, nil
+}
+
+func validateOsz2BeatmapsetId(metadata osz2.Metadata, expectedId int) error {
+	value, ok := metadata[osz2.BeatmapSetID]
+	if !ok {
+		return fmt.Errorf("%w: missing beatmapset ID metadata", bss.ErrOsz2Invalid)
+	}
+
+	beatmapsetId, err := strconv.Atoi(value)
+	if err != nil {
+		return fmt.Errorf("%w: invalid beatmapset ID metadata %q: %v", bss.ErrOsz2Invalid, value, err)
+	}
+	if beatmapsetId != expectedId {
+		return fmt.Errorf(
+			"%w: package beatmapset ID %d does not match expected ID %d",
+			bss.ErrOsz2Invalid, beatmapsetId, expectedId,
+		)
+	}
+	return nil
+}
+
+func validateOsz2BeatmapIds(reader *osz2.Reader, beatmaps []*bss.PreparedBeatmap) error {
+	expectedIds := make(map[int32]bool, len(beatmaps))
+
+	for _, beatmap := range beatmaps {
+		beatmapId := int32(beatmap.Target.Id) // should hopefully never overflow...
+		expectedIds[beatmapId] = true
+	}
+
+	// We want to check if the expected IDs line up with
+	// whats inside the osz2 and that nothing is missing
+
+	err := fs.WalkDir(reader, ".", func(filename string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return fmt.Errorf("walk osz2 file %q: %w", filename, err)
+		}
+		if entry.IsDir() {
+			return nil
+		}
+
+		packageEntry, err := reader.Entry(filename)
+		if err != nil {
+			return fmt.Errorf("inspect osz2 file %q: %w", filename, err)
+		}
+		if !packageEntry.IsBeatmap() {
+			return nil
+		}
+
+		beatmapId, assigned := packageEntry.BeatmapID()
+		if !assigned {
+			return fmt.Errorf("%w: beatmap %q has no assigned ID", bss.ErrOsz2Invalid, filename)
+		}
+		if _, expected := expectedIds[beatmapId]; !expected {
+			return fmt.Errorf("%w: beatmap %q has unexpected ID %d", bss.ErrOsz2Invalid, filename, beatmapId)
+		}
+		delete(expectedIds, beatmapId)
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	// Ideally, no beatmaps should remain in expectedIds now
+	// If there are, the osz2 is missing some beatmaps
+
+	for _, beatmap := range beatmaps {
+		beatmapId := int32(beatmap.Target.Id)
+		_, missing := expectedIds[beatmapId]
+		if missing {
+			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrOsz2Invalid, beatmapId)
+		}
+	}
+	return nil
 }
