@@ -145,6 +145,28 @@ func (p *PreparedBeatmap) CalculateDifficulty(ppv1 *performance.PPv1Service, ppv
 	return nil
 }
 
+// MaxBeatmapLength returns the total length of the longest difficulty.
+func (submission *SubmissionContext) MaxBeatmapLength() float64 {
+	maximum := 0.0
+
+	for _, beatmap := range submission.Beatmaps {
+		if beatmap == nil {
+			continue
+		}
+		length := 0.0
+
+		if beatmap.Target != nil {
+			length = float64(beatmap.Target.TotalLength)
+		}
+		if beatmap.Source != nil {
+			length = beatmap.Source.TotalLength()
+		}
+		maximum = max(maximum, length)
+	}
+
+	return maximum
+}
+
 // BeatmapsHaveSB reports whether any prepared beatmap contains storyboard elements.
 func (submission *SubmissionContext) BeatmapsHaveSB() bool {
 	for _, beatmap := range submission.Beatmaps {
