@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
@@ -141,7 +142,35 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		return
 	}
 
-	// TODO: Submission implementation
+	err = ctx.State.DatabaseTransaction(func(transaction *state.Repositories) error {
+		err := submission.PrepareBeatmapset(transaction, request.SetId)
+		if errors.Is(err, bss.ErrBeatmapsetNotFound) {
+			return fmt.Errorf("%w: %d", bss.ErrReservedSetNotFound, request.SetId)
+		}
+		if err != nil {
+			return err
+		}
+
+		// Check if we are allowed to update this set
+		if err := submission.ResolveAccess(transaction); err != nil {
+			return err
+		}
+		if err := submission.CheckBeatmapsetEligibility(); err != nil {
+			return err
+		}
+
+		// Create prepared beatmap state from db
+		if err := submission.PrepareExistingBeatmaps(); err != nil {
+			return err
+		}
+
+		// TODO: Load & process submitted osz2
+		return nil
+	})
+	if err != nil {
+		renderBssError(ctx, err)
+		return
+	}
 
 	ctx.RenderText(http.StatusOK, "0")
 }
