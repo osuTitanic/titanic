@@ -45,10 +45,10 @@ var supportedPackageExtensions = map[string]bool{
 // against the duration-based package size limit.
 func ValidatePackageSize(packageSize int64, maxBeatmapLength float64) error {
 	if maxBeatmapLength <= 1 || math.IsNaN(maxBeatmapLength) {
-		return errors.New("bss: beatmap is too short")
+		return ErrBeatmapTooShort
 	}
 	if packageSize < 0 || packageSize > PackageSizeLimit(maxBeatmapLength) {
-		return errors.New("bss: package is too large")
+		return ErrOsz2TooLarge
 	}
 	return nil
 }
