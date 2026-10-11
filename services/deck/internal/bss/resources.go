@@ -2,6 +2,7 @@ package bss
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -140,36 +141,38 @@ func PutFile(writer *zip.Writer, filename string, contents []byte) error {
 
 // SaveOsz creates / overwrites the osz package for the prepared beatmapset.
 func (submission *SubmissionContext) SaveOsz(store storage.Storage, contents []byte) error {
+	return submission.SaveOszStream(store, bytes.NewReader(contents))
+}
+
+// SaveOszStream creates / overwrites the osz package for the prepared beatmapset.
+func (submission *SubmissionContext) SaveOszStream(store storage.Storage, stream io.Reader) error {
 	if err := submission.validateResourceStorage(store); err != nil {
 		return err
 	}
-
-	if err := store.Save(
+	return store.SaveStream(
 		submission.Context,
 		strconv.Itoa(submission.Beatmapset.Id),
 		"osz",
-		contents,
-	); err != nil {
-		return fmt.Errorf("bss: save osz for set %d: %w", submission.Beatmapset.Id, err)
-	}
-	return nil
+		stream,
+	)
 }
 
 // SaveOsz2 creates / overwrites the osz2 package for the prepared set.
 func (submission *SubmissionContext) SaveOsz2(store storage.Storage, contents []byte) error {
+	return submission.SaveOsz2Stream(store, bytes.NewReader(contents))
+}
+
+// SaveOsz2Stream creates / overwrites the osz2 package for the prepared set.
+func (submission *SubmissionContext) SaveOsz2Stream(store storage.Storage, stream io.Reader) error {
 	if err := submission.validateResourceStorage(store); err != nil {
 		return err
 	}
-
-	if err := store.Save(
+	return store.SaveStream(
 		submission.Context,
 		strconv.Itoa(submission.Beatmapset.Id),
 		"osz2",
-		contents,
-	); err != nil {
-		return fmt.Errorf("bss: save osz2 for set %d: %w", submission.Beatmapset.Id, err)
-	}
-	return nil
+		stream,
+	)
 }
 
 // SaveBeatmap overwrites a .osu file without changing its metadata.
