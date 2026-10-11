@@ -143,3 +143,13 @@ func (p *PreparedBeatmap) CalculateDifficulty(contents []byte, ppv1 *performance
 	p.Target.MaxCombo = int(attributes.MaxCombo)
 	return nil
 }
+
+// BeatmapsHaveSB reports whether any prepared beatmap contains storyboard elements.
+func (submission *SubmissionContext) BeatmapsHaveSB() bool {
+	for _, beatmap := range submission.Beatmaps {
+		if beatmap.Source != nil && beatmap.Source.HasStoryboardElements() {
+			return true
+		}
+	}
+	return false
+}

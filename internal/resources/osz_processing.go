@@ -12,6 +12,7 @@ import (
 )
 
 const noVideoBufferSize = 256 * 1024
+const storyboardExtension = ".osb"
 
 var videoFileExtensions = map[string]struct{}{
 	".wmv":  {},
@@ -31,6 +32,11 @@ var videoFileExtensions = map[string]struct{}{
 func IsVideoFile(name string) bool {
 	_, ok := videoFileExtensions[strings.ToLower(path.Ext(name))]
 	return ok
+}
+
+func IsStoryboardFile(name string) bool {
+	fileExtension := path.Ext(name)
+	return strings.EqualFold(fileExtension, storyboardExtension)
 }
 
 func StreamWithoutVideo(ctx context.Context, store storage.Storage, key string) (io.ReadCloser, int64, error) {
