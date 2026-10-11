@@ -21,6 +21,8 @@ github.com/Lekuruu/gosu v0.0.0-20261011114013-53f7bffbed54 h1:VkJfNjxPVtT37CwMTu
 github.com/Lekuruu/gosu v0.0.0-20261011114013-53f7bffbed54/go.mod h1:TorvMPL2+8rSIklR0umWiKqOzcA2Ew+Cfes4Bo8WQao=
 github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed h1:atBt1uhiTvxwUaOaIcHjHZf4grCLqi9fEerk2d6wvNY=
 github.com/Lekuruu/osz2-go v1.1.2-0.20261002164958-289af2fc10ed/go.mod h1:ekiDjUKFW+wrYoiqrsQx6+RKoke3SIm8w6vutK7sTu0=
+github.com/Lekuruu/osz2-go v1.1.2 h1:hJ188oNoPswA/MDXuKm4Oiq2FX/y4Z3l6hpRXJ5p1d4=
+github.com/Lekuruu/osz2-go v1.1.2/go.mod h1:ekiDjUKFW+wrYoiqrsQx6+RKoke3SIm8w6vutK7sTu0=
 github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034 h1:XgWmskBCaNGxp7KWMQPsB0GmS4as1hvsXfUO98IzLtk=
 github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034/go.mod h1:ois1qfC302IL45douuku0RRum1fu5XALRSHzNAb9X7U=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
