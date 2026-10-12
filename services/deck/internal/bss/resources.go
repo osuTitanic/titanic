@@ -233,7 +233,7 @@ func (submission *SubmissionContext) BuildOsz(store storage.Storage) (*os.File, 
 
 	// Create the temporary osz file handle
 	// (the osz will be uploaded to persistent storage later)
-	temporary, err := os.CreateTemp("", "bss-osz-*")
+	temporary, err := os.CreateTemp("", ".tmp-osz-*")
 	if err != nil {
 		return nil, fmt.Errorf("bss: create temporary osz file: %w", err)
 	}

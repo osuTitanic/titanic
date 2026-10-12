@@ -355,7 +355,7 @@ func resolvePatchedOsz2(
 	}
 	defer source.Close()
 
-	output, err := os.CreateTemp("", "bss-osz2-*")
+	output, err := os.CreateTemp("", ".tmp-osz2-*")
 	if err != nil {
 		return nil, 0, fmt.Errorf("create temporary osz2: %w", err)
 	}
