@@ -161,43 +161,6 @@ func (submission *SubmissionContext) PutFSWithAccess(writer *zip.Writer, existin
 	return putFiles(submission.FS, submittedBeatmaps, submission.Access.CanUpdateResources)
 }
 
-// CheckFSIncludes checks whether the submission contains a file specified by include.
-func (submission *SubmissionContext) CheckFSIncludes(include func(filename string) bool) (bool, error) {
-	if submission.FS == nil {
-		return false, errors.New("bss: filesystem not set")
-	}
-	if submission.IsCanceled() {
-		return false, submission.Context.Err()
-	}
-	found := false
-
-	err := fs.WalkDir(submission.FS, ".", func(filename string, entry fs.DirEntry, err error) error {
-		if err != nil {
-			return fmt.Errorf("bss: walk package file %q: %w", filename, err)
-		}
-		if filename == "." || entry.IsDir() {
-			return nil
-		}
-
-		if include(filename) {
-			found = true
-			return fs.SkipAll
-		}
-		return nil
-	})
-	return found, err
-}
-
-// CheckFSHasVideo reports whether the submission contains a video.
-func (submission *SubmissionContext) CheckFSHasVideo() (bool, error) {
-	return submission.CheckFSIncludes(resources.IsVideoFile)
-}
-
-// CheckFSHasOsb checks whether the submission contains a storyboard file.
-func (submission *SubmissionContext) CheckFSHasOsb() (bool, error) {
-	return submission.CheckFSIncludes(resources.IsStoryboardFile)
-}
-
 // PutBeatmap writes a prepared difficulty to an
 // osz archive without changing its metadata.
 func (submission *SubmissionContext) PutBeatmap(writer *zip.Writer, beatmapId int, contents []byte) error {
@@ -368,6 +331,40 @@ func OszSizeWithoutVideo(reader *zip.Reader, fallbackSize int64) int64 {
 		return fallbackSize
 	}
 	return size
+}
+
+// CheckFSIncludes checks whether the fs contains a file specified by include.
+func CheckFSIncludes(source fs.FS, include func(filename string) bool) (bool, error) {
+	if source == nil {
+		return false, errors.New("bss: filesystem not set")
+	}
+	found := false
+
+	err := fs.WalkDir(source, ".", func(filename string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return fmt.Errorf("bss: walk package file %q: %w", filename, err)
+		}
+		if filename == "." || entry.IsDir() {
+			return nil
+		}
+
+		if include(filename) {
+			found = true
+			return fs.SkipAll
+		}
+		return nil
+	})
+	return found, err
+}
+
+// CheckFSHasVideo reports whether the fs contains a video.
+func CheckFSHasVideo(source fs.FS) (bool, error) {
+	return CheckFSIncludes(source, resources.IsVideoFile)
+}
+
+// CheckFSHasOsb checks whether the fs contains a storyboard file.
+func CheckFSHasOsb(source fs.FS) (bool, error) {
+	return CheckFSIncludes(source, resources.IsStoryboardFile)
 }
 
 func (submission *SubmissionContext) validateResourceStorage(store storage.Storage) error {

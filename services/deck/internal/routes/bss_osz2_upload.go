@@ -271,12 +271,19 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
-		// TODO: Determine video & storyboard flags
-		// TODO: Calculate regular & no-video osz sizes
-
-		// TODO: Apply database updates including
-		// 		 status, update timestamp, osz sizes,
-		// 		 osz2 hashes, generic metadata (artist, title, creator, ...)
+		// Determine & persist new beatmapset & beatmap metadata to the database
+		// Will be committed once we exit the transaction without an error
+		if err := bss.ApplyBeatmapsetMetadata(transaction, submission.Beatmapset, submission.Metadata); err != nil {
+			return err
+		}
+		if err := bss.ApplySubmissionMetadata(transaction, submission, oszFile); err != nil {
+			return err
+		}
+		for _, beatmap := range submission.Beatmaps {
+			if err := bss.ApplyBeatmapMetadata(transaction, beatmap.Target); err != nil {
+				return err
+			}
+		}
 
 		// TODO: Save .osz & .osu files
 		// TODO: Save new osz2 base
@@ -290,6 +297,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 	// Post-commit stuff:
 	// TODO: Generate thumbnail & audio preview
 	// TODO: Broadcast events
+	// TODO: Log success
 
 	ctx.RenderText(http.StatusOK, "0")
 }

@@ -1,11 +1,15 @@
 package bss
 
 import (
+	"archive/zip"
 	"fmt"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/Lekuruu/osz2-go/pkg/osz2"
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"gorm.io/gorm"
@@ -13,7 +17,7 @@ import (
 
 // ApplyBeatmapsetMetadata applies the generic metadata to the given set.
 // Only metadata keys which are present are updated.
-func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
+func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
 	previousName := beatmapset.Name()
 	columns := make([]string, 0, 9)
 	setMetadata(metadata, osz2.Title, &beatmapset.Title, "title", &columns)
@@ -38,14 +42,54 @@ func ApplyBeatmapsetMetadata(repositories *state.Repositories, beatmapset *schem
 		columns = append(columns, "display_title")
 	}
 
-	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset, columns...)
+	rowsAffected, err := transaction.Beatmapsets.Update(beatmapset, columns...)
 	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
 }
 
-// ApplySubmissionMetadata applies the metadata that is updated
-// by the bss itself rather than the user.
-func ApplySubmissionMetadata(repositories *state.Repositories, beatmapset *schemas.Beatmapset) error {
-	rowsAffected, err := repositories.Beatmapsets.Update(beatmapset,
+// ApplySubmissionMetadata applies the metadata that is updated by the
+// bss itself rather than the user, e.g. osz sizes, submission status, ...
+func ApplySubmissionMetadata(transaction *state.Repositories, submission *SubmissionContext, osz *os.File) (err error) {
+	oszInfo, err := osz.Stat()
+	if err != nil {
+		return fmt.Errorf("inspect osz: %w", err)
+	}
+	oszSize := oszInfo.Size()
+	oszReader, err := zip.NewReader(osz, oszSize)
+
+	submission.Beatmapset.HasVideo, err = CheckFSHasVideo(oszReader)
+	if err != nil {
+		return err
+	}
+	submission.Beatmapset.HasStoryboard, err = CheckFSHasOsb(oszReader)
+	if err != nil {
+		return err
+	}
+
+	if !submission.Beatmapset.HasStoryboard {
+		// There was no osb included, but maybe the beatmaps contain storyboard events
+		submission.Beatmapset.HasStoryboard = submission.BeatmapsHaveSB()
+	}
+
+	oszSizeNoVideo := OszSizeWithoutVideo(oszReader, oszSize)
+	submission.Beatmapset.OszFilesize = int(oszSize)
+	submission.Beatmapset.OszFilesizeNovideo = int(oszSizeNoVideo)
+
+	submission.Beatmapset.LastUpdate = time.Now()
+	submission.Beatmapset.Available = true
+
+	previousStatus := submission.Beatmapset.Status
+	newStatus := constants.BeatmapStatusWIP
+
+	// NOTE: The user is able to determine if a map is WIP or Pending
+	// 		 But this information is only submitted to the forum post
+	//       endpoint and not to the upload endpoint itself
+
+	if previousStatus >= constants.BeatmapStatusPending {
+		newStatus = constants.BeatmapStatusPending
+	}
+	submission.Beatmapset.Status = newStatus
+
+	rowsAffected, err := transaction.Beatmapsets.Update(submission.Beatmapset,
 		"submission_status",
 		"has_video",
 		"has_storyboard",
@@ -53,19 +97,18 @@ func ApplySubmissionMetadata(repositories *state.Repositories, beatmapset *schem
 		"last_updated",
 		"osz_filesize",
 		"osz_filesize_novideo",
-		"meta_hash",
-		"info_hash",
-		"body_hash",
+		// TODO: update osz2 hashes maybe
+		// (honestly, we don't even use them anymore so who cares)
 	)
-	return metadataUpdateResult("beatmapset", beatmapset.Id, rowsAffected, err)
+	return metadataUpdateResult("beatmapset", submission.Beatmapset.Id, rowsAffected, err)
 }
 
 // ApplyBeatmapMetadata commits beatmap metadata to the database.
 // Please check for beatmap access before calling this.
-func ApplyBeatmapMetadata(repositories *state.Repositories, beatmap *schemas.Beatmap) error {
+func ApplyBeatmapMetadata(transaction *state.Repositories, beatmap *schemas.Beatmap) error {
 	// NOTE: Beatmap metadata will already be applied
 	// 		 by the beatmap parser through `AssignBeatmapContent`
-	rowsAffected, err := repositories.Beatmaps.Update(beatmap,
+	rowsAffected, err := transaction.Beatmaps.Update(beatmap,
 		"status",
 		"mode",
 		"md5",
