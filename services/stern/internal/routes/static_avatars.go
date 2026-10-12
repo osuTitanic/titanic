@@ -60,7 +60,7 @@ func Avatar(ctx *server.Context) {
 		return
 	}
 
-	resized, err := media.ResizeImage(avatar, size, size)
+	resized, err := media.ResizeImageBytes(avatar, size, size)
 	if err != nil {
 		ctx.Logger.Warn("Failed to resize avatar", "userId", userId, "size", size, "error", err)
 		writeAvatar(ctx, avatar)

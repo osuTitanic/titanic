@@ -1,6 +1,7 @@
 package bss
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -38,13 +39,20 @@ func (submission *SubmissionContext) GenerateThumbnail(source fs.FS) ([]byte, er
 	if err != nil || resource == nil {
 		return nil, err
 	}
+	defer resource.Close()
 
-	thumbnail, err := media.ResizeAndCropImage(resource, thumbnailWidth, thumbnailHeight)
+	// Thumbnails should fit comfortably within memory
+	var thumbnail bytes.Buffer
+
+	err = media.ResizeAndCropImage(
+		resource, &thumbnail,
+		thumbnailWidth, thumbnailHeight,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("bss: resize beatmap thumbnail: %w", err)
 	}
 
-	return thumbnail, nil
+	return thumbnail.Bytes(), nil
 }
 
 // GenerateAudioPreview creates an audio preview from
@@ -59,6 +67,7 @@ func (submission *SubmissionContext) GenerateAudioPreview(source fs.FS) ([]byte,
 	if err != nil || resource == nil {
 		return nil, err
 	}
+	defer resource.Close()
 
 	// Beatmaps with an unspecified preview time
 	// will receive one around 40% into the song
@@ -67,7 +76,7 @@ func (submission *SubmissionContext) GenerateAudioPreview(source fs.FS) ([]byte,
 		previewTime = int(beatmap.PreviewTime / 1000)
 	}
 
-	preview, err := media.ExtractAudioSnippet(
+	preview, err := media.ExtractAudioSnippetFromReader(
 		resource,
 		previewTime,
 		audioPreviewDuration,
@@ -79,7 +88,7 @@ func (submission *SubmissionContext) GenerateAudioPreview(source fs.FS) ([]byte,
 	return preview, nil
 }
 
-func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectResource ResourceSelector) ([]byte, *beatmaps.Beatmap, error) {
+func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectResource ResourceSelector) (fs.File, *beatmaps.Beatmap, error) {
 	if source == nil {
 		return nil, nil, errors.New("bss: filesystem not set")
 	}
@@ -90,7 +99,10 @@ func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectRes
 			continue
 		}
 
-		resource, err := readFileContents(source, filename, MaxPackageFileSize)
+		resource, err := readFile(
+			source, filename,
+			MaxPackageFileSize,
+		)
 		if err != nil {
 			return nil, nil, fmt.Errorf("bss: read submission resource %q: %w", filename, err)
 		}

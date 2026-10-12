@@ -78,13 +78,12 @@ func AccountAvatarUpdate(ctx *server.Context) {
 		return
 	}
 
-	resized, err := media.ResizeImageToPng(data, avatarResizeSize, avatarResizeSize)
+	resized, err := media.ResizeImageBytesToPng(data, avatarResizeSize, avatarResizeSize)
 	if err != nil {
 		ctx.Logger.Warn("Failed to resize avatar image", "user", user.Id, "error", err)
 		renderProfileSettings(ctx, "", "Please provide a valid image!")
 		return
 	}
-
 	if err := ctx.State.Storage.Save(ctx.Context(), strconv.Itoa(user.Id), "avatars", resized); err != nil {
 		ctx.Logger.Error("Failed to upload avatar", "user", user.Id, "error", err)
 		InternalServerError(ctx)

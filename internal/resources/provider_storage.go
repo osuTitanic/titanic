@@ -83,23 +83,29 @@ func (resolver *StorageResolver) Background(ctx context.Context, setId int, larg
 		return stream, nil
 	}
 
-	defer stream.Close()
-	data, err := io.ReadAll(stream)
-	if err != nil {
-		return nil, err
-	}
-
-	resized, err := media.ResizeImage(data, thumbnailSmallWidth, thumbnailSmallHeight)
+	var resized bytes.Buffer
+	err = media.ResizeImage(
+		stream, &resized,
+		thumbnailSmallWidth, thumbnailSmallHeight,
+	)
 	if err != nil {
 		resolver.logger.Warn(
-			"Failed to resize thumbnail, serving original anyway",
+			"Failed to resize thumbnail, serving original",
 			"set_id", setId, "error", err.Error(),
 		)
-		return io.NopCloser(bytes.NewReader(data)), nil
+		if _, seekErr := stream.Seek(0, io.SeekStart); seekErr != nil {
+			stream.Close()
+			return nil, seekErr
+		}
+		return stream, nil
 	}
+	stream.Close()
+
+	resizedBytes := resized.Bytes()
+	resizedReader := bytes.NewReader(resizedBytes)
 
 	// We have successfully resized the thumbnail
-	return io.NopCloser(bytes.NewReader(resized)), nil
+	return io.NopCloser(resizedReader), nil
 }
 
 func (resolver *StorageResolver) ReadStream(ctx context.Context, key string, bucket string) (io.ReadSeekCloser, error) {
