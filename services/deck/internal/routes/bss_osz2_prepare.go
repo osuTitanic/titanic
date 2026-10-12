@@ -137,8 +137,13 @@ func BeatmapSubmissionOsz2GetId(ctx *server.Context) {
 
 	err = ctx.State.DatabaseTransaction(func(transaction *state.Repositories) error {
 		// We first want to remove any inactive maps
-		if _, err := submission.RemoveInactiveBeatmapsets(transaction, ctx.State.Storage); err != nil {
+		removed, err := submission.RemoveInactiveBeatmapsets(transaction, ctx.State.Storage)
+		if err != nil {
 			ctx.Logger.Warn("Failed to remove inactive beatmapsets", "error", err)
+		}
+		for _, beatmapset := range removed {
+			ctx.Logger.Info("Removed inactive beatmapset", "id", beatmapset.Id, "name", beatmapset.Name())
+			ctx.State.Resources.InvalidateCaches(submission.Context, beatmapset.Id)
 		}
 
 		existingBeatmapset, err := prepareBeatmapset(transaction, submission, request.SetId)
