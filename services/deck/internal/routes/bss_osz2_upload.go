@@ -292,6 +292,11 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			}
 		}
 
+		// "PopBubble" essentially means removing all BAT nominations
+		if err := bss.PopBubble(transaction, submission.Beatmapset); err != nil {
+			return err
+		}
+
 		// Upload new osz2 base that we can use for patching
 		err = submission.SaveOsz2Stream(
 			ctx.State.StorageOsz2,

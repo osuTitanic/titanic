@@ -102,6 +102,7 @@ func ApplySubmissionMetadata(transaction *state.Repositories, submission *Submis
 		"last_updated",
 		"osz_filesize",
 		"osz_filesize_novideo",
+		"star_priority",
 		// TODO: update osz2 hashes maybe
 		// (honestly, we don't even use them anymore so who cares)
 	)
