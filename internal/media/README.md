@@ -13,13 +13,23 @@ if err != nil {
 }
 ```
 
+Use `ResizeAndCropImage` when the image should keep its aspect ratio while filling the image. It crops excess width / height from the center before resizing:
+
+```go
+thumbnail, err := media.ResizeAndCropImage(data, 160, 120)
+if err != nil {
+	return err
+}
+```
+
 For more control, use the `ImageGenerator` directly. Build an `Image` from a byte array or a file, then create the thumbnail:
 
 ```go
 generator := &media.ImageGenerator{
-	Width:  160,
-	Height: 120,
-	Scaler: "CatmullRom",
+	Width:     160,
+	Height:    120,
+	Scaler:    "CatmullRom",
+	CropToFit: true,
 }
 
 image, err := generator.NewImageFromByteArray(data)

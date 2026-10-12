@@ -73,6 +73,7 @@ func NewImageGenerator(c ImageGenerator) *ImageGenerator {
 		DestinationPath:   c.DestinationPath,
 		DestinationPrefix: c.DestinationPrefix,
 		Scaler:            c.Scaler,
+		CropToFit:         c.CropToFit,
 	}
 }
 
@@ -139,6 +140,10 @@ type ImageGenerator struct {
 
 	// Scaler is the scaler to be used when generating thumbnails.
 	Scaler string
+
+	// CropToFit preserves the source aspect ratio by cropping the image from
+	// its center until it matches the destination aspect ratio.
+	CropToFit bool
 }
 
 // ResizeImage resizes the given image data to the provided
@@ -148,6 +153,24 @@ func ResizeImage(data []byte, width int, height int) ([]byte, error) {
 		Width:  width,
 		Height: height,
 		Scaler: "CatmullRom",
+	}
+
+	image, err := generator.NewImageFromByteArray(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return generator.CreateThumbnail(image)
+}
+
+// ResizeAndCropImage resizes the given image while preserving its aspect ratio.
+// The source is cropped from its center to fill the target dimensions.
+func ResizeAndCropImage(data []byte, width int, height int) ([]byte, error) {
+	generator := &ImageGenerator{
+		Width:     width,
+		Height:    height,
+		Scaler:    "CatmullRom",
+		CropToFit: true,
 	}
 
 	image, err := generator.NewImageFromByteArray(data)
@@ -225,9 +248,30 @@ func (gen *ImageGenerator) createRect(i *Image) (*image.RGBA, error) {
 	if scaler == nil {
 		return nil, ErrInvalidScaler
 	}
-	scaler.Scale(dst, rect, img, img.Bounds(), draw.Over, nil)
-	return dst, nil
 
+	source := img.Bounds()
+	if gen.CropToFit {
+		source = cropToAspectRatio(source, gen.Width, gen.Height)
+	}
+	scaler.Scale(dst, rect, img, source, draw.Over, nil)
+	return dst, nil
+}
+
+func cropToAspectRatio(source image.Rectangle, targetWidth int, targetHeight int) image.Rectangle {
+	sourceWidth := source.Dx()
+	sourceHeight := source.Dy()
+
+	// The source is wider than the target -> crop its left and right edges
+	if int64(sourceWidth)*int64(targetHeight) > int64(sourceHeight)*int64(targetWidth) {
+		width := int(int64(sourceHeight) * int64(targetWidth) / int64(targetHeight))
+		offset := (sourceWidth - width) / 2
+		return image.Rect(source.Min.X+offset, source.Min.Y, source.Min.X+offset+width, source.Max.Y)
+	}
+
+	// The source is taller than the target -> crop its top and bottom edges
+	height := int(int64(sourceWidth) * int64(targetHeight) / int64(targetWidth))
+	offset := (sourceHeight - height) / 2
+	return image.Rect(source.Min.X, source.Min.Y+offset, source.Max.X, source.Min.Y+offset+height)
 }
 
 // detectContentType from

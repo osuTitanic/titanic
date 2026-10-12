@@ -39,7 +39,7 @@ func (submission *SubmissionContext) GenerateThumbnail(source fs.FS) ([]byte, er
 		return nil, err
 	}
 
-	thumbnail, err := media.ResizeImage(resource, thumbnailWidth, thumbnailHeight)
+	thumbnail, err := media.ResizeAndCropImage(resource, thumbnailWidth, thumbnailHeight)
 	if err != nil {
 		return nil, fmt.Errorf("bss: resize beatmap thumbnail: %w", err)
 	}
