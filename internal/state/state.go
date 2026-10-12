@@ -43,7 +43,7 @@ type State struct {
 
 	// Services
 	Permissions  permissions.Resolver
-	Resources    resources.BeatmapResourceProvider
+	Resources    *resources.BeatmapProvider
 	Rankings     *rankings.RankingsService
 	PPv1         *performance.PPv1Service
 	PPv2         performance.IPPv2Service

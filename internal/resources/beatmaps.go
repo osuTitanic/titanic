@@ -150,3 +150,20 @@ func (provider *BeatmapProvider) Cached(ctx context.Context, key string, ttl tim
 
 	return io.NopCloser(bytes.NewReader(data)), nil
 }
+
+// InvalidateCaches removes cached resources belonging to a beatmapset and its difficulties.
+func (provider *BeatmapProvider) InvalidateCaches(ctx context.Context, setId int, beatmapIds ...int) error {
+	keys := []string{
+		fmt.Sprintf("mp3:%d", setId),
+		fmt.Sprintf("mt:%d", setId),
+		fmt.Sprintf("mt:%dl", setId),
+	}
+	for _, beatmapId := range beatmapIds {
+		keys = append(keys, fmt.Sprintf("osu:%d", beatmapId))
+	}
+
+	if err := provider.cache.Del(ctx, keys...).Err(); err != nil {
+		return fmt.Errorf("invalidate beatmap caches: %w", err)
+	}
+	return nil
+}
