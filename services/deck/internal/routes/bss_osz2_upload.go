@@ -307,11 +307,17 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 		// Upload all new .osu files
 		for _, beatmap := range submission.Beatmaps {
+			if !submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
+				continue
+			}
 			err = ctx.State.Storage.Save(
 				ctx.Context(),
 				strconv.Itoa(beatmap.Target.Id), "beatmaps",
 				beatmap.Contents,
 			)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Upload new osz2 base that we can use for patching
