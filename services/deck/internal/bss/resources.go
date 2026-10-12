@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -233,6 +234,68 @@ func PutFile(writer *zip.Writer, filename string, contents []byte) error {
 		return fmt.Errorf("bss: write package file %q: %w", filename, io.ErrShortWrite)
 	}
 	return nil
+}
+
+// BuildOsz writes the submitted filesystem into a temporary osz.
+// The returned file must be closed & removed manually.
+func (submission *SubmissionContext) BuildOsz(store storage.Storage) (output *os.File, err error) {
+	if submission.Access == nil {
+		return nil, errors.New("bss: submission access not resolved")
+	}
+	if submission.Beatmapset == nil {
+		return nil, ErrBeatmapsetNotPrepared
+	}
+	var existingFS fs.FS
+
+	if !submission.Access.Owner {
+		// We are dealing with a collaborator of this set
+		// They can't replace the entire osz file so we
+		// need to use the existing osz as a base
+		existingSource, existingSize, err := store.ReadStreamAt(
+			submission.Context,
+			strconv.Itoa(submission.Beatmapset.Id),
+			"osz",
+		)
+		if err != nil {
+			return nil, fmt.Errorf("bss: read existing osz: %w", err)
+		}
+		defer existingSource.Close()
+
+		existingReader, err := zip.NewReader(existingSource, existingSize)
+		if err != nil {
+			return nil, fmt.Errorf("bss: open existing osz: %w", err)
+		}
+		existingFS = existingReader
+	}
+
+	// Create the temporary osz file handle
+	// (the osz will be uploaded to persistent storage later)
+	temporary, err := os.CreateTemp("", "bss-osz-*")
+	if err != nil {
+		return nil, fmt.Errorf("bss: create temporary osz file: %w", err)
+	}
+	defer func() {
+		// Only close & remove the temporary osz if we got an error
+		// Otherwise we want to keep it open for processing
+		if err != nil {
+			err = errors.Join(err, temporary.Close(), os.Remove(temporary.Name()))
+		}
+	}()
+
+	// Write the new osz file
+	writer := zip.NewWriter(temporary)
+
+	if writeErr := submission.PutFSWithAccess(writer, existingFS); writeErr != nil {
+		err = fmt.Errorf("bss: write osz: %w", errors.Join(writeErr, writer.Close()))
+		return nil, err
+	}
+	if err = writer.Close(); err != nil {
+		return nil, fmt.Errorf("bss: close osz: %w", err)
+	}
+	if _, err = temporary.Seek(0, io.SeekStart); err != nil {
+		return nil, fmt.Errorf("bss: rewind osz file: %w", err)
+	}
+	return temporary, nil
 }
 
 // SaveOsz creates / overwrites the osz package for the prepared beatmapset.

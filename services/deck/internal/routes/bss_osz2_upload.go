@@ -246,9 +246,17 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
-		// TODO: Reject too short submission
+		// Build the new osz file, accounting for collaboration access
+		oszFile, err := submission.BuildOsz(ctx.State.Storage)
+		if err != nil {
+			return err
+		}
+		// Cleanup the temporary osz after the transaction
+		defer func() {
+			oszFile.Close()
+			os.Remove(oszFile.Name())
+		}()
 
-		// TODO: Build final osz / save it into a temp file
 		// TODO: Validate package size in accordance to max beatmap length
 		// TODO: Determine video & storyboard flags
 		// TODO: Calculate regular & no-video osz sizes
