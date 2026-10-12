@@ -330,10 +330,10 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			}
 
 			if err := submission.UpdateThumbnail(ctx.State.Storage, oszReader); err != nil {
-				return err
+				ctx.Logger.Warn("Failed to update thumbnail", "error", err)
 			}
 			if err := submission.UpdateAudioPreview(ctx.State.Storage, oszReader); err != nil {
-				return err
+				ctx.Logger.Warn("Failed to update audio preview", "error", err)
 			}
 		}
 
