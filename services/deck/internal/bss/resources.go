@@ -201,7 +201,7 @@ func PutFile(writer *zip.Writer, filename string, contents []byte) error {
 
 // BuildOsz writes the submitted filesystem into a temporary osz.
 // The returned file must be closed & removed manually.
-func (submission *SubmissionContext) BuildOsz(store storage.Storage) (output *os.File, err error) {
+func (submission *SubmissionContext) BuildOsz(store storage.Storage) (*os.File, error) {
 	if submission.Access == nil {
 		return nil, errors.New("bss: submission access not resolved")
 	}
@@ -237,25 +237,25 @@ func (submission *SubmissionContext) BuildOsz(store storage.Storage) (output *os
 	if err != nil {
 		return nil, fmt.Errorf("bss: create temporary osz file: %w", err)
 	}
-	defer func() {
-		// Only close & remove the temporary osz if we got an error
-		// Otherwise we want to keep it open for processing
-		if err != nil {
-			err = errors.Join(err, temporary.Close(), os.Remove(temporary.Name()))
-		}
-	}()
+	cleanup := func() {
+		temporary.Close()
+		os.Remove(temporary.Name())
+	}
 
 	// Write the new osz file
 	writer := zip.NewWriter(temporary)
 
 	if writeErr := submission.PutFSWithAccess(writer, existingFS); writeErr != nil {
 		err = fmt.Errorf("bss: write osz: %w", errors.Join(writeErr, writer.Close()))
+		cleanup()
 		return nil, err
 	}
 	if err = writer.Close(); err != nil {
+		cleanup()
 		return nil, fmt.Errorf("bss: close osz: %w", err)
 	}
 	if _, err = temporary.Seek(0, io.SeekStart); err != nil {
+		cleanup()
 		return nil, fmt.Errorf("bss: rewind osz file: %w", err)
 	}
 	return temporary, nil
@@ -383,14 +383,12 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	return nil
 }
 
-func (submission *SubmissionContext) readFile(filename string, maxSize int64) (contents []byte, err error) {
+func (submission *SubmissionContext) readFile(filename string, maxSize int64) ([]byte, error) {
 	file, err := submission.FS.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		err = errors.Join(err, file.Close())
-	}()
+	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
@@ -403,7 +401,7 @@ func (submission *SubmissionContext) readFile(filename string, maxSize int64) (c
 		return nil, fmt.Errorf("file exceeds maximum size of %d bytes", maxSize)
 	}
 
-	contents, err = io.ReadAll(io.LimitReader(file, maxSize+1))
+	contents, err := io.ReadAll(io.LimitReader(file, maxSize+1))
 	if err != nil {
 		return nil, err
 	}
