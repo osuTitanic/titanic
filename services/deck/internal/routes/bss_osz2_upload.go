@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"archive/zip"
 	"context"
 	"errors"
 	"fmt"
@@ -288,11 +289,13 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			}
 		}
 
+		setId := submission.Beatmapset.Id
+		setIdKey := strconv.Itoa(setId)
+
 		// Update new .osz file
 		err = ctx.State.Storage.SaveStream(
 			ctx.Context(),
-			strconv.Itoa(submission.Beatmapset.Id),
-			"osz",
+			setIdKey, "osz",
 			oszFile,
 		)
 		if err != nil {
@@ -303,8 +306,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		for _, beatmap := range submission.Beatmaps {
 			err = ctx.State.Storage.Save(
 				ctx.Context(),
-				strconv.Itoa(beatmap.Target.Id),
-				"beatmaps",
+				strconv.Itoa(beatmap.Target.Id), "beatmaps",
 				beatmap.Contents,
 			)
 		}
@@ -312,12 +314,36 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		// Upload new osz2 base that we can use for patching
 		err = ctx.State.StorageOsz2.SaveStream(
 			ctx.Context(),
-			strconv.Itoa(submission.Beatmapset.Id),
-			"osz2",
+			setIdKey, "osz2",
 			io.NewSectionReader(osz2Source, 0, osz2Size),
 		)
 		if err != nil {
 			return err
+		}
+
+		oszReader, err := zip.NewReader(oszFile, oszSize)
+		if err != nil {
+			return err
+		}
+
+		thumbnail, err := submission.GenerateThumbnail(oszReader)
+		if err != nil {
+			ctx.Logger.Warn("Failed to generate beatmap thumbnail", "set_id", setId, "error", err)
+		}
+		if thumbnail != nil {
+			if err := ctx.State.Storage.Save(ctx.Context(), setIdKey, "thumbnails", thumbnail); err != nil {
+				ctx.Logger.Warn("Failed to save beatmap thumbnail", "set_id", setId, "error", err)
+			}
+		}
+
+		preview, err := submission.GenerateAudioPreview(oszReader)
+		if err != nil {
+			ctx.Logger.Warn("Failed to generate beatmap audio preview", "set_id", setId, "error", err)
+		}
+		if preview != nil {
+			if err := ctx.State.Storage.Save(ctx.Context(), setIdKey, "audio", preview); err != nil {
+				ctx.Logger.Warn("Failed to save beatmap audio preview", "set_id", setId, "error", err)
+			}
 		}
 
 		return nil
@@ -327,8 +353,18 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		return
 	}
 
-	// Post-commit stuff:
-	// TODO: Generate thumbnail & audio preview
+	err = ctx.State.Resources.InvalidateCaches(
+		ctx.Context(),
+		submission.Beatmapset.Id,
+		preparedBeatmapIds(submission)...,
+	)
+	if err != nil {
+		ctx.Logger.Warn(
+			"Failed to invalidate resource caches",
+			"set_id", submission.Beatmapset.Id, "error", err,
+		)
+	}
+
 	// TODO: Broadcast events
 	// TODO: Log success
 
