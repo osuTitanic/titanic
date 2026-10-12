@@ -50,7 +50,7 @@ func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schema
 		detectedGenre := detectGenreFromTags(tags)
 		detectedExplicit := detectExplicitFromTags(tags)
 
-		beatmapset.Explicit = detectedExplicit
+		beatmapset.Explicit = beatmapset.Explicit || detectedExplicit
 		columns = append(columns, "explicit")
 
 		hasDetectedLanguage := detectedLanguage > constants.BeatmapLanguageUnspecified
