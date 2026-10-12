@@ -392,7 +392,6 @@ func readFile(source fs.FS, filename string, maxSize int64) (fs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
 	info, err := file.Stat()
 	if err != nil {
@@ -411,6 +410,7 @@ func readFile(source fs.FS, filename string, maxSize int64) (fs.File, error) {
 func readFileContents(source fs.FS, filename string, maxSize int64) ([]byte, error) {
 	file, err := readFile(source, filename, maxSize)
 	fileReader := io.LimitReader(file, maxSize+1)
+	defer file.Close()
 
 	contents, err := io.ReadAll(fileReader)
 	if err != nil {
