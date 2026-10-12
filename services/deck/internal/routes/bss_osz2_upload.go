@@ -257,7 +257,20 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			os.Remove(oszFile.Name())
 		}()
 
-		// TODO: Validate package size in accordance to max beatmap length
+		oszInfo, err := oszFile.Stat()
+		if err != nil {
+			return fmt.Errorf("inspect osz: %w", err)
+		}
+
+		oszSize := oszInfo.Size()
+		maxBeatmapLength := submission.MaxBeatmapLength()
+
+		// The allowed osz size changes based on the beatmap length
+		// The longer the beatmap, the higher the allowed package size
+		if err := bss.ValidatePackageSize(oszSize, maxBeatmapLength); err != nil {
+			return err
+		}
+
 		// TODO: Determine video & storyboard flags
 		// TODO: Calculate regular & no-video osz sizes
 
