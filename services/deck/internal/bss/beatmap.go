@@ -31,7 +31,7 @@ func (submission *SubmissionContext) AssignBeatmapFile(beatmapId int, filename s
 		return nil, nil, fmt.Errorf("bss: invalid beatmap filename %q", filename)
 	}
 
-	contents, err := readFile(submission.FS, filename, MaxBeatmapFileSize)
+	contents, err := readFileContents(submission.FS, filename, MaxBeatmapFileSize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("bss: read beatmap file %q: %w", filename, err)
 	}

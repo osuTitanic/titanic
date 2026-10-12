@@ -90,7 +90,7 @@ func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectRes
 			continue
 		}
 
-		resource, err := readFile(source, filename, MaxPackageFileSize)
+		resource, err := readFileContents(source, filename, MaxPackageFileSize)
 		if err != nil {
 			return nil, nil, fmt.Errorf("bss: read submission resource %q: %w", filename, err)
 		}

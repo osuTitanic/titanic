@@ -383,7 +383,7 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	return nil
 }
 
-func readFile(source fs.FS, filename string, maxSize int64) ([]byte, error) {
+func readFile(source fs.FS, filename string, maxSize int64) (fs.File, error) {
 	if source == nil {
 		return nil, errors.New("bss: filesystem not set")
 	}
@@ -405,7 +405,14 @@ func readFile(source fs.FS, filename string, maxSize int64) ([]byte, error) {
 		return nil, fmt.Errorf("file exceeds maximum size of %d bytes", maxSize)
 	}
 
-	contents, err := io.ReadAll(io.LimitReader(file, maxSize+1))
+	return file, err
+}
+
+func readFileContents(source fs.FS, filename string, maxSize int64) ([]byte, error) {
+	file, err := readFile(source, filename, maxSize)
+	fileReader := io.LimitReader(file, maxSize+1)
+
+	contents, err := io.ReadAll(fileReader)
 	if err != nil {
 		return nil, err
 	}
