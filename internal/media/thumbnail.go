@@ -58,6 +58,10 @@ var (
 	// ErrInvalidScaler is returned when an unrecognized scaler is
 	// passed to the Generator.
 	ErrInvalidScaler = errors.New("invalid scaler")
+
+	// ErrInvalidDimensions is returned when either target dimension is not
+	// positive.
+	ErrInvalidDimensions = errors.New("invalid image dimensions")
 )
 
 // NewImageGenerator returns an instance of a thumbnail generator with a
@@ -197,6 +201,10 @@ func (gen *ImageGenerator) CreateThumbnail(i *Image) ([]byte, error) {
 }
 
 func (gen *ImageGenerator) createRect(i *Image) (*image.RGBA, error) {
+	if gen.Width <= 0 || gen.Height <= 0 {
+		return nil, ErrInvalidDimensions
+	}
+
 	img, _, err := image.Decode(bytes.NewReader(i.Data))
 	if err != nil {
 		return nil, err
