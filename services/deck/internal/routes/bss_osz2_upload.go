@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/Lekuruu/osz2-go/pkg/osz2"
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/internal/storage"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
@@ -139,6 +140,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 	submission := bss.NewSubmissionContext(ctx.Context())
 	submission.User = user
+	newBeatmapset := false
 
 	// Check if user is allowed to upload any beatmaps
 	if err := submission.CheckSubmissionEligibility(
@@ -157,6 +159,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		if err != nil {
 			return err
 		}
+		newBeatmapset = submission.Beatmapset.Status == constants.BeatmapStatusInactive
 
 		// Check if we are allowed to update this set
 		if err := submission.ResolveAccess(transaction); err != nil {
@@ -365,9 +368,22 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		)
 	}
 
-	// TODO: Broadcast events
-	// TODO: Log success
+	err = bss.BroadcastActivity(newBeatmapset, ctx.State, submission)
+	if err != nil {
+		ctx.Logger.Warn(
+			"Failed to broadcast beatmap submission activity",
+			"user_id", user.Id, "set_id", submission.Beatmapset.Id, "error", err,
+		)
+	}
 
+	ctx.Logger.Info(
+		"Beatmap submission completed",
+		"user_id", user.Id,
+		"set_id", submission.Beatmapset.Id,
+		"beatmap_ids", preparedBeatmapIds(submission),
+		"new_beatmapset", newBeatmapset,
+		"submission_type", request.SubmissionType,
+	)
 	ctx.RenderText(http.StatusOK, "0")
 }
 
