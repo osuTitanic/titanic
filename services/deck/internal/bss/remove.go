@@ -1,7 +1,6 @@
 package bss
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -55,21 +54,15 @@ func (submission *SubmissionContext) RemoveInactiveBeatmapsets(transaction *stat
 		if err := transaction.Beatmapsets.Delete(beatmapset); err != nil {
 			return nil, fmt.Errorf("bss: delete inactive beatmapset %d: %w", beatmapset.Id, err)
 		}
-		setIdKey := strconv.Itoa(beatmapset.Id)
 
-		err = errors.Join(
-			store.Remove(submission.Context, setIdKey, "osz"),
-			store.Remove(submission.Context, setIdKey, "osz2"),
-			store.Remove(submission.Context, setIdKey, "audio"),
-			store.Remove(submission.Context, setIdKey, "thumbnails"),
-		)
+		setIdKey := strconv.Itoa(beatmapset.Id)
+		store.Remove(submission.Context, setIdKey, "osz")
+		store.Remove(submission.Context, setIdKey, "osz2")
+		store.Remove(submission.Context, setIdKey, "audio")
+		store.Remove(submission.Context, setIdKey, "thumbnails")
+
 		for _, beatmap := range beatmaps {
-			err = errors.Join(
-				err, store.Remove(submission.Context, strconv.Itoa(beatmap.Id), "beatmaps"),
-			)
-		}
-		if err != nil {
-			return nil, fmt.Errorf("bss: remove inactive beatmapset %d: %w", beatmapset.Id, err)
+			store.Remove(submission.Context, strconv.Itoa(beatmap.Id), "beatmaps")
 		}
 	}
 
