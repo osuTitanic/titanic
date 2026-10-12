@@ -7,7 +7,7 @@ tmp_dir = "tmp/deck"
 [build]
 args_bin = []
 bin = "./tmp/deck/main"
-cmd = "go build -o ./tmp/deck/main ./services/deck/cmd/api/"
+cmd = "go build -tags=native -o ./tmp/deck/main ./services/deck/cmd/api/"
 delay = 1000
 exclude_dir = [".github", ".data", "tmp", "migrations", "scripts"]
 exclude_file = []
@@ -31,7 +31,7 @@ stop_on_error = true
 
 [build.windows]
 bin = "./tmp/deck/main.exe"
-cmd = "go build -o ./tmp/deck/main.exe ./services/deck/cmd/api/"
+cmd = "go build -tags=native -o ./tmp/deck/main.exe ./services/deck/cmd/api/"
 
 [color]
 app = ""
