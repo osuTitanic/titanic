@@ -10,7 +10,8 @@ import (
 	ffmpeg "github.com/Lekuruu/ffmpeg-go"
 )
 
-// ExtractAudioSnippet extracts a snippet from the audio byte slice, compresses it, and saves it into an MP3 file
+// ExtractAudioSnippet extracts a snippet from the audio byte
+// slice, compresses it, and saves it into an MP3 file.
 func ExtractAudioSnippet(audioData []byte, offset int, duration int, bitrate int) ([]byte, error) {
 	beatmapAudio, err := os.CreateTemp("", ".tmp-audio-*")
 	if err != nil {
@@ -31,6 +32,30 @@ func ExtractAudioSnippet(audioData []byte, offset int, duration int, bitrate int
 	return ExtractAudioSnippetFromPath(inputPath, offset, duration, bitrate)
 }
 
+// ExtractAudioSnippetFromReader extracts a snippet from the reader
+// compresses it, and saves it into an MP3 file.
+func ExtractAudioSnippetFromReader(audioReader io.Reader, offset int, duration int, bitrate int) ([]byte, error) {
+	beatmapAudio, err := os.CreateTemp("", ".tmp-audio-*")
+	if err != nil {
+		return nil, err
+	}
+
+	inputPath := beatmapAudio.Name()
+	defer os.Remove(inputPath)
+
+	_, err = io.Copy(beatmapAudio, audioReader)
+	if err != nil {
+		beatmapAudio.Close()
+		return nil, err
+	}
+	if err := beatmapAudio.Close(); err != nil {
+		return nil, err
+	}
+	return ExtractAudioSnippetFromPath(inputPath, offset, duration, bitrate)
+}
+
+// ExtractAudioSnippetFromReader extracts a snippet from the audio
+// filepath compresses it, and saves it into an MP3 file.
 func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bitrate int) (result []byte, err error) {
 	if offset < 0 {
 		// Use ~40% of audio duration as offset by default
@@ -59,6 +84,10 @@ func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bit
 		return nil, err
 	}
 	defer file.Close()
+
+	// TODO: Maybe return the handle directly here
+	// 		 I think the memory usage should be low enough though
+	//		 The biggest preview I have seen is ~250 kb
 
 	return io.ReadAll(file)
 }
