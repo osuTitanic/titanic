@@ -225,9 +225,8 @@ func (gen *ImageGenerator) createRect(i *Image) (*image.RGBA, error) {
 // detectContentType from
 // https://golangcode.com/get-the-content-type-of-file/
 func detectContentType(fb []byte) string {
-	// Only the first 512 bytes are used to sniff the content type.
 	// Use the net/http package's handy DetectContentType function.
 	// Always seems to return a valid content-type by returning
 	// "application/octet-stream" if no others seemed to match.
-	return http.DetectContentType(fb[:512])
+	return http.DetectContentType(fb)
 }
