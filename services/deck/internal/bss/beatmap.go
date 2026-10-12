@@ -172,6 +172,11 @@ func (submission *SubmissionContext) MaxBeatmapLength() float64 {
 // BeatmapsHaveSB reports whether any prepared beatmap contains storyboard elements.
 func (submission *SubmissionContext) BeatmapsHaveSB() bool {
 	for _, beatmap := range submission.Beatmaps {
+		// TODO: This doesn't work well for collaboration, but
+		//		 I don't have the energy to think of another solution right now
+		// 		 Source entries will be empty for maps that the collaborator
+		// 		 cannot access. My idea is that we populate the missing `Source`
+		// 		 entries with the existing beatmaps right after we build the final osz
 		if beatmap.Source != nil && beatmap.Source.HasStoryboardElements() {
 			return true
 		}
