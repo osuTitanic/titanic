@@ -280,12 +280,35 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 		for _, beatmap := range submission.Beatmaps {
+			// Apply new status from set
+			beatmap.Target.Status = submission.Beatmapset.Status
+
 			if err := bss.ApplyBeatmapMetadata(transaction, beatmap.Target); err != nil {
 				return err
 			}
 		}
 
-		// TODO: Save .osz & .osu files
+		// Update new .osz file
+		err = ctx.State.Storage.SaveStream(
+			ctx.Context(),
+			strconv.Itoa(submission.Beatmapset.Id),
+			"osz",
+			oszFile,
+		)
+		if err != nil {
+			return err
+		}
+
+		// Upload all new .osu files
+		for _, beatmap := range submission.Beatmaps {
+			err = ctx.State.Storage.Save(
+				ctx.Context(),
+				strconv.Itoa(beatmap.Target.Id),
+				"beatmaps",
+				beatmap.Contents,
+			)
+		}
+
 		// TODO: Save new osz2 base
 		return nil
 	})
