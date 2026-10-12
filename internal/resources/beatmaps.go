@@ -3,6 +3,7 @@ package resources
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -163,12 +164,14 @@ func (provider *BeatmapProvider) InvalidateCaches(ctx context.Context, setId int
 	for _, beatmapId := range beatmapIds {
 		keys = append(keys, fmt.Sprintf("osu:%d", beatmapId))
 	}
+	var redisErr error
+	var cloudflareErr error
 
 	if err := provider.cache.Del(ctx, keys...).Err(); err != nil {
-		return fmt.Errorf("invalidate beatmap caches: %w", err)
+		redisErr = fmt.Errorf("invalidate beatmap caches: %w", err)
 	}
 	if err := PurgeOsz(setId, provider.cfg); err != nil {
-		return fmt.Errorf("purge cloudflare osz cache: %w", err)
+		cloudflareErr = fmt.Errorf("purge cloudflare osz cache: %w", err)
 	}
-	return nil
+	return errors.Join(redisErr, cloudflareErr)
 }
