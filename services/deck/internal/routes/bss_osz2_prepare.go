@@ -289,6 +289,14 @@ func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset boo
 }
 
 func renderBssError(ctx *server.Context, err error) {
+	// The client doesn't check for any errors if it is still uploading
+	// the multipart form data, so we'll just pretend like we read it
+	// and then send the error directly afterwards
+	_, drainErr := io.Copy(io.Discard, ctx.Request.Body)
+	if drainErr != nil {
+		ctx.Logger.Warn("Failed to drain request body", "err", drainErr)
+	}
+
 	response, expected := bss.FormatOsz2ErrorResponse(err)
 	if expected {
 		ctx.Logger.Warn("Rejected osz2 submission", "error", err)
