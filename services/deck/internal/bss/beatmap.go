@@ -7,6 +7,7 @@ import (
 	"math"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -96,6 +97,7 @@ func (submission *SubmissionContext) AssignBeatmapContent(beatmapId int, filenam
 	beatmap.Contents = contents
 	beatmap.Target.Filename = filename
 	beatmap.Target.Checksum = fmt.Sprintf("%x", md5.Sum(contents))
+	beatmap.Target.LastUpdate = time.Now()
 	return beatmap, nil
 }
 
