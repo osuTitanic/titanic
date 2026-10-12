@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
@@ -19,7 +20,7 @@ import (
 // Only metadata keys which are present are updated.
 func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schemas.Beatmapset, metadata osz2.Metadata) error {
 	previousName := beatmapset.Name()
-	columns := make([]string, 0, 9)
+	columns := make([]string, 0, 11)
 	setMetadata(metadata, osz2.Title, &beatmapset.Title, "title", &columns)
 	setMetadata(metadata, osz2.TitleUnicode, &beatmapset.TitleUnicode, "title_unicode", &columns)
 	setMetadata(metadata, osz2.Artist, &beatmapset.Artist, "artist", &columns)
@@ -40,6 +41,32 @@ func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schema
 		// (https://osu.ppy.sh/wiki/en/Beatmap/Title_text)
 		beatmapset.DisplayTitle = new(beatmapset.DefaultDisplayTitle())
 		columns = append(columns, "display_title")
+	}
+
+	if beatmapset.Tags != nil {
+		tags := strings.Split(*beatmapset.Tags, " ")
+
+		detectedLanguage := detectLanguageFromTags(tags)
+		detectedGenre := detectGenreFromTags(tags)
+		detectedExplicit := detectExplicitFromTags(tags)
+
+		beatmapset.Explicit = detectedExplicit
+		columns = append(columns, "explicit")
+
+		hasDetectedLanguage := detectedLanguage > constants.BeatmapLanguageUnspecified
+		languageAlreadySet := beatmapset.LanguageId > constants.BeatmapLanguageUnspecified
+
+		hasDetectedGenre := detectedGenre > constants.BeatmapGenreUnspecified
+		genreAlreadySet := beatmapset.GenreId > constants.BeatmapGenreUnspecified
+
+		if hasDetectedLanguage && !languageAlreadySet {
+			beatmapset.LanguageId = detectedLanguage
+			columns = append(columns, "language")
+		}
+		if hasDetectedGenre && !genreAlreadySet {
+			beatmapset.GenreId = detectedGenre
+			columns = append(columns, "genre")
+		}
 	}
 
 	rowsAffected, err := transaction.Beatmapsets.Update(beatmapset, columns...)
@@ -173,4 +200,74 @@ func metadataUpdateResult(schema string, id int, rowsAffected int64, err error) 
 		return fmt.Errorf("bss: update %s %d metadata: affected %d rows", schema, id, rowsAffected)
 	}
 	return nil
+}
+
+func detectExplicitFromTags(tags []string) bool {
+	for _, tag := range tags {
+		switch strings.ToLower(tag) {
+		case "explicit":
+			return true
+		}
+	}
+	return false
+}
+
+func detectLanguageFromTags(tags []string) constants.BeatmapLanguage {
+	for _, tag := range tags {
+		switch strings.ToLower(tag) {
+		case "english":
+			return constants.BeatmapLanguageEnglish
+		case "japanese":
+			return constants.BeatmapLanguageJapanese
+		case "chinese":
+			return constants.BeatmapLanguageChinese
+		case "instrumental":
+			return constants.BeatmapLanguageInstrumental
+		case "korean":
+			return constants.BeatmapLanguageKorean
+		case "french":
+			return constants.BeatmapLanguageFrench
+		case "german":
+			return constants.BeatmapLanguageGerman
+		case "swedish":
+			return constants.BeatmapLanguageSwedish
+		case "italian":
+			return constants.BeatmapLanguageItalian
+		case "russian":
+			return constants.BeatmapLanguageRussian
+		case "polish":
+			return constants.BeatmapLanguagePolish
+		}
+	}
+	return constants.BeatmapLanguageUnspecified
+}
+
+func detectGenreFromTags(tags []string) constants.BeatmapGenre {
+	for _, tag := range tags {
+		switch strings.ToLower(tag) {
+		case "videogame":
+			return constants.BeatmapGenreVideoGame
+		case "anime":
+			return constants.BeatmapGenreAnime
+		case "rock":
+			return constants.BeatmapGenreRock
+		case "pop":
+			return constants.BeatmapGenrePop
+		case "novelty":
+			return constants.BeatmapGenreNovelty
+		case "hiphop":
+			return constants.BeatmapGenreHipHop
+		case "electronic":
+			return constants.BeatmapGenreElectronic
+		case "metal":
+			return constants.BeatmapGenreMetal
+		case "classical":
+			return constants.BeatmapGenreClassical
+		case "folk":
+			return constants.BeatmapGenreFolk
+		case "jazz":
+			return constants.BeatmapGenreJazz
+		}
+	}
+	return constants.BeatmapGenreUnspecified
 }
