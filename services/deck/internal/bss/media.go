@@ -94,6 +94,11 @@ func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectRes
 	}
 
 	for _, prepared := range submission.Beatmaps {
+		// The beatmap source might not have been set yet -> populate if not
+		if err := ensureSource(prepared, source); err != nil {
+			return nil, nil, err
+		}
+
 		filename, selected := selectResource(prepared.Source)
 		if !selected {
 			continue
@@ -110,4 +115,26 @@ func (submission *SubmissionContext) findBeatmapResource(source fs.FS, selectRes
 	}
 
 	return nil, nil, nil
+}
+
+func ensureSource(beatmap *PreparedBeatmap, source fs.FS) error {
+	if beatmap.Source != nil {
+		return nil
+	}
+
+	beatmapContents, err := readFileContents(
+		source,
+		beatmap.Target.Filename,
+		MaxBeatmapFileSize,
+	)
+	if err != nil {
+		return fmt.Errorf("bss: read beatmap file '%q': %w", beatmap.Target.Filename, err)
+	}
+
+	beatmap.Source, err = beatmaps.ParseFromBytes(beatmapContents)
+	if err != nil {
+		return fmt.Errorf("bss: parse beatmap file '%q': %w", beatmap.Target.Filename, err)
+	}
+
+	return nil
 }

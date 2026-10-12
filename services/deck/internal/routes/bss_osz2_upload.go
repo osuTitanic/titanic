@@ -330,6 +330,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			}
 		}
 
+		// Generate & upload background thumbnail + audio preview
 		if submission.Access.CanUpdateResources {
 			oszReader, err := zip.NewReader(oszFile, oszSize)
 			if err != nil {
