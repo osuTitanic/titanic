@@ -229,8 +229,20 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 
-		// TODO: Validate creator names
-		// TODO: Validate beatmap uniqueness
+		if !userPermissions.IsBat() {
+			allowedUsernames, err := submission.AllowedUsernames(transaction)
+			if err != nil {
+				return err
+			}
+			if err := submission.ValidateOwnership(allowedUsernames); err != nil {
+				return err
+			}
+		}
+
+		if err := submission.ValidateBeatmapUniqueness(transaction); err != nil {
+			return err
+		}
+
 		// TODO: Reject too short submission
 
 		// TODO: Build final osz / save it into a temp file
