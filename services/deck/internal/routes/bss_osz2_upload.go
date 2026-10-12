@@ -317,6 +317,9 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 		// Upload all new .osu files
 		for _, beatmap := range submission.Beatmaps {
+			if !submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
+				continue
+			}
 			if err := submission.SaveBeatmap(ctx.State.Storage, beatmap.Target.Id, beatmap.Contents); err != nil {
 				return err
 			}
