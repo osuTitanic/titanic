@@ -383,8 +383,12 @@ func (submission *SubmissionContext) validateResourceStorage(store storage.Stora
 	return nil
 }
 
-func (submission *SubmissionContext) readFile(filename string, maxSize int64) ([]byte, error) {
-	file, err := submission.FS.Open(filename)
+func readFile(source fs.FS, filename string, maxSize int64) ([]byte, error) {
+	if source == nil {
+		return nil, errors.New("bss: filesystem not set")
+	}
+
+	file, err := source.Open(filename)
 	if err != nil {
 		return nil, err
 	}
