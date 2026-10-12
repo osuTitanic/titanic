@@ -46,16 +46,12 @@ func (request *Osz2UploadRequest) Close() {
 		request.File.Close()
 		request.File = nil
 	}
-	if request.Form != nil {
-		request.Form.RemoveAll()
-		request.Form = nil
-	}
 }
 
 func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err error) {
 	err = ctx.EnsureMultipartForm(
 		bss.MaxPackageFileSize,
-		1<<20, // 1 MiB in-memory (larger file parts -> temporary storage)
+		0, // stream multipart data directly to a file
 	)
 	if err != nil {
 		if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
