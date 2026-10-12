@@ -79,23 +79,45 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM debian:trixie-slim AS runtime-deps
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libicu76 && \
-    mkdir -p /out/lib && \
-    dpkg-query -L libicu76 | while IFS= read -r file; do \
-        case "$file" in \
-            */libicudata.so*|*/libicui18n.so*|*/libicuuc.so*) \
-                cp -a "$file" /out/lib/ ;; \
-        esac; \
-    done && \
-    rm -rf /var/lib/apt/lists/*
+# Collect FFmpeg, FFprobe & their shared libraries
+RUN <<'EOF'
+set -eu
+
+apt-get update
+apt-get install -y --no-install-recommends ffmpeg libicu76
+
+mkdir -p /out/bin /out/lib
+
+# Copy the FFmpeg executables
+cp /usr/bin/ffmpeg /usr/bin/ffprobe /out/bin/
+
+# Copy shared libraries required by ffmpeg / ffprobe
+# ldd resolves dependencies to their absolute paths
+ldd /usr/bin/ffmpeg /usr/bin/ffprobe \
+    | awk '
+        $2 == "=>" && $3 ~ /^\// { print $3 }
+        $1 ~ /^\// && $1 !~ /:$/ { print $1 }
+    ' \
+    | sort -u \
+    | while IFS= read -r lib; do
+        cp -L "$lib" /out/lib/
+    done
+
+# Copy ICU libraries, required by osu-native
+for lib in icudata icui18n icuuc; do
+    cp -a /usr/lib/*/lib${lib}.so* /out/lib/
+done
+
+# Remove cached package metadata to reduce image size.
+rm -rf /var/lib/apt/lists/*
+EOF
 
 FROM gcr.io/distroless/cc-debian13:latest AS runtime
 
 WORKDIR /app
 COPY --from=builder /out/deck /app/deck
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
+COPY --from=runtime-deps /out/bin/ /usr/bin/
 COPY --from=runtime-deps /out/lib/ /app/lib/
 
 ENV LD_LIBRARY_PATH=/app/lib
