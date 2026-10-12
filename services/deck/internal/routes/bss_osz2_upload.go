@@ -292,9 +292,6 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			}
 		}
 
-		setId := submission.Beatmapset.Id
-		setIdKey := strconv.Itoa(setId)
-
 		// Upload new osz2 base that we can use for patching
 		err = submission.SaveOsz2Stream(
 			ctx.State.StorageOsz2,
@@ -327,24 +324,11 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 				return err
 			}
 
-			thumbnail, err := submission.GenerateThumbnail(oszReader)
-			if err != nil {
-				ctx.Logger.Warn("Failed to generate beatmap thumbnail", "set_id", setId, "error", err)
+			if err := submission.UpdateThumbnail(ctx.State.Storage, oszReader); err != nil {
+				return err
 			}
-			if thumbnail != nil {
-				if err := ctx.State.Storage.Save(ctx.Context(), setIdKey, "thumbnails", thumbnail); err != nil {
-					ctx.Logger.Warn("Failed to save beatmap thumbnail", "set_id", setId, "error", err)
-				}
-			}
-
-			preview, err := submission.GenerateAudioPreview(oszReader)
-			if err != nil {
-				ctx.Logger.Warn("Failed to generate beatmap audio preview", "set_id", setId, "error", err)
-			}
-			if preview != nil {
-				if err := ctx.State.Storage.Save(ctx.Context(), setIdKey, "audio", preview); err != nil {
-					ctx.Logger.Warn("Failed to save beatmap audio preview", "set_id", setId, "error", err)
-				}
+			if err := submission.UpdateAudioPreview(ctx.State.Storage, oszReader); err != nil {
+				return err
 			}
 		}
 

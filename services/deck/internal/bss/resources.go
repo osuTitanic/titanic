@@ -261,21 +261,58 @@ func (submission *SubmissionContext) BuildOsz(store storage.Storage) (*os.File, 
 	return temporary, nil
 }
 
+func (submission *SubmissionContext) UpdateThumbnail(store storage.Storage, source fs.FS) error {
+	if !submission.Access.CanUpdateResources {
+		return nil
+	}
+
+	thumbnail, err := submission.GenerateThumbnail(source)
+	if err != nil {
+		return err
+	}
+	if thumbnail != nil {
+		return store.Save(
+			submission.Context,
+			strconv.Itoa(submission.Beatmapset.Id),
+			"thumbnails", thumbnail,
+		)
+	}
+	return nil
+}
+
+func (submission *SubmissionContext) UpdateAudioPreview(store storage.Storage, source fs.FS) error {
+	if !submission.Access.CanUpdateResources {
+		return nil
+	}
+
+	audioPreview, err := submission.GenerateAudioPreview(source)
+	if err != nil {
+		return err
+	}
+	if audioPreview != nil {
+		return store.Save(
+			submission.Context,
+			strconv.Itoa(submission.Beatmapset.Id),
+			"audio", audioPreview,
+		)
+	}
+	return nil
+}
+
 // SaveOsz creates / overwrites the osz package for the prepared beatmapset.
 func (submission *SubmissionContext) SaveOsz(store storage.Storage, contents []byte) error {
 	return submission.SaveOszStream(store, bytes.NewReader(contents))
 }
 
 // SaveOszStream creates / overwrites the osz package for the prepared beatmapset.
-func (submission *SubmissionContext) SaveOszStream(store storage.Storage, stream io.Reader) error {
+func (submission *SubmissionContext) SaveOszStream(store storage.Storage, oszStream io.Reader) error {
 	if err := submission.validateResourceStorage(store); err != nil {
 		return err
 	}
 	return store.SaveStream(
 		submission.Context,
 		strconv.Itoa(submission.Beatmapset.Id),
-		"osz",
-		stream,
+		"osz", oszStream,
 	)
 }
 
@@ -285,15 +322,14 @@ func (submission *SubmissionContext) SaveOsz2(store storage.Storage, contents []
 }
 
 // SaveOsz2Stream creates / overwrites the osz2 package for the prepared set.
-func (submission *SubmissionContext) SaveOsz2Stream(store storage.Storage, stream io.Reader) error {
+func (submission *SubmissionContext) SaveOsz2Stream(store storage.Storage, osz2Stream io.Reader) error {
 	if err := submission.validateResourceStorage(store); err != nil {
 		return err
 	}
 	return store.SaveStream(
 		submission.Context,
 		strconv.Itoa(submission.Beatmapset.Id),
-		"osz2",
-		stream,
+		"osz2", osz2Stream,
 	)
 }
 
@@ -314,8 +350,7 @@ func (submission *SubmissionContext) SaveBeatmap(store storage.Storage, beatmapI
 	if err := store.Save(
 		submission.Context,
 		strconv.Itoa(beatmap.Target.Id),
-		"beatmaps",
-		contents,
+		"beatmaps", contents,
 	); err != nil {
 		return fmt.Errorf("bss: save beatmap %d: %w", beatmap.Target.Id, err)
 	}
