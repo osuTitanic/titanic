@@ -61,11 +61,11 @@ func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schema
 
 		if hasDetectedLanguage && !languageAlreadySet {
 			beatmapset.LanguageId = detectedLanguage
-			columns = append(columns, "language")
+			columns = append(columns, "language_id")
 		}
 		if hasDetectedGenre && !genreAlreadySet {
 			beatmapset.GenreId = detectedGenre
-			columns = append(columns, "genre")
+			columns = append(columns, "genre_id")
 		}
 	}
 
