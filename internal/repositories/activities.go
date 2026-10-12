@@ -40,3 +40,13 @@ func (r *ActivityRepository) FetchRecentByUser(userId int, mode int, limit int, 
 		Find(&activities).Error
 	return activities, err
 }
+
+func (r *ActivityRepository) FetchLatestByUser(userId int) (*schemas.Activity, error) {
+	var activity schemas.Activity
+	err := r.db.
+		Where("user_id = ?", userId).
+		Order("id DESC").
+		First(&activity).
+		Error
+	return LookupResult(&activity, err)
+}
