@@ -392,26 +392,32 @@ func readFile(source fs.FS, filename string, maxSize int64) (fs.File, error) {
 	if err != nil {
 		return nil, err
 	}
+	closeWithError := func(err error) (fs.File, error) {
+		return nil, errors.Join(err, file.Close())
+	}
 
 	info, err := file.Stat()
 	if err != nil {
-		return nil, err
+		return closeWithError(err)
 	}
 	if !info.Mode().IsRegular() || info.Size() < 0 {
-		return nil, errors.New("not a regular file")
+		return closeWithError(errors.New("not a regular file"))
 	}
 	if info.Size() > maxSize {
-		return nil, fmt.Errorf("file exceeds maximum size of %d bytes", maxSize)
+		return closeWithError(fmt.Errorf("file exceeds maximum size of %d bytes", maxSize))
 	}
 
-	return file, err
+	return file, nil
 }
 
 func readFileContents(source fs.FS, filename string, maxSize int64) ([]byte, error) {
 	file, err := readFile(source, filename, maxSize)
-	fileReader := io.LimitReader(file, maxSize+1)
+	if err != nil {
+		return nil, err
+	}
 	defer file.Close()
 
+	fileReader := io.LimitReader(file, maxSize+1)
 	contents, err := io.ReadAll(fileReader)
 	if err != nil {
 		return nil, err
