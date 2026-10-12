@@ -296,9 +296,8 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		setIdKey := strconv.Itoa(setId)
 
 		// Upload new osz2 base that we can use for patching
-		err = ctx.State.StorageOsz2.SaveStream(
-			ctx.Context(),
-			setIdKey, "osz2",
+		err = submission.SaveOsz2Stream(
+			ctx.State.StorageOsz2,
 			io.NewSectionReader(osz2Source, 0, osz2Size),
 		)
 		if err != nil {
@@ -306,9 +305,8 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		}
 
 		// Update new .osz file
-		err = ctx.State.Storage.SaveStream(
-			ctx.Context(),
-			setIdKey, "osz",
+		err = submission.SaveOszStream(
+			ctx.State.Storage,
 			oszFile,
 		)
 		if err != nil {
@@ -317,15 +315,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 		// Upload all new .osu files
 		for _, beatmap := range submission.Beatmaps {
-			if !submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
-				continue
-			}
-			err = ctx.State.Storage.Save(
-				ctx.Context(),
-				strconv.Itoa(beatmap.Target.Id), "beatmaps",
-				beatmap.Contents,
-			)
-			if err != nil {
+			if err := submission.SaveBeatmap(ctx.State.Storage, beatmap.Target.Id, beatmap.Contents); err != nil {
 				return err
 			}
 		}
