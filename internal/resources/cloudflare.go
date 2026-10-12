@@ -77,6 +77,16 @@ func purgeUrlChunk(urls []string, cfg *config.Config) error {
 		return fmt.Errorf("failed to purge urls: %d", resp.StatusCode)
 	}
 
+	var result struct {
+		Success bool `json:"success"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("decode cloudflare purge response: %w", err)
+	}
+	if !result.Success {
+		return fmt.Errorf("failed to purge urls: cloudflare reported failure")
+	}
+
 	return nil
 }
 
