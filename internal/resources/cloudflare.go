@@ -12,8 +12,8 @@ import (
 	"github.com/osuTitanic/titanic/internal/config"
 )
 
-// Cloudflare accepts at most 30 urls per request
-const maxUrlsPerRequest = 30
+// Cloudflare accepts at most 50 urls per request
+const maxUrlsPerRequest = 50
 const purgeEndpoint = "https://api.cloudflare.com/client/v4/zones/%s/purge_cache"
 
 var cloudflareHttpClient = &http.Client{Timeout: 10 * time.Second}
