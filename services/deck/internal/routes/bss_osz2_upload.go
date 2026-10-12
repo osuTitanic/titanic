@@ -188,6 +188,9 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 				request.Size(),
 			)
 			if err != nil {
+				// Server-side and client-side osz2 most likely don't match up
+				// We can remove the server-side osz2 so that the client sends a new one again
+				ctx.State.StorageOsz2.Remove(ctx.Context(), strconv.Itoa(request.SetId), "osz2")
 				return err
 			}
 			defer func() {
@@ -356,14 +359,10 @@ func resolvePatchedOsz2(
 	if err != nil {
 		return nil, 0, fmt.Errorf("create temporary osz2: %w", err)
 	}
-	defer func() {
-		// Only close & remove the file if an error occured
-		// We want to keep the file open otherwise
-		if err != nil {
-			err = errors.Join(err, output.Close(), os.Remove(output.Name()))
-			output = nil
-		}
-	}()
+	cleanup := func() {
+		output.Close()
+		os.Remove(output.Name())
+	}
 
 	size, err := osz2.ApplyPatch(
 		source,
@@ -374,9 +373,11 @@ func resolvePatchedOsz2(
 		output,
 	)
 	if err != nil {
+		cleanup()
 		return nil, 0, fmt.Errorf("%w: apply patch for set %d: %v", bss.ErrOsz2Invalid, setId, err)
 	}
 	if err := ctx.Err(); err != nil {
+		cleanup()
 		return nil, 0, err
 	}
 	return output, size, nil
