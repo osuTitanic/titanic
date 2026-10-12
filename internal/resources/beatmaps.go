@@ -23,6 +23,7 @@ const (
 )
 
 type BeatmapProvider struct {
+	cfg         *config.Config
 	logger      *slog.Logger
 	cache       *redis.Client
 	beatmapsets *repositories.BeatmapsetRepository
@@ -44,6 +45,7 @@ func NewBeatmapProvider(
 
 	return &BeatmapProvider{
 		logger:      slog.Default().With("component", "BeatmapProvider"),
+		cfg:         cfg,
 		cache:       cache,
 		beatmapsets: beatmapsets,
 		fallback:    mirrorResolver,
@@ -164,6 +166,9 @@ func (provider *BeatmapProvider) InvalidateCaches(ctx context.Context, setId int
 
 	if err := provider.cache.Del(ctx, keys...).Err(); err != nil {
 		return fmt.Errorf("invalidate beatmap caches: %w", err)
+	}
+	if err := PurgeOsz(setId, provider.cfg); err != nil {
+		return fmt.Errorf("purge cloudflare osz cache: %w", err)
 	}
 	return nil
 }
