@@ -165,6 +165,20 @@ func (submission *SubmissionContext) RequireResourceAccess() error {
 	return nil
 }
 
+// RequireBeatmapsetOwner ensures that the authenticated user owns the beatmapset.
+func (submission *SubmissionContext) RequireBeatmapsetOwner() error {
+	if submission.User == nil {
+		return ErrUserNotAuthenticated
+	}
+	if submission.Beatmapset == nil {
+		return ErrBeatmapsetNotPrepared
+	}
+	if submission.Beatmapset.CreatorId == nil || *submission.Beatmapset.CreatorId != submission.User.Id {
+		return ErrBeatmapsetAccessNotAllowed
+	}
+	return nil
+}
+
 // ValidateOwnership ensures that creator names belong to the beatmapset owner or one of the collaborators.
 func (submission *SubmissionContext) ValidateOwnership(allowedUsernames []string) error {
 	allowed := make(map[string]bool, len(allowedUsernames))
