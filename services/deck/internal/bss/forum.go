@@ -35,6 +35,13 @@ func PopBubble(transaction *state.Repositories, beatmapset *schemas.Beatmapset) 
 		return nil
 	}
 
+	hasBubbleIcon := topic.IconId != nil && *topic.IconId == constants.ForumIconBubble
+	shouldUpdate := hadNominations || hasBubbleIcon
+
+	if !shouldUpdate {
+		return nil
+	}
+
 	topic.IconId = new(constants.ForumIconBubblePop)
 	_, err = transaction.ForumTopics.Update(topic, "icon")
 	if err != nil {
