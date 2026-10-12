@@ -150,6 +150,7 @@ func (ctx *HttpContext) QueryValueEnumOptional[T constants.HasValidator](name st
 
 // EnsureMultipartForm limits the request body & parses it as multipart form data.
 func (ctx *HttpContext) EnsureMultipartForm(maxBodySize, maxMemory int64) error {
+	ctx.Logger.Debug("Reading multipart form data", "maxSize", maxBodySize, "maxMem", maxMemory)
 	ctx.LimitBody(maxBodySize)
 	return ctx.Request.ParseMultipartForm(maxMemory)
 }

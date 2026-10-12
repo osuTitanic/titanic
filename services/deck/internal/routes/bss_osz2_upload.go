@@ -31,43 +31,9 @@ type Osz2UploadRequest struct {
 	Form       *multipart.Form
 }
 
-func (request *Osz2UploadRequest) Size() int64 {
-	if request.FileHeader == nil {
-		return -1
-	}
-	return request.FileHeader.Size
-}
-
-func (request *Osz2UploadRequest) Close() {
-	if request == nil {
-		return
-	}
-	if request.File != nil {
-		request.File.Close()
-		request.File = nil
-	}
-}
-
 func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err error) {
-	err = ctx.EnsureMultipartForm(
-		bss.MaxPackageFileSize,
-		0, // stream multipart data directly to a file
-	)
-	if err != nil {
-		if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
-			return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrOsz2TooLarge, sizeError.Limit)
-		}
-		return nil, fmt.Errorf("parse multipart form: %w", err)
-	}
-	request = &Osz2UploadRequest{Form: ctx.Request.MultipartForm}
-
-	defer func(r *Osz2UploadRequest) {
-		// Close only if there was an error
-		// We want to keep the file stream open for the submission
-		if err != nil {
-			r.Close()
-		}
-	}(request)
+	err = ctx.Request.ParseForm()
+	request = &Osz2UploadRequest{}
 
 	request.Username = strings.TrimSpace(ctx.FormValue("u"))
 	request.Password = strings.TrimSpace(ctx.FormValue("h"))
@@ -86,17 +52,59 @@ func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err 
 		return nil, fmt.Errorf("parse submission type: %w", err)
 	}
 
+	// NOTE: NewOsz2UploadRequest will not read the osz2 package immediately
+	// 		 We first want to process user authentication & update eligibility
+	// 		 Reading the multipart data can take a long time, so ideally,
+	// 		 we want to do that after the initial submission checks
+	// 		 This indirectly also prevents upload request floods
+
+	return request, nil
+}
+
+func (request *Osz2UploadRequest) Size() int64 {
+	if request.FileHeader == nil {
+		return -1
+	}
+	return request.FileHeader.Size
+}
+
+func (request *Osz2UploadRequest) Close() {
+	if request == nil {
+		return
+	}
+	if request.File != nil {
+		request.File.Close()
+		request.File = nil
+	}
+}
+
+func (request *Osz2UploadRequest) PopulateMultipartData(ctx *server.Context) error {
+	err := ctx.EnsureMultipartForm(
+		bss.MaxPackageFileSize,
+		0, // <- stream multipart data directly to a file instead of memory
+	)
+	if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
+		return fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrOsz2TooLarge, sizeError.Limit)
+	}
+	if err != nil {
+		return fmt.Errorf("parse multipart form: %w", err)
+	}
+	request.Form = ctx.Request.MultipartForm
+
 	request.File, request.FileHeader, err = ctx.Request.FormFile("0")
 	if err != nil {
-		return nil, fmt.Errorf("open osz2 upload: %w", err)
+		request.Close()
+		return fmt.Errorf("open osz2 upload: %w", err)
 	}
 	if request.Size() > bss.MaxPackageFileSize {
-		return nil, fmt.Errorf("%w: osz2 upload is %d bytes", bss.ErrOsz2TooLarge, request.Size())
+		request.Close()
+		return fmt.Errorf("%w: osz2 upload is %d bytes", bss.ErrOsz2TooLarge, request.Size())
 	}
 	if request.Size() <= 0 {
-		return nil, fmt.Errorf("invalid osz2 upload size %d", request.Size())
+		request.Close()
+		return fmt.Errorf("invalid osz2 upload size %d", request.Size())
 	}
-	return request, nil
+	return nil
 }
 
 // /web/osu-osz2-bmsubmit-upload.php -> Applies a full osz2 package or patch
@@ -164,6 +172,13 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 		// Create prepared beatmap state from db
 		if err := submission.PrepareExistingBeatmaps(); err != nil {
+			return err
+		}
+
+		// Read multipart file data (this may take a long while)
+		// It will stream the osz2 file / patch to disk
+		// After that we will have access to request.File
+		if err := request.PopulateMultipartData(ctx); err != nil {
 			return err
 		}
 
