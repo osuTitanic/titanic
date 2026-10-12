@@ -35,7 +35,7 @@ func PopBubble(transaction *state.Repositories, beatmapset *schemas.Beatmapset) 
 	}
 
 	topic.IconId = new(constants.ForumIconBubblePop)
-	_, err = transaction.ForumTopics.Update(topic, "icon_id")
+	_, err = transaction.ForumTopics.Update(topic, "icon")
 	if err != nil {
 		return fmt.Errorf("bss: update topic icon: %w", err)
 	}
