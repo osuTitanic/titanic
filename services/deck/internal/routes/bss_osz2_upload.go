@@ -280,9 +280,6 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 		for _, beatmap := range submission.Beatmaps {
-			// Apply new status from set
-			beatmap.Target.Status = submission.Beatmapset.Status
-
 			if err := bss.ApplyBeatmapMetadata(transaction, beatmap.Target); err != nil {
 				return err
 			}

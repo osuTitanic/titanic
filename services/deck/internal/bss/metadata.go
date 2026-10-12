@@ -89,6 +89,11 @@ func ApplySubmissionMetadata(transaction *state.Repositories, submission *Submis
 	}
 	submission.Beatmapset.Status = newStatus
 
+	// Apply the new status to every beatmap from the submission as well
+	for _, beatmap := range submission.Beatmaps {
+		beatmap.Target.Status = newStatus
+	}
+
 	rowsAffected, err := transaction.Beatmapsets.Update(submission.Beatmapset,
 		"submission_status",
 		"has_video",
