@@ -306,7 +306,17 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			)
 		}
 
-		// TODO: Save new osz2 base
+		// Upload new osz2 base that we can use for patching
+		err = ctx.State.StorageOsz2.SaveStream(
+			ctx.Context(),
+			strconv.Itoa(submission.Beatmapset.Id),
+			"osz2",
+			io.NewSectionReader(osz2Source, 0, osz2Size),
+		)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {
