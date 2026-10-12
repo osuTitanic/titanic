@@ -230,6 +230,8 @@ func detectLanguageFromTags(tags []string) constants.BeatmapLanguage {
 			return constants.BeatmapLanguageGerman
 		case "swedish":
 			return constants.BeatmapLanguageSwedish
+		case "spanish":
+			return constants.BeatmapLanguageSpanish
 		case "italian":
 			return constants.BeatmapLanguageItalian
 		case "russian":
