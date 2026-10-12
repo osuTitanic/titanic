@@ -68,7 +68,7 @@ func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err 
 		return nil, fmt.Errorf("parse submission type: %w", err)
 	}
 
-	request.File, request.FileHeader, err = ctx.Request.FormFile("0")
+	request.File, request.FileHeader, err = ctx.FormFile("0", "osz2") // both "0" and "osz2" are filenames sent by the client
 	if err != nil {
 		request.Close()
 		return nil, fmt.Errorf("open osz2 upload: %w", err)

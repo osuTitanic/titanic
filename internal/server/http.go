@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net"
 	"net/http"
 	"strconv"
@@ -219,6 +220,21 @@ func (ctx *HttpContext) FormValueIntOptional(name string) (*int, error) {
 func (ctx *HttpContext) FormValueEnum[T constants.HasValidator](name string) (T, error) {
 	raw := ctx.FormValue(name)
 	return constants.ResolveEnum[T](raw)
+}
+
+// FormFile returns the first uploaded file matching one of
+// the possible multipart field names.
+func (ctx *HttpContext) FormFile(possibleFilenames ...string) (multipart.File, *multipart.FileHeader, error) {
+	for _, filename := range possibleFilenames {
+		file, header, err := ctx.Request.FormFile(filename)
+		if err == nil {
+			return file, header, nil
+		}
+		if !errors.Is(err, http.ErrMissingFile) {
+			return nil, nil, err
+		}
+	}
+	return nil, nil, http.ErrMissingFile
 }
 
 func (ctx *HttpContext) Redirect(status int, location string) {
