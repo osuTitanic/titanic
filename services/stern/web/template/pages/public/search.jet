@@ -31,6 +31,8 @@
     {{ yield selectionOrder() }}
 
     {{ yield beatmapListing() }}
+
+    {{ include "/components/pagination.jet" .Pagination }}
 </div>
 <script src="{{ cachedUrl("/js/search.js") }}"></script>
 {{ end }}
