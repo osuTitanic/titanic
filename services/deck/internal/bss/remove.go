@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
@@ -24,6 +25,11 @@ func (submission *SubmissionContext) RemoveInactiveBeatmapsets(transaction *stat
 			return nil, fmt.Errorf("bss: fetch inactive beatmaps for set %d: %w", beatmapset.Id, err)
 		}
 		beatmapset.Beatmaps = beatmaps
+
+		// If the beatmap has a topic associated with it, we want to hide it
+		if err := hideRemovedBeatmapTopic(transaction, beatmapset); err != nil {
+			return nil, err
+		}
 
 		if err := transaction.Modding.DeleteBySetId(beatmapset.Id); err != nil {
 			return nil, fmt.Errorf("bss: delete modding for inactive set %d: %w", beatmapset.Id, err)
@@ -100,6 +106,23 @@ func (submission *SubmissionContext) CheckBeatmapRemovals(beatmaps []*schemas.Be
 		if beatmap.SetId != submission.Beatmapset.Id {
 			return ErrBeatmapRemovalNotAllowed
 		}
+	}
+	return nil
+}
+
+func hideRemovedBeatmapTopic(transaction *state.Repositories, beatmapset *schemas.Beatmapset) error {
+	if beatmapset.TopicId == nil {
+		return nil
+	}
+
+	topic := &schemas.ForumTopic{
+		Id:         *beatmapset.TopicId,
+		Hidden:     true,
+		StatusText: new("Deleted"),
+		LockedAt:   new(time.Now()),
+	}
+	if _, err := transaction.ForumTopics.Update(topic, "status_text", "hidden", "locked_at"); err != nil {
+		return fmt.Errorf("bss: hide topic %d for set %d: %w", topic.Id, beatmapset.Id, err)
 	}
 	return nil
 }
