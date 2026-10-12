@@ -20,6 +20,7 @@ func PopBubble(transaction *state.Repositories, beatmapset *schemas.Beatmapset) 
 	}
 	if hadNominations {
 		beatmapset.StarPriority += 5
+		transaction.Beatmapsets.Update(beatmapset, "star_priority")
 	}
 	if beatmapset.TopicId == nil {
 		return nil
