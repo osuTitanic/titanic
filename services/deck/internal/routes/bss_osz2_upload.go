@@ -177,7 +177,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 		var osz2Source io.ReaderAt = request.File
 		var osz2Size = request.Size()
 
-		if request.SubmissionType == osz2SubmissionPatch {
+		if request.SubmissionType == Osz2SubmissionPatch {
 			// We have received a patch file for the existing server-side osz2
 			// This is used to speed up submission time & save bandwidth
 

@@ -20,12 +20,12 @@ import (
 type Osz2SubmissionType int
 
 const (
-	osz2SubmissionFull Osz2SubmissionType = iota + 1
-	osz2SubmissionPatch
+	Osz2SubmissionFull Osz2SubmissionType = iota + 1
+	Osz2SubmissionPatch
 )
 
 func (submissionType Osz2SubmissionType) Valid() bool {
-	return submissionType == osz2SubmissionFull || submissionType == osz2SubmissionPatch
+	return submissionType == Osz2SubmissionFull || submissionType == Osz2SubmissionPatch
 }
 
 type Osz2GetIdRequest struct {
@@ -259,10 +259,10 @@ func isBubbledBeatmapset(transaction *state.Repositories, beatmapset *schemas.Be
 
 func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset bool, clientChecksum string) Osz2SubmissionType {
 	if newBeatmapset || clientChecksum == "" {
-		return osz2SubmissionFull
+		return Osz2SubmissionFull
 	}
 	if ctx.State.StorageOsz2 == nil {
-		return osz2SubmissionFull
+		return Osz2SubmissionFull
 	}
 
 	// We use this to determine if the client can upload a patch for the
@@ -271,7 +271,7 @@ func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset boo
 	stream, err := ctx.State.StorageOsz2.ReadStream(ctx.Context(), strconv.Itoa(setId), "osz2")
 	if err != nil {
 		ctx.Logger.Debug("Unable to read server-side osz2", "set_id", setId, "error", err)
-		return osz2SubmissionFull
+		return Osz2SubmissionFull
 	}
 	defer stream.Close()
 
@@ -280,17 +280,17 @@ func resolveOsz2SubmissionType(ctx *server.Context, setId int, newBeatmapset boo
 
 	if err != nil {
 		ctx.Logger.Warn("Failed to hash server-side osz2", "set_id", setId, "error", err)
-		return osz2SubmissionFull
+		return Osz2SubmissionFull
 	}
 	serverChecksum := hex.EncodeToString(hash.Sum(nil))
 
 	if !strings.EqualFold(clientChecksum, serverChecksum) {
 		// Server-side osz2 doesn't match client-side osz2
-		return osz2SubmissionFull
+		return Osz2SubmissionFull
 	}
 
 	// We can safely receive a patch from the client!
-	return osz2SubmissionPatch
+	return Osz2SubmissionPatch
 }
 
 func renderBssError(ctx *server.Context, err error) {
