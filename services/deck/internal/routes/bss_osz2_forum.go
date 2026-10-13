@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
@@ -138,11 +139,96 @@ func BeatmapSubmissionGetTopic(ctx *server.Context) {
 
 // /web/osu-osz2-bmsubmit-post.php -> Creates / updates the forum topic & sets beatmapset status.
 func BeatmapSubmissionOsz2Post(ctx *server.Context) {
-	// request, err := NewOsz2PostTopicRequest(ctx)
-	// if err != nil {
-	// 	// TODO
-	// 	return
-	// }
+	request, err := NewOsz2PostTopicRequest(ctx)
+	if err != nil {
+		renderStatusError(ctx, fmt.Errorf("%w: %v", bss.ErrInvalidSubmissionRequest, err))
+		return
+	}
 
-	// TODO
+	user, err := ctx.AuthenticateUser(
+		request.Username,
+		request.Password,
+		false, // does not require bancho presence
+	)
+	if errors.Is(err, server.ErrUserNotFound) || errors.Is(err, server.ErrInvalidPassword) {
+		renderStatusError(ctx, bss.ErrAuthenticationFailed)
+		return
+	}
+	if err != nil {
+		renderStatusError(ctx, fmt.Errorf("authenticate user: %w", err))
+		return
+	}
+
+	userPermissions, err := ctx.State.Permissions.Resolve(user.Id)
+	if err != nil {
+		renderStatusError(ctx, fmt.Errorf("resolve permissions for user %d: %w", user.Id, err))
+		return
+	}
+
+	submission := bss.NewSubmissionContext(ctx.Context())
+	submission.User = user
+
+	if err := submission.CheckSubmissionEligibility(
+		ctx.State.Config.BeatmapSubmissionEnabled,
+		userPermissions,
+	); err != nil {
+		renderStatusError(ctx, err)
+		return
+	}
+
+	if !userPermissions.Has("forum.posts.create") {
+		renderStatusError(ctx, bss.ErrUploadPermissionDenied)
+	}
+	if !userPermissions.Has("forum.posts.edit") {
+		renderStatusError(ctx, bss.ErrUploadPermissionDenied)
+	}
+	var topicId int
+
+	err = ctx.State.DatabaseTransaction(func(transaction *state.Repositories) error {
+		if err := submission.PrepareBeatmapset(transaction, request.SetId); err != nil {
+			return err
+		}
+		if err := submission.RequireBeatmapsetOwner(); err != nil {
+			return err
+		}
+		if err := submission.CheckBeatmapsetEligibility(); err != nil {
+			return err
+		}
+
+		topic, err := bss.PostTopic(
+			transaction,
+			submission.Beatmapset,
+			request.TopicUpdate(),
+		)
+		if err != nil {
+			return err
+		}
+		topicId = topic.Id
+		return nil
+	})
+	if err != nil {
+		renderStatusError(ctx, err)
+		return
+	}
+
+	ctx.Logger.Info(
+		"Beatmap forum post updated",
+		"user_id", user.Id,
+		"set_id", request.SetId,
+		"topic_id", topicId,
+		"status", request.TopicUpdate().Status,
+	)
+	ctx.RenderText(http.StatusOK, strconv.Itoa(topicId))
+}
+
+func renderStatusError(ctx *server.Context, err error) {
+	status := bss.StatusCodeFor(err)
+	expected := status != http.StatusInternalServerError
+
+	if expected {
+		ctx.Logger.Warn("Rejected osz2 topic submission", "error", err)
+	} else {
+		ctx.Logger.Error("Failed to process osz2 topic submission", "error", err)
+	}
+	ctx.Response.WriteHeader(status)
 }

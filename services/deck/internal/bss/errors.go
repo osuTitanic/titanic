@@ -3,6 +3,7 @@ package bss
 import (
 	"errors"
 	"fmt"
+	"net/http"
 )
 
 type ErrorCode int
@@ -114,6 +115,31 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponseMessage("Something went wrong while processing your beatmap. Please try again!"), true
 	default:
 		return ErrorResponse{}, false
+	}
+}
+
+func StatusCodeFor(err error) int {
+	switch {
+	case errors.Is(err, ErrAuthenticationFailed),
+		errors.Is(err, ErrUserNotAuthenticated),
+		errors.Is(err, ErrUserNotActivated),
+		errors.Is(err, ErrUserRestricted),
+		errors.Is(err, ErrUserSilenced),
+		errors.Is(err, ErrUserIsBot),
+		errors.Is(err, ErrUploadPermissionDenied),
+		errors.Is(err, ErrBeatmapsetAccessNotAllowed),
+		errors.Is(err, ErrBeatmapsetWrongServer),
+		errors.Is(err, ErrBeatmapsetRanked),
+		errors.Is(err, ErrBeatmapsetGraveyarded):
+		return http.StatusForbidden
+	case errors.Is(err, ErrInvalidSubmissionRequest):
+		return http.StatusBadRequest
+	case errors.Is(err, ErrBeatmapsetNotFound):
+		return http.StatusNotFound
+	case errors.Is(err, ErrSubmissionDisabled):
+		return http.StatusServiceUnavailable
+	default:
+		return http.StatusInternalServerError
 	}
 }
 
