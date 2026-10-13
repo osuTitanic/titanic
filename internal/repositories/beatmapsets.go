@@ -61,6 +61,15 @@ func (r *BeatmapsetRepository) ByPostId(postId int, preload ...string) (*schemas
 	return LookupResult(&beatmapset, err)
 }
 
+func (r *BeatmapsetRepository) ByArtistTitleAndCreator(artist, title string, creatorId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("artist = ? AND title = ? AND creator_id = ?", artist, title, creatorId).
+		First(&beatmapset).
+		Error
+	return LookupResult(&beatmapset, err)
+}
+
 func (r *BeatmapsetRepository) ManyById(ids []int, preload ...string) ([]*schemas.Beatmapset, error) {
 	if len(ids) == 0 {
 		return []*schemas.Beatmapset{}, nil
