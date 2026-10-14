@@ -280,12 +280,20 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 
 		// Determine & persist new beatmapset & beatmap metadata to the database
 		// Will be committed once we exit the transaction without an error
-		if err := bss.ApplyBeatmapsetMetadata(transaction, submission.Beatmapset, submission.Metadata); err != nil {
-			return err
+
+		// Beatmapset metadata (e.g. title, artist, creator)
+		// should only be updated by the set owner
+		if submission.Access.Owner {
+			if err := bss.ApplyBeatmapsetMetadata(transaction, submission.Beatmapset, submission.Metadata); err != nil {
+				return err
+			}
 		}
+		// "Submission metadata" includes the status, video/storyboard flags,
+		// osz filesizes, and the last updated timestamp
 		if err := bss.ApplySubmissionMetadata(transaction, submission, oszFile); err != nil {
 			return err
 		}
+		// Finally, update each individual difficulty w/ their derived metadata
 		for _, beatmap := range submission.Beatmaps {
 			if err := bss.ApplyBeatmapMetadata(transaction, beatmap.Target); err != nil {
 				return err
