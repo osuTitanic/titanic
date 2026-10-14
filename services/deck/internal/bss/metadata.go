@@ -82,6 +82,9 @@ func ApplySubmissionMetadata(transaction *state.Repositories, submission *Submis
 	}
 	oszSize := oszInfo.Size()
 	oszReader, err := zip.NewReader(osz, oszSize)
+	if err != nil {
+		return fmt.Errorf("read osz: %w", err)
+	}
 
 	submission.Beatmapset.HasVideo, err = CheckFSHasVideo(oszReader)
 	if err != nil {
