@@ -441,11 +441,11 @@ func beginSubmission(
 	staged := &bss.StagedSubmission{
 		UserId:        submission.User.Id,
 		BeatmapsetId:  submission.Beatmapset.Id,
-		OszFilename:   submission.OszFilename(),
 		NewBeatmapset: newBeatmapset,
 		HasVideo:      request.HasVideo,
 		HasStoryboard: request.HasStoryboard,
 		Beatmaps:      make([]bss.StagedSubmissionBeatmap, 0),
+		OszFilename:   buildOszFilename(submission.Beatmapset.Id, source.Artist, source.Title),
 	}
 	return staged, nil
 }
@@ -578,6 +578,21 @@ func prepareBeatmapsetFromSource(
 		return false, err
 	}
 	return true, nil
+}
+
+func buildOszFilename(setId int, artist, title string) string {
+	filename := fmt.Sprintf(
+		"%d %s - %s.osz",
+		setId, artist, title,
+	)
+	filter := func(character rune) rune {
+		if strings.ContainsRune(`\/:*?"<>|`, character) {
+			return -1
+		}
+		return character
+	}
+	filename = strings.Map(filter, filename)
+	return strings.ReplaceAll(filename, "#", "%23")
 }
 
 func renderBssErrorText(ctx *server.Context, err error) {
