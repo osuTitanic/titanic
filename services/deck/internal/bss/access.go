@@ -195,10 +195,13 @@ func (submission *SubmissionContext) ValidateOwnership(allowedUsernames []string
 		return ok
 	}
 
-	// Check osz2 metadata
-	if creator := submission.Metadata[osz2.Creator]; creator != "" && !isAllowed(creator) {
-		return ErrBeatmapOwnershipNotAllowed
+	// Set metadata is ignored for collaborators, so we don't have to check it for them
+	if submission.Access == nil || submission.Access.Owner {
+		if creator := submission.Metadata[osz2.Creator]; creator != "" && !isAllowed(creator) {
+			return ErrBeatmapOwnershipNotAllowed
+		}
 	}
+
 	// Check beatmap files
 	for _, beatmap := range submission.Beatmaps {
 		if beatmap.Source != nil && !isAllowed(beatmap.Source.Creator) {
