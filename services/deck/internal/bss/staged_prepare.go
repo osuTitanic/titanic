@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/performance"
 	"github.com/osuTitanic/titanic/internal/state"
 )
@@ -103,9 +104,16 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 	if err := submission.PrepareBeatmaps(transaction, requestedIds); err != nil {
 		return fmt.Errorf("bss: prepare staged beatmaps: %w", err)
 	}
+
+	// Apply "wip" status if the map is new
+	// TODO: I think this should only be done after upload ?
+	newBeatmapStatus := submission.Beatmapset.Status
+	if newBeatmapStatus == constants.BeatmapStatusInactive {
+		newBeatmapStatus = constants.BeatmapStatusWIP
+	}
 	for i, requestedId := range requestedIds {
 		if requestedId <= 0 {
-			submission.Beatmaps[i].Target.Status = submission.Beatmapset.Status
+			submission.Beatmaps[i].Target.Status = newBeatmapStatus
 		}
 	}
 

@@ -56,3 +56,12 @@ func (s *SubmissionContext) BeatmapById(beatmapId int) *PreparedBeatmap {
 	}
 	return nil
 }
+
+func (s *SubmissionContext) BeatmapByFilename(filename string) *PreparedBeatmap {
+	for _, beatmap := range s.Beatmaps {
+		if beatmap.Target.Filename == filename {
+			return beatmap
+		}
+	}
+	return nil
+}
