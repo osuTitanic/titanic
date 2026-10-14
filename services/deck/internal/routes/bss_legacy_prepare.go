@@ -19,7 +19,6 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
-// TODO: /web/osu-bmsubmit-getid2.php & /web/osu-bmsubmit-getid3.php
 // TODO: /web/osu-bmsubmit-novideo.php
 // TODO: /web/osu-bmsubmit-post[3-2].php
 
@@ -197,7 +196,7 @@ func (response PreOsz2GetIdResponse) FormatResponse() string {
 	return strings.Join(values, "\n")
 }
 
-// /web/osu-bmsubmit-getid[4-5].php -> Stages one .osu file & applies the
+// /web/osu-bmsubmit-getid[2-5].php -> Stages one .osu file & applies the
 // complete submission when the client sent its last / single difficulty
 func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 	request, err := NewPreOsz2GetIdRequest(ctx)
