@@ -13,6 +13,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/internal/storage"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
@@ -268,7 +269,25 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		return
 	}
 
-	// TODO: Invalidate cache
+	if err := ctx.State.Resources.InvalidateCaches(
+		ctx.Context(),
+		submission.Beatmapset.Id,
+		preparedBeatmapIds(submission)...,
+	); err != nil {
+		ctx.Logger.Warn(
+			"Failed to invalidate resource caches",
+			"set_id", submission.Beatmapset.Id, "error", err,
+		)
+	}
+
+	if isOszUpload || request.First {
+		if err := bss.BroadcastActivity(newBeatmapset, ctx.State, submission); err != nil {
+			ctx.Logger.Warn(
+				"Failed to broadcast beatmap submission activity",
+				"user_id", user.Id, "set_id", submission.Beatmapset.Id, "error", err,
+			)
+		}
+	}
 
 	ctx.Logger.Info(
 		"Handled pre-osz2 resource upload",
