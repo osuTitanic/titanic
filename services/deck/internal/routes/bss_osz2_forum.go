@@ -141,28 +141,54 @@ func BeatmapSubmissionGetTopic(ctx *server.Context) {
 func BeatmapSubmissionOsz2Post(ctx *server.Context) {
 	request, err := NewOsz2PostTopicRequest(ctx)
 	if err != nil {
-		renderStatusError(ctx, fmt.Errorf("%w: %v", bss.ErrInvalidSubmissionRequest, err))
+		renderTopicPostError(ctx, fmt.Errorf("%w: %v", bss.ErrInvalidSubmissionRequest, err))
 		return
 	}
 
-	user, err := ctx.AuthenticateUser(
+	submission, topicId, err := postBeatmapTopic(
+		ctx,
 		request.Username,
 		request.Password,
+		request.SetId,
+		request.TopicUpdate(),
+	)
+	if err != nil {
+		renderTopicPostError(ctx, err)
+		return
+	}
+
+	ctx.Logger.Info(
+		"Beatmap forum post updated",
+		"user_id", submission.User.Id,
+		"set_id", request.SetId,
+		"topic_id", topicId,
+		"status", request.TopicUpdate().Status,
+	)
+	ctx.RenderText(http.StatusOK, strconv.Itoa(topicId))
+}
+
+func postBeatmapTopic(
+	ctx *server.Context,
+	username string,
+	password string,
+	setId int,
+	update bss.TopicPostUpdate,
+) (*bss.SubmissionContext, int, error) {
+	user, err := ctx.AuthenticateUser(
+		username,
+		password,
 		false, // does not require bancho presence
 	)
 	if errors.Is(err, server.ErrUserNotFound) || errors.Is(err, server.ErrInvalidPassword) {
-		renderStatusError(ctx, bss.ErrAuthenticationFailed)
-		return
+		return nil, 0, bss.ErrAuthenticationFailed
 	}
 	if err != nil {
-		renderStatusError(ctx, fmt.Errorf("authenticate user: %w", err))
-		return
+		return nil, 0, fmt.Errorf("authenticate user: %w", err)
 	}
 
 	userPermissions, err := ctx.State.Permissions.Resolve(user.Id)
 	if err != nil {
-		renderStatusError(ctx, fmt.Errorf("resolve permissions for user %d: %w", user.Id, err))
-		return
+		return nil, 0, fmt.Errorf("resolve permissions for user %d: %w", user.Id, err)
 	}
 
 	submission := bss.NewSubmissionContext(ctx.Context())
@@ -172,20 +198,13 @@ func BeatmapSubmissionOsz2Post(ctx *server.Context) {
 		ctx.State.Config.BeatmapSubmissionEnabled,
 		userPermissions,
 	); err != nil {
-		renderStatusError(ctx, err)
-		return
+		return nil, 0, err
 	}
 
-	if !userPermissions.Has("forum.posts.create") {
-		renderStatusError(ctx, bss.ErrUploadPermissionDenied)
-	}
-	if !userPermissions.Has("forum.posts.edit") {
-		renderStatusError(ctx, bss.ErrUploadPermissionDenied)
-	}
 	var topicId int
 
 	err = ctx.State.DatabaseTransaction(func(transaction *state.Repositories) error {
-		if err := submission.PrepareBeatmapset(transaction, request.SetId); err != nil {
+		if err := submission.PrepareBeatmapset(transaction, setId); err != nil {
 			return err
 		}
 		if err := submission.RequireBeatmapsetOwner(); err != nil {
@@ -195,10 +214,25 @@ func BeatmapSubmissionOsz2Post(ctx *server.Context) {
 			return err
 		}
 
+		permission := "forum.posts.edit"
+		if submission.Beatmapset.TopicId == nil {
+			permission = "forum.posts.create"
+		}
+		if !userPermissions.Has(permission) {
+			return bss.ErrUploadPermissionDenied
+		}
+
+		if err := submission.ResolveAccess(transaction); err != nil {
+			return err
+		}
+		if err := submission.PrepareExistingBeatmaps(); err != nil {
+			return err
+		}
+
 		topic, err := bss.PostTopic(
 			transaction,
 			submission.Beatmapset,
-			request.TopicUpdate(),
+			update,
 		)
 		if err != nil {
 			return err
@@ -207,28 +241,19 @@ func BeatmapSubmissionOsz2Post(ctx *server.Context) {
 		return nil
 	})
 	if err != nil {
-		renderStatusError(ctx, err)
-		return
+		return nil, 0, err
 	}
-
-	ctx.Logger.Info(
-		"Beatmap forum post updated",
-		"user_id", user.Id,
-		"set_id", request.SetId,
-		"topic_id", topicId,
-		"status", request.TopicUpdate().Status,
-	)
-	ctx.RenderText(http.StatusOK, strconv.Itoa(topicId))
+	return submission, topicId, nil
 }
 
-func renderStatusError(ctx *server.Context, err error) {
+func renderTopicPostError(ctx *server.Context, err error) {
 	status := bss.StatusCodeFor(err)
 	expected := status != http.StatusInternalServerError
 
 	if expected {
-		ctx.Logger.Warn("Rejected osz2 topic submission", "error", err)
+		ctx.Logger.Warn("Rejected beatmap topic submission", "error", err)
 	} else {
-		ctx.Logger.Error("Failed to process osz2 topic submission", "error", err)
+		ctx.Logger.Error("Failed to process beatmap topic submission", "error", err)
 	}
 	ctx.Response.WriteHeader(status)
 }
