@@ -135,7 +135,18 @@ func ApplySubmissionMetadata(transaction *state.Repositories, submission *Submis
 		// TODO: update osz2 hashes maybe
 		// (honestly, we don't even use them anymore so who cares)
 	)
-	return metadataUpdateResult("beatmapset", submission.Beatmapset.Id, rowsAffected, err)
+	if err := metadataUpdateResult("beatmapset", submission.Beatmapset.Id, rowsAffected, err); err != nil {
+		return err
+	}
+
+	beatmapUpdate := &schemas.Beatmap{
+		SetId:  submission.Beatmapset.Id,
+		Status: newStatus,
+	}
+	if _, err := transaction.Beatmaps.UpdateBySetId(beatmapUpdate, "status"); err != nil {
+		return fmt.Errorf("bss: update difficulty status for set %d: %w", submission.Beatmapset.Id, err)
+	}
+	return nil
 }
 
 // ApplyBeatmapMetadata commits beatmap metadata to the database.
@@ -144,7 +155,6 @@ func ApplyBeatmapMetadata(transaction *state.Repositories, beatmap *schemas.Beat
 	// NOTE: Beatmap metadata will already be applied
 	// 		 by the beatmap parser through `AssignBeatmapContent`
 	rowsAffected, err := transaction.Beatmaps.Update(beatmap,
-		"status",
 		"mode",
 		"md5",
 		"version",

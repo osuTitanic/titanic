@@ -174,9 +174,15 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		return
 	}
 
+	isOszUpload := !request.IsBeatmap()
+	newBeatmapset := false
+
 	err = ctx.State.DatabaseTransaction(func(transaction *state.Repositories) error {
 		if err := submission.PrepareBeatmapset(transaction, setId); err != nil {
 			return err
+		}
+		if isOszUpload {
+			newBeatmapset = submission.Beatmapset.Status == constants.BeatmapStatusInactive
 		}
 
 		// Check if we are allowed to update this set
@@ -229,6 +235,12 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 			return fmt.Errorf("bss: validate final legacy osz: %w", err)
 		}
 
+		if isOszUpload {
+			if err := bss.ApplySubmissionMetadata(transaction, submission, oszFile); err != nil {
+				return err
+			}
+		}
+
 		// Update new .osz file
 		if err := submission.SaveOszStream(ctx.State.Storage, oszFile); err != nil {
 			return err
@@ -241,7 +253,7 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		}
 
 		// Generate & upload background thumbnail + audio preview (only if osz updated)
-		if !request.IsBeatmap() && submission.Access.CanUpdateResources {
+		if isOszUpload && submission.Access.CanUpdateResources {
 			if err := submission.UpdateThumbnail(ctx.State.Storage, reader); err != nil {
 				ctx.Logger.Warn("Failed to update legacy submission thumbnail", "error", err)
 			}
@@ -263,7 +275,7 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		"user_id", user.Id,
 		"set_id", setId,
 		"filename", request.FileHeader.Filename,
-		"full_package", !request.IsBeatmap(),
+		"full_package", isOszUpload,
 	)
 	ctx.RenderText(http.StatusOK, "ok")
 }
