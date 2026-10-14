@@ -261,6 +261,81 @@ func (submission *SubmissionContext) BuildOsz(store storage.Storage) (*os.File, 
 	return temporary, nil
 }
 
+// BuildOszBeatmapOverlay replaces one difficulty in the existing osz.
+func (submission *SubmissionContext) BuildOszBeatmapOverlay(
+	store storage.Storage,
+	beatmapId int,
+	contents []byte,
+	removeExistingBeatmaps bool,
+) (*os.File, error) {
+	if submission.Beatmapset == nil {
+		return nil, ErrBeatmapsetNotPrepared
+	}
+
+	beatmap := submission.BeatmapById(beatmapId)
+	if beatmap == nil {
+		return nil, fmt.Errorf("bss: beatmap not prepared %d", beatmapId)
+	}
+	if err := submission.CheckBeatmapAccess(beatmap.Target); err != nil {
+		return nil, err
+	}
+
+	existingSource, existingSize, err := store.ReadStreamAt(
+		submission.Context,
+		strconv.Itoa(submission.Beatmapset.Id),
+		"osz",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("bss: read existing osz: %w", err)
+	}
+	defer existingSource.Close()
+
+	existingFS, err := zip.NewReader(existingSource, existingSize)
+	if err != nil {
+		return nil, fmt.Errorf("bss: open existing osz: %w", err)
+	}
+
+	temporary, err := os.CreateTemp("", ".tmp-osz-*")
+	if err != nil {
+		return nil, fmt.Errorf("bss: create temporary osz overlay: %w", err)
+	}
+	cleanup := func() {
+		temporary.Close()
+		os.Remove(temporary.Name())
+	}
+
+	include := func(filename string) bool {
+		if !strings.EqualFold(path.Ext(filename), ".osu") {
+			return true
+		}
+		if removeExistingBeatmaps {
+			return false
+		}
+		return !strings.EqualFold(filename, beatmap.Target.Filename)
+	}
+	writer := zip.NewWriter(temporary)
+
+	if err := submission.PutFSFrom(writer, existingFS, include); err != nil {
+		err = fmt.Errorf("bss: copy existing osz: %w", errors.Join(err, writer.Close()))
+		cleanup()
+		return nil, err
+	}
+	if err := submission.PutBeatmap(writer, beatmapId, contents); err != nil {
+		err = fmt.Errorf("bss: write beatmap overlay: %w", errors.Join(err, writer.Close()))
+		cleanup()
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		cleanup()
+		return nil, fmt.Errorf("bss: close osz overlay: %w", err)
+	}
+	if _, err := temporary.Seek(0, io.SeekStart); err != nil {
+		cleanup()
+		return nil, fmt.Errorf("bss: rewind osz overlay: %w", err)
+	}
+	return temporary, nil
+}
+
 func (submission *SubmissionContext) UpdateThumbnail(store storage.Storage, source fs.FS) error {
 	if !submission.Access.CanUpdateResources {
 		return nil
