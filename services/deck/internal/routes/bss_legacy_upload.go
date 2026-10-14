@@ -299,6 +299,12 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 	ctx.RenderText(http.StatusOK, "ok")
 }
 
+// /web/osu-bmsubmit-novideo.php -> Created a second package without video files back then.
+// Titanic generates no-video downloads on-the-fly, so this is not required.
+func BeatmapSubmissionPreOsz2NoVideo(ctx *server.Context) {
+	ctx.Response.WriteHeader(http.StatusOK)
+}
+
 func handleBeatmapUpload(request *PreOsz2UploadRequest, submission *bss.SubmissionContext, store storage.Storage) (*os.File, map[int][]byte, error) {
 	if request.Size() > bss.MaxBeatmapFileSize {
 		return nil, nil, fmt.Errorf(
