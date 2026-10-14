@@ -311,7 +311,7 @@ func handleBeatmapUpload(request *PreOsz2UploadRequest, submission *bss.Submissi
 	if beatmap == nil {
 		return nil, nil, fmt.Errorf(
 			"%w: beatmap %q is not part of set %d",
-			bss.ErrInvalidSubmissionRequest, request.FileHeader.Filename, *request.SetId,
+			bss.ErrInvalidSubmissionRequest, request.FileHeader.Filename, request.SetId,
 		)
 	}
 	if !submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
