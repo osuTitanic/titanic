@@ -10,7 +10,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/state"
 )
 
-// BroadcastUploadActivity publishes & stores the activity for a beatmap submission.
+// BroadcastActivity publishes & stores the activity for a beatmap submission.
 func BroadcastActivity(newBeatmapset bool, app *state.State, submission *SubmissionContext) error {
 	if newBeatmapset {
 		return BroadcastUploadActivity(app, submission)
