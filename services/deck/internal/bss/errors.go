@@ -81,7 +81,7 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		errors.Is(err, ErrBeatmapsetWrongServer),
 		errors.Is(err, ErrBeatmapOwnershipNotAllowed):
 		return NewErrorResponse(ErrorCodeOwnership), true
-	case errors.Is(err, ErrInvalidSubmissionRequest):
+	case errors.Is(err, ErrInvalidSubmissionRequest), errors.Is(err, ErrInvalidSubmissionTicket):
 		return NewErrorResponseMessage("Invalid beatmap submission request."), true
 	case errors.Is(err, ErrAuthenticationFailed), errors.Is(err, ErrUserNotAuthenticated):
 		return NewErrorResponseMessage("Authentication failed. Please check your username and password and try again!"), true
