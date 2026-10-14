@@ -39,7 +39,7 @@ func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err 
 		0, // <- stream multipart data directly to a file instead of memory
 	)
 	if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
-		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrOsz2TooLarge, sizeError.Limit)
+		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrPackageTooLarge, sizeError.Limit)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("parse multipart form: %w", err)
@@ -77,7 +77,7 @@ func NewOsz2UploadRequest(ctx *server.Context) (request *Osz2UploadRequest, err 
 	}
 	if request.Size() > bss.MaxPackageFileSize {
 		request.Close()
-		return nil, fmt.Errorf("%w: osz2 upload is %d bytes", bss.ErrOsz2TooLarge, request.Size())
+		return nil, fmt.Errorf("%w: osz2 upload is %d bytes", bss.ErrPackageTooLarge, request.Size())
 	}
 	if request.Size() <= 0 {
 		request.Close()
@@ -108,7 +108,7 @@ func (request *Osz2UploadRequest) Close() {
 // and updates the canonical beatmap resources and metadata.
 func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 	request, err := NewOsz2UploadRequest(ctx)
-	if errors.Is(err, bss.ErrOsz2TooLarge) {
+	if errors.Is(err, bss.ErrPackageTooLarge) {
 		renderBssError(ctx, err)
 		return
 	}
@@ -212,17 +212,17 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			osz2.KeyTypeOsz2,
 		)
 		if err != nil {
-			return fmt.Errorf("%w: open package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
+			return fmt.Errorf("%w: open package for set %d: %v", bss.ErrPackageInvalid, request.SetId, err)
 		}
 
 		if err := osz2Reader.Verify(); err != nil {
-			return fmt.Errorf("%w: verify package for set %d: %v", bss.ErrOsz2Invalid, request.SetId, err)
+			return fmt.Errorf("%w: verify package for set %d: %v", bss.ErrPackageInvalid, request.SetId, err)
 		}
 		if err := submission.SetFS(osz2Reader); err != nil {
 			return err
 		}
 		if err := submission.ValidateFS(); err != nil {
-			return fmt.Errorf("%w: validate package filesystem: %v", bss.ErrOsz2Invalid, err)
+			return fmt.Errorf("%w: validate package filesystem: %v", bss.ErrPackageInvalid, err)
 		}
 		submission.Metadata = osz2Reader.Metadata()
 
@@ -397,12 +397,12 @@ func resolvePatchedOsz2(
 		return nil, 0, err
 	}
 	if store == nil {
-		return nil, 0, bss.ErrOsz2NotFound
+		return nil, 0, bss.ErrPackageNotFound
 	}
 
 	source, sourceSize, err := store.ReadStreamAt(ctx, strconv.Itoa(setId), "osz2")
 	if err != nil {
-		return nil, 0, fmt.Errorf("%w: read cached package for set %d: %v", bss.ErrOsz2NotFound, setId, err)
+		return nil, 0, fmt.Errorf("%w: read cached package for set %d: %v", bss.ErrPackageNotFound, setId, err)
 	}
 	defer source.Close()
 
@@ -425,7 +425,7 @@ func resolvePatchedOsz2(
 	)
 	if err != nil {
 		cleanup()
-		return nil, 0, fmt.Errorf("%w: apply patch for set %d: %v", bss.ErrOsz2Invalid, setId, err)
+		return nil, 0, fmt.Errorf("%w: apply patch for set %d: %v", bss.ErrPackageInvalid, setId, err)
 	}
 	if err := ctx.Err(); err != nil {
 		cleanup()
@@ -437,17 +437,17 @@ func resolvePatchedOsz2(
 func validateOsz2BeatmapsetId(metadata osz2.Metadata, expectedId int) error {
 	value, ok := metadata[osz2.BeatmapSetID]
 	if !ok {
-		return fmt.Errorf("%w: missing beatmapset ID metadata", bss.ErrOsz2Invalid)
+		return fmt.Errorf("%w: missing beatmapset ID metadata", bss.ErrPackageInvalid)
 	}
 
 	beatmapsetId, err := strconv.Atoi(value)
 	if err != nil {
-		return fmt.Errorf("%w: invalid beatmapset ID metadata %q: %v", bss.ErrOsz2Invalid, value, err)
+		return fmt.Errorf("%w: invalid beatmapset ID metadata %q: %v", bss.ErrPackageInvalid, value, err)
 	}
 	if beatmapsetId != expectedId {
 		return fmt.Errorf(
 			"%w: package beatmapset ID %d does not match expected ID %d",
-			bss.ErrOsz2Invalid, beatmapsetId, expectedId,
+			bss.ErrPackageInvalid, beatmapsetId, expectedId,
 		)
 	}
 	return nil
@@ -482,10 +482,10 @@ func validateOsz2BeatmapIds(reader *osz2.Reader, beatmaps []*bss.PreparedBeatmap
 
 		beatmapId, assigned := packageEntry.BeatmapID()
 		if !assigned {
-			return fmt.Errorf("%w: beatmap %q has no assigned ID", bss.ErrOsz2Invalid, filename)
+			return fmt.Errorf("%w: beatmap %q has no assigned ID", bss.ErrPackageInvalid, filename)
 		}
 		if _, expected := expectedIds[beatmapId]; !expected {
-			return fmt.Errorf("%w: beatmap %q has unexpected ID %d", bss.ErrOsz2Invalid, filename, beatmapId)
+			return fmt.Errorf("%w: beatmap %q has unexpected ID %d", bss.ErrPackageInvalid, filename, beatmapId)
 		}
 		delete(expectedIds, beatmapId)
 		return nil
@@ -501,7 +501,7 @@ func validateOsz2BeatmapIds(reader *osz2.Reader, beatmaps []*bss.PreparedBeatmap
 		beatmapId := int32(beatmap.Target.Id)
 		_, missing := expectedIds[beatmapId]
 		if missing {
-			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrOsz2Invalid, beatmapId)
+			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrPackageInvalid, beatmapId)
 		}
 	}
 	return nil
@@ -521,7 +521,7 @@ func populateOsz2Beatmaps(ctx *server.Context, submission *bss.SubmissionContext
 
 		entry, exists := reader.EntryForBeatmap(int32(beatmapId))
 		if !exists {
-			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrOsz2Invalid, beatmapId)
+			return fmt.Errorf("%w: package is missing beatmap ID %d", bss.ErrPackageInvalid, beatmapId)
 		}
 
 		_, _, err := submission.AssignBeatmapFile(
@@ -529,7 +529,7 @@ func populateOsz2Beatmaps(ctx *server.Context, submission *bss.SubmissionContext
 			entry.Path(),
 		)
 		if err != nil {
-			return fmt.Errorf("%w: assign beatmap ID %d: %v", bss.ErrOsz2Invalid, beatmapId, err)
+			return fmt.Errorf("%w: assign beatmap ID %d: %v", bss.ErrPackageInvalid, beatmapId, err)
 		}
 
 		if err := beatmap.CalculateDifficulty(ctx.State.PPv1, ctx.State.PPv2); err != nil {

@@ -50,9 +50,9 @@ var (
 	ErrDuplicateBeatmap           = errors.New("bss: duplicate beatmap")
 	ErrBeatmapTooShort            = errors.New("bss: beatmap is too short")
 
-	ErrOsz2Invalid  = errors.New("bss: invalid osz2")
-	ErrOsz2TooLarge = errors.New("bss: osz2 is too large")
-	ErrOsz2NotFound = errors.New("bss: server-side osz2 not found")
+	ErrPackageInvalid  = errors.New("bss: invalid package")
+	ErrPackageTooLarge = errors.New("bss: package is too large")
+	ErrPackageNotFound = errors.New("bss: package not found")
 )
 
 func NewErrorResponse(code ErrorCode) ErrorResponse {
@@ -105,13 +105,13 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponseMessage("Please ask the owner of this beatmapset to delete any difficulties."), true
 	case errors.Is(err, ErrDuplicateBeatmap):
 		return NewErrorResponseMessage("It seems like one of your beatmaps was already uploaded by someone else. Please try again!"), true
-	case errors.Is(err, ErrOsz2NotFound):
+	case errors.Is(err, ErrPackageNotFound):
 		return NewErrorResponseMessage("Something went wrong while processing your submission. Please try again!"), true
 	case errors.Is(err, ErrBeatmapTooShort):
 		return NewErrorResponseMessage("Your beatmap is too short. Please try to make it longer and try again!"), true
-	case errors.Is(err, ErrOsz2TooLarge):
+	case errors.Is(err, ErrPackageTooLarge):
 		return NewErrorResponseMessage("Your beatmap is too big. Try to reduce its filesize and try again!"), true
-	case errors.Is(err, ErrOsz2Invalid):
+	case errors.Is(err, ErrPackageInvalid):
 		return NewErrorResponseMessage("Something went wrong while processing your beatmap. Please try again!"), true
 	default:
 		return ErrorResponse{}, false

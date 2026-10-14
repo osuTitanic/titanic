@@ -51,7 +51,7 @@ func ValidatePackageSize(packageSize int64, maxBeatmapLength float64) error {
 		return ErrBeatmapTooShort
 	}
 	if packageSize < 0 || packageSize > PackageSizeLimit(maxBeatmapLength) {
-		return ErrOsz2TooLarge
+		return ErrPackageTooLarge
 	}
 	return nil
 }

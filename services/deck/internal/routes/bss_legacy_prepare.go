@@ -63,7 +63,7 @@ func NewPreOsz2GetIdRequest(ctx *server.Context) (request *PreOsz2GetIdRequest, 
 		0, // stream the uploaded .osu file to disk
 	)
 	if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
-		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrOsz2TooLarge, sizeError.Limit)
+		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrPackageTooLarge, sizeError.Limit)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("parse multipart form: %w", err)
@@ -105,7 +105,7 @@ func NewPreOsz2GetIdRequest(ctx *server.Context) (request *PreOsz2GetIdRequest, 
 	if request.Size() > bss.MaxBeatmapFileSize {
 		size := request.Size()
 		request.Close()
-		return nil, fmt.Errorf("%w: beatmap upload is %d bytes", bss.ErrOsz2TooLarge, size)
+		return nil, fmt.Errorf("%w: beatmap upload is %d bytes", bss.ErrPackageTooLarge, size)
 	}
 	return request, nil
 }
@@ -140,7 +140,7 @@ func (request *PreOsz2GetIdRequest) ReadBeatmap() (beatmap bss.StagedSubmissionB
 	if len(contents) > bss.MaxBeatmapFileSize {
 		return beatmap, nil, fmt.Errorf(
 			"%w: beatmap upload exceeds %d bytes",
-			bss.ErrOsz2TooLarge,
+			bss.ErrPackageTooLarge,
 			bss.MaxBeatmapFileSize,
 		)
 	}
@@ -199,7 +199,7 @@ func (response PreOsz2GetIdResponse) FormatResponse() string {
 // complete submission when the client sent its last / single difficulty
 func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 	request, err := NewPreOsz2GetIdRequest(ctx)
-	if errors.Is(err, bss.ErrOsz2TooLarge) {
+	if errors.Is(err, bss.ErrPackageTooLarge) {
 		renderBssErrorText(ctx, err)
 		return
 	}
@@ -241,7 +241,7 @@ func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 	}
 
 	beatmap, source, err := request.ReadBeatmap()
-	if errors.Is(err, bss.ErrOsz2TooLarge) {
+	if errors.Is(err, bss.ErrPackageTooLarge) {
 		renderBssErrorText(ctx, err)
 		return
 	}

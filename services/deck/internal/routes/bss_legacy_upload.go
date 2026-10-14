@@ -77,7 +77,7 @@ func NewPreOsz2UploadRequest(ctx *server.Context) (request *PreOsz2UploadRequest
 		0, // stream file to disk directly
 	)
 	if sizeError, ok := errors.AsType[*http.MaxBytesError](err); ok {
-		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrOsz2TooLarge, sizeError.Limit)
+		return nil, fmt.Errorf("%w: multipart body exceeds %d bytes", bss.ErrPackageTooLarge, sizeError.Limit)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("parse multipart form: %w", err)
@@ -115,7 +115,7 @@ func NewPreOsz2UploadRequest(ctx *server.Context) (request *PreOsz2UploadRequest
 	if request.Size() > bss.MaxPackageFileSize {
 		size := request.Size()
 		request.Close()
-		return nil, fmt.Errorf("%w: upload is %d bytes", bss.ErrOsz2TooLarge, size)
+		return nil, fmt.Errorf("%w: upload is %d bytes", bss.ErrPackageTooLarge, size)
 	}
 	return request, nil
 }
@@ -123,7 +123,7 @@ func NewPreOsz2UploadRequest(ctx *server.Context) (request *PreOsz2UploadRequest
 // /web/osu-bmsubmit-upload.php -> Replaces the complete .osz or inserts one .osu file
 func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 	request, err := NewPreOsz2UploadRequest(ctx)
-	if errors.Is(err, bss.ErrOsz2TooLarge) {
+	if errors.Is(err, bss.ErrPackageTooLarge) {
 		renderBssErrorText(ctx, err)
 		return
 	}
@@ -309,7 +309,7 @@ func handleBeatmapUpload(request *PreOsz2UploadRequest, submission *bss.Submissi
 	if request.Size() > bss.MaxBeatmapFileSize {
 		return nil, nil, fmt.Errorf(
 			"%w: beatmap upload is %d bytes",
-			bss.ErrOsz2TooLarge, request.Size(),
+			bss.ErrPackageTooLarge, request.Size(),
 		)
 	}
 
@@ -486,7 +486,7 @@ func readFile(source io.Reader, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("bss: read legacy upload: %w", err)
 	}
 	if int64(len(contents)) > limit {
-		return nil, bss.ErrOsz2TooLarge
+		return nil, bss.ErrPackageTooLarge
 	}
 	if len(contents) == 0 {
 		return nil, fmt.Errorf("%w: uploaded file is empty", bss.ErrInvalidSubmissionRequest)
