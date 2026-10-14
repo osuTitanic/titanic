@@ -3,6 +3,7 @@ package bss
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/osuTitanic/titanic/internal/performance"
@@ -48,15 +49,57 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 		return errors.New("bss: beatmaps already prepared")
 	}
 
+	// Keep the resolved beatmap IDs in the same order as the uploaded files
 	requestedIds := make([]int, len(staged.Beatmaps))
-	for i, beatmap := range staged.Beatmaps {
+
+	// We want to keep difficulty names, filenames, and checksums unique across all staged beatmaps
+	usedIds := make(map[int]bool, len(staged.Beatmaps))
+	versions := make(map[string]bool, len(staged.Beatmaps))
+	filenames := make(map[string]bool, len(staged.Beatmaps))
+	checksums := make(map[string]bool, len(staged.Beatmaps))
+
+	for i := range staged.Beatmaps {
+		beatmap := &staged.Beatmaps[i]
 		if err := beatmap.Validate(); err != nil {
 			return fmt.Errorf("bss: validate staged beatmap %d: %w", i, err)
+		}
+		source, err := beatmap.Parse()
+		if err != nil {
+			return fmt.Errorf("bss: parse staged beatmap %q: %w", beatmap.Filename, err)
+		}
+
+		filename := strings.ToLower(beatmap.Filename)
+		checksum := strings.ToLower(beatmap.Checksum)
+		version := source.Version
+		if version == "" {
+			version = "Normal"
+		}
+
+		// Reject repeated difficulties or files within the same submission
+		if versions[version] || filenames[filename] || checksums[checksum] {
+			return ErrDuplicateBeatmap
+		}
+		versions[version] = true
+		filenames[filename] = true
+		checksums[checksum] = true
+
+		// Find an existing difficulty match by name
+		// If there is no match, `PrepareBeatmaps` will create a new difficulty
+		beatmap.Id = -1
+
+		for _, existing := range submission.Beatmapset.Beatmaps {
+			if existing.Version != version || usedIds[existing.Id] {
+				// Difficulty doesn't match or the ID has already been used
+				continue
+			}
+			beatmap.Id = existing.Id
+			usedIds[existing.Id] = true
+			break
 		}
 		requestedIds[i] = beatmap.Id
 	}
 
-	// Populate the submission beatmaps w/ existing beatmaps or new beatmaps
+	// Prepare an existing / new beatmap from db for every uploaded difficulty
 	if err := submission.PrepareBeatmaps(transaction, requestedIds); err != nil {
 		return fmt.Errorf("bss: prepare staged beatmaps: %w", err)
 	}
@@ -93,6 +136,8 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 	if metadataSource == nil {
 		return errors.New("bss: staged submission has no metadata source")
 	}
+
+	// Derive set-wide metadata from one of the beatmaps
 	submission.Metadata = MetadataFromBeatmap(metadataSource)
 	submission.Beatmapset.HasVideo = staged.HasVideo
 	submission.Beatmapset.HasStoryboard = staged.HasStoryboard || submission.BeatmapsHaveSB()
