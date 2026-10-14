@@ -21,7 +21,6 @@ import (
 
 // TODO: /web/osu-bmsubmit-getid.php (2007 ver.)
 // TODO: /web/osu-bmsubmit-novideo.php
-// TODO: /web/osu-bmsubmit-post[3-2].php
 
 // GetIdAction describes where a submitted difficulty appears in the
 // sequence of getid requests used to update a beatmapset.

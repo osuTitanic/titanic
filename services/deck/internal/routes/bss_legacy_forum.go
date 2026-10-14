@@ -2,6 +2,8 @@ package routes
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
@@ -55,4 +57,35 @@ func (request PreOsz2PostTopicRequest) TopicUpdate() bss.TopicPostUpdate {
 		Subscribe: request.Subscribe,
 		Bump:      request.Bump,
 	}
+}
+
+// /web/osu-bmsubmit-post[2-3].php -> Creates / updates the forum topic & sets beatmapset status.
+func BeatmapSubmissionPreOsz2Post(ctx *server.Context) {
+	request, err := NewPreOsz2PostTopicRequest(ctx)
+	if err != nil {
+		renderTopicPostError(ctx, fmt.Errorf("%w: %v", bss.ErrInvalidSubmissionRequest, err))
+		return
+	}
+
+	submission, topicId, err := postBeatmapTopic(
+		ctx,
+		request.Username,
+		request.Password,
+		request.SetId,
+		request.TopicUpdate(),
+	)
+	if err != nil {
+		renderTopicPostError(ctx, err)
+		return
+	}
+
+	ctx.Logger.Info(
+		"Beatmap forum post updated",
+		"user_id", submission.User.Id,
+		"set_id", request.SetId,
+		"topic_id", topicId,
+		"status", request.TopicUpdate().Status,
+		"bump", request.Bump,
+	)
+	ctx.RenderText(http.StatusOK, strconv.Itoa(topicId))
 }

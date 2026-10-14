@@ -62,6 +62,8 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("POST /web/osu-bmsubmit-getid3.php", routes.BeatmapSubmissionPreOsz2GetId)
 	server.Handle("POST /web/osu-bmsubmit-getid4.php", routes.BeatmapSubmissionPreOsz2GetId)
 	server.Handle("POST /web/osu-bmsubmit-getid5.php", routes.BeatmapSubmissionPreOsz2GetId)
+	server.Handle("POST /web/osu-bmsubmit-post2.php", routes.BeatmapSubmissionPreOsz2Post)
+	server.Handle("POST /web/osu-bmsubmit-post3.php", routes.BeatmapSubmissionPreOsz2Post)
 	server.Handle("POST /web/osu-bmsubmit-upload.php", routes.BeatmapSubmissionPreOsz2Upload)
 	server.Handle("GET /web/osu-get-beatmap-topic.php", routes.BeatmapSubmissionGetTopic)
 	server.Handle("GET /web/osu-osz2-bmsubmit-getid.php", routes.BeatmapSubmissionOsz2GetId)
