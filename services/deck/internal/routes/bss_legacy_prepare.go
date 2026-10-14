@@ -20,7 +20,6 @@ import (
 )
 
 // TODO: /web/osu-bmsubmit-getid2.php & /web/osu-bmsubmit-getid3.php
-// TODO: /web/osu-bmsubmit-upload.php
 // TODO: /web/osu-bmsubmit-novideo.php
 // TODO: /web/osu-bmsubmit-post[3-2].php
 
@@ -288,6 +287,7 @@ func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 	// Append the new beatmap to our staged submission
 	// (saved in redis, later applied once we have all beatmaps)
 	staged.Beatmaps = append(staged.Beatmaps, beatmap)
+	staged.OszFilename = buildOszFilename(staged.BeatmapsetId, source.Artist, source.Title)
 
 	if request.Action.FinishesSubmission() {
 		// We have gathered all beatmaps!
@@ -445,7 +445,6 @@ func beginSubmission(
 		HasVideo:      request.HasVideo,
 		HasStoryboard: request.HasStoryboard,
 		Beatmaps:      make([]bss.StagedSubmissionBeatmap, 0),
-		OszFilename:   buildOszFilename(submission.Beatmapset.Id, source.Artist, source.Title),
 	}
 	return staged, nil
 }
