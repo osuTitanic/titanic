@@ -11,8 +11,8 @@ import (
 )
 
 // BroadcastUploadActivity publishes & stores the activity for a beatmap submission.
-func BroadcastActivity(isUpdate bool, app *state.State, submission *SubmissionContext) error {
-	if isUpdate {
+func BroadcastActivity(newBeatmapset bool, app *state.State, submission *SubmissionContext) error {
+	if newBeatmapset {
 		return BroadcastUploadActivity(app, submission)
 	} else {
 		return BroadcastUpdateActivity(app, submission)
