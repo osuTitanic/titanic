@@ -103,6 +103,11 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 	if err := submission.PrepareBeatmaps(transaction, requestedIds); err != nil {
 		return fmt.Errorf("bss: prepare staged beatmaps: %w", err)
 	}
+	for i, requestedId := range requestedIds {
+		if requestedId <= 0 {
+			submission.Beatmaps[i].Target.Status = submission.Beatmapset.Status
+		}
+	}
 
 	var metadataSource *beatmaps.Beatmap
 
