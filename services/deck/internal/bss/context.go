@@ -2,7 +2,9 @@ package bss
 
 import (
 	"context"
+	"fmt"
 	"io/fs"
+	"strings"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/Lekuruu/osz2-go/pkg/osz2"
@@ -55,4 +57,21 @@ func (s *SubmissionContext) BeatmapById(beatmapId int) *PreparedBeatmap {
 		}
 	}
 	return nil
+}
+
+func (s *SubmissionContext) OszFilename() string {
+	filename := fmt.Sprintf(
+		"%d %s - %s.osz",
+		s.Beatmapset.Id,
+		s.Beatmapset.ArtistName(),
+		s.Beatmapset.TitleName(),
+	)
+	filter := func(character rune) rune {
+		if strings.ContainsRune(`\/:*?"<>|`, character) {
+			return -1
+		}
+		return character
+	}
+	filename = strings.Map(filter, filename)
+	return strings.ReplaceAll(filename, "#", "%23")
 }
