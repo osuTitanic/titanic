@@ -222,13 +222,6 @@ func postBeatmapTopic(
 			return bss.ErrUploadPermissionDenied
 		}
 
-		if err := submission.ResolveAccess(transaction); err != nil {
-			return err
-		}
-		if err := submission.PrepareExistingBeatmaps(); err != nil {
-			return err
-		}
-
 		topic, err := bss.PostTopic(
 			transaction,
 			submission.Beatmapset,
