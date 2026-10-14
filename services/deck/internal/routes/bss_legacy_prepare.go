@@ -274,16 +274,6 @@ func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 		return
 	}
 
-	if request.SetId > 0 && request.SetId != staged.BeatmapsetId {
-		// User tried to update the wrong beatmapset / changed the
-		// beatmapset mid-submission, which should not be possible
-		renderBssErrorText(ctx, fmt.Errorf(
-			"%w: request beatmapset %d does not match staged beatmapset %d",
-			bss.ErrInvalidSubmissionRequest, request.SetId, staged.BeatmapsetId,
-		))
-		return
-	}
-
 	// Append the new beatmap to our staged submission
 	// (saved in redis, later applied once we have all beatmaps)
 	staged.Beatmaps = append(staged.Beatmaps, beatmap)
