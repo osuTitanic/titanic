@@ -436,7 +436,7 @@ func collectBeatmapsFromOsz(submission *bss.SubmissionContext, source fs.FS) (ma
 
 		beatmap := submission.BeatmapByFilename(filename)
 		if beatmap == nil {
-			return nil // probably should return an error here idk
+			return fmt.Errorf("%w: beatmap %q is not part of set", bss.ErrInvalidSubmissionRequest, filename)
 		}
 		if !submission.Access.CanUpdateBeatmap(beatmap.Target.Id) {
 			return nil
