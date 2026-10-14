@@ -143,10 +143,35 @@ func StatusCodeFor(err error) int {
 	}
 }
 
-func FormatOsz2ErrorResponse(err error) (string, bool) {
+func FormatOsz2Error(err error) (string, bool) {
 	response, expected := ErrorResponseFor(err)
 	if !expected {
 		response = GenericErrorResponse()
 	}
 	return fmt.Sprintf("%d\n%s", response.Code, response.Message), expected
+}
+
+func FormatPreOsz2Error(err error) (string, bool) {
+	switch {
+	case errors.Is(err, ErrBeatmapsetRanked):
+		return "ranked", true
+	case errors.Is(err, ErrBeatmapsetGraveyarded):
+		return "graveyarded", true
+	}
+
+	response, expected := ErrorResponseFor(err)
+	if response.Message != "" {
+		return response.Message, expected
+	}
+
+	switch response.Code {
+	case ErrorCodeOwnership:
+		return "The beatmap you're trying to submit isn't owned by you.", expected
+	case ErrorCodeUnavailable:
+		return "The beatmap you're trying to submit is no longer available.", expected
+	case ErrorCodeQuotaExceeded:
+		return "You have reached your maximum amount of beatmaps you can upload.", expected
+	default:
+		return "An error occurred while processing your beatmap. Please try again!", false
+	}
 }

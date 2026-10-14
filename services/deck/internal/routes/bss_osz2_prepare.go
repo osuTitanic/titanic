@@ -146,12 +146,12 @@ func BeatmapSubmissionOsz2GetId(ctx *server.Context) {
 			ctx.State.Resources.InvalidateCaches(submission.Context, beatmapset.Id)
 		}
 
-		existingBeatmapset, err := prepareBeatmapset(transaction, submission, request.SetId)
+		existing, err := prepareBeatmapset(transaction, submission, request.SetId)
 		if err != nil {
 			return err
 		}
 
-		if !existingBeatmapset {
+		if !existing {
 			// We received a new submission!
 			submission.Beatmapset = nil
 			remainingSlots, err := submission.RemainingUploadSlots(transaction, userPermissions)
@@ -171,7 +171,7 @@ func BeatmapSubmissionOsz2GetId(ctx *server.Context) {
 		if err := submission.ResolveAccess(transaction); err != nil {
 			return err
 		}
-		if existingBeatmapset {
+		if existing {
 			// Check if we have the permission to update this set (as the owner or collaborator)
 			if err := submission.CheckBeatmapsetEligibility(); err != nil {
 				return err
@@ -194,7 +194,7 @@ func BeatmapSubmissionOsz2GetId(ctx *server.Context) {
 		result.SetId = submission.Beatmapset.Id
 		result.BeatmapIds = preparedBeatmapIds(submission)
 		result.Bubbled = bubbled
-		result.NewBeatmapset = !existingBeatmapset
+		result.NewBeatmapset = !existing
 		return nil
 	})
 	if err != nil {
@@ -301,7 +301,7 @@ func renderBssError(ctx *server.Context, err error) {
 		ctx.Logger.Warn("Failed to drain request body", "err", drainErr)
 	}
 
-	response, expected := bss.FormatOsz2ErrorResponse(err)
+	response, expected := bss.FormatOsz2Error(err)
 	if expected {
 		ctx.Logger.Warn("Rejected osz2 submission", "error", err)
 	} else {
