@@ -317,9 +317,6 @@ func applyTopicStateToBeatmapset(
 			beatmap.Status = post.Status
 		}
 	}
-	for _, beatmap := range beatmapset.Beatmaps {
-		beatmap.Status = post.Status
-	}
 	return nil
 }
 
