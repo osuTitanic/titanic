@@ -18,12 +18,6 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
-type UploadHandler func(
-	request *PreOsz2UploadRequest,
-	submission *bss.SubmissionContext,
-	store storage.Storage,
-) (*os.File, error)
-
 type PreOsz2UploadRequest struct {
 	Username    string
 	Password    string
@@ -205,6 +199,9 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		oszFile, err := request.Handle(submission, ctx.State.Storage)
 		if err != nil {
 			return err
+		}
+		if oszFile == nil {
+			return nil
 		}
 		defer func() {
 			oszFile.Close()
