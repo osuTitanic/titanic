@@ -21,10 +21,7 @@ func BroadcastActivity(newBeatmapset bool, app *state.State, submission *Submiss
 
 // BroadcastUploadActivity publishes & stores the activity for a newly submitted beatmapset.
 func BroadcastUploadActivity(app *state.State, submission *SubmissionContext) error {
-	beatmapset, creatorId, mode, err := submissionActivityContext(submission)
-	if err != nil {
-		return err
-	}
+	beatmapset, creatorId, mode := submissionActivityContext(submission)
 
 	return activity.Submit(
 		app,
@@ -46,10 +43,7 @@ func BroadcastUploadActivity(app *state.State, submission *SubmissionContext) er
 // BroadcastUpdateActivity publishes the activity for an updated beatmapset.
 // Consecutive submissions are not stored on the profile activity to reduce spam.
 func BroadcastUpdateActivity(app *state.State, submission *SubmissionContext) error {
-	beatmapset, userId, mode, err := submissionActivityContext(submission)
-	if err != nil {
-		return err
-	}
+	beatmapset, userId, mode := submissionActivityContext(submission)
 
 	latest, err := app.Activities.FetchLatestByUser(userId)
 	if err != nil {
@@ -74,7 +68,7 @@ func BroadcastUpdateActivity(app *state.State, submission *SubmissionContext) er
 	)
 }
 
-func submissionActivityContext(submission *SubmissionContext) (*schemas.Beatmapset, int, constants.Mode, error) {
+func submissionActivityContext(submission *SubmissionContext) (*schemas.Beatmapset, int, constants.Mode) {
 	// Determine the primary mode for the activity db entry
 	var primaryMode constants.Mode
 	var primaryCount = 0
@@ -90,7 +84,7 @@ func submissionActivityContext(submission *SubmissionContext) (*schemas.Beatmaps
 		}
 	}
 
-	return submission.Beatmapset, submission.User.Id, primaryMode, nil
+	return submission.Beatmapset, submission.User.Id, primaryMode
 }
 
 func isDuplicateUpdateActivity(latest *schemas.Activity, setId int) bool {
