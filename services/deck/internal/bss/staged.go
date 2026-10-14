@@ -2,12 +2,17 @@ package bss
 
 import (
 	"context"
+	"crypto/md5"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/Lekuruu/gosu/pkg/beatmaps"
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -58,6 +63,39 @@ type StagedSubmissionBeatmap struct {
 	Filename string `json:"filename,omitempty"`
 	Checksum string `json:"checksum,omitempty"`
 	Contents []byte `json:"contents,omitempty"`
+}
+
+func (staged StagedSubmissionBeatmap) Validate() error {
+	if err := validatePackageFilename(staged.Filename); err != nil {
+		return err
+	}
+	if !strings.EqualFold(path.Ext(staged.Filename), ".osu") {
+		return fmt.Errorf("invalid beatmap filename %q", staged.Filename)
+	}
+
+	if len(staged.Contents) == 0 {
+		return fmt.Errorf("beatmap %q is empty", staged.Filename)
+	}
+	if len(staged.Contents) > MaxBeatmapFileSize {
+		return fmt.Errorf("beatmap %q exceeds %d bytes", staged.Filename, MaxBeatmapFileSize)
+	}
+	checksum := fmt.Sprintf("%x", md5.Sum(staged.Contents))
+
+	if staged.Checksum != "" && !strings.EqualFold(staged.Checksum, checksum) {
+		return fmt.Errorf("beatmap %q checksum does not match its contents", staged.Filename)
+	}
+	return nil
+}
+
+func (staged StagedSubmissionBeatmap) Parse() (*beatmaps.Beatmap, error) {
+	beatmap, err := beatmaps.ParseFromBytes(staged.Contents)
+	if err != nil {
+		return nil, err
+	}
+	if mode := constants.Mode(beatmap.Mode); !mode.Valid() {
+		return nil, fmt.Errorf("invalid beatmap mode %d", beatmap.Mode)
+	}
+	return beatmap, nil
 }
 
 // StagedSubmissionStore manages the current staged submission for each user.
