@@ -2,7 +2,6 @@ package bss
 
 import (
 	"archive/zip"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -374,11 +373,6 @@ func (submission *SubmissionContext) UpdateAudioPreview(store storage.Storage, s
 	return nil
 }
 
-// SaveOsz creates / overwrites the osz package for the prepared beatmapset.
-func (submission *SubmissionContext) SaveOsz(store storage.Storage, contents []byte) error {
-	return submission.SaveOszStream(store, bytes.NewReader(contents))
-}
-
 // SaveOszStream creates / overwrites the osz package for the prepared beatmapset.
 func (submission *SubmissionContext) SaveOszStream(store storage.Storage, oszStream io.Reader) error {
 	if err := submission.validateResourceStorage(store); err != nil {
@@ -389,11 +383,6 @@ func (submission *SubmissionContext) SaveOszStream(store storage.Storage, oszStr
 		strconv.Itoa(submission.Beatmapset.Id),
 		"osz", oszStream,
 	)
-}
-
-// SaveOsz2 creates / overwrites the osz2 package for the prepared set.
-func (submission *SubmissionContext) SaveOsz2(store storage.Storage, contents []byte) error {
-	return submission.SaveOsz2Stream(store, bytes.NewReader(contents))
 }
 
 // SaveOsz2Stream creates / overwrites the osz2 package for the prepared set.
