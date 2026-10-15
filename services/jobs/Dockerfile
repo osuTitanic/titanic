@@ -34,17 +34,20 @@ RUN --mount=type=cache,target=/go/pkg/mod \
         amd64/) \
             CC="gcc"; \
             GOARM=""; \
-            NATIVE_ARCH="linux-x64" \
+            NATIVE_ARCH="linux-x64"; \
+            STRIP="strip" \
             ;; \
         arm64/) \
             CC="aarch64-linux-gnu-gcc"; \
             GOARM=""; \
-            NATIVE_ARCH="linux-arm64" \
+            NATIVE_ARCH="linux-arm64"; \
+            STRIP="aarch64-linux-gnu-strip" \
             ;; \
         arm/v7) \
             CC="arm-linux-gnueabihf-gcc"; \
             GOARM="7"; \
-            NATIVE_ARCH="linux-arm" \
+            NATIVE_ARCH="linux-arm"; \
+            STRIP="arm-linux-gnueabihf-strip" \
             ;; \
         *) \
             echo "Unsupported target: $TARGETARCH/$TARGETVARIANT" >&2; \
@@ -75,29 +78,15 @@ RUN --mount=type=cache,target=/go/pkg/mod \
         echo "libosu.Native.so not found for $NATIVE_ARCH" >&2; \
         exit 1; \
     fi && \
-    cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so
+    cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so && \
+    "$STRIP" --strip-unneeded /out/lib/libosu.Native.so
 
-FROM debian:trixie-slim AS runtime-deps
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        libicu76 && \
-    mkdir -p /out/lib && \
-    dpkg-query -L libicu76 | while IFS= read -r file; do \
-        case "$file" in \
-            */libicudata.so*|*/libicui18n.so*|*/libicuuc.so*) \
-                cp -a "$file" /out/lib/ ;; \
-        esac; \
-    done && \
-    rm -rf /var/lib/apt/lists/*
-
-FROM gcr.io/distroless/cc-debian13:latest AS runtime
+FROM gcr.io/distroless/base-nossl-debian13:latest AS runtime
 
 WORKDIR /app
 COPY --from=builder /out/jobs /app/jobs
 COPY ./services/jobs/schedule.example.json /app/schedule.json
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
-COPY --from=runtime-deps /out/lib/ /app/lib/
 
 ENV LD_LIBRARY_PATH=/app/lib
 
