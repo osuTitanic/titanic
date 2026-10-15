@@ -35,6 +35,7 @@ var (
 
 	ErrBeatmapsetNotPrepared = errors.New("bss: beatmapset not prepared")
 	ErrBeatmapsetNotFound    = errors.New("bss: beatmapset not found")
+	ErrBeatmapsetIdOutdated  = errors.New("bss: beatmapset ID is outdated")
 	ErrReservedSetNotFound   = errors.New("bss: reserved beatmapset not found")
 	ErrBeatmapsetWrongServer = errors.New("bss: beatmapset is hosted on bancho")
 	ErrBeatmapsetRanked      = errors.New("bss: beatmapset is approved")
@@ -101,6 +102,8 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponseMessage("You are not allowed to add difficulties to this beatmapset."), true
 	case errors.Is(err, ErrReservedSetNotFound):
 		return NewErrorResponseMessage("The reserved beatmapset no longer exists. Please try again!"), true
+	case errors.Is(err, ErrBeatmapsetIdOutdated):
+		return NewErrorResponseMessage("osu! is using an outdated beatmapset ID. Please close osu!, delete your osu!.db file, reopen osu!, and try again."), true
 	case errors.Is(err, ErrBeatmapRemovalNotAllowed):
 		return NewErrorResponseMessage("Please ask the owner of this beatmapset to delete any difficulties."), true
 	case errors.Is(err, ErrDuplicateBeatmap):

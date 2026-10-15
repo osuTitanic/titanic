@@ -289,7 +289,8 @@ func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 		// The only thing we can do is to ask the user to delete
 		// their osu!.db file, since that will reset all IDs
 		//
-		// TODO: fix this shit somehow idk maybe a clanker has an idea for this but i've got none
+		renderBssErrorText(ctx, bss.ErrBeatmapsetIdOutdated)
+		return
 	}
 
 	// Append the new beatmap to our staged submission
