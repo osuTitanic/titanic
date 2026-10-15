@@ -370,10 +370,10 @@ func handleOszUpload(request *PreOsz2UploadRequest, submission *bss.SubmissionCo
 
 	reader, err := zip.NewReader(request.File, request.Size())
 	if err != nil {
-		return nil, nil, fmt.Errorf(
-			"%w: open osz: %v",
-			bss.ErrInvalidSubmissionRequest, err,
-		)
+		return nil, nil, fmt.Errorf("%w: open osz: %v", bss.ErrInvalidSubmissionRequest, err)
+	}
+	if err := validateZip(reader); err != nil {
+		return nil, nil, fmt.Errorf("%w: validate osz: %v", bss.ErrPackageTooLarge, err)
 	}
 
 	if err := submission.SetFS(reader); err != nil {
@@ -535,5 +535,31 @@ func finishStagedSubmission(ctx *server.Context, user *schemas.User, permissions
 	if err := ctx.StagedSubmissions.Delete(ctx.Context(), user.Id); err != nil {
 		ctx.Logger.Warn("Failed to delete staged beatmap submission", "user_id", user.Id, "error", err)
 	}
+	return nil
+}
+
+func validateZip(zr *zip.Reader) error {
+	const (
+		MaxFiles     = 10_000
+		MaxFileSize  = 100 << 20 // 100 MiB
+		MaxTotalSize = 250 << 20 // 250 MiB
+	)
+
+	if len(zr.File) > MaxFiles {
+		return fmt.Errorf("zip contains too many files")
+	}
+	var total uint64
+
+	for _, f := range zr.File {
+		if f.UncompressedSize64 > MaxFileSize {
+			return fmt.Errorf("file %q exceeds size limit", f.Name)
+		}
+		total += f.UncompressedSize64
+
+		if total > MaxTotalSize {
+			return fmt.Errorf("zip exceeds total size limit")
+		}
+	}
+
 	return nil
 }
