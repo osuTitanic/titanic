@@ -65,24 +65,27 @@ func GetTopic(repositories *state.Repositories, beatmapset *schemas.Beatmapset) 
 	if beatmapset.TopicId == nil {
 		return contents, nil
 	}
-	contents.Id = *beatmapset.TopicId
+	topicId := *beatmapset.TopicId
 
-	topic, err := repositories.ForumTopics.ById(contents.Id)
+	topic, err := repositories.ForumTopics.ById(topicId)
 	if err != nil {
-		return nil, fmt.Errorf("bss: fetch topic %d for set %d: %w", contents.Id, beatmapset.Id, err)
+		return nil, fmt.Errorf("bss: fetch topic %d for set %d: %w", topicId, beatmapset.Id, err)
 	}
 	if topic == nil {
 		return contents, nil
 	}
-	contents.Subject = topic.Title
 
 	firstPost, err := repositories.ForumPosts.FetchInitialByTopic(topic.Id)
 	if err != nil {
 		return nil, fmt.Errorf("bss: fetch initial post for topic %d: %w", topic.Id, err)
 	}
-	if firstPost != nil {
-		contents.Message = firstPost.Content
+	if firstPost == nil {
+		return contents, nil
 	}
+
+	contents.Id = topic.Id
+	contents.Subject = topic.Title
+	contents.Message = firstPost.Content
 	return contents, nil
 }
 
@@ -95,23 +98,21 @@ func PostTopic(transaction *state.Repositories, beatmapset *schemas.Beatmapset, 
 		return nil, fmt.Errorf("bss: beatmapset creator id is nil")
 	}
 
-	if beatmapset.TopicId == nil {
-		// Create a new topic
-		topic, err = createBeatmapTopic(transaction, beatmapset, post)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		// We have an existing topic to update
+	if beatmapset.TopicId != nil {
 		topic, err = transaction.ForumTopics.ById(*beatmapset.TopicId)
 		if err != nil {
 			return nil, err
 		}
+	}
 
-		err = updateBeatmapTopic(transaction, beatmapset, topic, post)
+	if topic == nil {
+		// Create a new topic if the set has no topic or its reference is dangling.
+		topic, err = createBeatmapTopic(transaction, beatmapset, post)
 		if err != nil {
 			return nil, err
 		}
+	} else if err := updateBeatmapTopic(transaction, beatmapset, topic, post); err != nil {
+		return nil, err
 	}
 
 	// Update the beatmap(set) status, description, topic ID, ...
