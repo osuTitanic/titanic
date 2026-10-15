@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/permissions"
+	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/internal/storage"
 	"github.com/osuTitanic/titanic/services/deck/internal/bss"
@@ -171,6 +173,14 @@ func BeatmapSubmissionPreOsz2Upload(ctx *server.Context) {
 		request,
 	)
 	if err != nil {
+		renderBssErrorText(ctx, err)
+		return
+	}
+
+	// getid[2-3].php has no finish signal, so its pending submission never gets applied
+	// we fix this by applying it before the first upload.php request is handled
+	// honestly a bit hacky, but i don't care at this point. old bss is buggy as hell...
+	if err := finishStagedSubmission(ctx, submission.User, userPermissions, setId); err != nil {
 		renderBssErrorText(ctx, err)
 		return
 	}
@@ -492,4 +502,38 @@ func readFile(source io.Reader, limit int64) ([]byte, error) {
 		return nil, fmt.Errorf("%w: uploaded file is empty", bss.ErrInvalidSubmissionRequest)
 	}
 	return contents, nil
+}
+
+func finishStagedSubmission(ctx *server.Context, user *schemas.User, permissions *permissions.Set, setId int) error {
+	staged, err := ctx.StagedSubmissions.Get(
+		ctx.Context(),
+		user.Id,
+	)
+	if staged == nil {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if staged.BeatmapsetId != setId {
+		return fmt.Errorf(
+			"%w: staged beatmapset %d does not match upload beatmapset %d",
+			bss.ErrInvalidSubmissionRequest, staged.BeatmapsetId, setId,
+		)
+	}
+	ctx.Logger.Info(
+		"Finishing staged submission",
+		"user_id", user.Id, "beatmapset_id", setId,
+	)
+
+	submission := bss.NewSubmissionContext(ctx.Context())
+	submission.User = user
+
+	if err := applySubmission(ctx, submission, permissions, staged); err != nil {
+		return err
+	}
+	if err := ctx.StagedSubmissions.Delete(ctx.Context(), user.Id); err != nil {
+		ctx.Logger.Warn("Failed to delete staged beatmap submission", "user_id", user.Id, "error", err)
+	}
+	return nil
 }
