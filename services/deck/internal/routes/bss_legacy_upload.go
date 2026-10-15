@@ -509,11 +509,11 @@ func finishStagedSubmission(ctx *server.Context, user *schemas.User, permissions
 		ctx.Context(),
 		user.Id,
 	)
-	if staged == nil {
-		return nil
-	}
 	if err != nil {
 		return err
+	}
+	if staged == nil {
+		return nil
 	}
 	if staged.BeatmapsetId != setId {
 		return fmt.Errorf(
