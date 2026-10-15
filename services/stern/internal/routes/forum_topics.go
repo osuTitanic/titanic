@@ -223,6 +223,11 @@ func ForumTopicView(ctx *server.Context) {
 		metaImage = ctx.State.Config.OsuBaseUrl() + initialPost.User.AvatarUrl()
 	}
 
+	metaDescription, _, _ := strings.Cut(initialPost.Content, "\n")
+	if initialPost.Deleted {
+		metaDescription = "[ Deleted ]"
+	}
+
 	view := templates.ForumTopicView{
 		DefaultView:           buildDefaultViewWithPermissions(ctx),
 		Forum:                 topic.Forum,
@@ -244,7 +249,7 @@ func ForumTopicView(ctx *server.Context) {
 		CanCreatePosts:        canCreatePosts,
 		CanReply:              canCreatePosts && (!topicLocked || canBypassTopicLock),
 		ReplyLocked:           topicLocked && !canBypassTopicLock,
-		MetaDescription:       strings.SplitN(initialPost.Content, "\n", 2)[0],
+		MetaDescription:       metaDescription,
 		MetaImage:             metaImage,
 		Pagination: templates.NewPagination(templates.PaginationOptions{
 			Path:        fmt.Sprintf("/forum/%d/t/%d/", topic.ForumId, topic.Id),
