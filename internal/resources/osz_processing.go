@@ -2,6 +2,7 @@ package resources
 
 import (
 	"archive/zip"
+	"context"
 	"io"
 	"path"
 	"strings"
@@ -11,6 +12,7 @@ import (
 )
 
 const noVideoBufferSize = 256 * 1024
+const storyboardExtension = ".osb"
 
 var videoFileExtensions = map[string]struct{}{
 	".wmv":  {},
@@ -32,8 +34,13 @@ func IsVideoFile(name string) bool {
 	return ok
 }
 
-func StreamWithoutVideo(store storage.Storage, key string) (io.ReadCloser, int64, error) {
-	source, size, err := store.ReadStreamAt(key, "osz")
+func IsStoryboardFile(name string) bool {
+	fileExtension := path.Ext(name)
+	return strings.EqualFold(fileExtension, storyboardExtension)
+}
+
+func StreamWithoutVideo(ctx context.Context, store storage.Storage, key string) (io.ReadCloser, int64, error) {
+	source, size, err := store.ReadStreamAt(ctx, key, "osz")
 	if err != nil {
 		return nil, 0, err
 	}

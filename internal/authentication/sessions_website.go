@@ -3,6 +3,7 @@ package authentication
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -107,7 +108,7 @@ func (store *WebsiteSessionStore) Get(ctx context.Context, sessionId string) (*W
 	}
 
 	payload, err := store.Redis.Get(ctx, store.WebsiteSessionRedisKey(sessionId)).Bytes()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, nil
 	}
 	if err != nil {

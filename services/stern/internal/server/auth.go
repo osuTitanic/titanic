@@ -18,7 +18,7 @@ func (ctx *Context) ResolveAuthentication() {
 		return
 	}
 
-	session, err := ctx.State.SessionStore.Validate(ctx.Request.Context(), cookie.Value, time.Now())
+	session, err := ctx.State.SessionStore.Validate(ctx.Context(), cookie.Value, time.Now())
 	if err != nil {
 		ctx.Logger.Warn("Failed to validate website session", "error", err)
 		ctx.ExpireSessionCookie()
@@ -52,7 +52,7 @@ func (ctx *Context) EnsureCSRFToken() (string, error) {
 		return "", nil
 	}
 
-	token, err := ctx.State.CSRFStore.Get(ctx.Request.Context(), ctx.CurrentUser.Id)
+	token, err := ctx.State.CSRFStore.Get(ctx.Context(), ctx.CurrentUser.Id)
 	if err != nil {
 		return "", err
 	}
@@ -60,7 +60,7 @@ func (ctx *Context) EnsureCSRFToken() (string, error) {
 		return token, nil
 	}
 
-	return ctx.State.CSRFStore.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
+	return ctx.State.CSRFStore.Upsert(ctx.Context(), ctx.CurrentUser.Id)
 }
 
 func (ctx *Context) RefreshCSRFToken() (string, error) {
@@ -68,7 +68,7 @@ func (ctx *Context) RefreshCSRFToken() (string, error) {
 		return "", nil
 	}
 
-	token, err := ctx.State.CSRFStore.Upsert(ctx.Request.Context(), ctx.CurrentUser.Id)
+	token, err := ctx.State.CSRFStore.Upsert(ctx.Context(), ctx.CurrentUser.Id)
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +87,7 @@ func (ctx *Context) ValidateCSRF() (bool, error) {
 		token = strings.TrimSpace(ctx.Request.FormValue("csrf_token"))
 	}
 
-	return ctx.State.CSRFStore.Validate(ctx.Request.Context(), ctx.CurrentUser.Id, token)
+	return ctx.State.CSRFStore.Validate(ctx.Context(), ctx.CurrentUser.Id, token)
 }
 
 func (ctx *Context) ExpireSessionCookie() {
@@ -117,7 +117,7 @@ func (ctx *Context) DeleteCurrentSessionCookie() error {
 		return nil
 	}
 
-	return ctx.State.SessionStore.Delete(ctx.Request.Context(), sessionId)
+	return ctx.State.SessionStore.Delete(ctx.Context(), sessionId)
 }
 
 func (ctx *Context) DeleteCurrentCSRFToken() error {
@@ -126,7 +126,7 @@ func (ctx *Context) DeleteCurrentCSRFToken() error {
 	}
 
 	return ctx.State.Redis.Del(
-		ctx.Request.Context(),
+		ctx.Context(),
 		authentication.CSRFRedisKey(ctx.CurrentUser.Id),
 	).Err()
 }

@@ -2,21 +2,51 @@
     {
         "label": "Go: integration test",
         "command": "go",
-        "args": ["test", "-tags", "integration", "./..."]
+        "args": [
+            "test",
+            "-tags",
+            "integration",
+            "./..."
+        ]
     },
     {
         "label": "Go: run stern",
         "command": "go",
-        "args": ["run", "./services/stern/cmd/web/"]
+        "args": [
+            "run",
+            "./services/stern/cmd/web/"
+        ]
     },
     {
         "label": "Go: run stern (auto-reload)",
         "command": "air",
-        "args": ["-c", "services/stern/.air.toml"]
+        "args": [
+            "-c",
+            "services/stern/.air.toml"
+        ]
+    },
+    {
+        "label": "Go: run deck",
+        "command": "go",
+        "args": [
+            "run",
+            "./services/deck/cmd/api/"
+        ]
+    },
+    {
+        "label": "Go: run deck (auto-reload)",
+        "command": "air",
+        "args": [
+            "-c",
+            "services/deck/.air.toml"
+        ]
     },
     {
         "label": "Go: run jobs",
         "command": "go",
-        "args": ["run", "./services/jobs/cmd/cli/"]
+        "args": [
+            "run",
+            "./services/jobs/cmd/cli/"
+        ]
     }
 ]

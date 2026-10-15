@@ -1,8 +1,10 @@
 package discord
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -55,7 +57,37 @@ func (o *Officer) Call(tag OfficerTag, content string, embeds ...Embed) error {
 	return o.CallContext(context.Background(), tag, content, embeds...)
 }
 
+func (o *Officer) CallWithFile(tag OfficerTag, content, filename string, data []byte, embeds ...Embed) error {
+	return o.CallWithFileContext(context.Background(), tag, content, filename, data, embeds...)
+}
+
 func (o *Officer) CallContext(ctx context.Context, tag OfficerTag, content string, embeds ...Embed) error {
+	return o.callContext(ctx, tag, content, nil, embeds...)
+}
+
+func (o *Officer) CallWithFileContext(ctx context.Context, tag OfficerTag, content, filename string, data []byte, embeds ...Embed) error {
+	file := &File{Name: filename, Content: bytes.NewReader(data)}
+	return o.callContext(ctx, tag, content, file, embeds...)
+}
+
+func (o *Officer) CallPanic(recovered any, context ...Field) error {
+	embed := Embed{Title: new("Unhandled Panic"), Color: new(0xFF0000)}
+	embed.AddField("Error", fmt.Sprint(recovered), false)
+
+	for _, field := range context {
+		embed.Fields = append(embed.Fields, field)
+	}
+
+	return o.CallWithFile(
+		OfficerTagGeneral,
+		"",
+		"stacktrace.txt",
+		debug.Stack(),
+		embed,
+	)
+}
+
+func (o *Officer) callContext(ctx context.Context, tag OfficerTag, content string, file *File, embeds ...Embed) error {
 	webhookUrl, ok := o.WebhookUrl(tag)
 	if !ok {
 		return nil
@@ -72,6 +104,7 @@ func (o *Officer) CallContext(ctx context.Context, tag OfficerTag, content strin
 	webhook := &Webhook{
 		URL:     webhookUrl,
 		Content: contentPointer,
+		File:    file,
 		Embeds:  embeds,
 	}
 

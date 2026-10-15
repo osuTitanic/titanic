@@ -2,6 +2,7 @@ package routes
 
 import (
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -82,10 +83,7 @@ func fetchHomeChatMessages(ctx *server.Context) []*schemas.Message {
 	}
 
 	// Reverse so the latest message is displayed at the bottom
-	// Idk if there's a better way of doing this
-	for i, j := 0, len(messages)-1; i < j; i, j = i+1, j-1 {
-		messages[i], messages[j] = messages[j], messages[i]
-	}
+	slices.Reverse(messages)
 	return messages
 }
 

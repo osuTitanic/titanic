@@ -1,11 +1,22 @@
 package constants
 
+import "slices"
+
 type SearchOrder int
 
 const (
 	SearchOrderDescending SearchOrder = 0
 	SearchOrderAscending  SearchOrder = 1
 )
+
+var SearchOrders = []SearchOrder{
+	SearchOrderDescending,
+	SearchOrderAscending,
+}
+
+func (order SearchOrder) Valid() bool {
+	return slices.Contains(SearchOrders, order)
+}
 
 type BeatmapSort int
 
@@ -19,7 +30,25 @@ const (
 	BeatmapSortPlays      BeatmapSort = 6
 	BeatmapSortCreated    BeatmapSort = 7
 	BeatmapSortRelevance  BeatmapSort = 8
+	BeatmapSortUpdated    BeatmapSort = 9
 )
+
+var BeatmapSortingOptions = []BeatmapSort{
+	BeatmapSortTitle,
+	BeatmapSortArtist,
+	BeatmapSortCreator,
+	BeatmapSortDifficulty,
+	BeatmapSortRanked,
+	BeatmapSortRating,
+	BeatmapSortPlays,
+	BeatmapSortCreated,
+	BeatmapSortRelevance,
+	BeatmapSortUpdated,
+}
+
+func (sort BeatmapSort) Valid() bool {
+	return slices.Contains(BeatmapSortingOptions, sort)
+}
 
 type BeatmapCategory int
 
@@ -34,3 +63,19 @@ const (
 	BeatmapCategoryWIP         BeatmapCategory = 7
 	BeatmapCategoryGraveyard   BeatmapCategory = 8
 )
+
+var BeatmapCategories = []BeatmapCategory{
+	BeatmapCategoryAny,
+	BeatmapCategoryLeaderboard,
+	BeatmapCategoryRanked,
+	BeatmapCategoryQualified,
+	BeatmapCategoryLoved,
+	BeatmapCategoryApproved,
+	BeatmapCategoryPending,
+	BeatmapCategoryWIP,
+	BeatmapCategoryGraveyard,
+}
+
+func (category BeatmapCategory) Valid() bool {
+	return slices.Contains(BeatmapCategories, category)
+}

@@ -7,28 +7,39 @@ This module provides helpers for processing media files: resizing images, creati
 Use `ResizeImage` to scale an image down to a given resolution. It accepts JPEG or PNG data, picks a scaler suited for downscaling & returns the encoded result in the original format.
 
 ```go
-small, err := media.ResizeImage(data, 80, 60)
-if err != nil {
+var small bytes.Buffer
+if err := media.ResizeImage(source, &small, 80, 60); err != nil {
 	return err
 }
 ```
 
-For more control, use the `ImageGenerator` directly. Build an `Image` from a byte array or a file, then create the thumbnail:
+When the encoded image is already available as a byte slice, use the convenience methods:
+
+```go
+small, err := media.ResizeImageBytes(data, 80, 60)
+png, err := media.ResizeImageBytesToPng(data, 256, 256)
+```
+
+Use `ResizeAndCropImage` when the image should keep its aspect ratio while filling the image. It crops excess width / height from the center before resizing:
+
+```go
+var thumbnail bytes.Buffer
+if err := media.ResizeAndCropImage(source, &thumbnail, 160, 120); err != nil {
+	return err
+}
+```
+
+For more control, configure and use `ImageGenerator` directly:
 
 ```go
 generator := &media.ImageGenerator{
-	Width:  160,
-	Height: 120,
-	Scaler: "CatmullRom",
+	Width:     160,
+	Height:    120,
+	Scaler:    "CatmullRom",
+	CropToFit: true,
 }
 
-image, err := generator.NewImageFromByteArray(data)
-if err != nil {
-	return err
-}
-
-thumbnail, err := generator.CreateThumbnail(image)
-if err != nil {
+if err := generator.CreateThumbnail(source, target, "png"); err != nil {
 	return err
 }
 ```

@@ -259,7 +259,7 @@ func resolveTotalBeatmaps(ctx *server.Context, mode constants.Mode) (int, error)
 		keys[i] = fmt.Sprintf("bancho:totalbeatmaps:%d:%d", mode.Value(), status.Value())
 	}
 
-	counts, err := ctx.State.Redis.MGet(ctx.Request.Context(), keys...).Result()
+	counts, err := ctx.State.Redis.MGet(ctx.Context(), keys...).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -284,12 +284,9 @@ func resolveTotalBeatmaps(ctx *server.Context, mode constants.Mode) (int, error)
 }
 
 func filterQuery(query url.Values, exclude ...string) url.Values {
-	clone := make(url.Values, len(query))
-	for key, values := range query {
-		if slices.Contains(exclude, key) {
-			continue
-		}
-		clone[key] = values
+	clone := query.Clone()
+	for _, key := range exclude {
+		clone.Del(key)
 	}
 	return clone
 }

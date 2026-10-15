@@ -110,7 +110,7 @@ func (store *SessionStore) Get(ctx context.Context, tokenId string) (*Session, e
 	}
 
 	payload, err := store.Redis.Get(ctx, store.SessionRedisKey(tokenId)).Bytes()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, nil
 	}
 	if err != nil {

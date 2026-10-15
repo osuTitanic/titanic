@@ -212,11 +212,11 @@ func sendPasswordResetEmail(ctx *server.Context, verification *schemas.Verificat
 }
 
 func hasPasswordResetLock(ctx *server.Context, userId int) (bool, error) {
-	value, err := ctx.State.Redis.Get(ctx.Request.Context(), fmt.Sprintf("reset_lock:%d", userId)).Int()
+	value, err := ctx.State.Redis.Get(ctx.Context(), fmt.Sprintf("reset_lock:%d", userId)).Int()
 	if err == nil {
 		return value != 0, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return false, nil
 	}
 	return false, err
@@ -224,7 +224,7 @@ func hasPasswordResetLock(ctx *server.Context, userId int) (bool, error) {
 
 func setPasswordResetLock(ctx *server.Context, userId int) error {
 	return ctx.State.Redis.Set(
-		ctx.Request.Context(),
+		ctx.Context(),
 		fmt.Sprintf("reset_lock:%d", userId), 1,
 		12*time.Hour,
 	).Err()

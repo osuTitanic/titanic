@@ -26,7 +26,6 @@ CREATE INDEX IF NOT EXISTS idx_beatmaps_status_id_alt ON beatmaps USING btree (s
 
 -- beatmapsets
 CREATE INDEX IF NOT EXISTS beatmapsets_approved_date_idx ON beatmapsets USING btree (approved_date DESC) WHERE (submission_status <> '-3'::integer);
-CREATE INDEX IF NOT EXISTS idx_beatmapset_text_search ON beatmapsets USING gin (to_tsvector('simple'::regconfig, (((((((((title)::text || ' '::text) || (artist)::text) || ' '::text) || (creator)::text) || ' '::text) || (source)::text) || ' '::text) || (tags)::text)));
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_approved_date_partial ON beatmapsets USING btree (approved_date DESC) WHERE (submission_status > '-3'::integer);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_approved_date_with_lb ON beatmapsets USING btree (approved_date DESC) WHERE (submission_status > 0);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_artist_desc ON beatmapsets USING btree (artist DESC);
@@ -43,7 +42,6 @@ CREATE INDEX IF NOT EXISTS idx_beatmapsets_language ON beatmapsets USING btree (
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_last_update ON beatmapsets USING btree (last_updated DESC);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_rating_avg_desc ON beatmapsets USING btree (rating_average DESC);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_rating_count_desc ON beatmapsets USING btree (rating_count DESC);
-CREATE INDEX IF NOT EXISTS idx_beatmapsets_search_text_gist ON beatmapsets USING gist (search_text gist_trgm_ops);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_server_private ON beatmapsets USING btree (server) WHERE (server = 1);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_status_approved_id ON beatmapsets USING btree (submission_status, approved_date DESC, id);
 CREATE INDEX IF NOT EXISTS idx_beatmapsets_status_genre_lang_server ON beatmapsets USING btree (submission_status, genre_id, language_id, server);
@@ -131,27 +129,17 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id_time ON notifications USING
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id_time_unread ON notifications USING btree (user_id, "time" DESC) WHERE (read = false);
 
 -- plays
-CREATE INDEX IF NOT EXISTS idx_plays_beatmap_count ON plays USING btree (beatmap_id, count);
-CREATE INDEX IF NOT EXISTS idx_plays_beatmap_count_desc ON plays USING btree (beatmap_id, count DESC);
 CREATE INDEX IF NOT EXISTS idx_plays_beatmap_id_set_id ON plays USING btree (beatmap_id, set_id);
-CREATE INDEX IF NOT EXISTS idx_plays_beatmap_id_set_id_count ON plays USING btree (beatmap_id, set_id) INCLUDE (count);
 CREATE INDEX IF NOT EXISTS idx_plays_beatmap_user ON plays USING btree (beatmap_id, user_id);
-CREATE INDEX IF NOT EXISTS idx_plays_count_desc ON plays USING btree (count DESC);
 CREATE INDEX IF NOT EXISTS idx_plays_set_id ON plays USING btree (set_id);
 CREATE INDEX IF NOT EXISTS idx_plays_user_count ON plays USING btree (user_id, count DESC);
 
 -- profile_activity
 CREATE INDEX IF NOT EXISTS idx_activity_time ON profile_activity USING btree ("time" DESC);
-CREATE INDEX IF NOT EXISTS idx_activity_user_id_no_mode ON profile_activity USING btree (user_id) WHERE (mode = NULL::smallint);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_catch ON profile_activity USING btree (user_id, "time" DESC) WHERE (mode = 2);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_mania ON profile_activity USING btree (user_id, "time" DESC) WHERE (mode = 3);
-CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_no_mode ON profile_activity USING btree (user_id, "time" DESC) WHERE (mode = NULL::smallint);
-CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_not_hidden ON profile_activity USING btree (user_id, "time" DESC) WHERE (hidden = false);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_osu ON profile_activity USING btree (user_id, "time" DESC) WHERE (mode = 0);
 CREATE INDEX IF NOT EXISTS idx_activity_user_id_time_taiko ON profile_activity USING btree (user_id, "time" DESC) WHERE (mode = 1);
-CREATE INDEX IF NOT EXISTS idx_profile_activity_hidden ON profile_activity USING btree (hidden);
-CREATE INDEX IF NOT EXISTS idx_profile_activity_user_hidden_id_desc ON profile_activity USING btree (user_id, hidden, id DESC);
-CREATE INDEX IF NOT EXISTS idx_profile_activity_user_mode_hidden_time ON profile_activity USING btree (user_id, mode, hidden, "time" DESC);
 CREATE INDEX IF NOT EXISTS idx_profile_activity_user_mode_time ON profile_activity USING btree (user_id, mode, "time" DESC);
 CREATE INDEX IF NOT EXISTS idx_profile_activity_user_time ON profile_activity USING btree (user_id, "time" DESC);
 CREATE INDEX IF NOT EXISTS profile_activity_user_mode_visible_id_idx ON profile_activity USING btree (user_id, mode, id DESC) WHERE (hidden = false);
@@ -161,10 +149,6 @@ CREATE INDEX IF NOT EXISTS profile_activity_user_mode_visible_time_idx ON profil
 CREATE INDEX IF NOT EXISTS idx_badges_user_id ON profile_badges USING btree (user_id);
 
 -- profile_rank_history
-CREATE INDEX IF NOT EXISTS idx_peak_global_rank_ctb ON profile_rank_history USING btree (user_id, global_rank DESC) WHERE (mode = 2);
-CREATE INDEX IF NOT EXISTS idx_peak_global_rank_mania ON profile_rank_history USING btree (user_id, global_rank DESC) WHERE (mode = 3);
-CREATE INDEX IF NOT EXISTS idx_peak_global_rank_std ON profile_rank_history USING btree (user_id, global_rank DESC) WHERE (mode = 0);
-CREATE INDEX IF NOT EXISTS idx_peak_global_rank_taiko ON profile_rank_history USING btree (user_id, global_rank DESC) WHERE (mode = 1);
 CREATE INDEX IF NOT EXISTS idx_rank_history_user_id_time ON profile_rank_history USING btree (user_id, "time" DESC);
 
 -- ratings
@@ -209,7 +193,6 @@ CREATE INDEX IF NOT EXISTS idx_scores_mania_active_pp_desc ON scores USING btree
 CREATE INDEX IF NOT EXISTS idx_scores_mode_status_hidden_pp_desc ON scores USING btree (mode, status, hidden, pp DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_mode_status_score_hidden_beatmap_id_total_score ON scores USING btree (mode, status_score, hidden, beatmap_id, total_score DESC);
 CREATE INDEX IF NOT EXISTS idx_scores_mods_ap ON scores USING btree (((mods & 8192)));
-CREATE INDEX IF NOT EXISTS idx_scores_mods_rx ON scores USING btree (((mods & 128)));
 CREATE INDEX IF NOT EXISTS idx_scores_mods_status_score ON scores USING btree (mods, status_score);
 CREATE INDEX IF NOT EXISTS idx_scores_optimized ON scores USING btree (mode, status_score, hidden, beatmap_id, total_score) INCLUDE (user_id, id);
 CREATE INDEX IF NOT EXISTS idx_scores_osu_active_pp_desc ON scores USING btree (pp DESC) WHERE ((mode = 0) AND (status > 0) AND (hidden = false));
@@ -263,3 +246,27 @@ CREATE INDEX IF NOT EXISTS idx_comments_user_time ON comments USING btree (user_
 -- profile partials
 CREATE INDEX IF NOT EXISTS idx_scores_pinned_by_user ON scores USING btree (user_id, mode, pp DESC) WHERE (pinned = true AND hidden = false AND status > 1);
 CREATE INDEX IF NOT EXISTS idx_profile_activity_recent ON profile_activity USING btree (user_id, mode, "time" DESC) WHERE (hidden = false);
+
+-- unused indexes
+DROP INDEX IF EXISTS idx_peak_global_rank_std;
+DROP INDEX IF EXISTS idx_peak_global_rank_taiko;
+DROP INDEX IF EXISTS idx_peak_global_rank_ctb;
+DROP INDEX IF EXISTS idx_peak_global_rank_mania;
+
+DROP INDEX IF EXISTS idx_profile_activity_user_hidden_id_desc;
+DROP INDEX IF EXISTS idx_profile_activity_user_mode_hidden_time;
+DROP INDEX IF EXISTS idx_activity_user_id_time_not_hidden;
+DROP INDEX IF EXISTS idx_profile_activity_hidden;
+DROP INDEX IF EXISTS idx_activity_user_id_no_mode;
+DROP INDEX IF EXISTS idx_activity_user_id_time_no_mode;
+
+DROP INDEX IF EXISTS idx_plays_beatmap_id_set_id_count;
+DROP INDEX IF EXISTS idx_plays_beatmap_count;
+DROP INDEX IF EXISTS idx_plays_beatmap_count_desc;
+DROP INDEX IF EXISTS idx_plays_count_desc;
+
+DROP INDEX IF EXISTS idx_scores_mods_rx;
+
+DROP INDEX IF EXISTS idx_beatmapsets_search_text_gist;
+DROP INDEX IF EXISTS idx_beatmapsets_search_text_trgm;
+DROP INDEX IF EXISTS idx_beatmapset_text_search;

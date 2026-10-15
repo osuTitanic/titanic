@@ -5,6 +5,7 @@ package performance
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -170,6 +171,44 @@ func (service *PPv2ServiceNative) CalculateDifficulty(beatmapId int, mode consta
 	return result, nil
 }
 
+func (service *PPv2ServiceNative) CalculateDifficultyFromBytes(data []byte, mode constants.Mode, mods constants.Mods) (*DifficultyAttributes, error) {
+	adjustedMods := normalizeNativeMods(mods, mode)
+	beatmap, err := osunative.NewBeatmapFromText(string(data))
+	if err != nil {
+		return nil, fmt.Errorf("parse submitted beatmap: %w", err)
+	}
+	defer beatmap.Close()
+
+	ruleset, err := osunative.NewRulesetFromID(mode.Value())
+	if err != nil {
+		return nil, fmt.Errorf("create ruleset for submitted beatmap: %w", err)
+	}
+	defer ruleset.Close()
+
+	nativeMods, err := newNativeMods(adjustedMods)
+	if err != nil {
+		return nil, fmt.Errorf("create mods for submitted beatmap: %w", err)
+	}
+	defer nativeMods.Close()
+
+	calculator, err := osunative.CreateDifficultyCalculator(ruleset, beatmap)
+	if err != nil {
+		return nil, fmt.Errorf("create difficulty calculator for submitted beatmap: %w", err)
+	}
+	defer calculator.Close()
+
+	attributes, err := calculator.Calculate(nativeMods)
+	if err != nil {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: %w", err)
+	}
+
+	result, err := newDifficultyAttributes(mode, mode != nativeBeatmapMode(data), attributes)
+	if err != nil {
+		return nil, fmt.Errorf("calculate submitted beatmap difficulty: %w", err)
+	}
+	return result, nil
+}
+
 func normalizeNativeMods(mods constants.Mods, mode constants.Mode) constants.Mods {
 	if mods.Has(constants.Nightcore) && !mods.Has(constants.DoubleTime) {
 		mods |= constants.DoubleTime
@@ -208,7 +247,7 @@ func (service *PPv2ServiceNative) LoadBeatmap(beatmapId int) (*osunative.Beatmap
 		return nil, constants.ModeOsu, fmt.Errorf("load beatmap %d: beatmap resource provider is nil", beatmapId)
 	}
 
-	stream, err := service.provider.Osu(beatmapId)
+	stream, err := service.provider.Osu(context.Background(), beatmapId)
 	if err != nil {
 		return nil, constants.ModeOsu, fmt.Errorf("load beatmap %d: %w", beatmapId, err)
 	}
@@ -309,7 +348,7 @@ var nativeModAcronyms = []struct {
 
 func newNativeScoreInfo(score *schemas.Score) *osunative.ScoreInfo {
 	info := &osunative.ScoreInfo{
-		Accuracy:         score.Accuracy(),
+		Accuracy:         score.ComputeAccuracy(),
 		MaxCombo:         score.MaxCombo,
 		CountMiss:        score.CountMiss,
 		LegacyTotalScore: new(score.TotalScore),

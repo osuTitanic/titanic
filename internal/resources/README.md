@@ -14,7 +14,7 @@ If we would want to add new download servers, we can be implement a new `Beatmap
 
 ## Usage with state system
 
-Services should use `state.NewState(...)` instead of creating the provider directly. `State` creates the provider, calls `Setup()` & exposes it through `app.Resources`.
+Services should use `state.NewState(...)` instead of creating the provider directly. `State` creates the provider, calls `Setup(...)` & exposes it through `app.Resources`.
 
 ```go
 app, err := state.NewState()
@@ -23,7 +23,8 @@ if err != nil {
 }
 defer app.Close()
 
-stream, err := app.Resources.Osz(setId, false)
+ctx := context.Background()
+stream, err := app.Resources.Osz(ctx, setId, false)
 if err != nil {
 	return err
 }

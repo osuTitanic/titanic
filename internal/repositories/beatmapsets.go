@@ -4,6 +4,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BeatmapsetRepository struct {
@@ -32,11 +33,40 @@ func (r *BeatmapsetRepository) ById(id int, preload ...string) (*schemas.Beatmap
 	return LookupResult(&beatmapset, err)
 }
 
+func (r *BeatmapsetRepository) ByIdWithLock(id int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", id).
+		First(&beatmapset).
+		Error
+	return LookupResult(&beatmapset, err)
+}
+
 func (r *BeatmapsetRepository) ByTopicId(topicId int, preload ...string) (*schemas.Beatmapset, error) {
 	var beatmapset schemas.Beatmapset
 	err := Preloaded(r.db, preload).
 		Where("topic_id = ?", topicId).
 		First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
+func (r *BeatmapsetRepository) ByPostId(postId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Joins("JOIN forum_posts ON forum_posts.topic_id = beatmapsets.topic_id").
+		Where("forum_posts.id = ?", postId).
+		Where("forum_posts.hidden = ?", false).
+		First(&beatmapset).Error
+	return LookupResult(&beatmapset, err)
+}
+
+func (r *BeatmapsetRepository) ByArtistTitleAndCreator(artist, title string, creatorId int, preload ...string) (*schemas.Beatmapset, error) {
+	var beatmapset schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Where("artist = ? AND title = ? AND creator_id = ?", artist, title, creatorId).
+		First(&beatmapset).
+		Error
 	return LookupResult(&beatmapset, err)
 }
 
@@ -69,6 +99,38 @@ func (r *BeatmapsetRepository) FetchByCreator(creatorId int, preload ...string) 
 		Order("submission_date DESC").
 		Find(&beatmapsets).Error
 	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) FetchInactiveByCreatorWithLock(creatorId int, preload ...string) ([]*schemas.Beatmapset, error) {
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status = ?", constants.BeatmapStatusInactive).
+		Order("id ASC").
+		Find(&beatmapsets).
+		Error
+	return beatmapsets, err
+}
+
+func (r *BeatmapsetRepository) CountUnrankedByCreator(creatorId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status <= ?", constants.BeatmapStatusPending).
+		Count(&count).
+		Error
+	return int(count), err
+}
+
+func (r *BeatmapsetRepository) CountRankedByCreator(creatorId int) (int, error) {
+	var count int64
+	err := r.db.Model(&schemas.Beatmapset{}).
+		Where("creator_id = ?", creatorId).
+		Where("submission_status > ?", constants.BeatmapStatusPending).
+		Count(&count).
+		Error
+	return int(count), err
 }
 
 func (r *BeatmapsetRepository) FetchDownloadServer(id int) (constants.BeatmapServer, error) {

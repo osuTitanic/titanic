@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"time"
+
+	"github.com/osuTitanic/titanic/internal/caching"
 )
 
 // Provider defines how to interface with a geolocation backend.
@@ -28,7 +31,7 @@ type provider struct {
 	logger  *slog.Logger
 
 	mutex sync.RWMutex
-	cache map[string]*Location // TODO: add a ttl/lru for this
+	cache *caching.Cache[string, *Location]
 }
 
 func NewProvider(databasePath, downloadUrl string) Provider {
@@ -43,7 +46,7 @@ func newProviderFromInterfaces(geoLite, web Provider) *provider {
 		geoLite: geoLite,
 		web:     web,
 		logger:  slog.Default().With("component", "location"),
-		cache:   make(map[string]*Location),
+		cache:   caching.New[string, *Location](time.Hour),
 	}
 }
 
@@ -72,33 +75,30 @@ func (p *provider) Setup() error {
 }
 
 func (p *provider) Resolve(ip string) (*Location, error) {
-	if location, ok := p.lookup(ip); ok {
-		return location, nil
-	}
-
-	var geoLiteErr error
-	if p.geoLite != nil {
-		location, err := p.geoLite.Resolve(ip)
-		if err == nil {
-			// Successfully resolved through geolite -> cached result
-			p.store(ip, location)
-			return location, nil
+	// Will either load from cache, or populate it using the resolver function
+	return p.cache.GetOrLoad(ip, func() (*Location, error) {
+		var geoliteErr error
+		if p.geoLite != nil {
+			location, err := p.geoLite.Resolve(ip)
+			if err == nil {
+				// Successfully resolved through geolite -> cached result
+				return location, nil
+			}
+			geoliteErr = fmt.Errorf("location: GeoLite lookup failed: %w", err)
 		}
-		geoLiteErr = fmt.Errorf("location: GeoLite lookup failed: %w", err)
-	}
 
-	location, err := p.web.Resolve(ip)
-	if err != nil {
-		// Don't cache failures, so they can be retried later on
-		return location, errors.Join(
-			geoLiteErr,
-			fmt.Errorf("location: web lookup failed: %w", err),
-		)
-	}
+		location, err := p.web.Resolve(ip)
+		if err != nil {
+			// Don't cache failures, so they can be retried later on
+			return location, errors.Join(
+				geoliteErr,
+				fmt.Errorf("location: web lookup failed: %w", err),
+			)
+		}
 
-	// Resolved through web -> cache result
-	p.store(ip, location)
-	return location, nil
+		// Resolved through web -> cache result
+		return location, nil
+	})
 }
 
 func (p *provider) Close() error {
@@ -115,19 +115,7 @@ func (p *provider) Close() error {
 			webErr = fmt.Errorf("location: failed to close web provider: %w", err)
 		}
 	}
+	p.cache.Clear()
 
 	return errors.Join(geoLiteErr, webErr)
-}
-
-func (p *provider) lookup(ip string) (*Location, bool) {
-	p.mutex.RLock()
-	defer p.mutex.RUnlock()
-	location, ok := p.cache[ip]
-	return location, ok
-}
-
-func (p *provider) store(ip string, location *Location) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
-	p.cache[ip] = location
 }

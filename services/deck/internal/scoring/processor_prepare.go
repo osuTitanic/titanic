@@ -1,0 +1,90 @@
+package scoring
+
+import (
+	"fmt"
+
+	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/services/deck/internal/server"
+)
+
+func (processor *Processor) prepare(password string) (ResultType, error) {
+	// Authenticate the user & ensure they're eligible to submit a score
+	user, err := processor.context.AuthenticateUser(
+		processor.submission.Username, password,
+		true, // We want them to be online on bancho
+	)
+	if err != nil {
+		switch err {
+		case server.ErrUserNotFound:
+			return ResultUserNotFound, nil
+		case server.ErrInvalidPassword:
+			return ResultInvalidPassword, nil
+		case server.ErrBanchoPresenceNotFound:
+			return ResultBanchoUnavailable, nil
+		default:
+			return ResultAccepted, err
+		}
+	}
+
+	if !user.Activated {
+		return ResultInactive, nil
+	}
+	if user.Restricted {
+		return ResultBanned, nil
+	}
+	if user.IsBot {
+		return ResultRejected, nil
+	}
+	processor.submission.User = user
+	processor.submission.UserId = user.Id
+
+	permissions, err := processor.context.State.Permissions.Resolve(user.Id)
+	if err != nil {
+		return ResultAccepted, err
+	}
+	processor.submission.CanSubmitScores = permissions.Has("scores.submit")
+	processor.submission.CanBypassScoreValidation = permissions.Has("scores.validation.bypass")
+	processor.submission.CanBypassClientValidation = permissions.Has("clients.validation.bypass")
+
+	// Resolve the beatmap that the user set a score on
+	beatmap, err := processor.repositories.Beatmaps.ByChecksum(
+		processor.submission.BeatmapChecksum, "Beatmapset",
+	)
+	if err != nil {
+		return ResultAccepted, err
+	}
+	if beatmap == nil {
+		return ResultBeatmapUnavailable, nil
+	}
+	if beatmap.Status == constants.BeatmapStatusInactive {
+		return ResultBeatmapUnavailable, nil
+	}
+	if beatmap.Beatmapset.Status == constants.BeatmapStatusInactive {
+		return ResultBeatmapUnavailable, nil
+	}
+	processor.submission.Beatmap = beatmap
+	processor.submission.BeatmapId = beatmap.Id
+
+	// Normalize the mods to remove osu! stable quirks e.g. DTNC / SDPF
+	processor.submission.Mods = processor.submission.Mods.Normalize()
+
+	// Populate charts for the modular submission response
+	charts := processor.submission.Charts
+
+	charts.Beatmap.BeatmapId = beatmap.Id
+	charts.Beatmap.BeatmapSetId = beatmap.SetId
+	charts.Beatmap.BeatmapPlaycount = beatmap.Playcount
+	charts.Beatmap.BeatmapPasscount = beatmap.Passcount
+	charts.Beatmap.ApprovedDate = beatmap.Beatmapset.ApprovedAt
+
+	baseUrl := processor.context.State.Config.OsuBaseUrl()
+	charts.Overall.ChartUrl = fmt.Sprintf(
+		"%s/p/playerranking/?f=%s",
+		baseUrl, user.Name,
+	)
+	charts.Ranking.ChartUrl = fmt.Sprintf(
+		"%s/b/%d",
+		baseUrl, beatmap.Id,
+	)
+	return ResultAccepted, nil
+}

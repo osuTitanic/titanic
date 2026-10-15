@@ -68,7 +68,23 @@ func (Beatmapset) TableName() string {
 }
 
 func (b *Beatmapset) Name() string {
-	return b.ArtistName() + " - " + b.TitleName()
+	switch {
+	case b.Artist != nil && b.Title != nil:
+		return *b.Artist + " - " + *b.Title
+	case b.Artist != nil:
+		return *b.Artist
+	case b.Title != nil:
+		return *b.Title
+	default:
+		return "Unknown"
+	}
+}
+
+func (b *Beatmapset) OszFilename() string {
+	if b.Creator != nil {
+		return fmt.Sprintf("%d %s (%s).osz", b.Id, b.Name(), *b.Creator)
+	}
+	return fmt.Sprintf("%d %s.osz", b.Id, b.Name())
 }
 
 func (b *Beatmapset) ArtistName() string {
@@ -150,6 +166,13 @@ func (b *Beatmapset) DescriptionText() string {
 	return ""
 }
 
+func (b *Beatmapset) TagsText() string {
+	if b.Tags != nil {
+		return *b.Tags
+	}
+	return ""
+}
+
 func (b *Beatmapset) DisplayTitleText() string {
 	if b.DisplayTitle != nil {
 		return *b.DisplayTitle
@@ -157,11 +180,26 @@ func (b *Beatmapset) DisplayTitleText() string {
 	return ""
 }
 
-func (b *Beatmapset) TagsText() string {
-	if b.Tags != nil {
-		return *b.Tags
+func (b *Beatmapset) DefaultDisplayTitle() string {
+	title := ""
+	titleFormatting := "[]"
+	if b.Title != nil {
+		title = *b.Title
 	}
-	return ""
+	if b.TitleUnicode != nil {
+		title = *b.TitleUnicode
+	}
+
+	artist := ""
+	artistFormatting := "[bold:0,size:20]"
+	if b.Artist != nil {
+		artist = *b.Artist
+	}
+	if b.ArtistUnicode != nil {
+		artist = *b.ArtistUnicode
+	}
+
+	return fmt.Sprintf("%s%s|%s%s", artistFormatting, artist, titleFormatting, title)
 }
 
 func (b *Beatmapset) IsApproved() bool {
@@ -263,6 +301,14 @@ func (b *Beatmap) Name() string {
 
 func (b *Beatmap) Link() string {
 	return fmt.Sprintf("/b/%d", b.Id)
+}
+
+func (b *Beatmap) AwardsScore() bool {
+	return b.Status >= constants.BeatmapStatusRanked
+}
+
+func (b *Beatmap) AwardsPP() bool {
+	return b.Status == constants.BeatmapStatusRanked || b.Status == constants.BeatmapStatusApproved
 }
 
 func (b *Beatmap) DifficultyAlias() string {
@@ -432,15 +478,15 @@ func (BeatmapRating) TableName() string {
 }
 
 type BeatmapComment struct {
-	Id         int            `gorm:"column:id;primaryKey;autoIncrement"`
-	TargetId   int            `gorm:"column:target_id"`
-	TargetType string         `gorm:"column:target_type"`
-	UserId     int            `gorm:"column:user_id"`
-	Mode       constants.Mode `gorm:"column:mode;default:0"`
-	Time       time.Time      `gorm:"column:time;autoCreateTime"`
-	Comment    string         `gorm:"column:comment"`
-	Format     *string        `gorm:"column:format"`
-	Color      *string        `gorm:"column:color"`
+	Id         int                     `gorm:"column:id;primaryKey;autoIncrement"`
+	TargetId   int                     `gorm:"column:target_id"`
+	TargetType constants.CommentTarget `gorm:"column:target_type"`
+	UserId     int                     `gorm:"column:user_id"`
+	Mode       constants.Mode          `gorm:"column:mode;default:0"`
+	Time       int                     `gorm:"column:time"`
+	Comment    string                  `gorm:"column:comment"`
+	Format     *string                 `gorm:"column:format"`
+	Color      *string                 `gorm:"column:color"`
 
 	User *User `gorm:"foreignKey:UserId;references:Id"`
 }

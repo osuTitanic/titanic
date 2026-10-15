@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -23,4 +24,13 @@ func (r *BeatmapCommentRepository) Delete(comment *schemas.BeatmapComment) error
 
 func (r *BeatmapCommentRepository) Update(updates *schemas.BeatmapComment, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *BeatmapCommentRepository) FetchByTarget(targetId int, targetType constants.CommentTarget) ([]*schemas.BeatmapComment, error) {
+	var comments []*schemas.BeatmapComment
+	err := r.db.
+		Where("target_id = ? AND target_type = ?", targetId, targetType).
+		Order(`"time" ASC`).
+		Find(&comments).Error
+	return comments, err
 }

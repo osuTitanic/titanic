@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -43,7 +44,7 @@ func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (stri
 		return
 	}
 
-	if err != gormLogger.ErrRecordNotFound {
+	if !errors.Is(err, gormLogger.ErrRecordNotFound) {
 		l.logger.Error("Trace", "error", err, "elapsed", elapsed, "rows", rows, "sql", sql)
 	} else {
 		l.logger.Debug("Trace", "error", err, "elapsed", elapsed, "rows", rows, "sql", sql)

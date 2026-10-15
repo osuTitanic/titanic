@@ -12,8 +12,8 @@ import (
 	"github.com/osuTitanic/titanic/internal/config"
 )
 
-// Cloudflare accepts at most 30 urls per request
-const maxUrlsPerRequest = 30
+// Cloudflare accepts at most 50 urls per request
+const maxUrlsPerRequest = 50
 const purgeEndpoint = "https://api.cloudflare.com/client/v4/zones/%s/purge_cache"
 
 var cloudflareHttpClient = &http.Client{Timeout: 10 * time.Second}
@@ -75,6 +75,16 @@ func purgeUrlChunk(urls []string, cfg *config.Config) error {
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to purge urls: %d", resp.StatusCode)
+	}
+
+	var result struct {
+		Success bool `json:"success"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return fmt.Errorf("decode cloudflare purge response: %w", err)
+	}
+	if !result.Success {
+		return fmt.Errorf("failed to purge urls: cloudflare reported failure")
 	}
 
 	return nil

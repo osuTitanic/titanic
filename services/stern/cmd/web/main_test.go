@@ -159,9 +159,8 @@ func newTestRouter(t *testing.T, app *state.State) http.Handler {
 		t.Fatalf("failed to initialize templates: %v", err)
 	}
 
-	server := server.NewServer("localhost", 0, "stern-test", app, engine)
 	wikiService := wiki.NewService(app.Config, app.Repositories, app.Logger)
-	state.RegisterExtension(app, "wiki", wikiService)
+	server := server.NewServer("localhost", 0, "stern-test", app, engine, wikiService)
 	InitializeWebRoutes(server)
 	return server.Router
 }
@@ -342,7 +341,7 @@ func assertWebsitePostFlows(t *testing.T, app *state.State, router http.Handler,
 		if updated.AvatarHash == nil || *updated.AvatarHash == "" {
 			t.Fatal("avatar hash was not updated")
 		}
-		if !app.Storage.Exists(strconv.Itoa(data.user.Id), "avatars") {
+		if !app.Storage.Exists(t.Context(), strconv.Itoa(data.user.Id), "avatars") {
 			t.Fatal("avatar file was not saved")
 		}
 	})

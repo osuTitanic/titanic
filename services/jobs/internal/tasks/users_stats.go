@@ -32,8 +32,8 @@ func UpdateUsersStats(app *state.State, logger *slog.Logger) error {
 
 		for _, stats := range userStats {
 			bestScores, err := app.Repositories.Scores.FetchBest(
-				user.Id, stats.Mode,
-				!app.Config.ApprovedMapRewards,
+				user.Id,
+				stats.Mode,
 			)
 			if err != nil {
 				return fmt.Errorf("failed to fetch best scores for user %d mode %d: %w", user.Id, stats.Mode, err)

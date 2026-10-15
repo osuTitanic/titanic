@@ -60,8 +60,8 @@ func legacyPageRedirect(ctx *server.Context, page string) {
 func playerRankingLocation(ctx *server.Context) string {
 	query := ctx.Request.URL.Query()
 	mode := constants.ModeOsu
-	if value, ok := parseInt(query.Get("m")); ok && value >= 0 && value <= 3 {
-		mode = constants.Mode(value)
+	if value, err := ctx.QueryValueEnum[constants.Mode]("m"); err == nil {
+		mode = value
 	}
 
 	arguments := make([]string, 0, 3)

@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
+	"github.com/osuTitanic/titanic/internal/discord"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/routes"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
@@ -172,6 +175,31 @@ func InitializeStaticRoutes(server *server.Server) {
 	server.HandleFileSystem("/robots.txt", robots)
 }
 
+func PanicHandler(ctx *server.Context, recovered any) {
+	stack := debug.Stack()
+
+	ctx.Logger.Error(
+		"Panic!",
+		"panic", recovered,
+		"stack", string(stack),
+		"method", ctx.Request.Method,
+		"path", ctx.Request.URL.Path,
+	)
+	ctx.State.Officer.CallPanic(
+		recovered,
+		discord.Field{Name: "Service", Value: "stern"},
+		discord.Field{Name: "Method", Value: ctx.Request.Method, Inline: true},
+		discord.Field{Name: "Path", Value: ctx.Request.URL.Path, Inline: true},
+	)
+
+	if ctx.StatusExists() {
+		// Status was already set :/
+		// We can't respond with 500 anymore
+		panic(http.ErrAbortHandler)
+	}
+	routes.InternalServerError(ctx)
+}
+
 func main() {
 	// Run a healthcheck if passed as an argument, e.g. for docker
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
@@ -191,11 +219,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Register wiki service extension to app state
 	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
-	state.RegisterExtension(app, "wiki", wikiService)
-
-	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine)
+	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine, wikiService)
+	stern.OnPanic(PanicHandler)
 	InitializeWebRoutes(stern)
 	InitializeStaticRoutes(stern)
 

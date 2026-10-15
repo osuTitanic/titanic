@@ -1,6 +1,9 @@
 package constants
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 type Mode int8
 
@@ -15,6 +18,10 @@ var Modes = []Mode{ModeOsu, ModeTaiko, ModeCatch, ModeMania}
 
 func (m Mode) Value() int {
 	return int(m)
+}
+
+func (m Mode) Valid() bool {
+	return slices.Contains(Modes, m)
 }
 
 func (m Mode) String() string {

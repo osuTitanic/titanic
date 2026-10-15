@@ -1,0 +1,716 @@
+package routes
+
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/repositories"
+	"github.com/osuTitanic/titanic/internal/schemas"
+	"github.com/osuTitanic/titanic/services/deck/internal/server"
+)
+
+type LeaderboardType int
+
+const (
+	LeaderboardLocal LeaderboardType = iota
+	LeaderboardGlobal
+	LeaderboardMods
+	LeaderboardFriends
+	LeaderboardCountry
+)
+
+func (t LeaderboardType) Valid() bool {
+	return t >= LeaderboardLocal && t <= LeaderboardCountry
+}
+
+type LeaderboardResponseType int
+
+const (
+	LeaderboardBeatmapNotSubmitted = -1
+	LeaderboardBeatmapPending      = 0
+	LeaderboardBeatmapNeedsUpdate  = 1
+	LeaderboardBeatmapRanked       = 2
+	LeaderboardBeatmapApproved     = 3
+	LeaderboardBeatmapQualified    = 4
+	LeaderboardBeatmapLoved        = 5
+)
+
+type LeaderboardResponse struct {
+	Type    LeaderboardResponseType
+	Beatmap *schemas.Beatmap
+
+	Scores     []*schemas.Score
+	ScoreCount int
+
+	PersonalBest      *schemas.Score
+	PersonalBestIndex int
+}
+
+type LeaderboardRequest struct {
+	RequestType    LeaderboardType
+	RequestVersion int
+	SendNightcore  bool
+
+	BeatmapNeedsUpdate bool
+	IsAuthenticated    bool
+	SkipScores         bool
+
+	Beatmap *schemas.Beatmap
+	User    *schemas.User
+	Mods    *constants.Mods
+	Mode    constants.Mode
+}
+
+func (r *LeaderboardRequest) FriendsOf() *int {
+	if r.User == nil {
+		return nil
+	}
+	if r.RequestType != LeaderboardFriends {
+		return nil
+	}
+	return &r.User.Id
+}
+
+func (r *LeaderboardRequest) Country() *string {
+	if r.User == nil {
+		return nil
+	}
+	if r.RequestType != LeaderboardCountry {
+		return nil
+	}
+	return &r.User.Country
+}
+
+// /web/osu-osz2-getscores.php -> Latest leaderboard endpoint / introduced filtered leaderboards
+func GetScoresOsz2(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "")
+		return
+	}
+
+	if response.Type == LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, "-1|false")
+		return
+	}
+	if response.Type == LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, "1|false")
+		return
+	}
+
+	// The second response field belonged to the now unused osu!magnet system,
+	// which allowed the client to keep osz2 files up-to-date through a p2p network
+	// I have no idea if we will ever be able to recreate this system
+	const hasOsz2Update = false
+
+	responseType := statusFromRequestVersion(
+		response.Type,
+		request.RequestVersion,
+	)
+	beatmapInfo := strings.Join([]string{
+		strconv.Itoa(responseType),
+		strconv.FormatBool(hasOsz2Update),
+		strconv.Itoa(response.Beatmap.Id),
+		strconv.Itoa(response.Beatmap.SetId),
+		strconv.Itoa(response.ScoreCount),
+		"", // Featured Artist Track ID
+		"", // Featured Artist License Text
+	}, "|")
+
+	lines := []string{
+		beatmapInfo,
+		strconv.Itoa(response.Beatmap.Beatmapset.Offset),
+		response.Beatmap.Beatmapset.DisplayTitleText(),
+		strconv.FormatFloat(response.Beatmap.Diff, 'f', 4, 64),
+	}
+	if response.Type <= LeaderboardBeatmapPending || request.SkipScores {
+		ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+		return
+	}
+
+	lines = append(lines, formatScore(
+		response.PersonalBest,
+		response.PersonalBestIndex,
+		request.RequestVersion,
+		request.SendNightcore,
+	))
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+}
+
+// /web/osu-getscores6.php -> Last pre-osz2 leaderboard / added beatmap ratings
+func GetScores6(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type == LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	lines := []string{
+		fmt.Sprint(response.Type),
+		strconv.Itoa(response.Beatmap.Beatmapset.Offset),
+		response.Beatmap.Beatmapset.DisplayTitleText(),
+		strconv.FormatFloat(response.Beatmap.Diff, 'f', 4, 64),
+	}
+	if response.Type <= LeaderboardBeatmapPending || request.SkipScores {
+		ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+		return
+	}
+
+	lines = append(lines, formatScore(
+		response.PersonalBest,
+		response.PersonalBestIndex,
+		request.RequestVersion,
+		request.SendNightcore,
+	))
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+}
+
+// /web/osu-getscores5.php -> Added offset & display title metadata
+func GetScores5(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type == LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	lines := []string{
+		fmt.Sprint(response.Type),
+		strconv.Itoa(response.Beatmap.Beatmapset.Offset),
+		response.Beatmap.Beatmapset.DisplayTitleText(),
+	}
+	if response.Type <= LeaderboardBeatmapPending || request.SkipScores {
+		ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+		return
+	}
+
+	lines = append(lines, formatScore(
+		response.PersonalBest,
+		response.PersonalBestIndex,
+		request.RequestVersion,
+		request.SendNightcore,
+	))
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+}
+
+// /web/osu-getscores4.php -> Added user's personal best to the response
+func GetScores4(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	if request.SkipScores {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	lines := []string{
+		fmt.Sprint(response.Type),
+		// Personal best is always the first line after the status code
+		// It may be empty if the user has no submitted score on this map
+		formatScore(
+			response.PersonalBest,
+			response.PersonalBestIndex,
+			request.RequestVersion,
+			request.SendNightcore,
+		),
+	}
+	for index, score := range response.Scores {
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
+	}
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+}
+
+// /web/osu-getscores3.php -> Added "approved" status to the response
+func GetScores3(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	// This endpoint does not support qualified or loved beatmaps
+	// Instead, we'll show them as approved beatmaps
+	response.Type = min(response.Type, LeaderboardBeatmapApproved)
+
+	if request.SkipScores {
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	formatter := func(score *schemas.Score) string {
+		return formatScoreLegacy(score, "|")
+	}
+	lines := []string{fmt.Sprint(response.Type)}
+	lines = append(lines, format(response.Scores, formatter)...)
+
+	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
+}
+
+// /web/osu-getscores2.php -> Added beatmap updating logic & pending/ranked status distinction
+func GetScores2(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNeedsUpdate {
+		// Beatmap is pending, needs update, or not submitted
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	if response.Type > LeaderboardBeatmapRanked {
+		// This endpoint does not support approved, qualified, or loved beatmaps
+		response.Type = LeaderboardBeatmapRanked
+	}
+
+	// Note that if we respond with any status at all,
+	// the client will skip reading the scores, since
+	// statuses -1, 0 and 1 are unranked, and 2 is only
+	// being responded with when using SkipScores
+
+	if request.SkipScores {
+		// Later iterations of this endpoint added the "s" parameter to skip scores
+		// This is used in the editor & multiplayer song-select screens,
+		// since it doesn't display any scores there
+		ctx.RenderText(http.StatusOK, fmt.Sprint(response.Type))
+		return
+	}
+
+	formatter := func(score *schemas.Score) string {
+		return formatScoreLegacy(score, "|")
+	}
+	ctx.RenderText(http.StatusOK, strings.Join(format(response.Scores, formatter), "\n"))
+}
+
+// /web/osu-getscores.php -> The most barebones way to get a leaderboard
+func GetScores(ctx *server.Context) {
+	request, err := NewLeaderboardRequest(ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusBadRequest, "-1")
+		return
+	}
+
+	response, err := processLeaderboardRequest(request, ctx)
+	if err != nil {
+		ctx.RenderText(http.StatusInternalServerError, "-1")
+		return
+	}
+
+	// This endpoint does not have any handling of beatmaps with "update available"
+	// since the only thing it provides is a checksum of the map
+	// It also can't distinguish between pending and ranked maps
+	if request.Beatmap == nil {
+		ctx.RenderText(http.StatusOK, "-1")
+		return
+	}
+	if response.Type <= LeaderboardBeatmapNotSubmitted {
+		ctx.RenderText(http.StatusOK, "-1")
+		return
+	}
+
+	formatter := func(score *schemas.Score) string {
+		return formatScoreLegacy(score, ":")
+	}
+	ctx.RenderText(http.StatusOK, strings.Join(format(response.Scores, formatter), "\n"))
+}
+
+func NewLeaderboardRequest(ctx *server.Context) (*LeaderboardRequest, error) {
+	beatmapFilename := ctx.QueryValue("f")
+	beatmapChecksum := ctx.QueryValue("c")
+	if beatmapChecksum == "" {
+		// This is required in every leaderboard endpoint
+		return nil, fmt.Errorf("missing beatmap checksum")
+	}
+
+	userId, err := ctx.QueryValueIntOptional("u")
+	if err != nil {
+		// Value was provided but was not valid
+		return nil, fmt.Errorf("invalid user id: %w", err)
+	}
+	username := ctx.QueryValueOptional("us")
+	password := ctx.QueryValueOptional("ha")
+
+	leaderboardType, err := ctx.QueryValueEnum[LeaderboardType]("v")
+	if err != nil {
+		leaderboardType = LeaderboardGlobal
+	}
+
+	mode, err := ctx.QueryValueEnum[constants.Mode]("m")
+	if err != nil {
+		mode = constants.ModeOsu
+	}
+	mods, err := ctx.QueryValueEnumOptional[constants.Mods]("mods")
+	if err != nil {
+		mods = nil
+	}
+	if leaderboardType != LeaderboardMods {
+		mods = nil
+	}
+
+	if mods != nil && mods.Has(constants.Nightcore) && mods.Has(constants.DoubleTime) {
+		// Weird osu! stable quirk: clients include DT with NC for some reason
+		// On Titanic we store NC scores without DT, so we filter it out
+		*mods &^= constants.DoubleTime
+	}
+
+	requestVersion, err := ctx.QueryValueInt("vv")
+	if err != nil {
+		requestVersion = 0
+	}
+	skipScores := ctx.QueryValue("s") == "1"
+
+	request := &LeaderboardRequest{
+		RequestVersion:  requestVersion,
+		RequestType:     leaderboardType,
+		IsAuthenticated: username != nil && password != nil,
+		SkipScores:      skipScores,
+		Mode:            mode,
+		Mods:            mods,
+	}
+
+	if username != nil && password != nil {
+		// This endpoint requires user authentication for pb's & certain
+		// leaderboard types (e.g. friends, country)
+		user, err := ctx.AuthenticateUser(*username, *password, true)
+		if err != nil {
+			return nil, fmt.Errorf("failed to authenticate user: %w", err)
+		}
+		request.User = user
+	}
+
+	if request.User == nil && userId != nil {
+		// This endpoint does not require user authentication, but
+		// still needs user-related information for pb's
+		user, err := ctx.State.Users.ById(*userId)
+		if err == nil {
+			request.User = user
+		}
+	}
+
+	beatmap, ok := resolveBeatmap(beatmapChecksum, beatmapFilename, ctx)
+	if !ok {
+		// Let endpoints handle non-submitted beatmaps
+		return request, nil
+	}
+	request.Beatmap = beatmap
+	request.BeatmapNeedsUpdate = beatmap.Checksum != beatmapChecksum
+	return request, nil
+}
+
+func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context) (response LeaderboardResponse, err error) {
+	if request.Beatmap == nil {
+		return LeaderboardResponse{Type: LeaderboardBeatmapNotSubmitted}, nil
+	}
+	if request.Beatmap.Status == constants.BeatmapStatusInactive {
+		return LeaderboardResponse{Type: LeaderboardBeatmapNotSubmitted}, nil
+	}
+	if request.BeatmapNeedsUpdate {
+		return LeaderboardResponse{Type: LeaderboardBeatmapNeedsUpdate, Beatmap: request.Beatmap}, nil
+	}
+	response = LeaderboardResponse{
+		Beatmap: request.Beatmap,
+	}
+
+	switch request.Beatmap.Status {
+	case constants.BeatmapStatusPending, constants.BeatmapStatusWIP, constants.BeatmapStatusGraveyard:
+		response.Type = LeaderboardBeatmapPending
+	case constants.BeatmapStatusRanked:
+		response.Type = LeaderboardBeatmapRanked
+	case constants.BeatmapStatusApproved:
+		response.Type = LeaderboardBeatmapApproved
+	case constants.BeatmapStatusQualified:
+		response.Type = LeaderboardBeatmapQualified
+	case constants.BeatmapStatusLoved:
+		response.Type = LeaderboardBeatmapLoved
+	default:
+		return response, fmt.Errorf("invalid beatmap status: %d", request.Beatmap.Status)
+	}
+
+	if response.Type <= LeaderboardBeatmapPending {
+		return response, nil
+	}
+	if request.User != nil {
+		// Compatibility hack / fix: check if client supports nightcore
+		// Clients before b20120620 interpret NC as the old "Taiko" mod
+		status, _ := ctx.State.BanchoUsers.Get(ctx.Context(), request.User.Id)
+		request.SendNightcore = status != nil && status.ClientVersion >= 20120620
+	}
+
+	filter := repositories.BeatmapLeaderboardFilter{
+		BeatmapId: request.Beatmap.Id,
+		Mode:      request.Mode,
+		Mods:      request.Mods,
+		Country:   request.Country(),
+		FriendsOf: request.FriendsOf(),
+	}
+
+	response.ScoreCount, err = ctx.State.Scores.FetchLeaderboardCount(filter)
+	if err != nil {
+		return response, fmt.Errorf("fetch leaderboard count: %w", err)
+	}
+	if request.SkipScores {
+		return response, nil
+	}
+
+	if request.User != nil {
+		response.PersonalBest, err = ctx.State.Scores.FetchLeaderboardPersonalBest(filter, request.User.Id, "User")
+		if err != nil {
+			return response, fmt.Errorf("fetch personal best: %w", err)
+		}
+		response.PersonalBestIndex, err = ctx.State.Scores.FetchLeaderboardScoreIndex(filter, response.PersonalBest)
+		if err != nil {
+			return response, fmt.Errorf("fetch personal best index: %w", err)
+		}
+	}
+
+	response.Scores, err = ctx.State.Scores.FetchLeaderboardScores(filter, ctx.State.Config.ScoreResponseLimit, "User")
+	if err != nil {
+		return response, fmt.Errorf("fetch leaderboard scores: %w", err)
+	}
+	return response, nil
+}
+
+func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*schemas.Beatmap, bool) {
+	if filename != "" {
+		beatmap, err := ctx.State.Beatmaps.ByFilename(filename, "Beatmapset")
+		if err != nil {
+			return nil, false
+		}
+		if beatmap != nil {
+			return beatmap, true
+		}
+	}
+	if checksum != "" {
+		beatmap, err := ctx.State.Beatmaps.ByChecksum(checksum, "Beatmapset")
+		if err != nil {
+			return nil, false
+		}
+		if beatmap != nil {
+			return beatmap, true
+		}
+	}
+	return nil, false
+}
+
+func formatScore(score *schemas.Score, index int, requestVersion int, sendNightcore bool) string {
+	if score == nil {
+		return ""
+	}
+	submittedAt := score.SubmittedAt.Format("2006-01-02 15:04:05")
+
+	if requestVersion >= 2 {
+		// This was changed to a unix timestamp in request version 2
+		submittedAt = strconv.FormatInt(score.SubmittedAt.Unix(), 10)
+	}
+
+	// Filter out the characters we use to separate fields, just to be sure
+	replacer := strings.NewReplacer("|", "", "\n", "")
+
+	// Clients before b20120620 don't support NC
+	// We change it to DT for replay viewing compatibility
+	scoreMods := resolveLeaderboardMods(score.Mods, sendNightcore)
+
+	fields := []string{
+		strconv.FormatInt(score.Id, 10),
+		replacer.Replace(score.User.Name),
+		strconv.FormatInt(score.TotalScore, 10),
+		strconv.Itoa(score.MaxCombo),
+		strconv.Itoa(score.Count50),
+		strconv.Itoa(score.Count100),
+		strconv.Itoa(score.Count300),
+		strconv.Itoa(score.CountMiss),
+		strconv.Itoa(score.CountKatu),
+		strconv.Itoa(score.CountGeki),
+		strconv.Itoa(integerBoolean(score.Perfect)),
+		strconv.Itoa(int(scoreMods)),
+		strconv.Itoa(score.UserId),
+		strconv.Itoa(index),
+		submittedAt,
+	}
+	if requestVersion >= 4 {
+		// "Has Replay", added in request version 4
+		fields = append(fields, "1")
+	}
+
+	return strings.Join(fields, "|")
+}
+
+func formatScoreLegacy(score *schemas.Score, separator string) string {
+	// Filter out the characters we use to separate fields, just to be sure
+	replacer := strings.NewReplacer(separator, "", "\n", "")
+
+	// NC should be changed to DT as old clients don't support NC
+	scoreMods := resolveLeaderboardMods(score.Mods, false)
+
+	return strings.Join([]string{
+		strconv.FormatInt(score.Id, 10),
+		replacer.Replace(score.User.Name),
+		strconv.FormatInt(score.TotalScore, 10),
+		strconv.Itoa(score.MaxCombo),
+		strconv.Itoa(score.Count50),
+		strconv.Itoa(score.Count100),
+		strconv.Itoa(score.Count300),
+		strconv.Itoa(score.CountMiss),
+		strconv.Itoa(score.CountKatu),
+		strconv.Itoa(score.CountGeki),
+		stringBoolean(score.Perfect),
+		strconv.Itoa(int(scoreMods)),
+		strconv.Itoa(score.UserId),
+		score.User.AvatarFilename(),
+		score.SubmittedAt.Format("2006-01-02 15:04:05"),
+	}, separator)
+}
+
+func resolveLeaderboardMods(mods constants.Mods, sendNightcore bool) constants.Mods {
+	if !mods.Has(constants.Nightcore) {
+		return mods
+	}
+
+	// NC requires DT to be present in leaderboard responses
+	// This is a known osu! stable quirk. Very annoying...
+	mods |= constants.DoubleTime
+
+	if !sendNightcore {
+		// Clients before b20120620 interpret NC as the old "Taiko" mod
+		mods &^= constants.Nightcore
+	}
+	return mods
+}
+
+func statusFromRequestVersion(status LeaderboardResponseType, requestVersion int) int {
+	switch requestVersion {
+	case 0, 1, 2:
+		// Request version 2 changed the score submission
+		// time format from a date string to a unix timestamp
+		switch status {
+		case LeaderboardBeatmapQualified:
+			return 3 // Approved
+		case LeaderboardBeatmapLoved:
+			return 3 // Approved
+		default:
+			return int(status)
+		}
+	case 3:
+		// Request version 3 introduced the "Qualified" status
+		switch status {
+		case LeaderboardBeatmapLoved:
+			return 3 // Approved
+		default:
+			return int(status)
+		}
+	default:
+		// Request version 4 introduced the "Loved" status
+		return int(status)
+	}
+}
+
+func format[T any, R any](values []T, fn func(T) R) []R {
+	result := make([]R, len(values))
+	for i, value := range values {
+		result[i] = fn(value)
+	}
+	return result
+}

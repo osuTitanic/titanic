@@ -1,5 +1,7 @@
 package constants
 
+import "slices"
+
 type BeatmapStatus int
 
 const (
@@ -12,6 +14,22 @@ const (
 	BeatmapStatusQualified BeatmapStatus = 3
 	BeatmapStatusLoved     BeatmapStatus = 4
 )
+
+// BeatmapStatuses lists every status in display order, for status listings / dropdowns.
+var BeatmapStatuses = []BeatmapStatus{
+	BeatmapStatusInactive,
+	BeatmapStatusGraveyard,
+	BeatmapStatusWIP,
+	BeatmapStatusPending,
+	BeatmapStatusRanked,
+	BeatmapStatusApproved,
+	BeatmapStatusQualified,
+	BeatmapStatusLoved,
+}
+
+func (status BeatmapStatus) Valid() bool {
+	return slices.Contains(BeatmapStatuses, status)
+}
 
 func (status BeatmapStatus) Value() int {
 	return int(status)
@@ -58,18 +76,6 @@ const (
 	BeatmapResourceTypeAudio      BeatmapResourceType = 5
 )
 
-// BeatmapStatuses lists every status in display order, for status listings / dropdowns.
-var BeatmapStatuses = []BeatmapStatus{
-	BeatmapStatusInactive,
-	BeatmapStatusGraveyard,
-	BeatmapStatusWIP,
-	BeatmapStatusPending,
-	BeatmapStatusRanked,
-	BeatmapStatusApproved,
-	BeatmapStatusQualified,
-	BeatmapStatusLoved,
-}
-
 type BeatmapGenre int
 
 const (
@@ -105,6 +111,10 @@ var BeatmapGenres = []BeatmapGenre{
 	BeatmapGenreClassical,
 	BeatmapGenreFolk,
 	BeatmapGenreJazz,
+}
+
+func (genre BeatmapGenre) Valid() bool {
+	return slices.Contains(BeatmapGenres, genre)
 }
 
 func (genre BeatmapGenre) Value() int {
@@ -183,6 +193,10 @@ var BeatmapLanguages = []BeatmapLanguage{
 	BeatmapLanguageRussian,
 	BeatmapLanguagePolish,
 	BeatmapLanguageOther,
+}
+
+func (language BeatmapLanguage) Valid() bool {
+	return slices.Contains(BeatmapLanguages, language)
 }
 
 func (language BeatmapLanguage) Value() int {

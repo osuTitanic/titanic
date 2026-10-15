@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
-	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 	"github.com/osuTitanic/titanic/services/stern/internal/wiki"
@@ -36,13 +36,12 @@ func WikiHome(ctx *server.Context) {
 		return
 	}
 
-	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
-	if !ok {
-		ctx.Logger.Error("Failed to resolve wiki service from state")
+	if ctx.Wiki == nil {
+		ctx.Logger.Error("Wiki service is not configured")
 		InternalServerError(ctx)
 		return
 	}
-	urls := service.URLs()
+	urls := ctx.Wiki.URLs()
 
 	pageCount, err := ctx.State.WikiPages.Count()
 	if err != nil {
@@ -97,10 +96,7 @@ func WikiSearch(ctx *server.Context) {
 	}
 
 	query := ctx.QueryValue("query")
-	title := query
-	if title == "" {
-		title = "Search"
-	}
+	title := cmp.Or(query, "Search")
 	// TODO: Implement search functionality
 
 	view := templates.WikiView{
@@ -131,14 +127,13 @@ func WikiArticle(ctx *server.Context) {
 		return
 	}
 
-	service, ok := state.GetExtension[*wiki.Service](ctx.State, "wiki")
-	if !ok {
-		ctx.Logger.Error("Failed to resolve wiki service from state")
+	if ctx.Wiki == nil {
+		ctx.Logger.Error("Wiki service is not configured")
 		InternalServerError(ctx)
 		return
 	}
 
-	result, err := service.FetchPage(path, language)
+	result, err := ctx.Wiki.FetchPage(path, language)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch wiki page", "path", path, "language", language, "error", err)
 		InternalServerError(ctx)
@@ -158,7 +153,7 @@ func WikiArticle(ctx *server.Context) {
 	renderedContent, err := wiki.RenderMarkdownWithSourceURL(
 		result.Content.Content,
 		language,
-		service.MarkdownUrl(path, result.Content.Language),
+		ctx.Wiki.MarkdownUrl(path, result.Content.Language),
 	)
 	if err != nil {
 		ctx.Logger.Error("Failed to render wiki markdown", "path", path, "language", language, "error", err)
@@ -167,7 +162,7 @@ func WikiArticle(ctx *server.Context) {
 	}
 
 	githubPath := wiki.GitHubPath(path)
-	urls := service.URLs()
+	urls := ctx.Wiki.URLs()
 	siteURL := fmt.Sprintf("/wiki/%s/%s", result.Content.Language, path)
 
 	view := templates.WikiView{

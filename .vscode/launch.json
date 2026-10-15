@@ -11,6 +11,15 @@
             "showLog": true,
         },
         {
+            "name": "Debug deck",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/services/deck/cmd/api",
+            "cwd": "${workspaceFolder}",
+            "showLog": true,
+        },
+        {
             "name": "Debug jobs",
             "type": "go",
             "request": "launch",

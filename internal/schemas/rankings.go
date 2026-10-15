@@ -1,6 +1,7 @@
 package schemas
 
 import (
+	"math"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -68,6 +69,51 @@ func (score *Score) Relaxing() bool {
 	return score.Mods.Has(constants.Relax) || score.Mods.Has(constants.Autopilot)
 }
 
+func (score *Score) HasScorePB() bool {
+	return score.StatusScore == constants.ScoreStatusBest
+}
+
+func (score *Score) HasPerformancePB() bool {
+	return score.StatusPP == constants.ScoreStatusBest
+}
+
+func (score *Score) HasPersonalBest() bool {
+	return score.HasScorePB() || score.HasPerformancePB()
+}
+
+func (score *Score) ElapsedTime() int {
+	if !score.Passed() {
+		return max(0, *score.Failtime/1000)
+	}
+	if score.Beatmap == nil {
+		return 0
+	}
+	return max(0, score.Beatmap.TotalLength)
+}
+
+func (score *Score) ComparePerformance(other *Score) bool {
+	better := score.PP > other.PP
+
+	if math.RoundToEven(score.PP) != math.RoundToEven(other.PP) {
+		return better
+	}
+
+	// Scores have the same pp, check total score
+	return score.CompareScore(other)
+}
+
+func (score *Score) CompareScore(other *Score) bool {
+	better := score.TotalScore > other.TotalScore
+
+	if score.TotalScore != other.TotalScore {
+		return better
+	}
+
+	// Scores had the same total score, check submission time
+	// (the score that was set earlier wins)
+	return score.SubmittedAt.Before(other.SubmittedAt)
+}
+
 func (score *Score) RequiresPPv1Update() bool {
 	if score.PPv1 <= 0 {
 		return true
@@ -120,8 +166,8 @@ func (score *Score) TotalObjects() int {
 	}
 }
 
-// Accuracy returns the score's normalized accuracy in the range [0, 1].
-func (score *Score) Accuracy() float64 {
+// ComputeAccuracy returns the score's normalized accuracy in the range [0, 1].
+func (score *Score) ComputeAccuracy() float64 {
 	if score == nil {
 		return 0
 	}
@@ -149,6 +195,83 @@ func (score *Score) Accuracy() float64 {
 	default:
 		return 0
 	}
+}
+
+// ComputeGrade evaluates the score's grade.
+func (score *Score) ComputeGrade() constants.Grade {
+	if !score.Passed() {
+		return constants.GradeF
+	}
+
+	silverMods := constants.Hidden | constants.Flashlight
+	if score.Mode == constants.ModeMania {
+		silverMods |= constants.FadeIn
+	}
+
+	xGrade, sGrade := constants.GradeX, constants.GradeS
+	if score.Mods.Has(silverMods) {
+		xGrade, sGrade = constants.GradeXH, constants.GradeSH
+	}
+
+	switch score.Mode {
+	case constants.ModeOsu, constants.ModeTaiko:
+		totalObjects := score.TotalObjects()
+		if totalObjects == 0 {
+			return constants.GradeD
+		}
+
+		ratio300 := float64(score.Count300) / float64(totalObjects)
+		ratio50 := float64(score.Count50) / float64(totalObjects)
+		switch {
+		case ratio300 == 1:
+			return xGrade
+		case ratio300 > 0.9 && ratio50 <= 0.01 && score.CountMiss == 0:
+			return sGrade
+		case (ratio300 > 0.8 && score.CountMiss == 0) || ratio300 > 0.9:
+			return constants.GradeA
+		case (ratio300 > 0.7 && score.CountMiss == 0) || ratio300 > 0.8:
+			return constants.GradeB
+		case ratio300 > 0.6:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+
+	case constants.ModeCatch:
+		accuracy := score.ComputeAccuracy()
+		switch {
+		case accuracy == 1:
+			return xGrade
+		case accuracy > 0.98:
+			return sGrade
+		case accuracy > 0.94:
+			return constants.GradeA
+		case accuracy > 0.9:
+			return constants.GradeB
+		case accuracy > 0.85:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+
+	case constants.ModeMania:
+		accuracy := score.ComputeAccuracy()
+		switch {
+		case accuracy == 1:
+			return xGrade
+		case accuracy > 0.95:
+			return sGrade
+		case accuracy > 0.9:
+			return constants.GradeA
+		case accuracy > 0.8:
+			return constants.GradeB
+		case accuracy > 0.7:
+			return constants.GradeC
+		default:
+			return constants.GradeD
+		}
+	}
+	return constants.GradeN
 }
 
 type RankHistory struct {

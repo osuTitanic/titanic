@@ -142,9 +142,73 @@ var modsOrder = []Mods{
 	Mirror,
 }
 
+const ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+const KeyMod = Key1 | Key2 | Key3 | Key4 | Key5 | Key6 | Key7 | Key8 | Key9 | KeyCoop
+
+// FreeModAllowed represents all mods that can be used with freemod in multiplayer lobbies
+const FreeModAllowed = NoFail | Easy | Hidden | HardRock | SuddenDeath | Flashlight |
+	FadeIn | Relax | Autopilot | SpunOut | KeyMod
+
+var invalidModCombinations = []Mods{
+	Easy | HardRock,
+	Hidden | FadeIn,
+	NoFail | SuddenDeath,
+	NoFail | Perfect,
+	NoFail | Relax,
+	NoFail | Autopilot,
+	SuddenDeath | Relax,
+	SuddenDeath | Autopilot,
+	HalfTime | DoubleTime,
+	HalfTime | Nightcore,
+	Relax | Autopilot,
+	SpunOut | Autopilot,
+	Autoplay,
+}
+
+const allMods = NoFail | Easy | NoVideo | Hidden | HardRock | SuddenDeath |
+	DoubleTime | Relax | HalfTime | Nightcore | Flashlight | Autoplay |
+	SpunOut | Autopilot | Perfect | Key4 | Key5 | Key6 | Key7 | Key8 |
+	FadeIn | Random | Cinema | Target | Key9 | KeyCoop | Key1 | Key3 |
+	Key2 | ScoreV2 | Mirror
+
+const unrankedMods = Autoplay | Cinema | Target | ScoreV2 | Random |
+	KeyCoop | Key1 | Key2 | Key3
+
 // Has returns true if the given mod flag is enabled in mods.
 func (m Mods) Has(flag Mods) bool {
 	return m&flag != 0
+}
+
+// Valid returns true if mods contains only known flags.
+func (m Mods) Valid() bool {
+	return m&^allMods == 0
+}
+
+// Unranked returns whether the mod combination should be allowed for score submission.
+func (m Mods) Unranked() bool {
+	return m&unrankedMods != 0
+}
+
+// ValidCombination returns true for mods with a valid combination (duh)
+func (m Mods) ValidCombination() bool {
+	for _, combination := range invalidModCombinations {
+		if m&combination == combination {
+			return false
+		}
+	}
+	return true
+}
+
+// Normalize returns mods with stable quirks removed.
+// https://github.com/ppy/osu-api/wiki#mods
+func (m Mods) Normalize() Mods {
+	if m.Has(Nightcore) && m.Has(DoubleTime) {
+		m &^= DoubleTime
+	}
+	if m.Has(Perfect) && m.Has(SuddenDeath) {
+		m &^= SuddenDeath
+	}
+	return m
 }
 
 // String returns the concatenated short representation of the enabled mods, in

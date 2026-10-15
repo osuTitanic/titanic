@@ -65,3 +65,7 @@ func (s *Set) IsBat() bool {
 func (s *Set) IsModerator() bool {
 	return s.InGroup(constants.GroupAdmin, constants.GroupDeveloper, constants.GroupGMT)
 }
+
+func (s *Set) IsDonator() bool {
+	return s.InGroup(constants.GroupDonator)
+}

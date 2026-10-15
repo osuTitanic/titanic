@@ -2,15 +2,25 @@ package repositories
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ScoreRepository struct {
 	db *gorm.DB
+}
+
+type BeatmapLeaderboardFilter struct {
+	BeatmapId int
+	Mode      constants.Mode
+	Mods      *constants.Mods
+	Country   *string
+	FriendsOf *int
 }
 
 func NewScoreRepository(db *gorm.DB) *ScoreRepository {
@@ -18,7 +28,7 @@ func NewScoreRepository(db *gorm.DB) *ScoreRepository {
 }
 
 func (r *ScoreRepository) Create(score *schemas.Score) error {
-	return r.db.Create(score).Error
+	return r.db.Omit(clause.Associations).Create(score).Error
 }
 
 func (r *ScoreRepository) Delete(score *schemas.Score) error {
@@ -27,6 +37,13 @@ func (r *ScoreRepository) Delete(score *schemas.Score) error {
 
 func (r *ScoreRepository) Update(updates *schemas.Score, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
+}
+
+func (r *ScoreRepository) UpdateReplayViews(scoreId int64) error {
+	return r.db.Model(&schemas.Score{}).
+		Where("id = ?", scoreId).
+		UpdateColumn("replay_views", gorm.Expr("replay_views + ?", 1)).
+		Error
 }
 
 func (r *ScoreRepository) UpdateByBeatmapId(updates *schemas.Score, columns ...string) (int64, error) {
@@ -40,6 +57,12 @@ func (r *ScoreRepository) UpdateByBeatmapId(updates *schemas.Score, columns ...s
 func (r *ScoreRepository) ById(id int64, preload ...string) (*schemas.Score, error) {
 	var score schemas.Score
 	err := Preloaded(r.db, preload).Where("id = ?", id).First(&score).Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) ByReplayChecksum(checksum string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := r.db.Where("replay_md5 = ?", checksum).First(&score).Error
 	return LookupResult(&score, err)
 }
 
@@ -103,14 +126,14 @@ func (r *ScoreRepository) FetchWithZeroPP(preload ...string) ([]*schemas.Score, 
 	return scores, err
 }
 
-func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, excludeApproved bool, preload ...string) ([]*schemas.Score, error) {
+func (r *ScoreRepository) FetchBest(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
 	// A negative limit cancels the limit clause entirely -> it will fetch every pb
-	return r.FetchBestRange(userId, mode, excludeApproved, -1, 0, preload...)
+	return r.FetchBestRange(userId, mode, -1, 0, preload...)
 }
 
-func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, excludeApproved bool, limit, offset int, preload ...string) ([]*schemas.Score, error) {
+func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
-	err := bestScoresQuery(userId, mode, excludeApproved, Preloaded(r.db, preload)).
+	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), Preloaded(r.db, preload)).
 		Order("scores.pp DESC").
 		Offset(offset).
 		Limit(limit).
@@ -118,11 +141,33 @@ func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, exclud
 	return scores, err
 }
 
-func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode, excludeApproved bool) (int, error) {
+func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode) (int, error) {
 	var count int64
-	err := bestScoresQuery(userId, mode, excludeApproved, r.db.Model(&schemas.Score{})).
+	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), r.db.Model(&schemas.Score{})).
 		Count(&count).Error
 	return int(count), err
+}
+
+func (r *ScoreRepository) FetchPPRecord(mode constants.Mode, preload ...string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := Preloaded(r.db, preload).
+		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
+		Where("beatmaps.status IN ?", ppBeatmapStatuses()).
+		Where("scores.mode = ?", mode).
+		Where("scores.status >= ?", constants.ScoreStatusBest).
+		Where("scores.hidden = ?", false).
+		Order("scores.pp DESC, scores.submitted_at ASC, scores.id ASC").
+		First(&score).
+		Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchBestByScore(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
+	var scores []*schemas.Score
+	err := bestScoresQuery(userId, mode, "status_score", scoreBeatmapStatuses(), Preloaded(r.db, preload)).
+		Order("total_score DESC, submitted_at ASC, id ASC").
+		Find(&scores).Error
+	return scores, err
 }
 
 func (r *ScoreRepository) FetchPassed(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
@@ -165,6 +210,73 @@ func (r *ScoreRepository) FetchRangeScoresMods(beatmapId int, mode constants.Mod
 	return scores, err
 }
 
+func (r *ScoreRepository) FetchLeaderboardScores(filter BeatmapLeaderboardFilter, limit int, preload ...string) ([]*schemas.Score, error) {
+	query, err := leaderboardQuery(filter, Preloaded(r.db, preload))
+	if err != nil {
+		return nil, err
+	}
+
+	var scores []*schemas.Score
+	err = query.
+		Order("scores.total_score DESC, scores.submitted_at ASC, scores.id ASC").
+		Limit(limit).
+		Find(&scores).
+		Error
+	return scores, err
+}
+
+func (r *ScoreRepository) FetchLeaderboardCount(filter BeatmapLeaderboardFilter) (int, error) {
+	query, err := leaderboardQuery(filter, r.db)
+	if err != nil {
+		return 0, err
+	}
+
+	var count int64
+	err = query.Count(&count).Error
+	return int(count), err
+}
+
+func (r *ScoreRepository) FetchLeaderboardPersonalBest(filter BeatmapLeaderboardFilter, userId int, preload ...string) (*schemas.Score, error) {
+	query, err := leaderboardQuery(filter, Preloaded(r.db, preload))
+	if err != nil {
+		return nil, err
+	}
+
+	var score schemas.Score
+	err = query.
+		Where("scores.user_id = ?", userId).
+		Order("scores.total_score DESC, scores.submitted_at ASC, scores.id ASC").
+		First(&score).
+		Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchLeaderboardScoreIndex(filter BeatmapLeaderboardFilter, score *schemas.Score) (int, error) {
+	if score == nil {
+		return 0, nil
+	}
+
+	query, err := leaderboardQuery(filter, r.db)
+	if err != nil {
+		return 0, err
+	}
+
+	rankedScoresSelect := fmt.Sprintf(
+		"scores.id, ROW_NUMBER() OVER (%s) AS leaderboard_rank",
+		"ORDER BY scores.total_score DESC, scores.submitted_at ASC, scores.id ASC",
+	)
+	rankedScores := query.Select(rankedScoresSelect)
+
+	var rank int
+	err = r.db.
+		Table("(?) AS ranked_scores", rankedScores).
+		Select("ranked_scores.leaderboard_rank").
+		Where("ranked_scores.id = ?", score.Id).
+		Scan(&rank).
+		Error
+	return rank, err
+}
+
 func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constants.Mode, preload ...string) (*schemas.Score, error) {
 	var score schemas.Score
 	err := Preloaded(r.db, preload).
@@ -173,6 +285,93 @@ func (r *ScoreRepository) FetchPersonalBest(beatmapId, userId int, mode constant
 		Where("mode = ?", mode).
 		Where("status_score = ?", constants.ScoreStatusBest).
 		Where("hidden = ?", false).
+		First(&score).Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchPersonalBests(beatmapId, userId int, mode constants.Mode) (performanceBest, scoreBest *schemas.Score, err error) {
+	var candidates []*schemas.Score
+	err = r.db.
+		Where("beatmap_id = ?", beatmapId).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status = ? OR status_score = ?", constants.ScoreStatusBest, constants.ScoreStatusBest).
+		Where("hidden = ?", false).
+		Find(&candidates).Error
+	if err != nil {
+		return nil, nil, err
+	}
+
+	for _, candidate := range candidates {
+		if candidate.StatusPP == constants.ScoreStatusBest {
+			performanceBest = candidate
+		}
+		if candidate.StatusScore == constants.ScoreStatusBest {
+			scoreBest = candidate
+		}
+	}
+	return performanceBest, scoreBest, nil
+}
+
+func (r *ScoreRepository) FetchModsPerformanceBest(beatmapId, userId int, mode constants.Mode, mods constants.Mods) (*schemas.Score, error) {
+	var score schemas.Score
+	err := r.db.
+		Where("beatmap_id = ?", beatmapId).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
+		Where("hidden = ?", false).
+		Where("mods = ?", mods).
+		First(&score).Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchModsScoreBest(beatmapId, userId int, mode constants.Mode, mods constants.Mods) (*schemas.Score, error) {
+	var score schemas.Score
+	err := r.db.
+		Where("beatmap_id = ?", beatmapId).
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
+		Where("hidden = ?", false).
+		Where("mods = ?", mods).
+		First(&score).Error
+	return LookupResult(&score, err)
+}
+
+func (r *ScoreRepository) FetchGradeCounts(userId int, mode constants.Mode) (map[constants.Grade]int, error) {
+	counts := make(map[constants.Grade]int)
+	var results []struct {
+		Grade constants.Grade
+		Count int
+	}
+	err := r.db.Model(&schemas.Score{}).
+		Select("grade, COUNT(id) AS count").
+		Where("user_id = ?", userId).
+		Where("mode = ?", mode).
+		Where("status_score = ?", constants.ScoreStatusBest).
+		Where("hidden = ?", false).
+		Where("grade NOT IN ?", []constants.Grade{constants.GradeF, constants.GradeN}).
+		Group("grade").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+	for _, result := range results {
+		counts[result.Grade] = result.Count
+	}
+	return counts, nil
+}
+
+func (r *ScoreRepository) FetchScoreAbove(beatmapId int, mode constants.Mode, totalScore int64, preload ...string) (*schemas.Score, error) {
+	var score schemas.Score
+	err := Preloaded(r.db, preload).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("total_score > ?", totalScore).
+		Where("status_score = ?", constants.ScoreStatusBest).
+		Where("hidden = ?", false).
+		Order("total_score ASC, submitted_at ASC, id ASC").
 		First(&score).Error
 	return LookupResult(&score, err)
 }
@@ -367,26 +566,36 @@ func (r *ScoreRepository) FetchSubmittedTimestamps(userId int, mode constants.Mo
 	return timestamps, err
 }
 
-func bestScoresQuery(userId int, mode constants.Mode, excludeApproved bool, query *gorm.DB) *gorm.DB {
-	allowedStatus := []constants.BeatmapStatus{
-		constants.BeatmapStatusRanked,
-		constants.BeatmapStatusApproved,
-	}
-
-	if !excludeApproved {
-		allowedStatus = append(allowedStatus,
-			constants.BeatmapStatusQualified,
-			constants.BeatmapStatusLoved,
-		)
-	}
-
-	return query.
+func (r *ScoreRepository) FetchCompletedBeatmapsetIds(userId int) ([]int, error) {
+	var beatmapsetIds []int
+	err := r.db.Model(&schemas.Score{}).
+		Distinct("beatmaps.set_id").
 		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
-		Where("beatmaps.status IN ?", allowedStatus).
 		Where("scores.user_id = ?", userId).
-		Where("scores.mode = ?", mode).
 		Where("scores.status = ?", constants.ScoreStatusBest).
-		Where("scores.hidden = ?", false)
+		Where("scores.hidden = ?", false).
+		Pluck("beatmaps.set_id", &beatmapsetIds).
+		Error
+	return beatmapsetIds, err
+}
+
+func (r *ScoreRepository) FetchAchievementMapActivity(userId, beatmapId int, mode constants.Mode, since time.Time) (playCount int, hadD bool, err error) {
+	var result struct {
+		PlayCount int
+		DCount    int
+	}
+	err = r.db.Model(&schemas.Score{}).
+		Select(
+			"COUNT(*) AS play_count, COALESCE(SUM(CASE WHEN grade = ? THEN 1 ELSE 0 END), 0) AS d_count",
+			constants.GradeD,
+		).
+		Where("user_id = ?", userId).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("submitted_at > ?", since).
+		Scan(&result).
+		Error
+	return result.PlayCount, result.DCount > 0, err
 }
 
 func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
@@ -396,4 +605,72 @@ func pinnedQuery(userId int, mode constants.Mode, query *gorm.DB) *gorm.DB {
 		Where("status > ?", 1).
 		Where("hidden = ?", false).
 		Where("pinned = ?", true)
+}
+
+func bestScoresQuery(userId int, mode constants.Mode, statusColumn string, statuses []constants.BeatmapStatus, query *gorm.DB) *gorm.DB {
+	return query.
+		Joins("JOIN beatmaps ON beatmaps.id = scores.beatmap_id").
+		Where("beatmaps.status IN ?", statuses).
+		Where("scores.user_id = ?", userId).
+		Where("scores.mode = ?", mode).
+		Where("scores."+statusColumn+" = ?", constants.ScoreStatusBest).
+		Where("scores.hidden = ?", false)
+}
+
+func ppBeatmapStatuses() []constants.BeatmapStatus {
+	return []constants.BeatmapStatus{
+		constants.BeatmapStatusRanked,
+		constants.BeatmapStatusApproved,
+	}
+}
+
+func scoreBeatmapStatuses() []constants.BeatmapStatus {
+	return []constants.BeatmapStatus{
+		constants.BeatmapStatusRanked,
+		constants.BeatmapStatusApproved,
+		constants.BeatmapStatusQualified,
+		constants.BeatmapStatusLoved,
+	}
+}
+
+func leaderboardQuery(filter BeatmapLeaderboardFilter, db *gorm.DB) (*gorm.DB, error) {
+	query := db.Model(&schemas.Score{}).
+		Where("scores.beatmap_id = ?", filter.BeatmapId).
+		Where("scores.mode = ?", filter.Mode).
+		Where("scores.hidden = ?", false)
+
+	if filter.Mods == nil {
+		query = query.
+			Where("scores.status_score = ?", constants.ScoreStatusBest)
+	} else {
+		query = query.
+			Where("scores.status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusBest, constants.ScoreStatusMods}).
+			Where("scores.mods = ?", *filter.Mods)
+	}
+
+	if filter.Country != nil {
+		query = query.
+			Joins("JOIN users AS leaderboard_users ON leaderboard_users.id = scores.user_id").
+			Where("leaderboard_users.country = ?", *filter.Country)
+	}
+	if filter.FriendsOf != nil {
+		query = query.Where(
+			// Select either the user or the user's friends
+			`(
+				scores.user_id = ?
+				OR EXISTS (
+					SELECT 1
+					FROM relationships AS leaderboard_relationships
+					WHERE leaderboard_relationships.user_id = ?
+						AND leaderboard_relationships.target_id = scores.user_id
+						AND leaderboard_relationships.status = ?
+				)
+			)`,
+			*filter.FriendsOf,
+			*filter.FriendsOf,
+			constants.RelationshipStatusFriend,
+		)
+	}
+
+	return query, nil
 }

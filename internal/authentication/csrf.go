@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"net/url"
 	"strconv"
 	"strings"
@@ -70,7 +71,7 @@ func (store *CSRFStore) Upsert(ctx context.Context, userId int) (string, error) 
 
 func (store *CSRFStore) Get(ctx context.Context, userId int) (string, error) {
 	token, err := store.Redis.Get(ctx, CSRFRedisKey(userId)).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return "", nil
 	}
 	if err != nil {

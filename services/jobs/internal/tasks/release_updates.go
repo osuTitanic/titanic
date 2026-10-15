@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -163,6 +164,6 @@ func uploadFile(url string, app *state.State, logger *slog.Logger) error {
 	checksum := urlParts[len(urlParts)-1]
 	filename := urlParts[len(urlParts)-2]
 	location := fmt.Sprintf("%s/%s", app.Config.ReleaseUpdateLocation, filename)
-	app.Storage.SaveUrl(checksum, location, url)
+	app.Storage.SaveUrl(context.Background(), checksum, location, url)
 	return nil
 }

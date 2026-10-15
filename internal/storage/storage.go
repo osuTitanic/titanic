@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io"
 
 	_ "github.com/osuTitanic/titanic/internal/logging"
@@ -14,17 +15,15 @@ type ReaderAtCloser interface {
 
 // Storage defines the interface for a storage backend
 type Storage interface {
-	Setup() error
-	Save(key string, directory string, data []byte) error
-	SaveStream(key string, directory string, stream io.Reader) error
-	SaveUrl(key string, directory string, url string) error
-	Read(key string, directory string) ([]byte, error)
-	ReadStream(key string, directory string) (io.ReadSeekCloser, error)
-	ReadStreamAt(key string, directory string) (ReaderAtCloser, int64, error)
-	Remove(key string, directory string) error
-	Exists(key string, directory string) bool
-
-	// TODO: Add context.Context to all methods
+	Setup(ctx context.Context) error
+	Save(ctx context.Context, key string, directory string, data []byte) error
+	SaveStream(ctx context.Context, key string, directory string, stream io.Reader) error
+	SaveUrl(ctx context.Context, key string, directory string, url string) error
+	Read(ctx context.Context, key string, directory string) ([]byte, error)
+	ReadStream(ctx context.Context, key string, directory string) (io.ReadSeekCloser, error)
+	ReadStreamAt(ctx context.Context, key string, directory string) (ReaderAtCloser, int64, error)
+	Remove(ctx context.Context, key string, directory string) error
+	Exists(ctx context.Context, key string, directory string) bool
 }
 
 var RequiredDirectories = []string{

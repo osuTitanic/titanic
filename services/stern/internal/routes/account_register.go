@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -308,11 +309,11 @@ func broadcastRegistrationActivity(ctx *server.Context, user *schemas.User) {
 
 func hasTooManyRegistrations(ctx *server.Context) (bool, error) {
 	key := "registrations:" + ctx.IP()
-	registrations, err := ctx.State.Redis.Get(ctx.Request.Context(), key).Int()
+	registrations, err := ctx.State.Redis.Get(ctx.Context(), key).Int()
 	if err == nil {
 		return registrations > 2, nil
 	}
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return false, nil
 	}
 	return false, err
@@ -320,10 +321,10 @@ func hasTooManyRegistrations(ctx *server.Context) (bool, error) {
 
 func recordRegistrationForIP(ctx *server.Context) error {
 	key := "registrations:" + ctx.IP()
-	if err := ctx.State.Redis.Incr(ctx.Request.Context(), key).Err(); err != nil {
+	if err := ctx.State.Redis.Incr(ctx.Context(), key).Err(); err != nil {
 		return err
 	}
-	return ctx.State.Redis.Expire(ctx.Request.Context(), key, 24*time.Hour).Err()
+	return ctx.State.Redis.Expire(ctx.Context(), key, 24*time.Hour).Err()
 }
 
 func validateRegistrationUsername(ctx *server.Context, username string) (string, error) {

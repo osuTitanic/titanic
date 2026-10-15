@@ -2,6 +2,7 @@ package constants
 
 import (
 	"fmt"
+	"strings"
 )
 
 type ScoreStatus int
@@ -30,8 +31,17 @@ const (
 	GradeN  Grade = "N"
 )
 
+func (grade Grade) Valid() bool {
+	switch grade {
+	case GradeXH, GradeSH, GradeX, GradeS, GradeA, GradeB, GradeC, GradeD, GradeF, GradeN:
+		return true
+	default:
+		return false
+	}
+}
+
 func (grade Grade) String() string {
-	if !grade.IsValid() {
+	if !grade.Valid() {
 		return fmt.Sprintf("Unknown(%s)", string(grade))
 	}
 	return string(grade)
@@ -64,11 +74,98 @@ func (grade Grade) Value() int8 {
 	}
 }
 
-func (grade Grade) IsValid() bool {
-	switch grade {
-	case GradeXH, GradeSH, GradeX, GradeS, GradeA, GradeB, GradeC, GradeD, GradeF, GradeN:
-		return true
-	default:
-		return false
+type IntegrityFlags uint16
+
+const IntegrityFlagsNone IntegrityFlags = 0
+
+const (
+	FlagFlashlightHackKeyBindingPressed IntegrityFlags = 1 << iota
+	FlagSpeedHackDetected
+	FlagIncorrectModValue
+	FlagMultipleOsuClients
+	FlagChecksumFailure
+	FlagFlashlightChecksumIncorrect
+	FlagOsuExecutableChecksum
+	FlagMissingProcessesInList
+	FlagFlashlightImageHack
+	FlagSpinnerHack
+	FlagTransparentWindow
+	FlagFastPress
+	FlagRawMouseDiscrepancy
+	FlagRawKeyboardDiscrepancy
+)
+
+const allIntegrityFlags = FlagFlashlightHackKeyBindingPressed |
+	FlagSpeedHackDetected |
+	FlagIncorrectModValue |
+	FlagMultipleOsuClients |
+	FlagChecksumFailure |
+	FlagFlashlightChecksumIncorrect |
+	FlagOsuExecutableChecksum |
+	FlagMissingProcessesInList |
+	FlagFlashlightImageHack |
+	FlagSpinnerHack |
+	FlagTransparentWindow |
+	FlagFastPress |
+	FlagRawMouseDiscrepancy |
+	FlagRawKeyboardDiscrepancy
+
+const suspiciousIntegrityFlags = FlagFlashlightImageHack |
+	FlagSpinnerHack |
+	FlagTransparentWindow |
+	FlagFastPress |
+	FlagFlashlightChecksumIncorrect |
+	FlagChecksumFailure |
+	FlagRawMouseDiscrepancy |
+	FlagRawKeyboardDiscrepancy
+
+var integrityFlagNames = [...]struct {
+	flag IntegrityFlags
+	name string
+}{
+	{FlagFlashlightHackKeyBindingPressed, "FlashlightHackKeyBindingPressed"},
+	{FlagSpeedHackDetected, "SpeedHackDetected"},
+	{FlagIncorrectModValue, "IncorrectModValue"},
+	{FlagMultipleOsuClients, "MultipleOsuClients"},
+	{FlagChecksumFailure, "ChecksumFailure"},
+	{FlagFlashlightChecksumIncorrect, "FlashlightChecksumIncorrect"},
+	{FlagOsuExecutableChecksum, "OsuExecutableChecksum"},
+	{FlagMissingProcessesInList, "MissingProcessesInList"},
+	{FlagFlashlightImageHack, "FlashlightImageHack"},
+	{FlagSpinnerHack, "SpinnerHack"},
+	{FlagTransparentWindow, "TransparentWindow"},
+	{FlagFastPress, "FastPress"},
+	{FlagRawMouseDiscrepancy, "RawMouseDiscrepancy"},
+	{FlagRawKeyboardDiscrepancy, "RawKeyboardDiscrepancy"},
+}
+
+// Has reports whether any flag in mask is present.
+func (flags IntegrityFlags) Has(mask IntegrityFlags) bool {
+	return flags&mask != 0
+}
+
+// Suspicious reports whether any suspicious flag is present.
+func (flags IntegrityFlags) Suspicious() bool {
+	return flags.Has(suspiciousIntegrityFlags)
+}
+
+// String returns the human-readable names of the enabled flags in bit order.
+func (flags IntegrityFlags) String() string {
+	if flags == IntegrityFlagsNone {
+		return "None"
 	}
+
+	// Append the names of known flags to a string slice
+	parts := make([]string, 0, len(integrityFlagNames)+1)
+	for _, entry := range integrityFlagNames {
+		if flags.Has(entry.flag) {
+			parts = append(parts, entry.name)
+		}
+	}
+
+	// Append unknown flags to string too
+	if unknown := flags &^ allIntegrityFlags; unknown != IntegrityFlagsNone {
+		parts = append(parts, fmt.Sprintf("Unknown(%#x)", uint16(unknown)))
+	}
+	return strings.Join(parts, ", ")
 }

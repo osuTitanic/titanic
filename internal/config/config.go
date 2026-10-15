@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cmp"
 	"fmt"
 	"net/url"
 	"strings"
@@ -82,13 +83,12 @@ type Config struct {
 
 	// Score server configuration
 	WebHost                    string `env:"WEB_HOST" envDefault:"localhost"`
-	WebPort                    int    `env:"WEB_PORT" envDefault:"80"`
+	WebPort                    int    `env:"WEB_PORT" envDefault:"8000"`
 	WebWorkers                 int    `env:"WEB_WORKERS" envDefault:"5"`
 	ScoreResponseLimit         int    `env:"SCORE_RESPONSE_LIMIT" envDefault:"50"`
 	BeatmapFavoritesLimit      int    `env:"BEATMAP_FAVOURITES_LIMIT" envDefault:"100"`
 	AllowRelax                 bool   `env:"ALLOW_RELAX" envDefault:"false"`
 	AllowUnauthenticatedDirect bool   `env:"ALLOW_UNAUTHENTICATED_DIRECT" envDefault:"true"`
-	ApprovedMapRewards         bool   `env:"APPROVED_MAP_REWARDS" envDefault:"false"`
 	BeatmapSubmissionEnabled   bool   `env:"BEATMAP_SUBMISSION_ENABLED" envDefault:"false"`
 	FrozenRankUpdates          bool   `env:"FROZEN_RANK_UPDATES" envDefault:"false"`
 	FrozenPPv1Updates          bool   `env:"FROZEN_PPV1_UPDATES" envDefault:"false"`
@@ -109,7 +109,7 @@ type Config struct {
 	BanchoMaintenance         bool        `env:"BANCHO_MAINTENANCE" envDefault:"false"`
 	AllowMultiaccounting      bool        `env:"ALLOW_MULTIACCOUNTING" envDefault:"false"`
 	AutojoinChannels          StringSlice `env:"AUTOJOIN_CHANNELS" envDefault:"#osu,#announce"`
-	BanchoIp                  string      `env:"BANCHO_IP"`
+	BanchoIp                  string      `env:"PUBLIC_BANCHO_IP"`
 	DisableClientVerification bool        `env:"DISABLE_CLIENT_VERIFICATION" envDefault:"true"`
 	BanchoClientCutoff        int         `env:"BANCHO_CLIENT_CUTOFF"`
 	MultiplayerMaxSlots       int         `env:"MULTIPLAYER_MAX_SLOTS" envDefault:"8"`
@@ -204,10 +204,7 @@ func LoadConfig(envFiles ...string) (*Config, error) {
 }
 
 func (c *Config) PostgresDSN() string {
-	database := c.PostgresDatabase
-	if database == "" {
-		database = c.PostgresUser
-	}
+	database := cmp.Or(c.PostgresDatabase, c.PostgresUser)
 	return fmt.Sprintf(
 		"postgresql://%s:%s@%s:%d/%s",
 		c.PostgresUser, c.PostgresPassword, c.PostgresHost, c.PostgresPort, database,

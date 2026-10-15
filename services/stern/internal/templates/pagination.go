@@ -1,8 +1,8 @@
 package templates
 
 import (
+	"cmp"
 	"net/url"
-	"slices"
 	"strconv"
 )
 
@@ -38,9 +38,7 @@ type PaginationItem struct {
 }
 
 func NewPagination(options PaginationOptions) PaginationView {
-	if options.Path == "" {
-		options.Path = "/"
-	}
+	options.Path = cmp.Or(options.Path, "/")
 	if options.CurrentPage < 1 {
 		options.CurrentPage = 1
 	}
@@ -122,7 +120,7 @@ func intRange(start, end int) []int {
 }
 
 func paginationUrl(path string, current url.Values, page int) string {
-	query := cloneQuery(current)
+	query := current.Clone()
 	if page <= 1 {
 		query.Del("page")
 	} else {
@@ -132,12 +130,4 @@ func paginationUrl(path string, current url.Values, page int) string {
 		return path + "?" + encoded
 	}
 	return path
-}
-
-func cloneQuery(current url.Values) url.Values {
-	query := make(url.Values, len(current))
-	for key, values := range current {
-		query[key] = slices.Clone(values)
-	}
-	return query
 }

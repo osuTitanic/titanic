@@ -19,9 +19,13 @@ type BeatmapsetSearchResult struct {
 type BeatmapsetSearchOptions struct {
 	QueryString string
 
-	Order    constants.SearchOrder
+	// One can either specify the category (e.g. Ranked, Approved, ...)
+	// or the allowed statuses of a beatmapset, useful for osu! direct
+	Statuses []constants.BeatmapStatus
 	Category constants.BeatmapCategory
-	Sort     constants.BeatmapSort
+
+	Order constants.SearchOrder
+	Sort  constants.BeatmapSort
 
 	Genre    *constants.BeatmapGenre
 	Language *constants.BeatmapLanguage
@@ -53,17 +57,26 @@ func (options *BeatmapsetSearchOptions) Normalize() {
 	if options.Category < constants.BeatmapCategoryAny || options.Category > constants.BeatmapCategoryGraveyard {
 		options.Category = constants.BeatmapCategoryLeaderboard
 	}
-	if options.Sort < constants.BeatmapSortTitle || options.Sort > constants.BeatmapSortRelevance {
+	if options.Sort < constants.BeatmapSortTitle || options.Sort > constants.BeatmapSortUpdated {
 		options.Sort = constants.BeatmapSortRanked
 	}
 	if options.Order != constants.SearchOrderAscending {
 		options.Order = constants.SearchOrderDescending
 	}
+	if options.Genre != nil && !slices.Contains(constants.BeatmapGenres, *options.Genre) {
+		options.Genre = nil
+	}
+	if options.Language != nil && !slices.Contains(constants.BeatmapLanguages, *options.Language) {
+		options.Language = nil
+	}
+	if options.Mode != nil && !slices.Contains(constants.Modes, *options.Mode) {
+		options.Mode = nil
+	}
 	if options.Limit < 1 {
 		options.Limit = 50
 	}
-	if options.Limit > 50 {
-		options.Limit = 50
+	if options.Limit > 100 {
+		options.Limit = 100
 	}
 	if options.Offset < 0 {
 		options.Offset = 0
@@ -169,6 +182,7 @@ var beatmapsetSortExpressions = map[constants.BeatmapSort]string{
 	constants.BeatmapSortDifficulty: "beatmapsets.max_diff",
 	constants.BeatmapSortPlays:      "beatmapsets.total_playcount",
 	constants.BeatmapSortCreated:    "beatmapsets.id",
+	constants.BeatmapSortUpdated:    "beatmapsets.last_updated",
 	// For ratings, we calculate a Bayesian average to provide a more balanced ranking
 	// that accounts for both the average rating and the number of ratings
 	// https://en.wikipedia.org/wiki/Bayesian_average
@@ -179,11 +193,16 @@ var beatmapsetSortExpressions = map[constants.BeatmapSort]string{
 }
 
 func (r *BeatmapsetRepository) Search(options BeatmapsetSearchOptions, preload ...string) ([]*schemas.Beatmapset, error) {
-	result, err := r.SearchPage(options, preload...)
-	if err != nil {
-		return nil, err
-	}
-	return result.Beatmapsets, nil
+	options.Normalize()
+	query, textQuery := r.buildBeatmapsetSearchQuery(r.db.Model(&schemas.Beatmapset{}), options)
+	query = applyBeatmapsetSearchSort(query, options, textQuery)
+
+	var beatmapsets []*schemas.Beatmapset
+	err := Preloaded(query, preload).
+		Offset(options.Offset).
+		Limit(options.Limit).
+		Find(&beatmapsets).Error
+	return beatmapsets, err
 }
 
 func (r *BeatmapsetRepository) SearchPage(options BeatmapsetSearchOptions, preload ...string) (*BeatmapsetSearchResult, error) {
@@ -224,7 +243,15 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 
 	query = query.Where("EXISTS (SELECT 1 FROM beatmaps WHERE beatmaps.set_id = beatmapsets.id)")
 	query = applyBeatmapsetCriteria(query, options)
-	query = applyBeatmapsetSearchCategory(query, options.Category)
+
+	// We can either specify the category (e.g. Ranked, Approved, ...) or the
+	// allowed statuses of a beatmapset, which is useful for osu! direct search
+	// Applying statuses takes precedence over the selected category
+	if len(options.Statuses) > 0 {
+		query = query.Where("beatmapsets.submission_status IN ?", options.Statuses)
+	} else {
+		query = applyBeatmapsetSearchCategory(query, options.Category)
+	}
 
 	query, updatedSearchQuery, filtersRequireBeatmaps := applyBeatmapsetSearchFilters(
 		query,
@@ -234,6 +261,7 @@ func (r *BeatmapsetRepository) buildBeatmapsetSearchQuery(query *gorm.DB, option
 	joins.beatmaps = joins.beatmaps || filtersRequireBeatmaps
 
 	if strings.TrimSpace(updatedSearchQuery) != "" {
+		// TODO: Add way to search by beatmap(set) ID directly through the query
 		query = applyBeatmapsetTextSearch(query, updatedSearchQuery)
 	}
 

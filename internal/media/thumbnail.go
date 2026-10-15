@@ -1,5 +1,4 @@
 // BSD 3-Clause License: https://github.com/prplecake/go-thumbnail
-// Package thumbnail provides a method to create thumbnails from images.
 package media
 
 import (
@@ -8,117 +7,23 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
-	"net/http"
-	"os"
+	"io"
 
 	"golang.org/x/image/draw"
 )
 
-// An Image is an image and information about it.
-type Image struct {
-	// Path is a path to an image.
-	Path string
-
-	// ContentType is the content type of the image.
-	ContentType string
-
-	// Data is the image data in a byte-array
-	Data []byte
-
-	// Size is the length of Data
-	Size int
-
-	// Current stores the existing image's dimensions
-	Current ImageDimensions
-
-	// Future store the new thumbnail dimensions.
-	Future ImageDimensions
-}
-
-// ImageDimensions stores dimensional information for an Image.
-type ImageDimensions struct {
-	// Width is the width of an image in pixels.
-	Width int
-
-	// Height is the height on an image in pixels.
-	Height int
-
-	// X is the right-most X-coordinate.
-	X int
-
-	// Y is the top-most Y-coordinate.
-	Y int
-}
-
 var (
-	// ErrInvalidMimeType is returned when a non-image content type is
-	// detected.
+	// ErrInvalidMimeType is returned when a non-image content type is detected.
 	ErrInvalidMimeType = errors.New("invalid mimetype")
 
-	// ErrInvalidScaler is returned when an unrecognized scaler is
-	// passed to the Generator.
+	// ErrInvalidScaler is returned when an unrecognized scaler is configured.
 	ErrInvalidScaler = errors.New("invalid scaler")
+
+	// ErrInvalidDimensions is returned when either target dimension is not positive.
+	ErrInvalidDimensions = errors.New("invalid image dimensions")
 )
 
-// NewImageGenerator returns an instance of a thumbnail generator with a
-// given configuration.
-func NewImageGenerator(c ImageGenerator) *ImageGenerator {
-	return &ImageGenerator{
-		Width:             300,
-		Height:            300,
-		DestinationPath:   c.DestinationPath,
-		DestinationPrefix: c.DestinationPrefix,
-		Scaler:            c.Scaler,
-	}
-}
-
-// NewImageFromFile reads in an image file from the file system and
-// populates an Image object. That new Image object is returned along
-// with any errors that occur during the operation.
-func (gen *ImageGenerator) NewImageFromFile(path string) (*Image, error) {
-	imageBytes, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	contentType := detectContentType(imageBytes)
-	return &Image{
-		Path:        path,
-		ContentType: contentType,
-		Data:        imageBytes,
-		Size:        len(imageBytes),
-		Current: ImageDimensions{
-			Width:  0,
-			Height: 0,
-		},
-		Future: ImageDimensions{
-			Width:  gen.Width,
-			Height: gen.Height,
-		},
-	}, nil
-}
-
-// NewImageFromByteArray reads in an image from a byte array and
-// populates an Image object. That new Image object is returned along
-// with any errors that occur during the operation.
-func (gen *ImageGenerator) NewImageFromByteArray(imageBytes []byte) (*Image, error) {
-	contentType := detectContentType(imageBytes)
-	return &Image{
-		ContentType: contentType,
-		Data:        imageBytes,
-		Size:        len(imageBytes),
-		Current: ImageDimensions{
-			Width:  0,
-			Height: 0,
-		},
-		Future: ImageDimensions{
-			Width:  gen.Width,
-			Height: gen.Height,
-		},
-	}, nil
-}
-
-// ImageGenerator registers a generator configuration to be used when
-// creating thumbnails.
+// ImageGenerator configures thumbnail generation.
 type ImageGenerator struct {
 	// Width is the destination thumbnail width.
 	Width int
@@ -126,108 +31,159 @@ type ImageGenerator struct {
 	// Height is the destination thumbnail height.
 	Height int
 
-	// DestinationPath is the destination thumbnail path.
-	DestinationPath string
-
-	// DestinationPrefix is the prefix for the destination thumbnail
-	// filename.
-	DestinationPrefix string
-
-	// Scaler is the scaler to be used when generating thumbnails.
+	// Scaler selects the interpolation algorithm.
 	Scaler string
+
+	// CropToFit preserves the source aspect ratio by cropping the image from
+	// its center until it matches the destination aspect ratio.
+	CropToFit bool
 }
 
-// ResizeImage resizes the given image data to the provided
-// dimensions and returns the encoded result.
-func ResizeImage(data []byte, width int, height int) ([]byte, error) {
+// NewImageGenerator applies defaults to a thumbnail generator configuration.
+func NewImageGenerator(config ImageGenerator) *ImageGenerator {
+	if config.Width == 0 {
+		config.Width = 300
+	}
+	if config.Height == 0 {
+		config.Height = 300
+	}
+	if config.Scaler == "" {
+		config.Scaler = "CatmullRom"
+	}
+	return &config
+}
+
+// ResizeImage resizes an encoded jpg / png from source into target.
+func ResizeImage(source io.Reader, target io.Writer, width int, height int) error {
 	generator := &ImageGenerator{
 		Width:  width,
 		Height: height,
 		Scaler: "CatmullRom",
 	}
-
-	image, err := generator.NewImageFromByteArray(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return generator.CreateThumbnail(image)
+	return generator.CreateThumbnail(source, target, "")
 }
 
-// ResizeImageToPng resizes the given image data to the provided dimensions and
-// always encodes the result as PNG, regardless of the source format.
-func ResizeImageToPng(data []byte, width int, height int) ([]byte, error) {
-	img, _, err := image.Decode(bytes.NewReader(data))
-	if err != nil {
-		return nil, err
+// ResizeAndCropImage resizes an encoded jpg / png while preserving its aspect ratio.
+// The source is cropped from its center to fill the target.
+func ResizeAndCropImage(source io.Reader, target io.Writer, width int, height int) error {
+	generator := &ImageGenerator{
+		Width:     width,
+		Height:    height,
+		Scaler:    "CatmullRom",
+		CropToFit: true,
 	}
-
-	rect := image.Rect(0, 0, width, height)
-	dst := image.NewRGBA(rect)
-	draw.CatmullRom.Scale(dst, rect, img, img.Bounds(), draw.Over, nil)
-
-	var buffer bytes.Buffer
-	if err := png.Encode(&buffer, dst); err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return generator.CreateThumbnail(source, target, "")
 }
 
-// CreateThumbnail generates a thumbnail.
-func (gen *ImageGenerator) CreateThumbnail(i *Image) ([]byte, error) {
-	if i.ContentType == "application/octet-stream" {
-		return nil, ErrInvalidMimeType
+// ResizeImageToPng resizes an encoded image into target and always
+// encodes the result as png, regardless of the source format.
+func ResizeImageToPng(source io.Reader, target io.Writer, width int, height int) error {
+	generator := &ImageGenerator{
+		Width:  width,
+		Height: height,
+		Scaler: "CatmullRom",
 	}
-
-	dst, err := gen.createRect(i)
-	if err != nil {
-		return nil, err
-	}
-	var buffer bytes.Buffer
-	switch i.ContentType {
-	case "image/jpeg":
-		err = jpeg.Encode(&buffer, dst, nil)
-	case "image/png":
-		err = png.Encode(&buffer, dst)
-	}
-	if err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
+	return generator.CreateThumbnail(source, target, "png")
 }
 
-func (gen *ImageGenerator) createRect(i *Image) (*image.RGBA, error) {
-	img, _, err := image.Decode(bytes.NewReader(i.Data))
-	if err != nil {
+// ResizeImageBytes resizes a jpg / png byte slice and
+// returns the result in the source format.
+func ResizeImageBytes(source []byte, width int, height int) ([]byte, error) {
+	var target bytes.Buffer
+	if err := ResizeImage(bytes.NewReader(source), &target, width, height); err != nil {
 		return nil, err
 	}
-	rect := image.Rect(0, 0, gen.Width, gen.Height)
-	dst := image.NewRGBA(rect)
-	var scaler draw.Interpolator
-	switch scalerChoice := gen.Scaler; scalerChoice {
-	case "NearestNeighbor":
-		scaler = draw.NearestNeighbor
-	case "ApproxBiLinear":
-		scaler = draw.ApproxBiLinear
-	case "BiLinear":
-		scaler = draw.BiLinear
-	case "CatmullRom":
-		scaler = draw.CatmullRom
+	return target.Bytes(), nil
+}
+
+// ResizeImageBytesToPng resizes an encoded image byte slice
+// and always returns the result encoded as png.
+func ResizeImageBytesToPng(source []byte, width int, height int) ([]byte, error) {
+	var target bytes.Buffer
+	if err := ResizeImageToPng(bytes.NewReader(source), &target, width, height); err != nil {
+		return nil, err
 	}
+	return target.Bytes(), nil
+}
+
+// CreateThumbnail decodes an image from source, resizes it,
+// and writes the encoded result to target.
+func (generator *ImageGenerator) CreateThumbnail(source io.Reader, target io.Writer, outputFormat string) error {
+	input, inputFormat, err := image.Decode(source)
+	if errors.Is(err, image.ErrFormat) {
+		return ErrInvalidMimeType
+	}
+	if err != nil {
+		return err
+	}
+
+	thumbnail, err := generator.createRect(input)
+	if err != nil {
+		return err
+	}
+	if outputFormat == "" {
+		outputFormat = inputFormat
+	}
+
+	switch outputFormat {
+	case "jpeg":
+		return jpeg.Encode(target, thumbnail, nil)
+	case "png":
+		return png.Encode(target, thumbnail)
+	default:
+		return ErrInvalidMimeType
+	}
+}
+
+func (generator *ImageGenerator) createRect(input image.Image) (*image.RGBA, error) {
+	if generator.Width <= 0 || generator.Height <= 0 {
+		return nil, ErrInvalidDimensions
+	}
+
+	scaler := resolveImageScaler(generator.Scaler)
 	if scaler == nil {
 		return nil, ErrInvalidScaler
 	}
-	scaler.Scale(dst, rect, img, img.Bounds(), draw.Over, nil)
-	return dst, nil
 
+	targetRect := image.Rect(0, 0, generator.Width, generator.Height)
+	target := image.NewRGBA(targetRect)
+
+	sourceRect := input.Bounds()
+	if generator.CropToFit {
+		sourceRect = cropToAspectRatio(sourceRect, generator.Width, generator.Height)
+	}
+	scaler.Scale(target, targetRect, input, sourceRect, draw.Over, nil)
+	return target, nil
 }
 
-// detectContentType from
-// https://golangcode.com/get-the-content-type-of-file/
-func detectContentType(fb []byte) string {
-	// Only the first 512 bytes are used to sniff the content type.
-	// Use the net/http package's handy DetectContentType function.
-	// Always seems to return a valid content-type by returning
-	// "application/octet-stream" if no others seemed to match.
-	return http.DetectContentType(fb[:512])
+func resolveImageScaler(name string) draw.Interpolator {
+	switch name {
+	case "NearestNeighbor":
+		return draw.NearestNeighbor
+	case "ApproxBiLinear":
+		return draw.ApproxBiLinear
+	case "BiLinear":
+		return draw.BiLinear
+	case "CatmullRom":
+		return draw.CatmullRom
+	default:
+		return nil
+	}
+}
+
+func cropToAspectRatio(source image.Rectangle, targetWidth int, targetHeight int) image.Rectangle {
+	sourceWidth := source.Dx()
+	sourceHeight := source.Dy()
+
+	// The source is wider than the target -> crop its left and right edges
+	if int64(sourceWidth)*int64(targetHeight) > int64(sourceHeight)*int64(targetWidth) {
+		width := int(int64(sourceHeight) * int64(targetWidth) / int64(targetHeight))
+		offset := (sourceWidth - width) / 2
+		return image.Rect(source.Min.X+offset, source.Min.Y, source.Min.X+offset+width, source.Max.Y)
+	}
+
+	// The source is taller than the target -> crop its top and bottom edges
+	height := int(int64(sourceWidth) * int64(targetHeight) / int64(targetWidth))
+	offset := (sourceHeight - height) / 2
+	return image.Rect(source.Min.X, source.Min.Y+offset, source.Max.X, source.Min.Y+offset+height)
 }

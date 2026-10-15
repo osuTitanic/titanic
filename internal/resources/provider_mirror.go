@@ -44,13 +44,16 @@ func NewMirrorResolver(
 	}
 }
 
-func (resolver *MirrorResolver) Setup() error {
+func (resolver *MirrorResolver) Setup(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	userAgent := fmt.Sprintf("osuTitanic (%s)", resolver.config.DomainName)
 	resolver.session = createHttpSession(userAgent)
 	return nil
 }
 
-func (resolver *MirrorResolver) Osz(setId int, noVideo bool) (io.ReadCloser, int64, error) {
+func (resolver *MirrorResolver) Osz(ctx context.Context, setId int, noVideo bool) (io.ReadCloser, int64, error) {
 	resolver.logger.Debug(
 		"Downloading osz...",
 		"set_id", setId,
@@ -61,10 +64,10 @@ func (resolver *MirrorResolver) Osz(setId int, noVideo bool) (io.ReadCloser, int
 		resourceType = constants.BeatmapResourceTypeOszNoVideo
 	}
 
-	return resolver.FetchStream(resourceType, setId)
+	return resolver.FetchStream(ctx, resourceType, setId)
 }
 
-func (resolver *MirrorResolver) Osu(beatmapId int) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) Osu(ctx context.Context, beatmapId int) (io.ReadCloser, error) {
 	resolver.logger.Debug(
 		"Downloading beatmap...",
 		"beatmap_id", beatmapId,
@@ -77,17 +80,17 @@ func (resolver *MirrorResolver) Osu(beatmapId int) (io.ReadCloser, error) {
 
 	// Special case for beatmaps: we want to check titanic first for beatmaps
 	// TODO: Remove this special case & make the download_server consistent
-	stream, _, err := resolver.FetchStreamFromMirrors(beatmapId, mirrors)
+	stream, _, err := resolver.FetchStreamFromMirrors(ctx, beatmapId, mirrors)
 	return stream, err
 }
 
-func (resolver *MirrorResolver) Preview(setId int) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) Preview(ctx context.Context, setId int) (io.ReadCloser, error) {
 	resolver.logger.Debug("Downloading preview...", "set_id", setId)
-	stream, _, err := resolver.FetchStream(constants.BeatmapResourceTypeAudio, setId)
+	stream, _, err := resolver.FetchStream(ctx, constants.BeatmapResourceTypeAudio, setId)
 	return stream, err
 }
 
-func (resolver *MirrorResolver) Background(setId int, large bool) (io.ReadCloser, error) {
+func (resolver *MirrorResolver) Background(ctx context.Context, setId int, large bool) (io.ReadCloser, error) {
 	resolver.logger.Debug("Downloading background...", "set_id", setId)
 
 	resourceType := constants.BeatmapResourceTypeThumbnail
@@ -95,26 +98,27 @@ func (resolver *MirrorResolver) Background(setId int, large bool) (io.ReadCloser
 		resourceType = constants.BeatmapResourceTypeBackground
 	}
 
-	stream, _, err := resolver.FetchStream(resourceType, setId)
+	stream, _, err := resolver.FetchStream(ctx, resourceType, setId)
 	return stream, err
 }
 
 // FetchStream resolves the mirrors for the given resource type and returns a
 // stream to the first mirror that responds successfully.
-func (resolver *MirrorResolver) FetchStream(resourceType constants.BeatmapResourceType, setId int) (io.ReadCloser, int64, error) {
-	mirrors := resolver.ResolveMirrors(resourceType, resolver.server)
-	return resolver.FetchStreamFromMirrors(setId, mirrors)
+func (resolver *MirrorResolver) FetchStream(ctx context.Context, resourceType constants.BeatmapResourceType, setId int) (io.ReadCloser, int64, error) {
+	mirrors := resolver.ResolveMirrors(ctx, resourceType, resolver.server)
+	return resolver.FetchStreamFromMirrors(ctx, setId, mirrors)
 }
 
 // FetchStreamFromMirrors iterates through the provided mirrors, returning a stream
 // from the first mirror that responds successfully.
-func (resolver *MirrorResolver) FetchStreamFromMirrors(setId int, mirrors []*schemas.BeatmapMirror) (io.ReadCloser, int64, error) {
+func (resolver *MirrorResolver) FetchStreamFromMirrors(ctx context.Context, setId int, mirrors []*schemas.BeatmapMirror) (io.ReadCloser, int64, error) {
 	if len(mirrors) == 0 {
 		return nil, 0, ErrNoMirrorsAvailable
 	}
 
 	for _, mirror := range mirrors {
 		response := resolver.PerformMirrorRequest(
+			ctx,
 			resolveMirrorUrl(mirror.Url, setId),
 			mirror,
 		)
@@ -134,12 +138,12 @@ func (resolver *MirrorResolver) FetchStreamFromMirrors(setId int, mirrors []*sch
 
 // PerformMirrorRequest sends a request to a single mirror, returning its
 // response or nil if the mirror is unavailable, rate limited or errored out.
-func (resolver *MirrorResolver) PerformMirrorRequest(url string, mirror *schemas.BeatmapMirror) *http.Response {
-	if resolver.CheckRatelimit(mirror.Url) {
+func (resolver *MirrorResolver) PerformMirrorRequest(ctx context.Context, url string, mirror *schemas.BeatmapMirror) *http.Response {
+	if resolver.CheckRatelimit(ctx, mirror.Url) {
 		return nil
 	}
 
-	response, err := resolver.session.Get(url)
+	response, err := resolver.session.Get(ctx, url)
 	if err != nil {
 		resolver.logger.Error(
 			"Failed to send request",
@@ -156,7 +160,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(url string, mirror *schemas
 			"Remaining units low, blocking mirror",
 			"mirror", mirror.Url, "seconds", ratelimitReset,
 		)
-		resolver.SetRatelimit(mirror.Url, ratelimitReset)
+		resolver.SetRatelimit(ctx, mirror.Url, ratelimitReset)
 	}
 
 	dailyRemaining, hasDaily := resolveHeaderInt(response, "X-Daily-Remaining")
@@ -167,7 +171,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(url string, mirror *schemas
 			"Daily limit reached on mirror",
 			"mirror", mirror.Url, "seconds", dailyReset,
 		)
-		resolver.SetRatelimit(mirror.Url, dailyReset)
+		resolver.SetRatelimit(ctx, mirror.Url, dailyReset)
 	}
 
 	if response.StatusCode == http.StatusTooManyRequests {
@@ -179,7 +183,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(url string, mirror *schemas
 			"Rate limited on mirror",
 			"mirror", mirror.Url, "seconds", retry,
 		)
-		resolver.SetRatelimit(mirror.Url, retry)
+		resolver.SetRatelimit(ctx, mirror.Url, retry)
 		response.Body.Close()
 		return nil
 	}
@@ -194,23 +198,23 @@ func (resolver *MirrorResolver) PerformMirrorRequest(url string, mirror *schemas
 }
 
 // CheckRatelimit reports whether the given mirror is currently rate limited.
-func (resolver *MirrorResolver) CheckRatelimit(rawUrl string) bool {
+func (resolver *MirrorResolver) CheckRatelimit(ctx context.Context, rawUrl string) bool {
 	domain := resolveMirrorDomain(rawUrl)
 	key := fmt.Sprintf("ratelimit:%s", domain)
 
-	exists, err := resolver.cache.Exists(context.Background(), key).Result()
+	exists, err := resolver.cache.Exists(ctx, key).Result()
 	return err == nil && exists > 0
 }
 
 // SetRatelimit blocks the given mirror for the provided number of seconds.
-func (resolver *MirrorResolver) SetRatelimit(rawUrl string, seconds int) {
+func (resolver *MirrorResolver) SetRatelimit(ctx context.Context, rawUrl string, seconds int) {
 	if seconds <= 0 {
 		seconds = 120
 	}
 	domain := resolveMirrorDomain(rawUrl)
 
 	resolver.cache.Set(
-		context.Background(),
+		ctx,
 		fmt.Sprintf("ratelimit:%s", domain), 1,
 		time.Duration(seconds)*time.Second,
 	)
@@ -222,9 +226,9 @@ func (resolver *MirrorResolver) SetRatelimit(rawUrl string, seconds int) {
 
 // ResolveMirrors returns the mirrors for the given type & server, rotated by a
 // round-robin index and filtered to exclude rate limited mirrors.
-func (resolver *MirrorResolver) ResolveMirrors(resourceType constants.BeatmapResourceType, server constants.BeatmapServer) []*schemas.BeatmapMirror {
+func (resolver *MirrorResolver) ResolveMirrors(ctx context.Context, resourceType constants.BeatmapResourceType, server constants.BeatmapServer) []*schemas.BeatmapMirror {
 	roundRobinKey := fmt.Sprintf("roundrobin:%d:%d", resourceType, server)
-	index := resolver.RoundRobinIndex(roundRobinKey)
+	index := resolver.RoundRobinIndex(ctx, roundRobinKey)
 
 	available, err := resolver.mirrors.FetchByType(resourceType, server)
 	if err != nil {
@@ -237,7 +241,7 @@ func (resolver *MirrorResolver) ResolveMirrors(resourceType constants.BeatmapRes
 
 	mirrors := make([]*schemas.BeatmapMirror, 0, len(available))
 	for _, mirror := range available {
-		if resolver.CheckRatelimit(mirror.Url) {
+		if resolver.CheckRatelimit(ctx, mirror.Url) {
 			continue
 		}
 		mirrors = append(mirrors, mirror)
@@ -250,15 +254,15 @@ func (resolver *MirrorResolver) ResolveMirrors(resourceType constants.BeatmapRes
 	nextIndex := (index + 1) % len(mirrors)
 
 	resolver.cache.Set(
-		context.Background(),
+		ctx,
 		roundRobinKey,
 		nextIndex, 60*time.Second,
 	)
 	return append(mirrors[index:], mirrors[:index]...)
 }
 
-func (resolver *MirrorResolver) RoundRobinIndex(key string) int {
-	value, err := resolver.cache.Get(context.Background(), key).Result()
+func (resolver *MirrorResolver) RoundRobinIndex(ctx context.Context, key string) int {
+	value, err := resolver.cache.Get(ctx, key).Result()
 	if err != nil {
 		return 0
 	}

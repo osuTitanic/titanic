@@ -5,6 +5,7 @@ import "fmt"
 type RankingType string
 
 const (
+	RankingTypeGlobal      RankingType = "global"
 	RankingTypePerformance RankingType = "performance"
 	RankingTypeCountry     RankingType = "country"
 	RankingTypeTotalScore  RankingType = "tscore"
@@ -15,12 +16,17 @@ const (
 )
 
 func (rankingType RankingType) Alias() string {
-	return string(rankingType)
+	switch rankingType {
+	case RankingTypeGlobal:
+		return RankingTypePerformance.Alias()
+	default:
+		return string(rankingType)
+	}
 }
 
 func (rankingType RankingType) String() string {
 	switch rankingType {
-	case RankingTypePerformance:
+	case RankingTypePerformance, RankingTypeGlobal:
 		return "Performance"
 	case RankingTypeCountry:
 		return "Country"

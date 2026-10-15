@@ -6,6 +6,7 @@ import (
 
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepository struct {
@@ -30,19 +31,38 @@ func (r *UserRepository) Update(updates *schemas.User, columns ...string) (int64
 
 func (r *UserRepository) ById(id int, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("id = ?", id).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("id = ?", id).
+		First(&user).
+		Error
+	return LookupResult(&user, err)
+}
+
+func (r *UserRepository) ByIdWithLock(id int, preload ...string) (*schemas.User, error) {
+	var user schemas.User
+	err := Preloaded(r.db, preload).
+		Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", id).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByName(name string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("name = ?", name).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("name = ?", name).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByNameCaseInsensitive(name string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("LOWER(name) = ?", strings.ToLower(name)).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("LOWER(name) = ?", strings.ToLower(name)).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
@@ -67,19 +87,28 @@ func (r *UserRepository) ByNameExtended(query string, preload ...string) (*schem
 
 func (r *UserRepository) BySafeName(safeName string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("safe_name = ?", safeName).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("safe_name = ?", safeName).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByEmail(email string, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("LOWER(email) = ?", strings.ToLower(email)).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("LOWER(email) = ?", strings.ToLower(email)).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
 func (r *UserRepository) ByDiscordId(discordId int64, preload ...string) (*schemas.User, error) {
 	var user schemas.User
-	err := Preloaded(r.db, preload).Where("discord_id = ?", discordId).First(&user).Error
+	err := Preloaded(r.db, preload).
+		Where("discord_id = ?", discordId).
+		First(&user).
+		Error
 	return LookupResult(&user, err)
 }
 
@@ -101,7 +130,10 @@ func (r *UserRepository) ManyById(userIds []int, preload ...string) ([]*schemas.
 	}
 
 	var users []*schemas.User
-	err := Preloaded(r.db, preload).Where("id IN ?", userIds).Find(&users).Error
+	err := Preloaded(r.db, preload).
+		Where("id IN ?", userIds).
+		Find(&users).
+		Error
 	return users, err
 }
 
@@ -111,7 +143,10 @@ func (r *UserRepository) ManyByName(names []string, preload ...string) ([]*schem
 	}
 
 	var users []*schemas.User
-	err := Preloaded(r.db, preload).Where("name IN ?", names).Find(&users).Error
+	err := Preloaded(r.db, preload).
+		Where("name IN ?", names).
+		Find(&users).
+		Error
 	return users, err
 }
 

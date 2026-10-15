@@ -3,6 +3,7 @@
 package state
 
 import (
+	"context"
 	"log/slog"
 	"net"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
+	"github.com/osuTitanic/titanic/internal/bancho"
 	"github.com/osuTitanic/titanic/internal/config"
 	"github.com/osuTitanic/titanic/internal/database"
 	"github.com/osuTitanic/titanic/internal/discord"
@@ -78,7 +80,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 	}
 
 	storage := storage.NewFileStorage(cfg.DataPath)
-	if err := storage.CreateDefaultFolders(); err != nil {
+	if err := storage.CreateDefaultFolders(context.Background()); err != nil {
 		t.Fatalf("failed to setup storage: %v", err)
 	}
 	repositories := NewRepositories(db)
@@ -88,7 +90,7 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		repositories.ResourceMirrors,
 		repositories.Beatmapsets,
 	)
-	if err := beatmapResources.Setup(); err != nil {
+	if err := beatmapResources.Setup(context.Background()); err != nil {
 		t.Fatalf("failed to setup beatmap resources: %v", err)
 	}
 
@@ -98,14 +100,16 @@ func NewTestState(t testing.TB, opts ...TestStateOption) *State {
 		Database:        db,
 		Redis:           redisClient,
 		Storage:         storage,
+		StorageOsz2:     storage,
 		Email:           email.NewNoopEmail(cfg.EmailSender),
 		Officer:         discord.NewOfficerFromConfig(cfg),
 		Location:        geolocation,
 		Resources:       beatmapResources,
 		Repositories:    repositories,
-		Extensions:      map[string]any{},
 		Rankings:        rankings.NewRankingsService(redisClient),
 		PPv1:            performance.NewPPv1Service(repositories.Scores, repositories.Beatmaps),
+		BanchoUsers:     bancho.NewStatusStore(redisClient),
+		BanchoEvents:    bancho.NewEventDispatcher(redisClient),
 		Permissions:     permissions.New(repositories.Permissions, repositories.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),
 		SessionStore:    authentication.NewWebsiteSessionStore(redisClient),

@@ -1,6 +1,7 @@
 package rankings
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -15,7 +16,7 @@ func (service *RankingsService) PlayerAbove(userId int, mode constants.Mode, ran
 	key := service.RankingKey(mode, rankType, nil)
 	position, err := service.client.ZRevRank(service.ctx, key, strconv.Itoa(userId)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, 0, ErrNoPlayerAbove
 		}
 		return 0, 0, err
@@ -26,7 +27,7 @@ func (service *RankingsService) PlayerAbove(userId int, mode constants.Mode, ran
 
 	userScore, err := service.client.ZScore(service.ctx, key, strconv.Itoa(userId)).Result()
 	if err != nil {
-		if err == redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return 0, 0, ErrNoPlayerAbove
 		}
 		return 0, 0, err

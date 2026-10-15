@@ -26,8 +26,8 @@ type httpSession struct {
 	userAgent string
 }
 
-func (session *httpSession) Get(url string) (*http.Response, error) {
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+func (session *httpSession) Get(ctx context.Context, url string) (*http.Response, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

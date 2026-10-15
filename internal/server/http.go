@@ -2,12 +2,14 @@ package server
 
 import (
 	"bufio"
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
+	"mime/multipart"
 	"net"
 	"net/http"
 	"strconv"
@@ -28,6 +30,10 @@ type HttpContext struct {
 	Response http.ResponseWriter
 	Request  *http.Request
 	Logger   *slog.Logger
+}
+
+func (ctx *HttpContext) Context() context.Context {
+	return ctx.Request.Context()
 }
 
 func (ctx *HttpContext) IP() string {
@@ -78,6 +84,22 @@ func (ctx *HttpContext) QueryValues(name string) []string {
 	return ctx.Request.URL.Query()[name]
 }
 
+// QueryValueDefault attempts to get a query parameter from
+// the request while falling back to the given if not present.
+func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
+	return cmp.Or(ctx.QueryValue(name), fallback)
+}
+
+// QueryValueOptional attempts to get a query parameter
+// from the request and returns nil if not present.
+func (ctx *HttpContext) QueryValueOptional(name string) *string {
+	if value := strings.TrimSpace(ctx.QueryValue(name)); value == "" {
+		return nil
+	} else {
+		return &value
+	}
+}
+
 // QueryValueInt returns a query parameter as an integer.
 func (ctx *HttpContext) QueryValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.QueryValue(name)))
@@ -88,23 +110,143 @@ func (ctx *HttpContext) QueryValueInt64(name string) (int64, error) {
 	return strconv.ParseInt(strings.TrimSpace(ctx.QueryValue(name)), 10, 64)
 }
 
-// QueryValueDefault attempts to get a query parameter from
-// the request while falling back to the given if not present.
-func (ctx *HttpContext) QueryValueDefault(name, fallback string) string {
-	if value := ctx.QueryValue(name); value != "" {
-		return value
-	}
-	return fallback
+// QueryValueFloat returns a query parameter as a float64.
+func (ctx *HttpContext) QueryValueFloat(name string) (float64, error) {
+	return strconv.ParseFloat(strings.TrimSpace(ctx.QueryValue(name)), 64)
 }
 
-// FormValue is a helper function to get form values from the request body.
+// QueryValueIntOptional returns a query parameter as an
+// integer pointer or nil if the parameter is not present.
+func (ctx *HttpContext) QueryValueIntOptional(name string) (*int, error) {
+	raw := ctx.QueryValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(*raw)
+	if err != nil {
+		return nil, err
+	}
+	return new(value), nil
+}
+
+// QueryValueEnum attempts to get a query parameter from the request and parse it as an enum value.
+func (ctx *HttpContext) QueryValueEnum[T constants.HasValidator](name string) (T, error) {
+	raw := ctx.QueryValue(name)
+	return constants.ResolveEnum[T](raw)
+}
+
+// QueryValueEnumOptional attempts to get a query parameter from the request
+// and parse it as an enum value, returning nil if not present.
+func (ctx *HttpContext) QueryValueEnumOptional[T constants.HasValidator](name string) (*T, error) {
+	raw := ctx.QueryValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := constants.ResolveEnum[T](*raw)
+	if err != nil {
+		return nil, err
+	}
+	return &value, nil
+}
+
+// EnsureMultipartForm limits the request body & parses it as multipart form data.
+func (ctx *HttpContext) EnsureMultipartForm(maxBodySize, maxMemory int64) error {
+	ctx.Logger.Debug("Reading multipart form data", "maxSize", maxBodySize, "maxMem", maxMemory)
+	ctx.LimitBody(maxBodySize)
+	return ctx.Request.ParseMultipartForm(maxMemory)
+}
+
+// LimitBody limits the request body reader size
+func (ctx *HttpContext) LimitBody(maxBodySize int64) {
+	ctx.Request.Body = http.MaxBytesReader(ctx.Response, ctx.Request.Body, maxBodySize+1)
+}
+
+// FormValue returns a form value using the precedence rules from net/http's FormValue.
 func (ctx *HttpContext) FormValue(name string) string {
 	return ctx.Request.FormValue(name)
+}
+
+// PostFormValue returns a form value from the request body, ignoring query parameters.
+func (ctx *HttpContext) PostFormValue(name string) string {
+	return ctx.Request.PostFormValue(name)
+}
+
+// FormValueDefault attempts to get a form value from the
+// request while falling back to the given if not present.
+func (ctx *HttpContext) FormValueDefault(name, fallback string) string {
+	return cmp.Or(ctx.FormValue(name), fallback)
+}
+
+// FormValueOptional attempts to get a form value from
+// the request and returns nil if not present.
+func (ctx *HttpContext) FormValueOptional(name string) *string {
+	if value := strings.TrimSpace(ctx.FormValue(name)); value == "" {
+		return nil
+	} else {
+		return &value
+	}
 }
 
 // FormValueInt returns a form value as an integer.
 func (ctx *HttpContext) FormValueInt(name string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(ctx.FormValue(name)))
+}
+
+// FormValueInt64 returns a form value as an int64.
+func (ctx *HttpContext) FormValueInt64(name string) (int64, error) {
+	return strconv.ParseInt(strings.TrimSpace(ctx.FormValue(name)), 10, 64)
+}
+
+// FormValueFloat returns a form value as a float64.
+func (ctx *HttpContext) FormValueFloat(name string) (float64, error) {
+	return strconv.ParseFloat(strings.TrimSpace(ctx.FormValue(name)), 64)
+}
+
+// FormValueIntOptional returns a form value as an integer
+// pointer or nil if the parameter is not present.
+func (ctx *HttpContext) FormValueIntOptional(name string) (*int, error) {
+	raw := ctx.FormValueOptional(name)
+	if raw == nil {
+		return nil, nil
+	}
+	value, err := strconv.Atoi(*raw)
+	if err != nil {
+		return nil, err
+	}
+	return new(value), nil
+}
+
+// FormValueEnum attempts to get a form value from the request and parse it as an enum value.
+func (ctx *HttpContext) FormValueEnum[T constants.HasValidator](name string) (T, error) {
+	raw := ctx.FormValue(name)
+	return constants.ResolveEnum[T](raw)
+}
+
+// FormFile returns the first uploaded file matching one of
+// the possible multipart field names.
+func (ctx *HttpContext) FormFile(possibleFilenames ...string) (multipart.File, *multipart.FileHeader, error) {
+	for _, filename := range possibleFilenames {
+		file, header, err := ctx.Request.FormFile(filename)
+		if err == nil {
+			return file, header, nil
+		}
+		if !errors.Is(err, http.ErrMissingFile) {
+			return nil, nil, err
+		}
+	}
+	return nil, nil, http.ErrMissingFile
+}
+
+func (ctx *HttpContext) Status() int {
+	resp, ok := ctx.Response.(*HttpResponseContext)
+	if !ok {
+		return 0
+	}
+	return resp.s
+}
+
+func (ctx *HttpContext) StatusExists() bool {
+	return ctx.Status() != 0
 }
 
 func (ctx *HttpContext) Redirect(status int, location string) {
@@ -145,6 +287,7 @@ type HttpServer[C any] struct {
 	Router *http.ServeMux
 
 	contextFactory HttpContextFactory[C]
+	panicHandler   func(C, any)
 }
 
 func NewHttpServer[C any](host string, port int, name string, createContext HttpContextFactory[C]) *HttpServer[C] {
@@ -155,12 +298,18 @@ func NewHttpServer[C any](host string, port int, name string, createContext Http
 		Logger:         slog.Default().With("component", name),
 		Router:         http.NewServeMux(),
 		contextFactory: createContext,
+		panicHandler:   func(c C, err any) { panic(err) },
 	}
 }
 
 // Handle registers a stdlib route pattern on the server.
 func (server *HttpServer[C]) Handle(pattern string, handler HttpHandlerFunc[C]) {
 	server.Router.HandleFunc(pattern, server.ContextMiddleware(handler))
+}
+
+// OnPanic sets the panic handler for the server.
+func (server *HttpServer[C]) OnPanic(handler func(C, any)) {
+	server.panicHandler = handler
 }
 
 // ContextMiddleware creates a new Context struct for each request.
@@ -175,7 +324,18 @@ func (server *HttpServer[C]) ContextMiddleware(handler HttpHandlerFunc[C]) http.
 			Request:  request,
 			Logger:   server.Logger,
 		}
-		handler(server.contextFactory(base))
+		context := server.contextFactory(base)
+
+		defer func() {
+			if err := recover(); err != nil {
+				// Preserve net/http intentional abort behavior
+				if e, ok := err.(error); ok && errors.Is(e, http.ErrAbortHandler) {
+					panic(err)
+				}
+				server.panicHandler(context, err)
+			}
+		}()
+		handler(context)
 	}
 }
 

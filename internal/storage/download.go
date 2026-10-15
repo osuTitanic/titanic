@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"time"
@@ -14,16 +15,16 @@ var defaultAssetUrls = map[string]string{
 
 var httpClient = &http.Client{Timeout: 10 * time.Second}
 
-func downloadAssetStream(key string) (io.ReadCloser, error) {
+func downloadAssetStream(ctx context.Context, key string) (io.ReadCloser, error) {
 	url, exists := defaultAssetUrls[key]
 	if !exists {
 		return nil, nil
 	}
-	return downloadStream(url)
+	return downloadStream(ctx, url)
 }
 
-func downloadStream(url string) (io.ReadCloser, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func downloadStream(ctx context.Context, url string) (io.ReadCloser, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

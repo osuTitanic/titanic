@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
+	"github.com/osuTitanic/titanic/internal/bancho"
 	"github.com/osuTitanic/titanic/internal/config"
 	"github.com/osuTitanic/titanic/internal/database"
 	"github.com/osuTitanic/titanic/internal/discord"
@@ -30,22 +31,24 @@ type State struct {
 	*Repositories
 
 	// Core components
-	Config     *config.Config
-	Logger     *slog.Logger
-	Database   *gorm.DB
-	Redis      *redis.Client
-	Storage    storage.Storage
-	Email      email.Email
-	Officer    *discord.Officer
-	Location   location.Provider
-	Extensions map[string]any
+	Config      *config.Config
+	Logger      *slog.Logger
+	Database    *gorm.DB
+	Redis       *redis.Client
+	Storage     storage.Storage
+	StorageOsz2 storage.Storage
+	Email       email.Email
+	Officer     *discord.Officer
+	Location    location.Provider
 
 	// Services
-	Permissions permissions.Resolver
-	Resources   resources.BeatmapResourceProvider
-	Rankings    *rankings.RankingsService
-	PPv1        *performance.PPv1Service
-	PPv2        performance.IPPv2Service
+	Permissions  permissions.Resolver
+	Resources    *resources.BeatmapProvider
+	Rankings     *rankings.RankingsService
+	PPv1         *performance.PPv1Service
+	PPv2         performance.IPPv2Service
+	BanchoUsers  *bancho.StatusStore
+	BanchoEvents *bancho.EventDispatcher
 
 	// Authentication
 	SessionStore    *authentication.WebsiteSessionStore
@@ -66,7 +69,13 @@ func NewState(environmentFiles ...string) (*State, error) {
 	logging.SetDefault("titanic", logLevel)
 	logger := slog.Default()
 
-	var storageProvider storage.Storage = storage.NewFileStorage(cfg.DataPath)
+	// osz2-specific storage stays local only for now
+	// bss is simply just way faster when using local storage
+	// though, we should probabl add configuration for this in the future
+
+	localStorage := storage.NewFileStorage(cfg.DataPath)
+	var storageProvider storage.Storage = localStorage
+	var storageOsz2 storage.Storage = localStorage
 	var s3Config = cfg.S3Config()
 
 	if cfg.S3Enabled && s3Config == nil {
@@ -79,7 +88,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		}
 	}
 
-	if err := storageProvider.Setup(); err != nil {
+	if err := storageProvider.Setup(context.Background()); err != nil {
 		return nil, fmt.Errorf("state: failed to setup storage: %w", err)
 	}
 
@@ -126,7 +135,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		repos.ResourceMirrors,
 		repos.Beatmapsets,
 	)
-	if err := beatmapResources.Setup(); err != nil {
+	if err := beatmapResources.Setup(context.Background()); err != nil {
 		geolocation.Close()
 		database.CloseSession(db)
 		return nil, fmt.Errorf("state: failed to setup beatmap resources: %w", err)
@@ -140,6 +149,7 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Config:          cfg,
 		Database:        db,
 		Storage:         storageProvider,
+		StorageOsz2:     storageOsz2,
 		Logger:          logger,
 		Email:           mailer,
 		Officer:         discord.NewOfficerFromConfig(cfg),
@@ -147,9 +157,10 @@ func NewState(environmentFiles ...string) (*State, error) {
 		Redis:           redisClient,
 		Repositories:    repos,
 		Resources:       beatmapResources,
-		Extensions:      make(map[string]any),
 		PPv1:            ppv1Service,
 		PPv2:            ppv2Service,
+		BanchoUsers:     bancho.NewStatusStore(redisClient),
+		BanchoEvents:    bancho.NewEventDispatcher(redisClient),
 		Rankings:        rankings.NewRankingsService(redisClient),
 		Permissions:     permissions.New(repos.Permissions, repos.Groups),
 		CSRFStore:       authentication.NewCSRFStore(redisClient),

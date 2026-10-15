@@ -40,7 +40,7 @@ func forumMarkUserActive(ctx *server.Context, forumId int) {
 
 	key := forumActiveUsersKey(forumId)
 	now := float64(time.Now().Unix())
-	context := ctx.Request.Context()
+	context := ctx.Context()
 
 	if err := ctx.State.Redis.ZAdd(context, key, redis.Z{
 		Score:  now,
@@ -57,7 +57,7 @@ func forumMarkUserActive(ctx *server.Context, forumId int) {
 func forumGetActiveUsers(ctx *server.Context, forumId int) []int {
 	key := forumActiveUsersKey(forumId)
 	cutoff := time.Now().Add(-forumActivityExpiry).Unix()
-	context := ctx.Request.Context()
+	context := ctx.Context()
 
 	// First, remove any users that haven't been active in the last 5 minutes
 	ctx.State.Redis.ZRemRangeByScore(context, key, "-inf", strconv.FormatInt(cutoff, 10))
@@ -87,7 +87,7 @@ func forumGetActiveUsers(ctx *server.Context, forumId int) []int {
 // forumAverageTopicViews returns the average view count across all
 // topics, used to decide whether a topic is "hot".
 func forumAverageTopicViews(ctx *server.Context) float64 {
-	context := ctx.Request.Context()
+	context := ctx.Context()
 
 	// Check if value is cached first
 	if cached, err := ctx.State.Redis.Get(context, "forums:average_topic_views").Result(); err == nil {
@@ -129,7 +129,7 @@ func forumTopicReadStatuses(ctx *server.Context, topics []*schemas.ForumTopic) m
 	}
 
 	key := fmt.Sprintf("forums:topic_read_timestamps:%s", forumSessionIdentifier(ctx))
-	context := ctx.Request.Context()
+	context := ctx.Context()
 
 	fields := make([]string, len(unique))
 	for i, topic := range unique {
@@ -189,7 +189,7 @@ func forumUpdateTopicReadState(ctx *server.Context, topicId int) {
 	key := fmt.Sprintf("forums:topic_read_timestamps:%s", forumSessionIdentifier(ctx))
 	now := strconv.FormatFloat(float64(time.Now().Unix()), 'f', -1, 64)
 
-	context := ctx.Request.Context()
+	context := ctx.Context()
 	if err := ctx.State.Redis.HSet(context, key, strconv.Itoa(topicId), now).Err(); err != nil {
 		ctx.Logger.Error("Failed to update topic read state", "topic_id", topicId, "error", err)
 		return
@@ -201,7 +201,7 @@ func forumUpdateTopicReadState(ctx *server.Context, topicId int) {
 // forumUpdateViews increments a topic's view counter.
 func forumUpdateViews(ctx *server.Context, topicId int) {
 	key := fmt.Sprintf("forums:viewlock:%d:%s", topicId, ctx.IP())
-	context := ctx.Request.Context()
+	context := ctx.Context()
 
 	// View updates are limited per-ip
 	// TODO: We should probably use the session identifier here though...?
