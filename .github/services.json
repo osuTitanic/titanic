@@ -1,6 +1,16 @@
 {
     "services": [
         {
+            "name": "deck",
+            "description": "The web service for osu! clients",
+            "go_build_path": "./services/deck/cmd/api",
+            "dockerfile": "./services/deck/Dockerfile",
+            "docker_context": ".",
+            "image": "ghcr.io/osutitanic/deck",
+            "platforms": ["linux/amd64", "linux/arm64", "linux/arm/v7"],
+            "push_folders": ["go.mod", "go.sum", ".dockerignore", ".github/services.json", "internal/", "services/deck/"]
+        },
+        {
             "name": "jobs",
             "description": "A collection of background-tasks for titanic",
             "go_build_path": "./services/jobs/cmd/cli",
