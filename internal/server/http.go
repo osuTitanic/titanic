@@ -237,6 +237,18 @@ func (ctx *HttpContext) FormFile(possibleFilenames ...string) (multipart.File, *
 	return nil, nil, http.ErrMissingFile
 }
 
+func (ctx *HttpContext) Status() int {
+	resp, ok := ctx.Response.(*HttpResponseContext)
+	if !ok {
+		return 0
+	}
+	return resp.s
+}
+
+func (ctx *HttpContext) StatusExists() bool {
+	return ctx.Status() != 0
+}
+
 func (ctx *HttpContext) Redirect(status int, location string) {
 	http.Redirect(ctx.Response, ctx.Request, location, status)
 }
@@ -275,6 +287,7 @@ type HttpServer[C any] struct {
 	Router *http.ServeMux
 
 	contextFactory HttpContextFactory[C]
+	panicHandler   func(C, any)
 }
 
 func NewHttpServer[C any](host string, port int, name string, createContext HttpContextFactory[C]) *HttpServer[C] {
@@ -285,12 +298,18 @@ func NewHttpServer[C any](host string, port int, name string, createContext Http
 		Logger:         slog.Default().With("component", name),
 		Router:         http.NewServeMux(),
 		contextFactory: createContext,
+		panicHandler:   func(c C, err any) { panic(err) },
 	}
 }
 
 // Handle registers a stdlib route pattern on the server.
 func (server *HttpServer[C]) Handle(pattern string, handler HttpHandlerFunc[C]) {
 	server.Router.HandleFunc(pattern, server.ContextMiddleware(handler))
+}
+
+// OnPanic sets the panic handler for the server.
+func (server *HttpServer[C]) OnPanic(handler func(C, any)) {
+	server.panicHandler = handler
 }
 
 // ContextMiddleware creates a new Context struct for each request.
@@ -305,7 +324,18 @@ func (server *HttpServer[C]) ContextMiddleware(handler HttpHandlerFunc[C]) http.
 			Request:  request,
 			Logger:   server.Logger,
 		}
-		handler(server.contextFactory(base))
+		context := server.contextFactory(base)
+
+		defer func() {
+			if err := recover(); err != nil {
+				// Preserve net/http intentional abort behavior
+				if e, ok := err.(error); ok && errors.Is(e, http.ErrAbortHandler) {
+					panic(err)
+				}
+				server.panicHandler(context, err)
+			}
+		}()
+		handler(context)
 	}
 }
 

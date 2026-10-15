@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/osuTitanic/titanic/internal/state"
@@ -172,6 +174,26 @@ func InitializeStaticRoutes(server *server.Server) {
 	server.HandleFileSystem("/robots.txt", robots)
 }
 
+func PanicHandler(ctx *server.Context, recovered any) {
+	stack := debug.Stack()
+
+	ctx.Logger.Error(
+		"HTTP handler panicked",
+		"panic", recovered,
+		"stack", string(stack),
+		"method", ctx.Request.Method,
+		"path", ctx.Request.URL.Path,
+	)
+	// TODO: Officer logging
+
+	if ctx.StatusExists() {
+		// Status was already set :/
+		// We can't respond with 500 anymore
+		panic(http.ErrAbortHandler)
+	}
+	routes.InternalServerError(ctx)
+}
+
 func main() {
 	// Run a healthcheck if passed as an argument, e.g. for docker
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
@@ -193,6 +215,7 @@ func main() {
 
 	wikiService := wiki.NewService(app.Config, app.Repositories, slog.Default().With("component", "wiki"))
 	stern := server.NewServer(app.Config.FrontendHost, app.Config.FrontendPort, "stern", app, engine, wikiService)
+	stern.OnPanic(PanicHandler)
 	InitializeWebRoutes(stern)
 	InitializeStaticRoutes(stern)
 

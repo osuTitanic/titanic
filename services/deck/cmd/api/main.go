@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/osuTitanic/titanic/internal/state"
@@ -89,6 +91,26 @@ func InitializeRoutes(server *server.Server) {
 	server.Handle("GET /web/osu-title-image.php", routes.MenuIcon)
 }
 
+func PanicHandler(ctx *server.Context, recovered any) {
+	stack := debug.Stack()
+
+	ctx.Logger.Error(
+		"HTTP handler panicked",
+		"panic", recovered,
+		"stack", string(stack),
+		"method", ctx.Request.Method,
+		"path", ctx.Request.URL.Path,
+	)
+	// TODO: Officer logging
+
+	if ctx.StatusExists() {
+		// Status was already set :/
+		// We can't respond with 500 anymore
+		panic(http.ErrAbortHandler)
+	}
+	ctx.Response.WriteHeader(http.StatusInternalServerError)
+}
+
 func main() {
 	// Run a healthcheck if passed as an argument, e.g. for docker
 	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
@@ -107,6 +129,7 @@ func main() {
 		app.Config.WebPort,
 		"deck", app,
 	)
+	deck.OnPanic(PanicHandler)
 	InitializeRoutes(deck)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
