@@ -52,6 +52,7 @@ type LeaderboardResponse struct {
 type LeaderboardRequest struct {
 	RequestType    LeaderboardType
 	RequestVersion int
+	SendNightcore  bool
 
 	BeatmapNeedsUpdate bool
 	IsAuthenticated    bool
@@ -140,9 +141,15 @@ func GetScoresOsz2(ctx *server.Context) {
 		response.PersonalBest,
 		response.PersonalBestIndex,
 		request.RequestVersion,
+		request.SendNightcore,
 	))
 	for index, score := range response.Scores {
-		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
 	}
 
 	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
@@ -185,9 +192,15 @@ func GetScores6(ctx *server.Context) {
 		response.PersonalBest,
 		response.PersonalBestIndex,
 		request.RequestVersion,
+		request.SendNightcore,
 	))
 	for index, score := range response.Scores {
-		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
 	}
 
 	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
@@ -229,9 +242,15 @@ func GetScores5(ctx *server.Context) {
 		response.PersonalBest,
 		response.PersonalBestIndex,
 		request.RequestVersion,
+		request.SendNightcore,
 	))
 	for index, score := range response.Scores {
-		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
 	}
 
 	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
@@ -272,10 +291,16 @@ func GetScores4(ctx *server.Context) {
 			response.PersonalBest,
 			response.PersonalBestIndex,
 			request.RequestVersion,
+			request.SendNightcore,
 		),
 	}
 	for index, score := range response.Scores {
-		lines = append(lines, formatScore(score, index+1, request.RequestVersion))
+		lines = append(lines, formatScore(
+			score,
+			index+1,
+			request.RequestVersion,
+			request.SendNightcore,
+		))
 	}
 
 	ctx.RenderText(http.StatusOK, strings.Join(lines, "\n"))
@@ -507,6 +532,12 @@ func processLeaderboardRequest(request *LeaderboardRequest, ctx *server.Context)
 	if response.Type <= LeaderboardBeatmapPending {
 		return response, nil
 	}
+	if request.User != nil {
+		// Compatibility hack / fix: check if client supports nightcore
+		// Clients before b20120620 interpret NC as the old "Taiko" mod
+		status, _ := ctx.State.BanchoUsers.Get(ctx.Context(), request.User.Id)
+		request.SendNightcore = status != nil && status.ClientVersion >= 20120620
+	}
 
 	filter := repositories.BeatmapLeaderboardFilter{
 		BeatmapId: request.Beatmap.Id,
@@ -564,7 +595,7 @@ func resolveBeatmap(checksum string, filename string, ctx *server.Context) (*sch
 	return nil, false
 }
 
-func formatScore(score *schemas.Score, index int, requestVersion int) string {
+func formatScore(score *schemas.Score, index int, requestVersion int, sendNightcore bool) string {
 	if score == nil {
 		return ""
 	}
@@ -578,6 +609,10 @@ func formatScore(score *schemas.Score, index int, requestVersion int) string {
 	// Filter out the characters we use to separate fields, just to be sure
 	replacer := strings.NewReplacer("|", "", "\n", "")
 
+	// Clients before b20120620 don't support NC
+	// We change it to DT for replay viewing compatibility
+	scoreMods := resolveLeaderboardMods(score.Mods, sendNightcore)
+
 	fields := []string{
 		strconv.FormatInt(score.Id, 10),
 		replacer.Replace(score.User.Name),
@@ -590,7 +625,7 @@ func formatScore(score *schemas.Score, index int, requestVersion int) string {
 		strconv.Itoa(score.CountKatu),
 		strconv.Itoa(score.CountGeki),
 		strconv.Itoa(integerBoolean(score.Perfect)),
-		strconv.Itoa(int(score.Mods)),
+		strconv.Itoa(int(scoreMods)),
 		strconv.Itoa(score.UserId),
 		strconv.Itoa(index),
 		submittedAt,
@@ -599,7 +634,6 @@ func formatScore(score *schemas.Score, index int, requestVersion int) string {
 		// "Has Replay", added in request version 4
 		fields = append(fields, "1")
 	}
-	// TODO: NC filter
 
 	return strings.Join(fields, "|")
 }
@@ -607,6 +641,9 @@ func formatScore(score *schemas.Score, index int, requestVersion int) string {
 func formatScoreLegacy(score *schemas.Score, separator string) string {
 	// Filter out the characters we use to separate fields, just to be sure
 	replacer := strings.NewReplacer(separator, "", "\n", "")
+
+	// NC should be changed to DT as old clients don't support NC
+	scoreMods := resolveLeaderboardMods(score.Mods, false)
 
 	return strings.Join([]string{
 		strconv.FormatInt(score.Id, 10),
@@ -620,11 +657,27 @@ func formatScoreLegacy(score *schemas.Score, separator string) string {
 		strconv.Itoa(score.CountKatu),
 		strconv.Itoa(score.CountGeki),
 		stringBoolean(score.Perfect),
-		strconv.Itoa(int(score.Mods)),
+		strconv.Itoa(int(scoreMods)),
 		strconv.Itoa(score.UserId),
 		score.User.AvatarFilename(),
 		score.SubmittedAt.Format("2006-01-02 15:04:05"),
 	}, separator)
+}
+
+func resolveLeaderboardMods(mods constants.Mods, sendNightcore bool) constants.Mods {
+	if !mods.Has(constants.Nightcore) {
+		return mods
+	}
+
+	// NC requires DT to be present in leaderboard responses
+	// This is a known osu! stable quirk. Very annoying...
+	mods |= constants.DoubleTime
+
+	if !sendNightcore {
+		// Clients before b20120620 interpret NC as the old "Taiko" mod
+		mods &^= constants.Nightcore
+	}
+	return mods
 }
 
 func statusFromRequestVersion(status LeaderboardResponseType, requestVersion int) int {
