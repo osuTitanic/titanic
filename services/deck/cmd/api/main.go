@@ -9,6 +9,7 @@ import (
 	"runtime/debug"
 	"syscall"
 
+	"github.com/osuTitanic/titanic/internal/discord"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/deck/internal/routes"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
@@ -95,13 +96,18 @@ func PanicHandler(ctx *server.Context, recovered any) {
 	stack := debug.Stack()
 
 	ctx.Logger.Error(
-		"HTTP handler panicked",
+		"Panic!",
 		"panic", recovered,
 		"stack", string(stack),
 		"method", ctx.Request.Method,
 		"path", ctx.Request.URL.Path,
 	)
-	// TODO: Officer logging
+	ctx.State.Officer.CallPanic(
+		recovered,
+		discord.Field{Name: "Service", Value: "deck"},
+		discord.Field{Name: "Method", Value: ctx.Request.Method, Inline: true},
+		discord.Field{Name: "Path", Value: ctx.Request.URL.Path, Inline: true},
+	)
 
 	if ctx.StatusExists() {
 		// Status was already set :/
