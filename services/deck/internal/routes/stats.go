@@ -48,6 +48,10 @@ func UserStatsOther(ctx *server.Context) {
 func renderStatsResponse(username string, ctx *server.Context) {
 	userId, err := ctx.State.Repositories.Users.GetUserId(username)
 	if err != nil {
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if userId <= 0 {
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return
 	}
