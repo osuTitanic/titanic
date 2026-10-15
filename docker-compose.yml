@@ -126,7 +126,12 @@ services:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
-    # TODO: Re-add healthcheck
+    healthcheck:
+      test: ["CMD", "/app/deck", "healthcheck", "http://127.0.0.1:80/web/check-updates.php"]
+      start_period: 30s
+      interval: 5m
+      timeout: 5s
+      retries: 5
 
   bot:
     build: ./services/bot
