@@ -188,8 +188,8 @@ func PanicHandler(ctx *server.Context, recovered any) {
 	ctx.State.Officer.CallPanic(
 		recovered,
 		discord.Field{Name: "Service", Value: "stern"},
-		discord.Field{Name: "Method", Value: ctx.Request.Method},
-		discord.Field{Name: "Path", Value: ctx.Request.URL.Path},
+		discord.Field{Name: "Method", Value: ctx.Request.Method, Inline: true},
+		discord.Field{Name: "Path", Value: ctx.Request.URL.Path, Inline: true},
 	)
 
 	if ctx.StatusExists() {
