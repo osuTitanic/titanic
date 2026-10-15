@@ -222,7 +222,7 @@ func BeatmapSubmissionOsz2Upload(ctx *server.Context) {
 			return err
 		}
 		if err := submission.ValidateFS(); err != nil {
-			return fmt.Errorf("%w: validate package filesystem: %v", bss.ErrPackageInvalid, err)
+			return fmt.Errorf("%w: validate package filesystem: %w", bss.ErrPackageInvalid, err)
 		}
 		submission.Metadata = osz2Reader.Metadata()
 
