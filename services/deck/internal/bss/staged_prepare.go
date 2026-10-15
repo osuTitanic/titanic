@@ -51,6 +51,7 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 
 	// Keep the resolved beatmap IDs in the same order as the uploaded files
 	requestedIds := make([]int, len(staged.Beatmaps))
+	unmatched := make([]int, 0, len(staged.Beatmaps))
 
 	// We want to keep difficulty names, filenames, and checksums unique across all staged beatmaps
 	usedIds := make(map[int]bool, len(staged.Beatmaps))
@@ -84,7 +85,8 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 		checksums[checksum] = true
 
 		// Find an existing difficulty match by name
-		// If there is no match, `PrepareBeatmaps` will create a new difficulty
+		// If there is no match, we will try to re-use any unused IDs (e.g. in case of a difficulty rename)
+		// `PrepareBeatmaps` will create a new difficulty if we no longer have any unused IDs to assign
 		beatmap.Id = -1
 
 		for _, existing := range submission.Beatmapset.Beatmaps {
@@ -97,6 +99,34 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 			break
 		}
 		requestedIds[i] = beatmap.Id
+
+		if beatmap.Id <= 0 {
+			unmatched = append(unmatched, i)
+		}
+	}
+
+	// Try to re-use as many difficulty IDs as we can
+	unusedIds := make([]int, 0, len(submission.Beatmapset.Beatmaps))
+
+	for _, existing := range submission.Beatmapset.Beatmaps {
+		if usedIds[existing.Id] {
+			continue
+		}
+		if !submission.Access.CanUpdateBeatmap(existing.Id) {
+			continue
+		}
+		unusedIds = append(unusedIds, existing.Id)
+	}
+
+	for i, index := range unmatched {
+		if i >= len(unusedIds) {
+			// We don't have any unused IDs left to assign
+			// -> create a new beatmap ID in the database later
+			break
+		}
+		// Re-assign the beatmap ID to the staged beatmap
+		staged.Beatmaps[index].Id = unusedIds[i]
+		requestedIds[index] = unusedIds[i]
 	}
 
 	// Prepare an existing / new beatmap from db for every uploaded difficulty
