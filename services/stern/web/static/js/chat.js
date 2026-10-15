@@ -988,7 +988,7 @@ function loadChannelHistory(channel) {
                     sender: { nick: msg.sender.name, id: msg.sender.id },
                     text: msg.message,
                     highlight: false,
-                    time: new Date(msg.time)
+                    time: parseApiTime(msg.time)
                 });
                 displayHistoricalMessage(msg);
             }
@@ -1065,7 +1065,7 @@ function loadDMHistory(user) {
                     sender: { nick: nickname, id: msg.sender_id },
                     text: msg.message,
                     highlight: false,
-                    time: new Date(msg.time)
+                    time: parseApiTime(msg.time)
                 });
                 displayHistoricalDirectMessage(msg, user);
             }
@@ -1266,7 +1266,7 @@ function parseLinksWithRegex(text, regex, linkFactory) {
 }
 
 function displayHistoricalMessage(msg) {
-    displayMessage({ nick: msg.sender.name, id: msg.sender.id }, msg.message, false, new Date(msg.time));
+    displayMessage({ nick: msg.sender.name, id: msg.sender.id }, msg.message, false, parseApiTime(msg.time));
 }
 
 function displayHistoricalDirectMessage(msg, user) {
@@ -1275,7 +1275,13 @@ function displayHistoricalDirectMessage(msg, user) {
         nickname = user.name;
     }
 
-    displayMessage({ nick: nickname, id: msg.sender_id }, msg.message, false, new Date(msg.time));
+    displayMessage({ nick: nickname, id: msg.sender_id }, msg.message, false, parseApiTime(msg.time));
+}
+
+function parseApiTime(time) {
+    // The API returns UTC datetimes without a timezone suffix
+    // Append one so the browser converts them to the user's local time
+    return new Date(time + "Z");
 }
 
 function formatMessageTime(time) {
@@ -1370,7 +1376,7 @@ function loadMoreChannelMessages(channel) {
                     sender: { nick: msg.sender.name, id: msg.sender.id },
                     text: msg.message,
                     highlight: false,
-                    time: new Date(msg.time)
+                    time: parseApiTime(msg.time)
                 });
 
                 // Insert at the beginning of the chat log
@@ -1378,7 +1384,7 @@ function loadMoreChannelMessages(channel) {
                     { nick: msg.sender.name, id: msg.sender.id },
                     msg.message,
                     false,
-                    new Date(msg.time)
+                    parseApiTime(msg.time)
                 );
                 if (chatLog.firstChild) {
                     chatLog.insertBefore(messageElement, chatLog.firstChild);
@@ -1460,7 +1466,7 @@ function loadMoreDMMessages(userId) {
                             sender: { nick: nickname, id: msg.sender_id },
                             text: msg.message,
                             highlight: false,
-                            time: new Date(msg.time)
+                            time: parseApiTime(msg.time)
                         });
 
                         // Insert at the beginning of the chat log
@@ -1468,7 +1474,7 @@ function loadMoreDMMessages(userId) {
                             { nick: nickname, id: msg.sender_id },
                             msg.message,
                             false,
-                            new Date(msg.time)
+                            parseApiTime(msg.time)
                         );
                         if (chatLog.firstChild) {
                             chatLog.insertBefore(messageElement, chatLog.firstChild);
