@@ -43,6 +43,11 @@ type Osz2PostTopicRequest struct {
 }
 
 func NewOsz2PostTopicRequest(ctx *server.Context) (request Osz2PostTopicRequest, err error) {
+	ctx.LimitBody(postMaxBodySize)
+	if err := ctx.Request.ParseForm(); err != nil {
+		return request, fmt.Errorf("parse beatmap topic form: %w", err)
+	}
+
 	request.Username = ctx.FormValue("u")
 	request.Password = ctx.FormValue("p")
 	request.Subject = ctx.FormValue("subject")

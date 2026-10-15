@@ -15,6 +15,7 @@ import (
 const (
 	benchmarkMaxFramerate = 1_000_000
 	benchmarkMaxScore     = 1_000_000_000
+	benchmarkMaxBodySize  = 64 << 10
 )
 
 type BenchmarkRequest struct {
@@ -62,6 +63,11 @@ func (r BenchmarkRequest) Grade() string {
 }
 
 func NewBenchmarkRequest(ctx *server.Context) (request BenchmarkRequest, err error) {
+	ctx.LimitBody(benchmarkMaxBodySize)
+	if err := ctx.Request.ParseForm(); err != nil {
+		return request, fmt.Errorf("parse benchmark form: %w", err)
+	}
+
 	smoothness, err := ctx.FormValueFloat("s")
 	if err != nil {
 		return request, fmt.Errorf("parse smoothness: %w", err)

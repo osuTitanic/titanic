@@ -12,6 +12,8 @@ import (
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
 
+const commentMaxBodySize = 64 << 10
+
 type CommentRequest struct {
 	Action    string
 	BeatmapId int
@@ -41,22 +43,27 @@ func (r *CommentRequest) Validate() error {
 	return nil
 }
 
-func NewCommentRequest(ctx *server.Context) (CommentRequest, error) {
+func NewCommentRequest(ctx *server.Context) (request CommentRequest, err error) {
+	ctx.LimitBody(commentMaxBodySize)
+	if err := ctx.Request.ParseForm(); err != nil {
+		return request, fmt.Errorf("parse comment form: %w", err)
+	}
+
 	beatmapId, err := ctx.FormValueInt("b")
 	if err != nil {
-		return CommentRequest{}, err
+		return request, err
 	}
 	replayId, err := ctx.FormValueIntOptional("r")
 	if err != nil {
-		return CommentRequest{}, err
+		return request, err
 	}
 	setId, err := ctx.FormValueIntOptional("s")
 	if err != nil {
-		return CommentRequest{}, err
+		return request, err
 	}
 	startTime, err := ctx.FormValueIntOptional("starttime")
 	if err != nil {
-		return CommentRequest{}, err
+		return request, err
 	}
 	target, err := ctx.FormValueEnum[constants.CommentTarget]("target")
 	if err != nil {
