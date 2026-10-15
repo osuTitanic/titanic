@@ -163,10 +163,19 @@ var EventRenderers = {
         ];
     },
     [EventTypes.BeatmapCommented]: (event) => {
+        var targetLabel = "beatmap";
+        var targetLink = renderBeatmap(event.data.target_text, event.data.target_id);
+
+        if (event.data.target == "Replay") {
+            targetLabel = "replay";
+            targetLink = renderScore(event.data.target_text, event.data.target_id);
+        } else if (event.data.target == "Song") {
+            targetLabel = "song";
+            targetLink = renderBeatmapset(event.data.target_text, event.data.target_id);
+        }
+
         return [
-            renderProfile(event.data.username, event.user_id),
-            " commented on a beatmap: ",
-            renderBeatmap(event.data.beatmap_name, event.data.beatmap_id)
+            renderProfile(event.data.username, event.user_id), " commented on a " + targetLabel + ": ", targetLink
         ];
     },
     [EventTypes.BeatmapStatusUpdated]: (event) => {
@@ -500,6 +509,14 @@ function renderBeatmapset(beatmapsetName, beatmapsetId) {
     beatmapsetLink.href = `/s/${beatmapsetId}`;
     beatmapsetLink.className = "beatmapset-link";
     return beatmapsetLink;
+}
+
+function renderScore(scoreName, scoreId) {
+    var scoreLink = document.createElement("a");
+    scoreLink.textContent = scoreName;
+    scoreLink.href = "/scores/" + scoreId;
+    scoreLink.className = "replay-link";
+    return scoreLink;
 }
 
 function renderScoreLink(linkText, scoreId) {
