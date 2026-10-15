@@ -1,10 +1,15 @@
 package routes
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/osuTitanic/titanic/internal/discord"
 	"github.com/osuTitanic/titanic/services/deck/internal/scoring"
 	"github.com/osuTitanic/titanic/services/deck/internal/server"
 )
@@ -37,10 +42,10 @@ func submitScore(ctx *server.Context, endpoint scoring.Endpoint) {
 		ctx.RenderText(http.StatusInternalServerError, "")
 		return
 	}
-	for _, warning := range result.Warnings {
-		ctx.Logger.Warn("Score submission warning", "error", warning)
-		// TODO: Officer logging call
-	}
+
+	// Log all score submission warnings in the
+	// console & send it to officer for staff
+	defer logScoreWarnings(ctx, result)
 
 	// After writing the response, we want to do some additional steps
 	// like uploading the replay, broadcasting announcements, etc.
@@ -64,4 +69,82 @@ func writeSubmissionResponse(ctx *server.Context, status int, response string) e
 	writeErr := ctx.RenderText(status, response)
 	flushErr := http.NewResponseController(ctx.Response).Flush()
 	return errors.Join(writeErr, flushErr)
+}
+
+func logScoreWarnings(ctx *server.Context, result scoring.Result) {
+	if len(result.Warnings) == 0 {
+		return
+	}
+	for _, warning := range result.Warnings {
+		ctx.Logger.Warn("Score submission warning", "error", warning)
+	}
+
+	submission := result.Submission
+	if submission == nil {
+		return
+	}
+	score := submission.Score
+	if score == nil {
+		return
+	}
+
+	serverUrl := strings.TrimRight(ctx.State.Config.OsuBaseUrl(), "/")
+	playerName := submission.Username
+	beatmapName := submission.BeatmapChecksum
+	clientName := score.ClientString
+
+	if score.User != nil {
+		playerName = score.User.Name
+	}
+	if score.Beatmap != nil {
+		beatmapName = score.Beatmap.Name()
+	}
+	if clientName == "" {
+		clientName = fmt.Sprintf("b%d", score.ClientVersion)
+	}
+
+	outcome := "Accepted"
+	if result.Rejected() {
+		outcome = fmt.Sprintf("Rejected (%s)", result.Type.String())
+	}
+
+	embed := discord.Embed{
+		Title:     new("Score submission"),
+		Color:     new(0xF2A900),
+		Timestamp: new(time.Now().UTC()),
+	}
+	embed.AddField("Outcome", outcome, true)
+	embed.AddField("Player", fmt.Sprintf("[%s](https://%s/u/%d)", playerName, serverUrl, score.UserId), true)
+	embed.AddField("Beatmap", fmt.Sprintf("[%s](https://%s/u/%d)", beatmapName, serverUrl, score.BeatmapId), true)
+	embed.AddField("Client", fmt.Sprintf("`%s`", clientName), true)
+
+	if score.Id > 0 {
+		embed.URL = new(fmt.Sprintf("%s/scores/%d", serverUrl, score.Id))
+		embed.AddField("Score ID", fmt.Sprintf("[`%d`](%s)", score.Id, *embed.URL), true)
+	}
+
+	embeds := make([]discord.Embed, 1, len(result.Warnings)+1)
+	embeds[0] = embed
+	for _, warning := range result.Warnings {
+		embeds = append(embeds, discord.Embed{
+			Title:       new("Warning"),
+			Description: new(warning.Error()),
+			Color:       new(0xF2A900),
+		})
+	}
+	notificationContext := context.WithoutCancel(ctx.Context())
+
+	err := ctx.State.Officer.CallContext(
+		notificationContext,
+		discord.OfficerTagScoreSubmission,
+		"",
+		embeds...,
+	)
+	if err != nil {
+		ctx.Logger.Warn(
+			"Failed to send score submission officer notification",
+			"user_id", score.UserId, "score_id", score.Id, "error", err,
+		)
+	}
+	// TODO: Replay uploads?
 }
