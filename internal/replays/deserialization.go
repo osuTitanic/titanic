@@ -1,6 +1,7 @@
 package replays
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -13,7 +14,11 @@ import (
 	"github.com/ulikunitz/xz/lzma"
 )
 
-const maxReplaySize = 50 << 20 // TODO: this is pretty large, maybe lower this
+const (
+	maxReplaySize      = 50 << 20 // TODO: this is pretty large, maybe lower this
+	maxReplayFrames    = 2_500_000
+	maxReplayFrameSize = 1 << 10 // 1 KiB
+)
 
 type Frame struct {
 	Delta   int
@@ -47,31 +52,52 @@ func (buttons ButtonState) Has(button ButtonState) bool {
 var lzmaConfig = lzma.ReaderConfig{DictCap: maxReplaySize}
 
 func DeserializeFrames(data []byte) (frames []Frame, seed int64, err error) {
-	reader, err := lzmaConfig.NewReader(bytes.NewReader(data))
+	lzmaReader, err := lzmaConfig.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, 0, fmt.Errorf("open replay stream: %w", err)
 	}
 
-	decoded, err := io.ReadAll(io.LimitReader(reader, maxReplaySize+1))
-	if err != nil {
-		return nil, 0, fmt.Errorf("decompress replay: %w", err)
+	reader := &io.LimitedReader{
+		R: lzmaReader,
+		N: maxReplaySize + 1,
 	}
-	if len(decoded) > maxReplaySize {
-		return nil, 0, fmt.Errorf("decompress replay: data exceeds %d bytes", maxReplaySize)
-	}
+	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, maxReplayFrameSize+1), maxReplayFrameSize+1) // allocate ~1 KB buffer for frame
 
-	rawFrames := strings.Split(string(decoded), ",")
-	frames = make([]Frame, 0, len(rawFrames))
+	// Use a scanner to split the replay into frames
+	// We could strings.Split(...) the frames in one go, but
+	// a scanner is more suitable for really large replay files
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if index := bytes.IndexByte(data, ','); index >= 0 {
+			// Advance to the next byte & return the frame
+			return index + 1, data[:index], nil
+		}
+		if atEOF && len(data) > 0 {
+			// Return the remaining data as the last frame
+			return len(data), data, nil
+		}
+		return 0, nil, nil
+	})
+
+	frames = make([]Frame, 0, 4096)
 	currentTime := 0
+	index := 0
 
-	for index, rawFrame := range rawFrames {
+	for scanner.Scan() {
+		if index >= maxReplayFrames+1 {
+			return nil, 0, fmt.Errorf("replay contains too many frames: maximum is %d", maxReplayFrames)
+		}
+		frameIndex := index
+		index++
+
+		rawFrame := scanner.Text()
 		if rawFrame == "" {
 			continue
 		}
 
 		fields := strings.Split(rawFrame, "|")
 		if len(fields) != 4 {
-			return nil, 0, fmt.Errorf("invalid replay frame %d: got %d fields, want 4", index, len(fields))
+			return nil, 0, fmt.Errorf("invalid replay frame %d: got %d fields, want 4", frameIndex, len(fields))
 		}
 		if fields[0] == "-12345" {
 			seed, err = strconv.ParseInt(fields[3], 10, 64)
@@ -80,20 +106,23 @@ func DeserializeFrames(data []byte) (frames []Frame, seed int64, err error) {
 			}
 			continue
 		}
+		if len(frames) >= maxReplayFrames {
+			return nil, 0, fmt.Errorf("replay contains too many frames: maximum is %d", maxReplayFrames)
+		}
 
 		delta, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, 0, fmt.Errorf("invalid replay frame %d delta %q: %w", index, fields[0], err)
+			return nil, 0, fmt.Errorf("invalid replay frame %d delta %q: %w", frameIndex, fields[0], err)
 		}
 		// TODO: delta should never be negative, right?
 
 		x, err := strconv.ParseFloat(fields[1], 64)
 		if err != nil || math.IsNaN(x) || math.IsInf(x, 0) {
-			return nil, 0, fmt.Errorf("invalid replay frame %d x-coordinate %q", index, fields[1])
+			return nil, 0, fmt.Errorf("invalid replay frame %d x-coordinate %q", frameIndex, fields[1])
 		}
 		y, err := strconv.ParseFloat(fields[2], 64)
 		if err != nil || math.IsNaN(y) || math.IsInf(y, 0) {
-			return nil, 0, fmt.Errorf("invalid replay frame %d y-coordinate %q", index, fields[2])
+			return nil, 0, fmt.Errorf("invalid replay frame %d y-coordinate %q", frameIndex, fields[2])
 		}
 
 		buttons, err := strconv.Atoi(fields[3])
@@ -115,6 +144,13 @@ func DeserializeFrames(data []byte) (frames []Frame, seed int64, err error) {
 			Y:       y,
 			Buttons: buttonState,
 		})
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, 0, fmt.Errorf("scan replay frames: %w", err)
+	}
+	if reader.N == 0 {
+		// N = 0 indicates the decompressed data exceeds maxReplaySize
+		return nil, 0, fmt.Errorf("decompress replay: data exceeds %d bytes", maxReplaySize)
 	}
 	return frames, seed, nil
 }
