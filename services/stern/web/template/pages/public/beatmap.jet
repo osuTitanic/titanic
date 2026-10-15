@@ -618,8 +618,9 @@
 {{ if .Beatmapset.Server != 0 && .Beatmapset.Status <= 0 }}
     {{ if .IsBeatmapAuthor }}
     <div class="beatmap-settings">
-        <details>
-            <summary>Settings</summary>
+        <div class="spoiler">
+            <div class="spoiler-head" onclick="return toggleSpoiler(this);">Settings</div>
+            <div class="spoiler-body">
             <table>
                 <thead>
                     <th><h2>Metadata</h2></th>
@@ -728,7 +729,8 @@
                     </td>
                 </tbody>
             </table>
-        </details>
+            </div>
+        </div>
     </div>
     {{ else if .Invite }}
     <div class="collaboration-request">
@@ -748,8 +750,9 @@
 {{ block batControls() }}
 {{ if .Permissions.IsBat() }}
 <div class="beatmap-settings">
-    <details>
-        <summary>BAT Controls</summary>
+    <div class="spoiler">
+        <div class="spoiler-head" onclick="return toggleSpoiler(this);">BAT Controls</div>
+        <div class="spoiler-body">
         <table>
             <thead>
                 <th><h2>General</h2></th>
@@ -944,7 +947,8 @@
                 {{ end }}
             </tbody>
         </table>
-    </details>
+        </div>
+    </div>
 </div>
 {{ end }}
 {{ end }}

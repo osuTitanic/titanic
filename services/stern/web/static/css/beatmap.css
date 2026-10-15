@@ -314,8 +314,21 @@
 }
 
 .beatmap-settings {
-    border-bottom: 1px solid #cfc1ef;
-    padding: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.beatmap-settings .spoiler-head {
+    font-weight: bold;
+}
+
+.beatmap-settings .spoiler-body {
+    background-color: #e4dbfb;
+    border-bottom: solid 1px #b7c9ff;
+}
+
+.beatmap-settings .spoiler {
+    margin: 0;
 }
 
 .beatmap-settings thead h2 {
