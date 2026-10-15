@@ -160,6 +160,7 @@ func ApplyBeatmapMetadata(transaction *state.Repositories, beatmap *schemas.Beat
 	// NOTE: Beatmap metadata will already be applied
 	// 		 by the beatmap parser through `AssignBeatmapContent`
 	rowsAffected, err := transaction.Beatmaps.Update(beatmap,
+		"status",
 		"mode",
 		"md5",
 		"version",

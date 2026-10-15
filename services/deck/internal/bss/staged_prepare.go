@@ -118,6 +118,8 @@ func (submission *SubmissionContext) PrepareStagedBeatmaps(
 		if !submission.Access.CanUpdateBeatmap(prepared.Target.Id) {
 			continue
 		}
+		// Sync status w/ set in case this map is new
+		prepared.Target.Status = submission.Beatmapset.Status
 
 		prepared, err := submission.AssignBeatmapContent(
 			prepared.Target.Id,
