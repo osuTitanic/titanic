@@ -48,6 +48,13 @@ func NewOsz2PostTopicRequest(ctx *server.Context) (request Osz2PostTopicRequest,
 		return request, fmt.Errorf("parse beatmap topic form: %w", err)
 	}
 
+	// This endpoint does not work after b20251128
+	// https://osu.ppy.sh/home/changelog/cuttingedge/20251128
+	// "p" parameter changed to "h"
+	// "b" parameter changed to "s"
+	// "vv", "message" & "subject" removed
+	// TODO: Add support for these changes
+
 	request.Username = ctx.FormValue("u")
 	request.Password = ctx.FormValue("p")
 	request.Subject = ctx.FormValue("subject")
