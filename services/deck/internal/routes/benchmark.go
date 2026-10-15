@@ -64,9 +64,6 @@ func (r BenchmarkRequest) Grade() string {
 
 func NewBenchmarkRequest(ctx *server.Context) (request BenchmarkRequest, err error) {
 	ctx.LimitBody(benchmarkMaxBodySize)
-	if err := ctx.Request.ParseForm(); err != nil {
-		return request, fmt.Errorf("parse benchmark form: %w", err)
-	}
 
 	smoothness, err := ctx.FormValueFloat("s")
 	if err != nil {

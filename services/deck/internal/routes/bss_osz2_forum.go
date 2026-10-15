@@ -44,9 +44,6 @@ type Osz2PostTopicRequest struct {
 
 func NewOsz2PostTopicRequest(ctx *server.Context) (request Osz2PostTopicRequest, err error) {
 	ctx.LimitBody(postMaxBodySize)
-	if err := ctx.Request.ParseForm(); err != nil {
-		return request, fmt.Errorf("parse beatmap topic form: %w", err)
-	}
 
 	// This endpoint does not work after b20251128
 	// https://osu.ppy.sh/home/changelog/cuttingedge/20251128
