@@ -66,7 +66,7 @@ func PackageSizeLimit(maxBeatmapLength float64) int64 {
 		return MaxPackageFileSize
 	}
 
-	limit := 10_000_000 + int64(10_000_000*(maxBeatmapLength/60))
+	limit := 15_000_000 + int64(10_000_000*(maxBeatmapLength/60))
 	return min(limit, int64(MaxPackageFileSize))
 }
 
