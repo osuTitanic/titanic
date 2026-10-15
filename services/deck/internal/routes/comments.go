@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -16,13 +17,14 @@ const commentMaxBodySize = 64 << 10
 
 type CommentRequest struct {
 	Action    string
-	BeatmapId int
+	BeatmapId *int
 	ReplayId  *int
 	SetId     *int
 	StartTime *int
 	Content   string
 	Color     string
 	Target    constants.CommentTarget
+	Mode      constants.Mode
 }
 
 func (r *CommentRequest) IsLegacy() bool {
@@ -31,10 +33,7 @@ func (r *CommentRequest) IsLegacy() bool {
 
 func (r *CommentRequest) Validate() error {
 	if r.Action != "get" && r.Action != "post" {
-		return fmt.Errorf("invalid action: %s", r.Action)
-	}
-	if r.BeatmapId <= 0 {
-		return fmt.Errorf("invalid beatmap id: %d", r.BeatmapId)
+		return fmt.Errorf("invalid action: '%s'", r.Action)
 	}
 	if r.Content != "" && utf8.RuneCountInString(r.Content) > 80 {
 		return fmt.Errorf("comment content too long: %d", utf8.RuneCountInString(r.Content))
@@ -45,11 +44,13 @@ func (r *CommentRequest) Validate() error {
 
 func NewCommentRequest(ctx *server.Context) (request CommentRequest, err error) {
 	ctx.LimitBody(commentMaxBodySize)
-	if err := ctx.Request.ParseForm(); err != nil {
-		return request, fmt.Errorf("parse comment form: %w", err)
+
+	startTime, err := ctx.FormValueIntOptional("starttime")
+	if err != nil {
+		return request, err
 	}
 
-	beatmapId, err := ctx.FormValueInt("b")
+	beatmapId, err := ctx.FormValueIntOptional("b")
 	if err != nil {
 		return request, err
 	}
@@ -61,17 +62,15 @@ func NewCommentRequest(ctx *server.Context) (request CommentRequest, err error) 
 	if err != nil {
 		return request, err
 	}
-	startTime, err := ctx.FormValueIntOptional("starttime")
+
+	mode, err := ctx.FormValueEnum[constants.Mode]("m")
 	if err != nil {
-		return request, err
+		mode = constants.ModeOsu // we can override this later
 	}
 	target, err := ctx.FormValueEnum[constants.CommentTarget]("target")
 	if err != nil {
 		target = constants.CommentTargetMap
 	}
-
-	// NOTE: Client also provides the mode as parameter "m"
-	// 		 We don't use it here though
 
 	return CommentRequest{
 		Action:    ctx.FormValue("a"),
@@ -79,6 +78,7 @@ func NewCommentRequest(ctx *server.Context) (request CommentRequest, err error) 
 		BeatmapId: beatmapId,
 		ReplayId:  replayId,
 		SetId:     setId,
+		Mode:      mode,
 		StartTime: startTime,
 		Content:   ctx.FormValue("comment"),
 		Color:     ctx.FormValue("f"),
@@ -119,7 +119,7 @@ func getComments(ctx *server.Context, request CommentRequest) {
 		id         *int
 		targetType constants.CommentTarget
 	}{
-		{id: &request.BeatmapId, targetType: constants.CommentTargetMap},
+		{id: request.BeatmapId, targetType: constants.CommentTargetMap},
 		{id: request.ReplayId, targetType: constants.CommentTargetReplay},
 		{id: request.SetId, targetType: constants.CommentTargetSong},
 	}
@@ -163,31 +163,12 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 		return
 	}
 
-	beatmap, err := ctx.State.Beatmaps.ById(request.BeatmapId, "Beatmapset")
-	if err != nil {
-		ctx.Logger.Error("Failed to retrieve beatmap", "beatmap_id", request.BeatmapId, "error", err)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if beatmap == nil {
-		ctx.Logger.Warn("Failed to submit comment: beatmap not found", "beatmap_id", request.BeatmapId)
-		ctx.Response.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	validTarget, err := validateCommentTarget(ctx, request, beatmap)
+	// User can submit a comment on either a beatmapset, beatmap or a score
+	beatmapset, err := resolveCommentTarget(ctx, request)
 	if err != nil {
 		ctx.Logger.Error(
 			"Failed to validate beatmap comment target",
 			"target", request.Target, "target_id", targetId, "error", err,
-		)
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if !validTarget {
-		ctx.Logger.Warn(
-			"Invalid beatmap comment target",
-			"target", request.Target, "target_id", targetId, "beatmap_id", request.BeatmapId,
 		)
 		ctx.Response.WriteHeader(http.StatusBadRequest)
 		return
@@ -200,18 +181,20 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 		return
 	}
 
-	isCreator := beatmap.Beatmapset != nil &&
-		beatmap.Beatmapset.CreatorId != nil &&
-		*beatmap.Beatmapset.CreatorId == user.Id
+	isCreator := beatmapset.CreatorId != nil && *beatmapset.CreatorId == user.Id
 	isBAT := permissions.IsBat()
 	isDonator := permissions.IsDonator()
-	commentFormat := resolveCommentFormat(isCreator, isBAT, isDonator)
 
+	commentFormat := resolveCommentFormat(
+		isCreator,
+		isBAT,
+		isDonator,
+	)
 	comment := &schemas.BeatmapComment{
 		TargetId:   targetId,
 		TargetType: request.Target,
 		UserId:     user.Id,
-		Mode:       beatmap.Mode,
+		Mode:       request.Mode,
 		Comment:    request.Content,
 		Time:       *request.StartTime,
 		Format:     &commentFormat,
@@ -231,13 +214,14 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 	err = activity.Submit(
 		ctx.State,
 		user.Id,
-		&beatmap.Mode,
+		&request.Mode,
 		constants.ActivityBeatmapCommented,
 		map[string]any{
-			"username":     user.Name,
-			"beatmap_id":   beatmap.Id,
-			"beatmap_name": beatmap.Name(),
-			"comment":      request.Content,
+			"username":    user.Name,
+			"target":      request.Target.String(),
+			"target_id":   targetId,
+			"target_text": beatmapset.Name(),
+			"comment":     request.Content,
 		},
 		false, // should not be sent to #announce
 		true,  // should be hidden in user profile
@@ -292,8 +276,8 @@ func resolveCommentFormat(isCreator, isBat, isDonator bool) string {
 func resolveCommentTargetId(request CommentRequest) (int, bool) {
 	switch request.Target {
 	case constants.CommentTargetMap:
-		if request.BeatmapId != 0 {
-			return request.BeatmapId, true
+		if request.BeatmapId != nil && *request.BeatmapId != 0 {
+			return *request.BeatmapId, true
 		}
 	case constants.CommentTargetReplay:
 		if request.ReplayId != nil && *request.ReplayId != 0 {
@@ -307,36 +291,44 @@ func resolveCommentTargetId(request CommentRequest) (int, bool) {
 	return 0, false
 }
 
-func validateCommentTarget(ctx *server.Context, request CommentRequest, beatmap *schemas.Beatmap) (bool, error) {
+func resolveCommentTarget(ctx *server.Context, request CommentRequest) (*schemas.Beatmapset, error) {
 	switch request.Target {
-	case constants.CommentTargetMap:
-		// always valid
-		return true, nil
 	case constants.CommentTargetSong:
-		// check if client actually provided a set id
 		if request.SetId == nil {
-			return false, nil
+			return nil, errors.New("beatmapset id missing")
 		}
-		return *request.SetId == beatmap.SetId, nil
+		beatmapset, err := ctx.State.Beatmapsets.ById(*request.SetId)
+		if err != nil {
+			return nil, fmt.Errorf("fetch beatmapset %d: %w", *request.SetId, err)
+		}
+		return beatmapset, nil
+	case constants.CommentTargetMap:
+		if request.BeatmapId == nil {
+			return nil, errors.New("beatmap id missing")
+		}
+		beatmap, err := ctx.State.Beatmaps.ById(*request.BeatmapId, "Beatmapset")
+		if err != nil {
+			return nil, fmt.Errorf("fetch beatmap %d: %w", *request.BeatmapId, err)
+		}
+		request.Mode = beatmap.Mode // correct mode in case client provided wrong one
+		return beatmap.Beatmapset, nil
 	case constants.CommentTargetReplay:
 		if request.ReplayId == nil {
-			return false, nil
+			return nil, errors.New("replay id missing")
 		}
-		score, err := ctx.State.Scores.ById(int64(*request.ReplayId))
+		score, err := ctx.State.Scores.ById(int64(*request.ReplayId), "Beatmap.Beatmapset")
 		if err != nil {
-			return false, fmt.Errorf("fetch replay score %d: %w", *request.ReplayId, err)
+			return nil, fmt.Errorf("fetch score %d: %w", *request.ReplayId, err)
 		}
 		if score == nil {
-			return false, nil
+			return nil, fmt.Errorf("score %d not found", *request.ReplayId)
 		}
 		if score.Hidden {
-			return false, nil
+			return nil, fmt.Errorf("score %d is hidden", *request.ReplayId)
 		}
-		if score.BeatmapId != beatmap.Id {
-			return false, nil
-		}
-		return true, nil
+		request.Mode = score.Mode // correct mode in case client provided wrong one
+		return score.Beatmap.Beatmapset, nil
 	default:
-		return false, nil
+		return nil, errors.New("invalid target")
 	}
 }
