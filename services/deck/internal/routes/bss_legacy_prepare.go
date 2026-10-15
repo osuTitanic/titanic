@@ -272,27 +272,6 @@ func BeatmapSubmissionPreOsz2GetId(ctx *server.Context) {
 		return
 	}
 
-	if request.SetId > 0 && request.SetId != staged.BeatmapsetId {
-		// Now, this is the part I hate most about pre-osz2 beatmap submission.
-		// Once a beatmap inside osu!.db has gotten a set ID assigned, that set ID
-		// CANNOT be changed whatsoever. How is this bad you may ask?
-		// Imagine this scenario:
-		// 1. User uploads a beatmapset
-		// 2. User deletes the beatmapset
-		// 3. User re-uploads the beatmapset
-		// The re-upload bss request now has an outdated set ID and it won't update
-		// EVEN IF WE SEND A NEW ONE THROUGH THE RESPONSE....... like ????
-		// so yeah, in this state, whenever the user changes the title, artist or creator
-		// it would upload an entirely new beatmapset, which is giga frustratinggggg
-		//
-		// My idea to fix this solution? There is none.
-		// The only thing we can do is to ask the user to delete
-		// their osu!.db file, since that will reset all IDs
-		//
-		renderBssErrorText(ctx, bss.ErrBeatmapsetIdOutdated)
-		return
-	}
-
 	// Append the new beatmap to our staged submission
 	// (saved in redis, later applied once we have all beatmaps)
 	staged.Beatmaps = append(staged.Beatmaps, beatmap)
@@ -579,9 +558,33 @@ func prepareBeatmapsetFromSource(
 	if err != nil {
 		return false, fmt.Errorf("bss: find beatmapset by artist, title and owner: %w", err)
 	}
+	if beatmapset == nil && requestedSetId > 0 {
+		// User requested a specific set but we couldn't find it
+		// by ID and couldn't find it by artist, title & creator
+		//
+		// Now, this is the part I hate most about pre-osz2 beatmap submission.
+		// Once a beatmap inside osu!.db has gotten a set ID assigned, that set ID
+		// CANNOT be changed whatsoever. How is this bad you may ask?
+		//
+		// Imagine this scenario:
+		// 1. User uploads a beatmapset
+		// 2. User deletes the beatmapset
+		// 3. User re-uploads the beatmapset
+		// The re-upload bss request now has an outdated set ID and it won't update
+		// EVEN IF WE SEND A NEW ONE THROUGH THE RESPONSE....... like ????
+		// so yeah, in this state, whenever the user changes the title, artist or creator
+		// it would upload an entirely new beatmapset, which is giga frustratinggggg
+		//
+		// My idea to fix this solution? There is none.
+		// The only thing we can do is to ask the user to delete
+		// their osu!.db file, since that will reset all IDs
+		//
+		return false, bss.ErrBeatmapsetIdOutdated
+	}
 	if beatmapset == nil {
 		return false, nil
 	}
+
 	if err := submission.PrepareBeatmapset(transaction, beatmapset.Id); err != nil {
 		return false, err
 	}
