@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/Lekuruu/gosu/pkg/beatmaps"
 	"github.com/Lekuruu/osz2-go/pkg/osz2"
@@ -44,7 +45,11 @@ func ApplyBeatmapsetMetadata(transaction *state.Repositories, beatmapset *schema
 	}
 
 	if beatmapset.Tags != nil {
-		tags := strings.Split(*beatmapset.Tags, " ")
+		// Normalize tags -> lowercase, split by comma or space, remove double spaces
+		tags := strings.FieldsFunc(strings.ToLower(*beatmapset.Tags), func(r rune) bool {
+			return r == ',' || unicode.IsSpace(r)
+		})
+		beatmapset.Tags = new(strings.Join(tags, " "))
 
 		detectedLanguage := detectLanguageFromTags(tags)
 		detectedGenre := detectGenreFromTags(tags)
