@@ -19,6 +19,10 @@ func Screenshot(ctx *server.Context) {
 
 	screenshot, err := ctx.State.Screenshots.ById(id)
 	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+	if screenshot == nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}
@@ -69,6 +73,10 @@ func ScreenshotRedirect(ctx *server.Context) {
 
 	screenshot, err := ctx.State.Screenshots.ById(id)
 	if err != nil {
+		InternalServerError(ctx)
+		return
+	}
+	if screenshot == nil {
 		ctx.Response.WriteHeader(404)
 		return
 	}

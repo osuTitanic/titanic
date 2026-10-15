@@ -27,9 +27,9 @@ func (r *ScreenshotRepository) Update(updates *schemas.Screenshot, columns ...st
 
 func (r *ScreenshotRepository) ById(id int, preload ...string) (*schemas.Screenshot, error) {
 	var screenshot schemas.Screenshot
-	err := Preloaded(r.db, preload).Where("id = ?", id).First(&screenshot).Error
-	if err != nil {
-		return nil, err
-	}
-	return &screenshot, nil
+	err := Preloaded(r.db, preload).
+		Where("id = ?", id).
+		First(&screenshot).
+		Error
+	return LookupResult(&screenshot, err)
 }
