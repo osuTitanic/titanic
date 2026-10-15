@@ -19,6 +19,16 @@ func (processor *Processor) persist(transaction *state.Repositories) (ResultType
 	}
 	awardsScore := submission.Beatmap.AwardsScore()
 
+	// Prevent concurrent score transactions for the same user
+	user, err := transaction.Users.ByIdWithLock(submission.UserId)
+	if err != nil {
+		return ResultAccepted, fmt.Errorf("lock user %d: %w", submission.UserId, err)
+	}
+	if user == nil {
+		return ResultAccepted, fmt.Errorf("user %d not found", submission.UserId)
+	}
+	submission.User = user
+
 	stats, err := transaction.Stats.ByModeWithLock(submission.UserId, submission.Mode)
 	if err != nil {
 		return ResultAccepted, fmt.Errorf("lock stats for user %d mode %d: %w", submission.UserId, submission.Mode, err)
