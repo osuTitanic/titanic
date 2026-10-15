@@ -168,6 +168,24 @@ func postComment(ctx *server.Context, request CommentRequest, user *schemas.User
 		return
 	}
 
+	validTarget, err := validateCommentTarget(ctx, request, beatmap)
+	if err != nil {
+		ctx.Logger.Error(
+			"Failed to validate beatmap comment target",
+			"target", request.Target, "target_id", targetId, "error", err,
+		)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !validTarget {
+		ctx.Logger.Warn(
+			"Invalid beatmap comment target",
+			"target", request.Target, "target_id", targetId, "beatmap_id", request.BeatmapId,
+		)
+		ctx.Response.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	permissions, err := ctx.State.Permissions.Resolve(user.Id)
 	if err != nil {
 		ctx.Logger.Error("Failed to resolve permissions", "user_id", user.Id, "error", err)
@@ -280,4 +298,38 @@ func resolveCommentTargetId(request CommentRequest) (int, bool) {
 		}
 	}
 	return 0, false
+}
+
+func validateCommentTarget(ctx *server.Context, request CommentRequest, beatmap *schemas.Beatmap) (bool, error) {
+	switch request.Target {
+	case constants.CommentTargetMap:
+		// always valid
+		return true, nil
+	case constants.CommentTargetSong:
+		// check if client actually provided a set id
+		if request.SetId == nil {
+			return false, nil
+		}
+		return *request.SetId == beatmap.SetId, nil
+	case constants.CommentTargetReplay:
+		if request.ReplayId == nil {
+			return false, nil
+		}
+		score, err := ctx.State.Scores.ById(int64(*request.ReplayId))
+		if err != nil {
+			return false, fmt.Errorf("fetch replay score %d: %w", *request.ReplayId, err)
+		}
+		if score == nil {
+			return false, nil
+		}
+		if score.Hidden {
+			return false, nil
+		}
+		if score.BeatmapId != beatmap.Id {
+			return false, nil
+		}
+		return true, nil
+	default:
+		return false, nil
+	}
 }
