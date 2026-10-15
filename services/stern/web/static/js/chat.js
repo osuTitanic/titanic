@@ -332,7 +332,7 @@ function handleChannelMessage(data) {
     }
 
     var message = data.msg.text;
-    var highlight = data.highlight || data.msg.highlight;
+    var highlight = data.msg.highlight;
     var time = data.msg.time || new Date();
 
     // Store message in appropriate cache
