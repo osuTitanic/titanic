@@ -199,7 +199,15 @@ func ScreenshotRedirect(ctx *server.Context) {
 	}
 
 	screenshot, err := ctx.State.Screenshots.ById(id)
-	if err != nil || screenshot.Hidden {
+	if err != nil {
+		ctx.Response.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if screenshot == nil {
+		ctx.Response.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if screenshot.Hidden {
 		ctx.Response.WriteHeader(http.StatusNotFound)
 		return
 	}
