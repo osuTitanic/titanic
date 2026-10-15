@@ -459,6 +459,9 @@ func nativeBeatmapMode(data []byte) constants.Mode {
 		if err == nil {
 			mode = constants.Mode(parsed)
 		}
+		if !mode.Valid() {
+			mode = constants.ModeOsu
+		}
 		break
 	}
 	return mode
