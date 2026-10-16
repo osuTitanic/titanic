@@ -43,5 +43,15 @@
         "name": "release_updates",
         "interval": 900,
         "interval_at": ""
+    },
+    {
+        "name": "users_delete_inactive",
+        "interval": 86400,
+        "interval_at": "12:00"
+    },
+    {
+        "name": "users_delete_pending",
+        "interval": 86400,
+        "interval_at": "13:00"
     }
 ]
