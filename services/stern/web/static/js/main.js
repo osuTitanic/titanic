@@ -300,8 +300,11 @@ function getCookie(cname) {
 }
 
 function setCookie(name, value, maxAgeSeconds) {
-    var parts = [name + "=" + encodeURIComponent(String(value)), "Path=/", "Max-Age=" + maxAgeSeconds, "SameSite=Lax"];
+    var parts = [name + "=" + encodeURIComponent(String(value)), "Path=/", "SameSite=Lax"];
 
+    if (maxAgeSeconds !== undefined && maxAgeSeconds !== null) {
+        parts.push("Max-Age=" + maxAgeSeconds);
+    }
     if (window.location && window.location.protocol === "https:") {
         parts.push("Secure");
     }
