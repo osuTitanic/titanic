@@ -2,12 +2,16 @@ package tasks
 
 import (
 	"cmp"
+	"context"
 	"fmt"
 	"log/slog"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/internal/storage"
 )
 
 const UserAutodeleteAge = 7 * 24 * time.Hour
@@ -71,7 +75,7 @@ func deleteUser(
 	logger *slog.Logger,
 	userId int,
 	cutoff time.Time,
-	deletedEmailDomain string,
+	emailDomain string,
 ) error {
 	return app.DatabaseTransaction(func(repos *state.Repositories) error {
 		user, err := repos.Users.ByIdWithLock(userId)
@@ -93,7 +97,7 @@ func deleteUser(
 			return nil
 		}
 
-		return anonymizeUser(repos, logger, user, deletedEmailDomain)
+		return anonymizeUser(user, repos, app.Storage, logger, emailDomain)
 	})
 }
 
@@ -118,50 +122,71 @@ func deletePendingUser(
 		if user.PendingDeletion.After(cutoff) {
 			return nil
 		}
-		return anonymizeUser(repos, logger, user, deletedEmailDomain)
+		return anonymizeUser(user, repos, app.Storage, logger, deletedEmailDomain)
 	})
 }
 
 func anonymizeUser(
-	repos *state.Repositories,
-	logger *slog.Logger,
 	user *schemas.User,
-	deletedEmailDomain string,
+	transaction *state.Repositories,
+	store storage.Storage,
+	logger *slog.Logger,
+	emailDomain string,
 ) error {
 	previousName := user.Name
 	user.Name = formatDeletedUserName(user.Id)
-	user.Email = formatDeletedUserEmail(user.Id, deletedEmailDomain)
+	user.Email = formatDeletedUserEmail(user.Id, emailDomain)
 	user.SafeName = schemas.ResolveSafeName(user.Name)
+	user.Bcrypt = strings.Repeat("-", 60)
+	user.DiscordId = nil
 	user.PendingDeletion = nil
+	user.SilenceEnd = nil
+	user.Activated = false
+	user.Restricted = true
+	user.AvatarHash = nil
+	user.AvatarLastUpdate = time.Now()
 
-	if _, err := repos.Users.Update(user, "name", "safe_name", "email", "pending_deletion"); err != nil {
+	user.Userpage = nil
+	user.Signature = nil
+	user.Title = nil
+	user.Banner = nil
+	user.Website = nil
+	user.Discord = nil
+	user.Twitter = nil
+	user.Location = nil
+	user.Interests = nil
+
+	if _, err := transaction.Users.Update(user, "name", "safe_name", "email", "pending_deletion"); err != nil {
 		return fmt.Errorf("failed to auto-delete user %d: %w", user.Id, err)
 	}
 
-	if _, err := repos.Logins.AnonymizeForUser(user.Id); err != nil {
+	if _, err := transaction.Logins.AnonymizeForUser(user.Id); err != nil {
 		return fmt.Errorf("failed to anonymize logins for user %d: %w", user.Id, err)
 	}
-	if err := repos.Names.DeleteByUserId(user.Id); err != nil {
+	if err := transaction.Names.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete names for user %d: %w", user.Id, err)
 	}
-	if _, err := repos.Activity.DeleteByUserId(user.Id); err != nil {
+	if _, err := transaction.Activity.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete bancho activity for user %d: %w", user.Id, err)
 	}
-	if _, err := repos.Verifications.DeleteByUserId(user.Id); err != nil {
+	if _, err := transaction.Verifications.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to clear verifications for user %d: %w", user.Id, err)
 	}
-	if err := repos.Groups.DeleteByUserId(user.Id); err != nil {
+	if err := transaction.Groups.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete groups for user %d: %w", user.Id, err)
 	}
-	if err := repos.Permissions.DeleteUserPermissionByUserId(user.Id); err != nil {
+	if err := transaction.Permissions.DeleteUserPermissionByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete user permissions for user %d: %w", user.Id, err)
 	}
-	if err := repos.Favourites.DeleteByUserId(user.Id); err != nil {
+	if err := transaction.Favourites.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete beatmap favourites for user %d: %w", user.Id, err)
 	}
-	if err := repos.Screenshots.DeleteByUserId(user.Id); err != nil {
+	if err := transaction.Screenshots.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete screenshots for user %d: %w", user.Id, err)
 	}
+
+	store.Remove(context.TODO(), strconv.Itoa(user.Id), "avatars")
+	// TODO: Remove screenshots
 
 	// TODO: How do we handle beatmapsets?
 	// TODO: Store messages in db by user ID and not username so that they get auto-anonymized
