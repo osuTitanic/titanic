@@ -10,6 +10,7 @@ import (
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/email"
+	"github.com/osuTitanic/titanic/internal/location"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
@@ -173,24 +174,32 @@ func renderSecurityPage(ctx *server.Context, infoMessage, errorMessage string) {
 		InfoMessage:  infoMessage,
 		ErrorMessage: errorMessage,
 		IrcUsername:  strings.ReplaceAll(ctx.CurrentUser.Name, " ", "_"),
-		Logins:       buildSecurityLogins(ctx, logins),
+		Logins:       buildSecurityLogins(logins),
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/account/settings_security", view)
 }
 
-func buildSecurityLogins(ctx *server.Context, logins []*schemas.Login) []*templates.SecurityLogin {
+func buildSecurityLogins(logins []*schemas.Login) []*templates.SecurityLogin {
 	entries := make([]*templates.SecurityLogin, 0, len(logins))
+
 	for _, login := range logins {
+		ip := login.IpString()
 		country := constants.GetCountryNameFromCode(login.Country)
-		if login.Country == "XX" {
+
+		if country == "" || strings.EqualFold(login.Country, "XX") {
 			country = "unknown location"
 		}
 
+		// Web chat proxies IRC connections which results in a local IP
+		isWebIrc := ip != "" &&
+			location.IsLocalIP(ip) &&
+			strings.EqualFold(login.Version, "irc")
+
 		entries = append(entries, &templates.SecurityLogin{
 			Time:     login.Time,
-			IsWebIrc: false, // TODO: Re-implement this
+			IsWebIrc: isWebIrc,
 			Country:  country,
-			Ip:       login.IpString(),
+			Ip:       ip,
 			Version:  login.Version,
 		})
 	}
