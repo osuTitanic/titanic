@@ -28,7 +28,7 @@ var availableTasks = TaskList{
 	"users_stats":             TaskWithoutArguments(tasks.UpdateUsersStats),
 	"users_notifications":     TaskWithoutArguments(tasks.UpdateUnreadDmNotifications),
 	"users_historical":        TaskWithoutArguments(tasks.FixHistoricalData),
-	"users_logins":            TaskWithoutArguments(tasks.AnonymizeOldLogins),
+	"users_logins_anonymize":  TaskWithoutArguments(tasks.AnonymizeOldLogins),
 	"users_delete_inactive":   TaskWithoutArguments(tasks.AutoDeleteUsers),
 	"users_delete_pending":    TaskWithoutArguments(tasks.DeletePendingUsers),
 	"beatmaps_difficulty":     TaskWithoutArguments(tasks.RecalculateDifficulty),
