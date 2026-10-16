@@ -19,9 +19,10 @@ type User struct {
 	Bcrypt           string                `gorm:"column:pw"`
 	IsBot            bool                  `gorm:"column:bot;default:false"`
 	Country          string                `gorm:"column:country"`
-	SilenceEnd       *time.Time            `gorm:"column:silence_end"`
 	CreatedAt        time.Time             `gorm:"column:created_at;autoCreateTime"`
 	LatestActivity   time.Time             `gorm:"column:latest_activity;autoCreateTime"`
+	PendingDeletion  *time.Time            `gorm:"column:pending_deletion"`
+	SilenceEnd       *time.Time            `gorm:"column:silence_end"`
 	Restricted       bool                  `gorm:"column:restricted;default:false"`
 	Activated        bool                  `gorm:"column:activated;default:false"`
 	PreferredMode    constants.Mode        `gorm:"column:preferred_mode;default:0"`
