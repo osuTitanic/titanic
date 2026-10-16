@@ -21,6 +21,10 @@ func (r *ScreenshotRepository) Delete(screenshot *schemas.Screenshot) error {
 	return r.db.Delete(screenshot).Error
 }
 
+func (r *ScreenshotRepository) DeleteByUserId(userId int) error {
+	return r.db.Where("user_id = ?", userId).Delete(&schemas.Screenshot{}).Error
+}
+
 func (r *ScreenshotRepository) Update(updates *schemas.Screenshot, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }

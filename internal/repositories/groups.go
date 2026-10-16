@@ -21,6 +21,10 @@ func (r *GroupRepository) Delete(group *schemas.Group) error {
 	return r.db.Delete(group).Error
 }
 
+func (r *GroupRepository) DeleteByUserId(userId int) error {
+	return r.db.Where("user_id = ?", userId).Delete(&schemas.GroupEntry{}).Error
+}
+
 func (r *GroupRepository) Update(updates *schemas.Group, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }

@@ -69,17 +69,41 @@ func deleteUser(
 			return fmt.Errorf("failed to auto-delete user %d: %w", user.Id, err)
 		}
 
-		deletedVerifications, err := repos.Verifications.DeleteByUserId(user.Id)
-		if err != nil {
+		// We want to retain login statistics but anonymize the user's IP
+		if _, err = repos.Logins.AnonymizeForUser(user.Id); err != nil {
+			return fmt.Errorf("failed to anonymize logins for user %d: %w", user.Id, err)
+		}
+
+		if err = repos.Names.DeleteByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete names for user %d: %w", user.Id, err)
+		}
+		if _, err = repos.Activity.DeleteByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete bancho activity for user %d: %w", user.Id, err)
+		}
+		if _, err = repos.Verifications.DeleteByUserId(user.Id); err != nil {
 			return fmt.Errorf("failed to clear verifications for user %d: %w", user.Id, err)
 		}
+		if err = repos.Groups.DeleteByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete groups for user %d: %w", user.Id, err)
+		}
+		if err = repos.Permissions.DeleteUserPermissionByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete user permissions for user %d: %w", user.Id, err)
+		}
+		if err = repos.Favourites.DeleteByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete beatmap favourites for user %d: %w", user.Id, err)
+		}
+		if err = repos.Screenshots.DeleteByUserId(user.Id); err != nil {
+			return fmt.Errorf("failed to delete screenshots for user %d: %w", user.Id, err)
+		}
+
+		// TODO: How do we handle beatmapsets?
+		// TODO: Store messages in db by user ID and not username so that they get auto-anonymized
 
 		logger.Info(
 			"Auto-deleted user",
 			"user_id", user.Id,
 			"previous_name", previousName,
 			"new_name", user.Name,
-			"deleted_verifications", deletedVerifications,
 		)
 		return nil
 	})

@@ -28,6 +28,11 @@ func (r *BanchoActivityRepository) DeleteOlderThan(cutoff time.Time) (int64, err
 	return result.RowsAffected, result.Error
 }
 
+func (r *BanchoActivityRepository) DeleteByUserId(userId int) (int64, error) {
+	result := r.db.Where("user_id = ?", userId).Delete(&schemas.BanchoActivity{})
+	return result.RowsAffected, result.Error
+}
+
 func (r *BanchoActivityRepository) Update(updates *schemas.BanchoActivity, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }

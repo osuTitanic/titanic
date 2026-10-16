@@ -39,3 +39,10 @@ func (r *LoginRepository) FetchMany(userId int, limit int, offset int) ([]*schem
 		Find(&logins).Error
 	return logins, err
 }
+
+func (r *LoginRepository) AnonymizeForUser(userId int) (int64, error) {
+	result := r.db.
+		Where("user_id = ?", userId).
+		Update("ip", nil)
+	return result.RowsAffected, result.Error
+}

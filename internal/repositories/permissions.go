@@ -21,6 +21,10 @@ func (r *PermissionsRepository) DeleteUserPermission(permission *schemas.UserPer
 	return r.db.Delete(permission).Error
 }
 
+func (r *PermissionsRepository) DeleteUserPermissionByUserId(userId int) error {
+	return r.db.Where("user_id = ?", userId).Delete(&schemas.UserPermission{}).Error
+}
+
 func (r *PermissionsRepository) UpdateUserPermission(updates *schemas.UserPermission, columns ...string) (int64, error) {
 	query := r.db.Where("id = ? AND user_id = ?", updates.Id, updates.UserId)
 	if len(columns) == 0 {

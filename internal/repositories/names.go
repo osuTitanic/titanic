@@ -23,6 +23,10 @@ func (r *NameRepository) Delete(name *schemas.Name) error {
 	return r.db.Delete(name).Error
 }
 
+func (r *NameRepository) DeleteByUserId(userId int) error {
+	return r.db.Where("user_id = ?", userId).Delete(&schemas.Name{}).Error
+}
+
 func (r *NameRepository) Update(updates *schemas.Name, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }
