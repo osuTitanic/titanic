@@ -69,7 +69,13 @@ func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bit
 	defer os.Remove(outputPath)
 
 	inputArgs := ffmpeg.KwArgs{"ss": offset}
-	outputArgs := ffmpeg.KwArgs{"t": duration, "ab": bitrate}
+	outputArgs := ffmpeg.KwArgs{
+		"t":      duration,
+		"ab":     bitrate,
+		"vn":     "",
+		"acodec": "libmp3lame",
+		"format": "mp3",
+	}
 	ffmpeg.LogCompiledCommand = false
 
 	err = ffmpeg.Input(inputPath, inputArgs).
