@@ -157,7 +157,30 @@ func anonymizeUser(
 	user.Location = nil
 	user.Interests = nil
 
-	if _, err := transaction.Users.Update(user, "name", "safe_name", "email", "pending_deletion"); err != nil {
+	columns := []string{
+		"name",
+		"email",
+		"safe_name",
+		"pw",
+		"country",
+		"discord_id",
+		"pending_deletion",
+		"silence_end",
+		"activated",
+		"restricted",
+		"avatar_hash",
+		"avatar_last_changed",
+		"userpage_about",
+		"userpage_signature",
+		"userpage_title",
+		"userpage_banner",
+		"userpage_website",
+		"userpage_discord",
+		"userpage_twitter",
+		"userpage_location",
+		"userpage_interests",
+	}
+	if _, err := transaction.Users.Update(user, columns...); err != nil {
 		return fmt.Errorf("failed to auto-delete user %d: %w", user.Id, err)
 	}
 
