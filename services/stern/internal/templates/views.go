@@ -243,12 +243,13 @@ type UserAchievement struct {
 }
 
 type UserBeatmapsTab struct {
-	UserId         int
-	IsOwner        bool
-	Favourites     []*schemas.BeatmapFavourite
-	Created        []*UserBeatmapGroup
-	Collaborations []*schemas.BeatmapCollaboration
-	Nominations    []*schemas.BeatmapNomination
+	UserId              int
+	IsOwner             bool
+	Favourites          []*schemas.BeatmapFavourite
+	Created             []*UserBeatmapGroup
+	Collaborations      []*schemas.BeatmapCollaboration
+	ApprovedNominations []*schemas.BeatmapNomination
+	PendingNominations  []*schemas.BeatmapNomination
 }
 
 type UserBeatmapGroup struct {

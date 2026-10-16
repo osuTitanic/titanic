@@ -313,20 +313,28 @@ func UserBeatmapsPartial(ctx *server.Context) {
 		return
 	}
 
-	nominations, err := ctx.State.Repositories.Nominations.FetchByUser(user.Id, "Beatmapset")
+	approvedNominations, err := ctx.State.Repositories.Nominations.FetchByUserApproved(user.Id, "Beatmapset")
 	if err != nil {
-		ctx.Logger.Error("Failed to fetch nominations", "user", user.Id, "error", err)
+		ctx.Logger.Error("Failed to fetch approved nominations", "user", user.Id, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	pendingNominations, err := ctx.State.Repositories.Nominations.FetchByUserPending(user.Id, "Beatmapset")
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch pending nominations", "user", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
 	tab := &templates.UserBeatmapsTab{
-		UserId:         user.Id,
-		IsOwner:        isOwner,
-		Favourites:     favourites,
-		Nominations:    nominations,
-		Collaborations: collaborations,
-		Created:        buildCreatedBeatmapGroups(created, isOwner),
+		UserId:              user.Id,
+		IsOwner:             isOwner,
+		Favourites:          favourites,
+		ApprovedNominations: approvedNominations,
+		PendingNominations:  pendingNominations,
+		Collaborations:      collaborations,
+		Created:             buildCreatedBeatmapGroups(created, isOwner),
 	}
 	ctx.RenderTemplate(http.StatusOK, "partials/user_beatmaps", tab)
 }

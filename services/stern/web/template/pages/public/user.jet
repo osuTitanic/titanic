@@ -833,16 +833,20 @@
 {{ end }}
 
 {{ block beatmapNominations() }}
-{{ if len(.Nominations) > 0 }}
+{{ yield nominatedBeatmapsSection(title="Nominated Approved Beatmaps", nominations=.ApprovedNominations) }}
+{{ yield nominatedBeatmapsSection(title="Nominated Pending Beatmaps", nominations=.PendingNominations) }}
+{{ end }}
+
+{{ block nominatedBeatmapsSection(title, nominations) }}
+{{ if len(nominations) > 0 }}
 <div class="nominations">
     <h2 class="profile-stats-header">
         <a onclick="toggleBeatmapContainer(this.parentNode.parentNode)">
-            Nominated Beatmaps (<span class="beatmaps-count">{{ .Nominations|len }}</span>)
+            {{ title }} (<span class="beatmaps-count">{{ nominations|len }}</span>)
         </a>
     </h2>
     <div class="profile-beatmaps-container" style="display: none;">
-        {{ range _, nom := .Nominations }}
-            {{ if nom.Beatmapset }}
+        {{ range _, nom := nominations }}
             <table class="profile-beatmap">
                 <tbody>
                     <tr>
@@ -857,7 +861,6 @@
                     </tr>
                 </tbody>
             </table>
-            {{ end }}
         {{ end }}
         <div style="clear: both;"></div>
     </div>

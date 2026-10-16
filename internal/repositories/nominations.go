@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -47,11 +48,34 @@ func (r *BeatmapNominationRepository) FetchBySet(setId int, preload ...string) (
 	return nominations, err
 }
 
-func (r *BeatmapNominationRepository) FetchByUser(userId int, preload ...string) ([]*schemas.BeatmapNomination, error) {
+func (r *BeatmapNominationRepository) FetchByUserApproved(userId int, preload ...string) ([]*schemas.BeatmapNomination, error) {
 	var nominations []*schemas.BeatmapNomination
 	err := Preloaded(r.db, preload).
-		Where("user_id = ?", userId).
-		Order("time DESC").
+		Joins("JOIN beatmapsets ON beatmapsets.id = beatmap_nominations.set_id").
+		Where("beatmap_nominations.user_id = ?", userId).
+		Where("beatmapsets.submission_status IN ?", []constants.BeatmapStatus{
+			constants.BeatmapStatusRanked,
+			constants.BeatmapStatusLoved,
+			constants.BeatmapStatusQualified,
+			constants.BeatmapStatusApproved,
+		}).
+		Order("beatmap_nominations.time DESC").
+		Find(&nominations).Error
+	return nominations, err
+}
+
+func (r *BeatmapNominationRepository) FetchByUserPending(userId int, preload ...string) ([]*schemas.BeatmapNomination, error) {
+	var nominations []*schemas.BeatmapNomination
+	err := Preloaded(r.db, preload).
+		Joins("JOIN beatmapsets ON beatmapsets.id = beatmap_nominations.set_id").
+		Where("beatmap_nominations.user_id = ?", userId).
+		Where("beatmapsets.submission_status NOT IN ?", []constants.BeatmapStatus{
+			constants.BeatmapStatusRanked,
+			constants.BeatmapStatusLoved,
+			constants.BeatmapStatusQualified,
+			constants.BeatmapStatusApproved,
+		}).
+		Order("beatmap_nominations.time DESC").
 		Find(&nominations).Error
 	return nominations, err
 }
