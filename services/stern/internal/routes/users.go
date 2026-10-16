@@ -756,10 +756,7 @@ func resolveUserByName(ctx *server.Context, query string) {
 }
 
 func canViewUser(ctx *server.Context, user *schemas.User) bool {
-	if user.Activated {
-		return true
-	}
-	if !user.Restricted {
+	if !user.Restricted && user.Activated {
 		return true
 	}
 	if ctx.CurrentUser == nil {
