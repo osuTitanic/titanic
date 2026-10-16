@@ -480,7 +480,7 @@ func (server *HttpServer[C]) LoggingMiddleware(next http.Handler) http.Handler {
 			fmt.Sprintf("%s %s", request.Method, request.RequestURI),
 			"ip", GetRequestIP(request),
 			"status", ctx.Status(),
-			"duration", time.Since(start).String(),
+			"duration", time.Since(start),
 		)
 	})
 }
