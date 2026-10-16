@@ -21,6 +21,13 @@ func (Login) TableName() string {
 	return "logins"
 }
 
+func (l *Login) IpString() string {
+	if l.Ip == nil {
+		return ""
+	}
+	return *l.Ip
+}
+
 type Channel struct {
 	Name             string `gorm:"column:name;primaryKey"`
 	Topic            string `gorm:"column:topic"`

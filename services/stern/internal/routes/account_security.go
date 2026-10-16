@@ -10,7 +10,6 @@ import (
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/constants"
 	"github.com/osuTitanic/titanic/internal/email"
-	"github.com/osuTitanic/titanic/internal/location"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/internal/state"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
@@ -182,24 +181,16 @@ func renderSecurityPage(ctx *server.Context, infoMessage, errorMessage string) {
 func buildSecurityLogins(ctx *server.Context, logins []*schemas.Login) []*templates.SecurityLogin {
 	entries := make([]*templates.SecurityLogin, 0, len(logins))
 	for _, login := range logins {
-		// Logins from the website chat originate from a local IP over IRC
-		isWebIrc := location.IsLocalIP(login.Ip) && strings.EqualFold(login.Version, "irc")
-		country := "Unknown"
-
-		if !isWebIrc {
-			resolved, err := ctx.State.Location.Resolve(login.Ip)
-			if err != nil {
-				ctx.Logger.Warn("Failed to resolve login location", "ip", login.Ip, "error", err)
-			}
-			// Resolve always returns a location no matter what, so this is fine
-			country = resolved.CountryName
+		country := constants.GetCountryNameFromCode(login.Country)
+		if login.Country == "XX" {
+			country = "unknown location"
 		}
 
 		entries = append(entries, &templates.SecurityLogin{
 			Time:     login.Time,
-			IsWebIrc: isWebIrc,
+			IsWebIrc: false, // TODO: Re-implement this
 			Country:  country,
-			Ip:       login.Ip,
+			Ip:       login.IpString(),
 			Version:  login.Version,
 		})
 	}

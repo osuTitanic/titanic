@@ -127,7 +127,8 @@ func AccountLogin(ctx *server.Context) {
 
 	login := &schemas.Login{
 		UserId:  user.Id,
-		Ip:      ctx.IP(),
+		Ip:      new(ctx.IP()),
+		Country: strings.ToUpper(ctx.Country()),
 		Version: "web",
 	}
 	if err := ctx.State.Logins.Create(login); err != nil {

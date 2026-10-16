@@ -292,8 +292,8 @@ type SecurityLogin struct {
 	Time     time.Time
 	IsWebIrc bool
 	Country  string
-	Ip       string
 	Version  string
+	Ip       string
 }
 
 type SettingsFriend struct {
