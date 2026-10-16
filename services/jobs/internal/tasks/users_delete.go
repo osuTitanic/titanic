@@ -29,7 +29,10 @@ func AutoDeleteUsers(app *state.State, logger *slog.Logger) error {
 
 	for _, user := range users {
 		if err := deleteUser(app, logger, user.Id, cutoff, deletedEmailDomain); err != nil {
-			return err
+			logger.Error(
+				"Failed to delete user",
+				"user_id", user.Id, "error", err,
+			)
 		}
 	}
 
@@ -53,7 +56,10 @@ func DeletePendingUsers(app *state.State, logger *slog.Logger) error {
 
 	for _, user := range users {
 		if err := deletePendingUser(app, logger, user.Id, cutoff, deletedEmailDomain); err != nil {
-			return err
+			logger.Error(
+				"Failed to delete user",
+				"user_id", user.Id, "error", err,
+			)
 		}
 	}
 
