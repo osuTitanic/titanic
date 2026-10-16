@@ -212,6 +212,14 @@ func (r *UserRepository) ManyAutoDeleteCandidates(cutoff time.Time, preload ...s
 	return users, err
 }
 
+func (r *UserRepository) ManyPendingDeletionCandidates(cutoff time.Time, preload ...string) ([]*schemas.User, error) {
+	var users []*schemas.User
+	err := Preloaded(r.db, preload).Model(&schemas.User{}).
+		Where("pending_deletion <= ?", cutoff).
+		Find(&users).Error
+	return users, err
+}
+
 func (r *UserRepository) FetchInactiveOrRestricted(cutoff time.Time) ([]*schemas.User, error) {
 	var users []*schemas.User
 	err := r.db.Model(&schemas.User{}).
