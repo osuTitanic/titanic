@@ -115,7 +115,7 @@ func logScoreWarnings(ctx *server.Context, result scoring.Result) {
 	}
 	embed.AddField("Outcome", outcome, true)
 	embed.AddField("Player", fmt.Sprintf("[%s](%s/u/%d)", playerName, serverUrl, score.UserId), true)
-	embed.AddField("Beatmap", fmt.Sprintf("[%s](%s/u/%d)", beatmapName, serverUrl, score.BeatmapId), true)
+	embed.AddField("Beatmap", fmt.Sprintf("[%s](%s/b/%d)", beatmapName, serverUrl, score.BeatmapId), true)
 	embed.AddField("Client", fmt.Sprintf("`%s`", clientName), true)
 
 	if score.Id > 0 {
