@@ -115,16 +115,11 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 
 	// Nerf maps with a high pass ratio, likely being very easy to play
 	if score.Mode != constants.ModeTaiko && passRatio > 0.3 {
-		basePP *= 0.2
+		// NOTE: The original ppv1 algorithm applied a static *0.2 factor here
+		// 		 This can lead to issues with a lot of maps that have low playcount
+		// 		 We fixed this by gradually applying this nerf in relation to playcount
+		basePP *= calculatePassRatio(passRatio, beatmap.Playcount)
 	}
-
-	// NOTE: This pass ratio nerf causes some trouble on Titanic due to
-	//	     a lot of maps having a low playcount.
-	// 		 Initially, the pass ratio may be low, but after a few plays,
-	// 		 the pass ratio can easily exceed 0.3, which will suddenly nerf
-	// 		 all scores at once.
-	// TODO: We could fix this by gradually applying this nerf in relation to playcount
-	//		 This would differ from the original system, but it would make players less confused
 
 	// TODO: Implement SS ratio
 	// 		 For the beatmap/mode top 800 scores:
@@ -148,6 +143,28 @@ func (service *PPv1Service) CalculatePerformance(score *schemas.Score) (float64,
 		return 0, nil
 	}
 	return math.Max(0, ppv1), nil
+}
+
+func calculatePassRatio(passRatio float64, playcount int64) float64 {
+	if passRatio <= 0.3 {
+		return 1
+	}
+
+	// Derived from https://osu.titanic.sh/forum/p/31970
+	// Thanks Riley!
+
+	// Calculate base pass ratio nerf
+	passRatioProgress := (passRatio - 0.3) / 0.7
+	nerf := 0.8 * math.Pow(passRatioProgress, 2)
+
+	// Increase intensity of this nerf based on playcount
+	// As playcount approaches 100, intensity of the passrate nerf approaches 100%
+	intensity := 1.0
+	if playcount < 100 {
+		intensity = math.Pow(float64(playcount)/100, 2)
+	}
+
+	return 1 - intensity*nerf
 }
 
 // UpdatePerformance calculates ppv1 & updates the score in the database
