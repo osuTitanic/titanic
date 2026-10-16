@@ -32,6 +32,7 @@ func Screenshot(ctx *server.Context) {
 		// Response already set by function
 		return
 	}
+	// TODO: Screenshot cooldown
 
 	screenshot := &schemas.Screenshot{UserId: user.Id}
 	if err := ctx.State.Screenshots.Create(screenshot); err != nil {
