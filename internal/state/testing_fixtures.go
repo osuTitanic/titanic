@@ -90,7 +90,7 @@ func (data *TestData) CreateLogin(user *schemas.User, opts ...FixtureOption[sche
 	login := &schemas.Login{
 		UserId:  user.Id,
 		Time:    testDataTime(data.next()),
-		Ip:      "1.2.3.4",
+		Ip:      new("1.2.3.4"),
 		Version: "web",
 	}
 	applyFixtureOptions(login, opts)
