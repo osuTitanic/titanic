@@ -625,6 +625,8 @@ type BeatmapView struct {
 	Invite                *schemas.BeatmapCollaborationRequest
 	IsBeatmapAuthor       bool
 	BatNominated          bool
+	SettingsPanelOpen     bool
+	BatPanelOpen          bool
 }
 
 type BeatmapPacksView struct {

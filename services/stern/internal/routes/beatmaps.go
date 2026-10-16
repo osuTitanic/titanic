@@ -3,6 +3,7 @@ package routes
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -187,6 +188,7 @@ func Beatmap(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
+	settingsPanelOpen, batPanelOpen := resolveBeatmapPanelState(ctx.Request)
 
 	view := templates.BeatmapView{
 		DefaultView:           buildDefaultViewWithPermissions(ctx),
@@ -208,6 +210,8 @@ func Beatmap(ctx *server.Context) {
 		IsBeatmapAuthor:       isBeatmapAuthor(ctx, beatmap.Beatmapset),
 		Invite:                findInvite(ctx, collaborationRequests),
 		BatNominated:          hasNominated(ctx, nominations),
+		SettingsPanelOpen:     settingsPanelOpen,
+		BatPanelOpen:          batPanelOpen,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/beatmap", view)
 }
@@ -362,4 +366,26 @@ func resolveMods(ctx *server.Context) (*constants.Mods, string) {
 
 	result := constants.ModsFromString(mods)
 	return &result, mods
+}
+
+func resolveBeatmapPanelState(request *http.Request) (settingsOpen, batOpen bool) {
+	cookie, err := request.Cookie("beatmap_panels_open")
+	if err != nil {
+		return false, false
+	}
+
+	value, err := url.PathUnescape(cookie.Value)
+	if err != nil {
+		return false, false
+	}
+
+	for panel := range strings.SplitSeq(value, ",") {
+		switch panel {
+		case "settings":
+			settingsOpen = true
+		case "bat":
+			batOpen = true
+		}
+	}
+	return settingsOpen, batOpen
 }
