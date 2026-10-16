@@ -53,5 +53,10 @@
         "name": "users_delete_pending",
         "interval": 86400,
         "interval_at": "13:00"
+    },
+    {
+        "name": "users_logins_anonymize",
+        "interval": 86400,
+        "interval_at": "14:00"
     }
 ]
