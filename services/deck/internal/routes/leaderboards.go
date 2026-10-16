@@ -629,10 +629,7 @@ func formatScore(score *schemas.Score, index int, requestVersion int, sendNightc
 		strconv.Itoa(score.UserId),
 		strconv.Itoa(index),
 		submittedAt,
-	}
-	if requestVersion >= 4 {
-		// "Has Replay", added in request version 4
-		fields = append(fields, "1")
+		"1", // "Has Replay", added in request version 4
 	}
 
 	return strings.Join(fields, "|")
