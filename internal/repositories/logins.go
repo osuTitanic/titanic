@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"gorm.io/gorm"
 )
@@ -41,8 +43,17 @@ func (r *LoginRepository) FetchMany(userId int, limit int, offset int) ([]*schem
 }
 
 func (r *LoginRepository) AnonymizeForUser(userId int) (int64, error) {
-	result := r.db.
+	result := r.db.Model(&schemas.Login{}).
 		Where("user_id = ?", userId).
+		Where("ip IS NOT NULL").
+		Update("ip", nil)
+	return result.RowsAffected, result.Error
+}
+
+func (r *LoginRepository) AnonymizeOlderThan(cutoff time.Time) (int64, error) {
+	result := r.db.Model(&schemas.Login{}).
+		Where("time < ?", cutoff).
+		Where("ip IS NOT NULL").
 		Update("ip", nil)
 	return result.RowsAffected, result.Error
 }
