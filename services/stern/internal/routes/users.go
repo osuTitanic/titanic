@@ -55,7 +55,11 @@ func UserProfile(ctx *server.Context) {
 		return
 	}
 
-	if user == nil || !user.Activated {
+	if user == nil {
+		UserNotFound(ctx)
+		return
+	}
+	if !canViewUser(ctx, user) {
 		UserNotFound(ctx)
 		return
 	}
@@ -648,6 +652,10 @@ func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bo
 		NotFound(ctx)
 		return nil, false
 	}
+	if !canViewUser(ctx, user) {
+		NotFound(ctx)
+		return nil, false
+	}
 	return user, true
 }
 
@@ -717,16 +725,48 @@ func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, 
 func resolveUserByName(ctx *server.Context, query string) {
 	// Try to find the user by their current name first
 	if user, err := ctx.State.Repositories.Users.ByNameExtended(query); err == nil && user != nil {
-		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", user.Id))
-		return
+		if canViewUser(ctx, user) {
+			ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", user.Id))
+			return
+		}
 	}
 
 	// Search the name history as a backup
 	if name, err := ctx.State.Repositories.Names.ByNameExtended(query); err == nil && name != nil {
+		user, err := ctx.State.Repositories.Users.ById(name.UserId)
+		if err != nil {
+			ctx.Logger.Error("Failed to fetch user", "id", name.UserId, "error", err)
+			InternalServerError(ctx)
+			return
+		}
+		if user == nil {
+			UserNotFound(ctx)
+			return
+		}
+		if !canViewUser(ctx, user) {
+			UserNotFound(ctx)
+			return
+		}
 		ctx.Redirect(http.StatusFound, fmt.Sprintf("/u/%d", name.UserId))
 		return
 	}
 
 	// womp womp
 	UserNotFound(ctx)
+}
+
+func canViewUser(ctx *server.Context, user *schemas.User) bool {
+	if user.Activated {
+		return true
+	}
+	if !user.Restricted {
+		return true
+	}
+	if ctx.CurrentUser == nil {
+		return false
+	}
+	if user.Restricted && ctx.CurrentUser.Id == user.Id {
+		return true
+	}
+	return ctx.Permissions().IsModerator()
 }
