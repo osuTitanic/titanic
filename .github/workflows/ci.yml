@@ -24,6 +24,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+          cache-dependency-path: |
+            go.mod
+            go.sum
 
       - name: Run tests
         run: go test ./...
@@ -41,6 +44,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+          cache-dependency-path: |
+            go.mod
+            go.sum
 
       - name: Run integration tests
         run: go test -tags=integration -count=1 -p 1 ./...
@@ -149,6 +155,9 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+          cache-dependency-path: |
+            go.mod
+            go.sum
 
       - name: Cross-compile service
         env:
