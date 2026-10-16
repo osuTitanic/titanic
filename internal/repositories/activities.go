@@ -23,6 +23,11 @@ func (r *ActivityRepository) Delete(activity *schemas.Activity) error {
 	return r.db.Delete(activity).Error
 }
 
+func (r *ActivityRepository) DeleteByUserId(userId int) (int64, error) {
+	result := r.db.Where("user_id = ?", userId).Delete(&schemas.Activity{})
+	return result.RowsAffected, result.Error
+}
+
 func (r *ActivityRepository) Update(updates *schemas.Activity, columns ...string) (int64, error) {
 	return CommonUpdate(r.db, updates, columns...)
 }

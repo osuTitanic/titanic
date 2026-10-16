@@ -138,6 +138,7 @@ func anonymizeUser(
 	user.Email = formatDeletedUserEmail(user.Id, emailDomain)
 	user.SafeName = schemas.ResolveSafeName(user.Name)
 	user.Bcrypt = strings.Repeat("-", 60)
+	user.Country = "XX"
 	user.DiscordId = nil
 	user.PendingDeletion = nil
 	user.SilenceEnd = nil
@@ -166,7 +167,7 @@ func anonymizeUser(
 	if err := transaction.Names.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete names for user %d: %w", user.Id, err)
 	}
-	if _, err := transaction.Activity.DeleteByUserId(user.Id); err != nil {
+	if _, err := transaction.Activities.DeleteByUserId(user.Id); err != nil {
 		return fmt.Errorf("failed to delete bancho activity for user %d: %w", user.Id, err)
 	}
 	if _, err := transaction.Verifications.DeleteByUserId(user.Id); err != nil {
