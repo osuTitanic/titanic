@@ -1,7 +1,9 @@
 package tasks
 
 import (
+	"context"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/constants"
@@ -132,6 +134,7 @@ func handlePendingSet(app *state.State, logger *slog.Logger, beatmapset *schemas
 	app.Repositories.Beatmapsets.Update(beatmapsetUpdate, "submission_status")
 	app.Repositories.Beatmaps.UpdateBySetId(beatmapUpdate, "status")
 	app.Repositories.Nominations.DeleteAll(beatmapset.Id)
+	app.StorageOsz2.Remove(context.TODO(), strconv.Itoa(beatmapset.Id), "osz2")
 
 	logger.Info("Beatmapset was sent to the beatmap graveyard.", "id", beatmapset.Id, "name", beatmapset.Name())
 }

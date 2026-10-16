@@ -31,7 +31,6 @@ var RequiredDirectories = []string{
 	"avatars",
 	"beatmaps",
 	"osz",
-	"osz2",
 	"release",
 	"replays",
 	"screenshots",
