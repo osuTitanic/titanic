@@ -1,0 +1,14 @@
+version: 2
+
+updates:
+  - package-ecosystem: docker
+    directory: /services/deck
+    schedule:
+      interval: weekly
+      day: tuesday
+      time: "06:00"
+      timezone: Europe/Berlin
+    allow:
+      - dependency-name: ghcr.io/osutitanic/ffmpeg
+    commit-message:
+      prefix: "build ffmpeg"

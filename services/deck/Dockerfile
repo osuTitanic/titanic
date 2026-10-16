@@ -3,6 +3,9 @@
 # NOTE: This assumes you are running the build from the root, e.g.:
 #       docker build -f ./services/deck/Dockerfile -t osutitanic/deck .
 
+# Keep this first so dependabot can pin and update the ffmpeg image digest
+FROM ghcr.io/osutitanic/ffmpeg:trixie AS ffmpeg
+
 FROM --platform=$BUILDPLATFORM golang:1.27.1-trixie AS builder
 
 ARG TARGETOS
@@ -81,43 +84,13 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     cp "$NATIVE_LIBRARY" /out/lib/libosu.Native.so && \
     "$STRIP" --strip-unneeded /out/lib/libosu.Native.so
 
-FROM debian:trixie-slim AS runtime-deps
-
-# Collect FFmpeg, FFprobe & their shared libraries
-RUN <<'EOF'
-set -eu
-
-apt-get update
-apt-get install -y --no-install-recommends ffmpeg
-
-mkdir -p /out/bin /out/lib
-
-# Copy the FFmpeg executables
-cp /usr/bin/ffmpeg /usr/bin/ffprobe /out/bin/
-
-# Copy shared libraries required by ffmpeg / ffprobe
-# ldd resolves dependencies to their absolute paths
-ldd /usr/bin/ffmpeg /usr/bin/ffprobe \
-    | awk '
-        $2 == "=>" && $3 ~ /^\// { print $3 }
-        $1 ~ /^\// && $1 !~ /:$/ { print $1 }
-    ' \
-    | sort -u \
-    | while IFS= read -r lib; do
-        cp -L "$lib" /out/lib/
-    done
-
-# Remove cached package metadata to reduce image size.
-rm -rf /var/lib/apt/lists/*
-EOF
-
 FROM gcr.io/distroless/base-nossl-debian13:latest AS runtime
 
 WORKDIR /app
 COPY --from=builder /out/deck /app/deck
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
-COPY --from=runtime-deps /out/bin/ /usr/bin/
-COPY --from=runtime-deps /out/lib/ /app/lib/
+COPY --from=ffmpeg /usr/bin/ /usr/bin/
+COPY --from=ffmpeg /usr/share/ffmpeg/version /usr/share/ffmpeg/version
 
 ENV LD_LIBRARY_PATH=/app/lib
 
