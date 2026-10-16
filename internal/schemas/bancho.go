@@ -10,7 +10,8 @@ import (
 type Login struct {
 	UserId  int       `gorm:"column:user_id;primaryKey"`
 	Time    time.Time `gorm:"column:time;primaryKey;autoCreateTime"`
-	Ip      string    `gorm:"column:ip"`
+	Ip      *string   `gorm:"column:ip"`
+	Country string    `gorm:"column:country"`
 	Version string    `gorm:"column:osu_version"`
 
 	User *User `gorm:"foreignKey:UserId;references:Id"`
