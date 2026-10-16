@@ -1,3 +1,40 @@
+function toggleBeatmapPanel(root, panelName) {
+    var body = $(root).closest(".spoiler").children(".spoiler-body");
+    saveBeatmapPanelState(panelName, body.css("display") === "none");
+    return toggleSpoiler(root);
+}
+
+function getOpenBeatmapPanels() {
+    var openPanels = {};
+    var names = getCookie("beatmap_panels_open").split(",");
+
+    for (var i = 0; i < names.length; i++) {
+        openPanels[names[i]] = true;
+    }
+    return openPanels;
+}
+
+function saveBeatmapPanelState(panelName, isOpen) {
+    var validNames = ["settings", "bat"];
+    var openNames = [];
+
+    var openPanels = getOpenBeatmapPanels();
+    if (isOpen) {
+        openPanels[panelName] = true;
+    } else {
+        delete openPanels[panelName];
+    }
+
+    for (var i = 0; i < validNames.length; i++) {
+        var name = validNames[i];
+        if (openPanels[name]) {
+            openNames.push(name);
+        }
+    }
+
+    setCookie("beatmap_panels_open", openNames.join(","));
+}
+
 function addFavorite(beatmapsetId) {
     var url = "/users/" + currentUser + "/favourites";
 
