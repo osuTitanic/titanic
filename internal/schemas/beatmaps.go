@@ -159,9 +159,44 @@ func (b *Beatmapset) AudioPreviewUrl() string {
 	return fmt.Sprintf("/mp3/preview/%d?c=%d", b.Id, lastModified)
 }
 
-func (b *Beatmapset) DescriptionText() string {
-	if b.Description != nil {
-		return *b.Description
+func (b *Beatmapset) TitleText() string {
+	if b.Title != nil {
+		return *b.Title
+	}
+	return ""
+}
+
+func (b *Beatmapset) TitleUnicodeText() string {
+	if b.TitleUnicode != nil {
+		return *b.TitleUnicode
+	}
+	return ""
+}
+
+func (b *Beatmapset) ArtistText() string {
+	if b.Artist != nil {
+		return *b.Artist
+	}
+	return ""
+}
+
+func (b *Beatmapset) ArtistUnicodeText() string {
+	if b.ArtistUnicode != nil {
+		return *b.ArtistUnicode
+	}
+	return ""
+}
+
+func (b *Beatmapset) SourceText() string {
+	if b.Source != nil {
+		return *b.Source
+	}
+	return ""
+}
+
+func (b *Beatmapset) SourceUnicodeText() string {
+	if b.SourceUnicode != nil {
+		return *b.SourceUnicode
 	}
 	return ""
 }
@@ -169,6 +204,13 @@ func (b *Beatmapset) DescriptionText() string {
 func (b *Beatmapset) TagsText() string {
 	if b.Tags != nil {
 		return *b.Tags
+	}
+	return ""
+}
+
+func (b *Beatmapset) DescriptionText() string {
+	if b.Description != nil {
+		return *b.Description
 	}
 	return ""
 }

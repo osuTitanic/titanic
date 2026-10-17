@@ -753,17 +753,46 @@
     <div class="spoiler">
         <div class="spoiler-head" onclick="return toggleBeatmapPanel(this, 'bat');">BAT Controls</div>
         <div class="spoiler-body"{{ if .BatPanelOpen }} style="display: block;"{{ end }}>
+        <form method="post" onsubmit="updateBeatmapsetMetadata(event)">
         <table>
             <thead>
-                <th><h2>General</h2></th>
-                <th><h2>Ranking</h2></th>
-                {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
-                <th><h2>Files</h2></th>
-                {{ end }}
+                <tr>
+                    <th colspan="2"><h2>General</h2></th>
+                </tr>
             </thead>
             <tbody>
-                <td style="min-width: 38%">
-                    <form method="post" onsubmit="updateBeatmapsetMetadata(event)">
+                <tr>
+                    <td style="width: 50%; vertical-align: top;">
+                        <dl>
+                            <dt>Title:</dt>
+                            <dd>
+                                <input type="text" name="title" value="{{ .Beatmapset.TitleText() }}">
+                            </dd>
+                            <dt>Title (Unicode):</dt>
+                            <dd>
+                                <input type="text" name="title_unicode" value="{{ .Beatmapset.TitleUnicodeText() }}">
+                            </dd>
+                            <dt>Artist:</dt>
+                            <dd>
+                                <input type="text" name="artist" value="{{ .Beatmapset.ArtistText() }}">
+                            </dd>
+                            <dt>Artist (Unicode):</dt>
+                            <dd>
+                                <input type="text" name="artist_unicode" value="{{ .Beatmapset.ArtistUnicodeText() }}">
+                            </dd>
+                            <dt>Source:</dt>
+                            <dd>
+                                <input type="text" name="source" value="{{ .Beatmapset.SourceText() }}">
+                            </dd>
+                            <dt>Source (Unicode):</dt>
+                            <dd>
+                                <input type="text" name="source_unicode" value="{{ .Beatmapset.SourceUnicodeText() }}">
+                            </dd>
+                        </dl>
+                        <input type="submit" value="Save">
+                        <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
+                    </td>
+                    <td style="width: 50%; vertical-align: top;">
                         <dl>
                             <dt>Offset:</dt>
                             <dd>
@@ -811,140 +840,153 @@
                                 <textarea name="tags">{{ .Beatmapset.TagsText() }}</textarea>
                             </dd>
                         </dl>
-                        <input type="submit" value="Save">
-                        <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
-                    </form>
-                </td>
-                <td style="min-width: 30%">
-                    <p>
-                        The current status of this beatmap is "{{ .Beatmapset.Status.String() }}".
-                        {{ if len(.Nominations) >= .Beatmapset.RequiredNominations() && .Beatmapset.Status <= 0 }}
-                        This beatmap has enough nominations to be qualified!
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th><h2>Rankings</h2></th>
+                    {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
+                    <th><h2>Files</h2></th>
+                    {{ end }}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="min-width: 50%">
+                        <p>
+                            The current status of this beatmap is "{{ .Beatmapset.Status.String() }}".
+                            {{ if len(.Nominations) >= .Beatmapset.RequiredNominations() && .Beatmapset.Status <= 0 }}
+                            This beatmap has enough nominations to be qualified!
+                            {{ else if .Beatmapset.Status == 3 }}
+                            This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.
+                            {{ end }}
+                        </p><br>
+
+                        {{ if .Beatmapset.Status <= 0 }}
+                        {* Beatmap is not ranked *}
+                        <div>
+                            {{ if !.BatNominated }}
+                            <a href="#" onclick="addNomination({{ .Beatmapset.Id }})" style="color: green;">
+                                Nominate this beatmap
+                                (Bubble)
+                            </a><br>
+                            {{ else }}
+                            <p style="color: green;">
+                                You have nominated this beatmap
+                                (Bubbled)
+                            </p>
+                            {{ end }}
+                            <a href="#" onclick="resetNominations({{ .Beatmapset.Id }})" style="color: red;">
+                                Remove all nominations from this beatmap
+                                (Pop Bubble)
+                            </a>
+                        </div><br>
+
+                        <div>
+                            <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 3, 'Are you sure you want to update the status to Qualified?')">
+                                Update status to "Qualified"
+                            </a><br>
+                            <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 4, 'Are you sure you want to update the status to Loved?')">
+                                Update status to "Loved"
+                            </a><br>
+                            {{ if .Beatmapset.Server != 0 }}
+                            <a onclick="nukeBeatmapset({{ .Beatmapset.Id }})" style="color: red">
+                                Nuke this beatmap
+                            </a><br>
+                            {{ end }}
+                        </div><br>
+
+                        {{ else if .Beatmapset.Status == 1 || .Beatmapset.Status == 2 }}
+                        {* Beatmap is ranked or approved *}
+                        <div>
+                            <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                                Unrank this beatmap
+                            </a>
+                        </div>
+
                         {{ else if .Beatmapset.Status == 3 }}
-                        This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.
+                        {* Beatmap is qualified *}
+                        <div>
+                            <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                                Disqualify this beatmap
+                            </a>
+                        </div>
+
+                        {{ else if .Beatmapset.Status == 4 }}
+                        {* Beatmap is loved *}
+                        <div>
+                            <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
+                                Remove from "Loved" category
+                            </a>
+                        </div>
                         {{ end }}
-                    </p><br>
 
-                    {{ if .Beatmapset.Status <= 0 }}
-                    {* Beatmap is not ranked *}
-                    <div>
-                        {{ if !.BatNominated }}
-                        <a href="#" onclick="addNomination({{ .Beatmapset.Id }})" style="color: green;">
-                            Nominate this beatmap
-                            (Bubble)
-                        </a><br>
-                        {{ else }}
-                        <p style="color: green;">
-                            You have nominated this beatmap
-                            (Bubbled)
-                        </p>
-                        {{ end }}
-                        <a href="#" onclick="resetNominations({{ .Beatmapset.Id }})" style="color: red;">
-                            Remove all nominations from this beatmap
-                            (Pop Bubble)
-                        </a>
-                    </div><br>
-
-                    <div>
-                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 3, 'Are you sure you want to update the status to Qualified?')">
-                            Update status to "Qualified"
-                        </a><br>
-                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 4, 'Are you sure you want to update the status to Loved?')">
-                            Update status to "Loved"
-                        </a><br>
-                        {{ if .Beatmapset.Server != 0 }}
-                        <a onclick="nukeBeatmapset({{ .Beatmapset.Id }})" style="color: red">
-                            Nuke this beatmap
-                        </a><br>
-                        {{ end }}
-                    </div><br>
-
-                    {{ else if .Beatmapset.Status == 1 || .Beatmapset.Status == 2 }}
-                    {* Beatmap is ranked or approved *}
-                    <div>
-                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
-                            Unrank this beatmap
-                        </a>
-                    </div>
-
-                    {{ else if .Beatmapset.Status == 3 }}
-                    {* Beatmap is qualified *}
-                    <div>
-                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
-                            Disqualify this beatmap
-                        </a>
-                    </div>
-
-                    {{ else if .Beatmapset.Status == 4 }}
-                    {* Beatmap is loved *}
-                    <div>
-                        <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
-                            Remove from "Loved" category
-                        </a>
-                    </div>
-                    {{ end }}
-
-                    <details>
-                        <summary>Difficulty Status Updates</summary><br>
-                        <form method="post" onsubmit="updateBeatmapStatuses(event)">
-                            <div class="bat-diffs">
-                                {{ range _, difficulty := .Beatmapset.Beatmaps }}
-                                <div>
-                                    <dt>{{ difficulty.Version }}</dt>
-                                    <dd>
-                                        <select name="{{ difficulty.Id }}">
-                                            {{ range _, status := beatmapStatuses() }}
-                                            <option value="{{ status.Value() }}" {{ if difficulty.Status == status }}selected{{ end }}>{{ status.String() }}</option>
-                                            {{ end }}
-                                        </select>
-                                    </dd>
+                        <details>
+                            <summary>Difficulty Status Updates</summary><br>
+                            <form method="post" onsubmit="updateBeatmapStatuses(event)">
+                                <div class="bat-diffs">
+                                    {{ range _, difficulty := .Beatmapset.Beatmaps }}
+                                    <div>
+                                        <dt>{{ difficulty.Version }}</dt>
+                                        <dd>
+                                            <select name="{{ difficulty.Id }}">
+                                                {{ range _, status := beatmapStatuses() }}
+                                                <option value="{{ status.Value() }}" {{ if difficulty.Status == status }}selected{{ end }}>{{ status.String() }}</option>
+                                                {{ end }}
+                                            </select>
+                                        </dd>
+                                    </div>
+                                    {{ end }}
                                 </div>
-                                {{ end }}
-                            </div>
-                            <input type="submit" value="Update">
-                            <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
-                        </form>
-                    </details>
+                                <input type="submit" value="Update">
+                                <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
+                            </form>
+                        </details>
 
-                    {{ if .Permissions.Has("beatmaps.moderation.force_nominate") }}
-                    <br>
-                    <div>
-                        <a href="#" onclick="addForceNomination({{ .Beatmapset.Id }})" style="color: green;">
-                            Add nominator
-                        </a>
+                        {{ if .Permissions.Has("beatmaps.moderation.force_nominate") }}
                         <br>
-                        <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
-                            Remove nominator
-                        </a>
-                    </div>
-                    {{ end }}
-                </td>
+                        <div>
+                            <a href="#" onclick="addForceNomination({{ .Beatmapset.Id }})" style="color: green;">
+                                Add nominator
+                            </a>
+                            <br>
+                            <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
+                                Remove nominator
+                            </a>
+                        </div>
+                        {{ end }}
+                    </td>
 
-                {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
-                <td>
-                    <p>
-                        Please make sure you know what you are doing before replacing any files! <br><br>
-                    </p>
-                    {{ if .Beatmapset.DownloadServer == 0 }}
-                    <p>
-                        If the download server is set to "Titanic", your changes will take effect. <br>
-                        Once you change the download server, make sure all resources have been uploaded.
-                    </p><br>
+                    {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
+                    <td>
+                        <p>
+                            Please make sure you know what you are doing before replacing any files! <br><br>
+                        </p>
+                        {{ if .Beatmapset.DownloadServer == 0 }}
+                        <p>
+                            If the download server is set to "Titanic", your changes will take effect. <br>
+                            Once you change the download server, make sure all resources have been uploaded.
+                        </p><br>
+                        {{ end }}
+                        <a href="#" onclick="uploadResource('/resources/osz/{{ .Beatmapset.Id }}', 'osz', '.osz,.zip');">
+                            Replace osz file
+                        </a><br>
+                        <a href="#" onclick="uploadResource('/resources/osu/{{ .Beatmap.Id }}', 'osu', '.osu,.txt', 'This will replace the beatmap file for this difficulty. Are you sure?');">
+                            Replace beatmap file
+                        </a><br>
+                        <a href="#" onclick="uploadResource('/resources/mt/{{ .Beatmapset.Id }}', 'mt', '.jpeg,.jpg', 'Please make sure this image is 160x120 pixels large! Are you sure you want to upload?');">
+                            Replace background file (large)
+                        </a><br>
+                        <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3');">
+                            Replace audio preview file
+                        </a>
+                    </td>
                     {{ end }}
-                    <a href="#" onclick="uploadResource('/resources/osz/{{ .Beatmapset.Id }}', 'osz', '.osz,.zip');">
-                        Replace osz file
-                    </a><br>
-                    <a href="#" onclick="uploadResource('/resources/osu/{{ .Beatmap.Id }}', 'osu', '.osu,.txt', 'This will replace the beatmap file for this difficulty. Are you sure?');">
-                        Replace beatmap file
-                    </a><br>
-                    <a href="#" onclick="uploadResource('/resources/mt/{{ .Beatmapset.Id }}', 'mt', '.jpeg,.jpg', 'Please make sure this image is 160x120 pixels large! Are you sure you want to upload?');">
-                        Replace background file (large)
-                    </a><br>
-                    <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3');">
-                        Replace audio preview file
-                    </a>
-                </td>
-                {{ end }}
+                </tr>
             </tbody>
         </table>
         </div>
