@@ -31,7 +31,16 @@ func Score(ctx *server.Context) {
 	}
 
 	// Only passed, non-hidden scores have a public page
-	if score == nil || score.Hidden || !score.Passed() {
+	// Moderators may view hidden scores nonetheless
+	if score == nil {
+		NotFound(ctx)
+		return
+	}
+	if score.Hidden && !ctx.Permissions().IsModerator() {
+		NotFound(ctx)
+		return
+	}
+	if !score.Passed() {
 		NotFound(ctx)
 		return
 	}
@@ -78,7 +87,15 @@ func ScoreReplayDownload(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-	if score == nil || score.Beatmap == nil || score.User == nil {
+	if score == nil {
+		NotFound(ctx)
+		return
+	}
+	if score.Hidden && !ctx.Permissions().IsModerator() {
+		NotFound(ctx)
+		return
+	}
+	if !score.Passed() {
 		NotFound(ctx)
 		return
 	}
