@@ -358,7 +358,7 @@
     padding: 8px 0;
     text-align: center;
     border-radius: 5px;
-    text-decoration: none;
+    text-decoration: none !important;
     font-weight: bold;
     font-size: 0.9em;
     box-sizing: border-box;
