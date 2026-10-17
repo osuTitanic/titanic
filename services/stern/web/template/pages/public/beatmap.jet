@@ -857,12 +857,12 @@
             <tbody>
                 <tr>
                     <td style="min-width: 50%">
-                        <p>
+                        <p style="text-align: center">
                             The current status of this beatmap is "{{ .Beatmapset.Status.String() }}".
                             {{ if len(.Nominations) >= .Beatmapset.RequiredNominations() && .Beatmapset.Status <= 0 }}
-                            This beatmap has enough nominations to be qualified!
+                            <br>This beatmap has enough nominations to be qualified!
                             {{ else if .Beatmapset.Status == 3 }}
-                            This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.
+                            <br>This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.
                             {{ end }}
                         </p><br>
 
@@ -906,7 +906,7 @@
                             <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
                                 Unrank this beatmap
                             </a>
-                        </div>
+                        </div><br>
 
                         {{ else if .Beatmapset.Status == 3 }}
                         {* Beatmap is qualified *}
@@ -914,7 +914,7 @@
                             <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
                                 Disqualify this beatmap
                             </a>
-                        </div>
+                        </div><br>
 
                         {{ else if .Beatmapset.Status == 4 }}
                         {* Beatmap is loved *}
@@ -922,7 +922,19 @@
                             <a onclick="setBeatmapsetStatus({{ .Beatmapset.Id }}, 0)" style="color: red;">
                                 Remove from "Loved" category
                             </a>
-                        </div>
+                        </div><br>
+                        {{ end }}
+
+                        {{ if .Permissions.Has("beatmaps.moderation.force_nominate") }}
+                        <div>
+                            <a href="#" onclick="addForceNomination({{ .Beatmapset.Id }})" style="color: green;">
+                                Add nominator
+                            </a>
+                            <br>
+                            <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
+                                Remove nominator
+                            </a>
+                        </div><br>
                         {{ end }}
 
                         <details>
@@ -946,23 +958,10 @@
                                 <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
                             </form>
                         </details>
-
-                        {{ if .Permissions.Has("beatmaps.moderation.force_nominate") }}
-                        <br>
-                        <div>
-                            <a href="#" onclick="addForceNomination({{ .Beatmapset.Id }})" style="color: green;">
-                                Add nominator
-                            </a>
-                            <br>
-                            <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
-                                Remove nominator
-                            </a>
-                        </div>
-                        {{ end }}
                     </td>
 
                     {{ if .Beatmapset.Status <= 0 || .Permissions.Has("beatmaps.moderation.resources") }}
-                    <td>
+                    <td style="vertical-align: top">
                         <p>
                             Please make sure you know what you are doing before replacing any files! <br><br>
                         </p>
