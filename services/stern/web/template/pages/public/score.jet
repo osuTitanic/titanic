@@ -180,9 +180,53 @@
             <i class="icon-download-alt"></i> Download Replay
         </a>
         {{ end }}
+        {{ if .CurrentUser && .CurrentUser.Id == .Score.UserId }}
+            {{ if !.Score.Pinned }}
+            <button onclick="pinScore(this, {{ .Score.Id }}, {{ .Score.UserId }})" class="score-button button-pink">
+                <i class="icon-pushpin"></i> Pin Score
+            </button>
+            {{ else }}
+            <button onclick="unpinScore(this, {{ .Score.Id }}, {{ .Score.UserId }})" class="score-button button-red">
+                <i class="icon-ban-circle"></i> Unpin Score
+            </button>
+            {{ end }}
+        {{ end }}
         <a href="/b/{{ .Beatmap.Id }}" class="score-button button-grey">
             <i class="icon-arrow-left"></i> Return to Beatmap
         </a>
     </div>
 </div>
+<script>
+    function pinScore(element, scoreId, userId) {
+        element.onclick = null;
+        element.disabled = true;
+        element.innerHTML = '<i class="icon-spinner icon-spin"></i> Pinning...';
+
+        performApiRequest("POST", "/users/" + userId + "/pinned", { score_id: scoreId }, function (xhr) {
+            $(element).toggleClass("button-pink");
+            $(element).toggleClass("button-red");
+            $(element).html('<i class="icon-ban-circle"></i> Unpin Score');
+            element.onclick = function() { unpinScore(element, scoreId, userId); };
+            element.disabled = false;
+        }, function(xhr) {
+            alert(apiErrorMessage(xhr, "Failed to pin score!"));
+        });
+    }
+
+    function unpinScore(element, scoreId, userId) {
+        element.onclick = null;
+        element.disabled = true;
+        element.innerHTML = '<i class="icon-spinner icon-spin"></i> Unpinning...';
+
+        performApiRequest("DELETE", "/users/" + userId + "/pinned", { score_id: scoreId }, function (xhr) {
+            $(element).toggleClass("button-pink");
+            $(element).toggleClass("button-red");
+            $(element).html('<i class="icon-pushpin"></i> Pin Score');
+            element.onclick = function() { pinScore(element, scoreId, userId); };
+            element.disabled = false;
+        }, function(xhr) {
+            alert(apiErrorMessage(xhr, "Failed to unpin score!"));
+        });
+    }
+</script>
 {{ end }}

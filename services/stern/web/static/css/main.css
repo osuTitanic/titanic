@@ -219,6 +219,7 @@ input[type="url"], input[type="search"] {
 }
 
 .button-blue:hover {
+    cursor: pointer;
     text-shadow: 2px 1px 8px #b7befd;
     background-color: #3a6d9c;
     background: -webkit-linear-gradient(rgb(83, 147, 207) 0%, rgb(58, 109, 156) 100%);
@@ -231,6 +232,26 @@ input[type="url"], input[type="search"] {
     background-image: linear-gradient(rgb(150, 150, 150) 0%, rgb(90, 90, 90) 100%);
 }
 
+.button-pink {
+    background-color: #be5a9a;
+    background: -webkit-linear-gradient(rgb(221, 125, 180) 0%, rgb(190, 90, 154) 100%);
+    background-image: linear-gradient(rgb(221, 125, 180) 0%, rgb(190, 90, 154) 100%);
+}
+
+.button-pink:hover {
+    cursor: pointer;
+    text-shadow: 2px 1px 8px #ffe0f5;
+    background-color: #dc77b4;
+    background: -webkit-linear-gradient(rgb(240, 158, 210) 0%, rgb(220, 119, 180) 100%);
+    background-image: linear-gradient(rgb(240, 158, 210) 0%, rgb(220, 119, 180) 100%);
+}
+
+.button-pink:disabled {
+    background-color: #5a5a5a;
+    background: -webkit-linear-gradient(rgb(150, 150, 150) 0%, rgb(90, 90, 90) 100%);
+    background-image: linear-gradient(rgb(150, 150, 150) 0%, rgb(90, 90, 90) 100%);
+}
+
 .button-red {
     background-color: #9b3838;
     background: -webkit-linear-gradient(rgb(209, 63, 63) 0%, rgb(155, 56, 56) 100%);
@@ -238,6 +259,7 @@ input[type="url"], input[type="search"] {
 }
 
 .button-red:hover {
+    cursor: pointer;
     text-shadow: 2px 1px 8px #b7befd;
     background-color: #d33333;
     background: -webkit-linear-gradient(rgb(230, 49, 49) 0%, rgb(211, 51, 51) 100%);
@@ -251,6 +273,7 @@ input[type="url"], input[type="search"] {
 }
 
 .button-grey:hover {
+    cursor: pointer;
     text-shadow: 2px 1px 8px #b7befd;
     background-color: #6d6d6d;
     background: -webkit-linear-gradient(rgb(179, 179, 179) 0%, rgb(109, 109, 109) 100%);
