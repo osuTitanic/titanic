@@ -366,21 +366,29 @@ function getPerformanceGraphRange(backupEntries, backupEntriesKey) {
 }
 
 function updatePerformanceGraphYAxis(chart, range) {
-    var userDigits = range[1].toString().length - 1;
+    var minRank = range[0];
+    var maxRank = range[1];
+    var betweenRank = minRank + (maxRank - minRank) / 2;
 
-    var minRankDigits = "1" + (userDigits > 0 ? userDigits * "0" : "");
-    var relativeMinRank = Math.round(range[0] / minRankDigits) * minRankDigits;
+    // figure out where to exactly place the ticks to not make it look weird
+    var maxRankStatic = maxRank == betweenRank;
+    var minRankStatic = minRank == betweenRank;
+    var minRankTick = minRankStatic ? minRank - 1 : minRank;
+    var maxRankTick = maxRankStatic ? maxRank + 1 : maxRank;
 
-    var maxRankDigits = "1" + userDigits * "0";
-    var relativeMaxRank = Math.round(range[1] / maxRankDigits) * maxRankDigits;
+    var maxDigits = maxRank.toString().length - 1;
 
-    var betweenRank = relativeMaxRank - relativeMaxRank / 2;
+    var minRankDigits = "1" + (maxDigits > 0 ? maxDigits * "0" : "");
+    var relativeMinRank = Math.round(minRank / minRankDigits) * minRankDigits;
+
+    var maxRankDigits = "1" + maxDigits * "0";
+    var relativeMaxRank = Math.round(maxRank / maxRankDigits) * maxRankDigits;
 
     chart.yScale(d3.scale.linear().domain([-relativeMinRank - 1, -relativeMaxRank]));
 
     // Only display certain tick values
     chart.xAxis.tickValues([-90, -60, -30, 0]);
-    chart.yAxis.tickValues([-relativeMaxRank, -betweenRank, -relativeMinRank]);
+    chart.yAxis.tickValues([-minRankTick, -betweenRank, -maxRankTick]);
 
     // Force chart to show range between min/max ranks
     chart.forceY([-range[1] + 1, -range[0] - 1]);
