@@ -788,6 +788,10 @@
                             <dd>
                                 <input type="text" name="source_unicode" value="{{ .Beatmapset.SourceUnicodeText() }}">
                             </dd>
+                            <dt>Tags:</dt>
+                            <dd>
+                                <textarea name="tags">{{ .Beatmapset.TagsText() }}</textarea>
+                            </dd>
                         </dl>
                         <input type="submit" value="Save">
                         <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
@@ -834,10 +838,6 @@
                                     <option value="{{ language.Value() }}" {{ if .Beatmapset.LanguageId == language }}selected{{ end }}>{{ language.String() }}</option>
                                     {{ end }}
                                 </select>
-                            </dd>
-                            <dt>Tags:</dt>
-                            <dd>
-                                <textarea name="tags">{{ .Beatmapset.TagsText() }}</textarea>
                             </dd>
                         </dl>
                     </td>
