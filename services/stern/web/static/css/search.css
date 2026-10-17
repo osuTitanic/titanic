@@ -324,3 +324,34 @@ body {
     margin: 0;
     padding: 0;
 }
+
+.beatmap-volume-control {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    opacity: 0;
+    padding: 8px 12px;
+}
+
+.beatmap-volume-control p {
+    font-size: 70%;
+    margin-bottom: 2px;
+}
+
+.beatmap-volume-slider {
+    width: 90px;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    margin: 0;
+    padding: 5px;
+    border: none;
+    position: relative;
+}
+
+@media (max-width: 1150px) {
+    .beatmap-volume-control {
+        display: none;
+    }
+}

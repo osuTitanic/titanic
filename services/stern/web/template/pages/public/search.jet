@@ -33,6 +33,12 @@
     {{ yield beatmapListing() }}
 
     {{ include "/components/pagination.jet" .Pagination }}
+
+    {* TODO: we could make this into a component maybe *}
+    <div class="beatmap-volume-control" id="beatmap-volume-control" title="Preview Volume">
+        <p>too loud for you?</p>
+        <input type="range" class="beatmap-volume-slider" id="beatmap-volume-slider" min="0" max="100" value="35" aria-label="Preview Volume">
+    </div>
 </div>
 <script src="{{ cachedUrl("/js/search.js") }}"></script>
 {{ end }}

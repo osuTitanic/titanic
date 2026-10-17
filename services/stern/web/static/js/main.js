@@ -346,7 +346,13 @@ function resetOrPlayAudio(element) {
     var audio = document.getElementById(element);
     if (!audio || !audio.play) return false;
 
-    audio.volume = 0.35;
+    try {
+        var savedVolume = localStorage.getItem("beatmapPreviewVolume");
+        audio.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.35;
+    } catch (e) {
+        // local storage not available probably
+        audio.volume = 0.35;
+    }
 
     if (audio.paused) {
         return audio.play();

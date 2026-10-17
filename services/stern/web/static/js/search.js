@@ -30,6 +30,7 @@ function bindBeatmapAudio() {
             });
 
         resetOrPlayAudio(audio.id);
+        audio.volume = getSavedVolume();
         $icon.toggleClass("icon-play", audio.paused).toggleClass("icon-pause", !audio.paused);
     });
 
@@ -94,7 +95,85 @@ function markFavourite(beatmapsetId, favourited) {
         });
 }
 
+function setPreviewVolume(volume) {
+    saveVolume(volume);
+
+    $(".beatmap-preview-audio").each(function () {
+        this.volume = volume;
+    });
+    var percent = Math.round(volume * 100);
+
+    $("#beatmap-volume-slider").val(percent);
+    $("#beatmap-volume-control").attr("title", "Preview Volume: " + percent + "%");
+}
+
+function bindVolumeSlider() {
+    var control = $("#beatmap-volume-control");
+    var slider = $("#beatmap-volume-slider");
+    if (!control.length || !slider.length) {
+        // volume control not available
+        return;
+    }
+
+    var initialVolume = getSavedVolume();
+    setPreviewVolume(initialVolume);
+
+    slider.on("input change", function () {
+        var volume = parseInt(this.value, 10) / 100;
+        setPreviewVolume(volume);
+    });
+
+    slider.on("mousedown touchstart", function () {
+        control.addClass("active");
+    });
+    $(document).on("mouseup touchend", function () {
+        control.removeClass("active");
+    });
+
+    // show & hide based on mouse hover
+    control.hover(
+        function () {
+            $(this).stop().fadeTo(300, 1);
+        },
+        function () {
+            if (!$(this).hasClass("active") && !$(this).find(":focus").length) {
+                $(this).stop().fadeTo(300, 0);
+            }
+        }
+    );
+}
+
+function getSavedVolume() {
+    try {
+        var saved = localStorage.getItem("beatmapPreviewVolume");
+        if (saved === null) {
+            return 0.35;
+        }
+
+        var parsed = parseFloat(saved);
+        if (isNaN(parsed)) {
+            return 0.35;
+        }
+        if (parsed < 0 || parsed > 1) {
+            return 0.35;
+        }
+        return parsed;
+    } catch (e) {
+        // local storage not available
+    }
+    return 0.35;
+}
+
+function saveVolume(vol) {
+    try {
+        localStorage.setItem("beatmapPreviewVolume", vol);
+    } catch (e) {
+        // local storage not available
+    }
+}
+
 $(function () {
     bindBeatmapAudio();
     bindFavourites();
+    bindVolumeSlider();
 });
