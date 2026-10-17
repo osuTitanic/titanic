@@ -325,6 +325,7 @@
 .beatmap-settings .spoiler-body {
     background-color: #e4dbfb;
     border-bottom: solid 1px #b7c9ff;
+    padding: 0 10px 10px 10px;
 }
 
 .beatmap-settings .spoiler {
