@@ -784,14 +784,11 @@
                             <dd>
                                 <input type="text" name="source" value="{{ .Beatmapset.SourceText() }}">
                             </dd>
-                            <dt>Source (Unicode):</dt>
-                            <dd>
-                                <input type="text" name="source_unicode" value="{{ .Beatmapset.SourceUnicodeText() }}">
-                            </dd>
                             <dt>Tags:</dt>
                             <dd>
                                 <textarea name="tags">{{ .Beatmapset.TagsText() }}</textarea>
                             </dd>
+                            <input type="hidden" name="source_unicode" value="{{ .Beatmapset.SourceUnicodeText() }}">
                         </dl>
                         <input type="submit" value="Save">
                         <input type="hidden" name="beatmapset_id" value="{{ .Beatmapset.Id }}">
