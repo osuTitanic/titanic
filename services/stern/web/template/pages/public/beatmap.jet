@@ -254,9 +254,6 @@
         {{ if .CurrentUser }}
             <p><a href="/osu/{{ .Beatmap.Id }}">Grab latest .osu file</a></p>
             <p><a setid="{{ .Beatmapset.Id }}" onclick="copySetId(this)">Copy Beatmapset ID</a></p>
-            {{ if .Permissions.Has("beatmaps.moderation.owner") }}
-            <p><a href="#" onclick="updateBeatmapsetOwner({{ .Beatmapset.Id }})">Change Owner</a></p>
-            {{ end }}
         {{ end }}
     </td>
 </tr>
@@ -933,6 +930,12 @@
                             <a href="#" onclick="removeForceNomination({{ .Beatmapset.Id }})" style="color: red;">
                                 Remove nominator
                             </a>
+                        </div><br>
+                        {{ end }}
+
+                        {{ if .Permissions.Has("beatmaps.moderation.owner") }}
+                        <div>
+                            <p><a href="#" onclick="updateBeatmapsetOwner({{ .Beatmapset.Id }})">Change Owner</a></p>
                         </div><br>
                         {{ end }}
 
