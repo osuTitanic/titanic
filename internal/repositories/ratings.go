@@ -6,6 +6,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+type BeatmapRatingDistribution [10]int64
+
 type BeatmapRatingRepository struct {
 	db *gorm.DB
 }
@@ -59,4 +61,27 @@ func (r *BeatmapRatingRepository) Average(checksum string) (float64, error) {
 		Scan(&average).
 		Error
 	return average, err
+}
+
+func (r *BeatmapRatingRepository) Distribution(setId int) (BeatmapRatingDistribution, error) {
+	var distribution BeatmapRatingDistribution
+	var results []struct {
+		Rating int
+		Count  int64
+	}
+
+	err := r.db.Model(&schemas.BeatmapRating{}).
+		Select("rating, COUNT(*) AS count").
+		Where("set_id = ?", setId).
+		Where("rating BETWEEN ? AND ?", 1, len(distribution)).
+		Group("rating").
+		Scan(&results).Error
+	if err != nil {
+		return distribution, err
+	}
+
+	for _, result := range results {
+		distribution[result.Rating-1] = result.Count
+	}
+	return distribution, nil
 }
