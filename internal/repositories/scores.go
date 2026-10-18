@@ -15,6 +15,11 @@ type ScoreRepository struct {
 	db *gorm.DB
 }
 
+type FailtimeDistribution struct {
+	Fails [100]int64
+	Exits [100]int64
+}
+
 type BeatmapLeaderboardFilter struct {
 	BeatmapId int
 	Mode      constants.Mode
@@ -575,6 +580,48 @@ func (r *ScoreRepository) FetchCompletedBeatmapsetIds(userId int) ([]int, error)
 		Pluck("beatmaps.set_id", &beatmapsetIds).
 		Error
 	return beatmapsetIds, err
+}
+
+func (r *ScoreRepository) FetchFailtimeDistribution(beatmapId int, mode constants.Mode, totalLength int) (FailtimeDistribution, error) {
+	var distribution FailtimeDistribution
+	if totalLength <= 0 {
+		return distribution, errors.New("beatmap total length must be positive")
+	}
+
+	var results []struct {
+		Status  constants.ScoreStatus
+		Percent int
+		Count   int64
+	}
+	err := r.db.Model(&schemas.Score{}).
+		Select(`
+			status_score AS status,
+			GREATEST(
+				1,
+				LEAST(100, ROUND(failtime::numeric * 100 / (? * 1000))::int)
+			) AS percent,
+			COUNT(*) AS count
+		`, totalLength).
+		Where("beatmap_id = ?", beatmapId).
+		Where("mode = ?", mode).
+		Where("failtime > 0").
+		Where("status_score IN ?", []constants.ScoreStatus{constants.ScoreStatusFailed, constants.ScoreStatusExited}).
+		Group("status_score, percent").
+		Scan(&results).Error
+	if err != nil {
+		return distribution, err
+	}
+
+	for _, result := range results {
+		index := result.Percent - 1
+		switch result.Status {
+		case constants.ScoreStatusFailed:
+			distribution.Fails[index] = result.Count
+		case constants.ScoreStatusExited:
+			distribution.Exits[index] = result.Count
+		}
+	}
+	return distribution, nil
 }
 
 func (r *ScoreRepository) FetchAchievementMapActivity(userId, beatmapId int, mode constants.Mode, since time.Time) (playCount int, hadD bool, err error) {
