@@ -252,7 +252,7 @@
             {{ end }}
         {{ end }}
         <p><a setid="{{ .Beatmapset.Id }}" onclick="copySetId(this)">Copy Beatmapset ID</a></p>
-        <p><a href="/web/maps/{{ .Beatmap.Filename }}">Grab latest .osu file</a></p>
+        <p><a href="/osu/{{ .Beatmap.Id }}">Grab latest .osu file</a></p>
         {{ if .Permissions.Has("beatmaps.moderation.owner") }}
         <p><a href="#" onclick="updateBeatmapsetOwner({{ .Beatmapset.Id }})">Change Owner</a></p>
         {{ end }}
