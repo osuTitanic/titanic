@@ -984,7 +984,10 @@
                         </a><br>
                         <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3');">
                             Replace audio preview file
-                        </a>
+                        </a><br>
+                        <br>
+                        <input type="checkbox" id="update-filename" name="update-filename" value="0">
+                        <label for="update-filename">Update filename when uploading beatmap file</label>
                     </td>
                     {{ end }}
                 </tr>

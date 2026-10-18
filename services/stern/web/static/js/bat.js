@@ -144,6 +144,14 @@ function uploadResource(endpoint, key, filetypes, promptText) {
         var loader = createLoaderOverlay();
         document.body.appendChild(loader);
 
+        var updateBeatmapFilenames = $("#update-filename")[0].checked;
+        var isBeatmapUpdate = key == "osu";
+        endpoint += isBeatmapUpdate ? "?update_filename=" + updateBeatmapFilenames : "";
+
+        if (updateBeatmapFilenames && !confirm("This will update the .osu filename. Are you SUPER sure?")) {
+            return;
+        }
+
         // Perform the API request to upload the file
         performApiRequest(
             "PUT",
