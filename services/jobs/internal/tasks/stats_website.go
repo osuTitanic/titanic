@@ -18,7 +18,7 @@ func UpdateWebsiteStats(app *state.State, logger *slog.Logger) error {
 	}
 	app.Redis.Set(ctx, "bancho:totalusers", userCount, 0)
 
-	scoreCount, err := app.Repositories.Scores.GetCount()
+	scoreCount, err := app.Repositories.Scores.CountTotal()
 	if err != nil {
 		return fmt.Errorf("failed to fetch scores count: %w", err)
 	}

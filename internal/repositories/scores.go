@@ -108,9 +108,7 @@ func (r *ScoreRepository) Count(critera map[string]any) (int64, error) {
 	return count, err
 }
 
-// probably a bit weird to have Count and GetCount but who cares lol
-
-func (r *ScoreRepository) GetCount() (int64, error) {
+func (r *ScoreRepository) CountTotal() (int64, error) {
 	var count int64
 	err := r.db.Model(&schemas.Score{}).Count(&count).Error
 	return count, err
