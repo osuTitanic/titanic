@@ -248,7 +248,7 @@
             <p><a href="https://osu.ppy.sh/beatmapsets/{{ .Beatmapset.Id }}/discussion">Modding / Discussion</a></p>
         {{ else }}
             {{ if .Beatmapset.TopicId }}
-            <p><a href="/forum/t/{{ .Beatmapset.TopicId }}">Modding / Discussion</a></p>
+            <p><a href="/forum/t/{{ .Beatmapset.TopicId }}">This Beatmap's Thread</a></p>
             {{ end }}
         {{ end }}
         <p><a setid="{{ .Beatmapset.Id }}" onclick="copySetId(this)">Copy Beatmapset ID</a></p>
