@@ -142,7 +142,7 @@
             iframe.type = "text/html";
             iframe.style.border = "0";
             iframe.allow = "clipboard-write; web-share";
-            iframe.src = '{{ .Config.MediaBaseUrl() }}/embed";
+            iframe.src = '{{ .Config.MediaBaseUrl() }}/embed';
             iframe.referrerPolicy = 'strict-origin-when-cross-origin';
             iframe.loading = "lazy";
             iframe.allowFullscreen = true;
