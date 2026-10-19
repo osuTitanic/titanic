@@ -108,7 +108,7 @@ func ResolveSubmissionContext(ctx *server.Context, endpoint Endpoint) (*Submissi
 
 	failtimeValue := endpoint.RequestValue(ctx.Request, "ft")
 	exitedValue := endpoint.RequestValue(ctx.Request, "x")
-	submission.Exited = exitedValue != ""
+	submission.Exited = exitedValue == "1"
 
 	if failtimeValue != "" {
 		failtime, parseErr := strconv.Atoi(failtimeValue)
