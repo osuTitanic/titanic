@@ -194,7 +194,7 @@ func (t *UserGeneralTab) SetDisplayRank() {
 		t.DisplayRank = t.ScoreRank
 		t.DisplayRankCountry = t.ScoreRankCountry
 		t.DisplayRankScore = float64(t.Stats.Rscore)
-		t.DisplayRankExtension = " score"
+		t.DisplayRankExtension = ""
 		t.DisplayRankLink = "https://osu.ppy.sh/help/wiki/Score"
 	default:
 		// We don't track this ranking system unfortunately :/
