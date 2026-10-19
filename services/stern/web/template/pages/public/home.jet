@@ -141,8 +141,8 @@
             iframe.height = "278";
             iframe.type = "text/html";
             iframe.style.border = "0";
-            iframe.src = "https://www.youtube-nocookie.com/embed?listType=playlist&list=UUir7A_JJa1Vhg_84ejh6Ung&mute=1&autoplay=1&controls=0&rel=0";
-            iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+            iframe.allow = "autoplay; clipboard-write; web-share";
+            iframe.src = '{{ .Config.MediaBaseUrl() }}/embed";
             iframe.referrerPolicy = 'strict-origin-when-cross-origin';
             iframe.loading = "lazy";
             iframe.allowFullscreen = true;

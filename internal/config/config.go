@@ -180,6 +180,7 @@ type Config struct {
 	OsuBaseUrlOverride      string `env:"OSU_BASEURL"`
 	ApiBaseUrlOverride      string `env:"API_BASEURL"`
 	StaticBaseUrlOverride   string `env:"STATIC_BASEURL"`
+	MediaBaseUrlOverride    string `env:"MEDIA_BASEURL"`
 	EventsWebsocketOverride string `env:"EVENTS_WEBSOCKET"`
 	LoungeBackendOverride   string `env:"LOUNGE_BACKEND"`
 
@@ -260,6 +261,13 @@ func (c *Config) StaticBaseUrl() string {
 	return c.DefaultStaticBaseUrl()
 }
 
+func (c *Config) MediaBaseUrl() string {
+	if c.MediaBaseUrlOverride != "" {
+		return c.MediaBaseUrlOverride
+	}
+	return c.DefaultMediaBaseUrl()
+}
+
 func (c *Config) EventsWebsocket() string {
 	if c.EventsWebsocketOverride != "" {
 		return c.EventsWebsocketOverride
@@ -296,6 +304,14 @@ func (c *Config) DefaultStaticBaseUrl() string {
 		scheme = "https"
 	}
 	return fmt.Sprintf("%s://s.%s", scheme, c.DomainName)
+}
+
+func (c *Config) DefaultMediaBaseUrl() string {
+	scheme := "http"
+	if c.EnableSsl {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://media.%s", scheme, c.DomainName)
 }
 
 func (c *Config) DefaultEventsWebsocket() string {
