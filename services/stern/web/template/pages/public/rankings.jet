@@ -255,7 +255,7 @@
             {* Country *}
             <td>
                 <img src="/images/flags/{{ entry.Name | lower }}.gif" class="flag" alt="{{ entry.Name | countryName }} Flag">
-                <a href="/rankings/{{ modeAlias }}/performance?country={{ entry.Name | lower }}">
+                <a href="/rankings/{{ modeAlias }}/{{ .PreferredRankingAlias() }}?country={{ entry.Name | lower }}">
                     {{ entry.Name | countryName }}
                 </a>
             </td>

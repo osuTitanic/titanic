@@ -107,7 +107,7 @@
 
     <div style="padding: 3px;">
         <center>
-            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country | lower }}&jumpto_id={{ .User.Id }}#jumpto">
+            <a href="/rankings/{{ .Mode.Alias() }}/{{ .PreferredRankingAlias() }}?country={{ .User.Country | lower }}&jumpto_id={{ .User.Id }}#jumpto">
                 <img
                     class="flag"
                     title="{{ countryName(.User.Country) }}"
@@ -397,7 +397,7 @@
             </strong>
         </h2>
         {{ if .PPRankCountry > 0 }}
-            <a href="/rankings/{{ .Mode.Alias() }}/performance?country={{ .User.Country|upper }}">
+            <a href="/rankings/{{ .Mode.Alias() }}/{{ .Ranking.Alias() }}?country={{ .User.Country|upper }}">
                 <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country|upper }}">
             </a>
             {{ if .Stats.PP > 0 }}#{{ .PPRankCountry }}{{ else }}#-{{ end }}

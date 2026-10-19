@@ -56,6 +56,13 @@ func (v DefaultView) PreferredModeAlias() string {
 	return v.CurrentUser.PreferredMode.Alias()
 }
 
+func (v DefaultView) PreferredRankingAlias() string {
+	if v.CurrentUser == nil {
+		return constants.RankingTypePerformance.Alias()
+	}
+	return v.CurrentUser.PreferredRanking.Alias()
+}
+
 type ErrorMessageView struct {
 	DefaultView
 	Title   string
@@ -140,6 +147,7 @@ type UserGeneralTab struct {
 	User           *schemas.User
 	Mode           constants.Mode
 	Stats          *schemas.Stats
+	Ranking        constants.RankingType
 	PPRank         int
 	PPRankCountry  int
 	ScoreRank      int

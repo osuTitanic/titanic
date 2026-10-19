@@ -86,7 +86,7 @@
                     </ul>
                 </li>
                 <li class="nav-element nav-element-dropdown">
-                    <a href="/rankings/{{ .PreferredModeAlias() }}/performance">
+                    <a href="/rankings/{{ .PreferredModeAlias() }}/{{ .PreferredRankingAlias() }}">
                         Rankings
                         <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>

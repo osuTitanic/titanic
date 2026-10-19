@@ -418,10 +418,16 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		mode, country,
 	)
 
+	ranking := constants.RankingTypePerformance
+	if ctx.CurrentUser != nil {
+		ranking = ctx.CurrentUser.PreferredRanking
+	}
+
 	return &templates.UserGeneralTab{
 		User:           user,
 		Mode:           mode,
 		Stats:          stats,
+		Ranking:        ranking,
 		PPRank:         ppRank,
 		PPRankCountry:  ppCountryRank,
 		ScoreRank:      scoreRank,

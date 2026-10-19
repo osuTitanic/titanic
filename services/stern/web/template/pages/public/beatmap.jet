@@ -402,7 +402,7 @@
         <tr>
             <td class="row-title" colspan="3">
                 {{ if rank == 0 }}
-                <a href="/rankings/{{ .Beatmap.Mode.Alias() }}/performance?country={{ score.User.Country }}">
+                <a href="/rankings/{{ .Beatmap.Mode.Alias() }}/{{ .PreferredRankingAlias() }}?country={{ score.User.Country }}">
                     <img src="/images/flags/{{ score.User.Country|lower }}.gif" alt="{{ score.User.Country }}" loading="lazy" class="flag">
                 </a>
                 <a href="/u/{{ score.User.Id }}">{{ score.User.Name }}</a> is in the lead!
@@ -527,7 +527,7 @@
                 {{ end }}
             </td>
             <td>
-                <a class="score-flag-link" href="/rankings/{{ .Beatmap.Mode.Alias() }}/performance?country={{ score.User.Country | lower }}">
+                <a class="score-flag-link" href="/rankings/{{ .Beatmap.Mode.Alias() }}/{{ .PreferredRankingAlias() }}?country={{ score.User.Country | lower }}">
                     <img src="/images/flags/{{ score.User.Country|lower }}.gif" alt="{{ score.User.Country }}" loading="lazy" class="flag">
                 </a>
                 <a href="/u/{{ score.User.Id }}">{{ score.User.Name }}</a>

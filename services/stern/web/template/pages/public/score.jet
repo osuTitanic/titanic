@@ -31,7 +31,7 @@
         <div class="player-info">
             <span class="player-label">
                 <a href="/u/{{ .User.Id }}" class="player-name">{{ .User.Name }}</a>
-                <a href="/rankings/{{ .Score.Mode.Alias() }}/performance?country={{ .User.Country }}">
+                <a href="/rankings/{{ .Score.Mode.Alias() }}/{{ .PreferredRankingAlias() }}?country={{ .User.Country }}">
                     <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country }}">
                 </a>
             </span>
