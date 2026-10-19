@@ -165,7 +165,7 @@
                 <span style="font-size: 80%">(graph is accumulative, based on % at fail/retry)</span>
             </td>
             <td class="beatmap-stats-info" rowspan="2">
-            {{ if .Beatmap.Playcount > 0 }}
+            {{ if .Beatmap.Playcount >= 100 }}
                 <b>{{ formatFloat(.SuccessRate, 1) }}%</b>
                 ({{ .Beatmap.Passcount|formatNumber }} of {{ .Beatmap.Playcount|formatNumber }} plays)
                 <br>
@@ -175,6 +175,8 @@
                     style="display: block"
                     alt="Points of failure & retry graph"
                 >
+            {{ else if .Beatmap.Playcount > 0 }}
+                Not enough data!
             {{ else }}
                 Not yet played!
             {{ end }}
