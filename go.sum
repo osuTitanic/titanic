@@ -17,6 +17,8 @@ github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735 h1:AwbABgwDVM0ko
 github.com/Lekuruu/ffmpeg-go v0.0.0-20251103082554-f0200a557735/go.mod h1:rUO3pVDrDhmuYLR+TrHig7IadSJwO4he5Q9904z5Mnc=
 github.com/Lekuruu/gosu v0.0.0-20261011115019-5a0d7e26655c h1:Ru3TxZT3eCDPw0w4voH7FeLQOTnUmcgqjdPFRibih/I=
 github.com/Lekuruu/gosu v0.0.0-20261011115019-5a0d7e26655c/go.mod h1:TorvMPL2+8rSIklR0umWiKqOzcA2Ew+Cfes4Bo8WQao=
+github.com/Lekuruu/gosu v0.0.0-20261019131924-dca450763678 h1:wUHO4iciwXoEfXmd2UHeyqKtA+d7Je0/dDXHwbv4SBs=
+github.com/Lekuruu/gosu v0.0.0-20261019131924-dca450763678/go.mod h1:TorvMPL2+8rSIklR0umWiKqOzcA2Ew+Cfes4Bo8WQao=
 github.com/Lekuruu/osz2-go v1.1.3 h1:R0VcrYBfxmGhjHYeVzZVFH+egy58vq4kQ2SNTErFrUI=
 github.com/Lekuruu/osz2-go v1.1.3/go.mod h1:ekiDjUKFW+wrYoiqrsQx6+RKoke3SIm8w6vutK7sTu0=
 github.com/Lekuruu/zipstream v0.0.0-20260626174426-13c6d34ce034 h1:XgWmskBCaNGxp7KWMQPsB0GmS4as1hvsXfUO98IzLtk=
