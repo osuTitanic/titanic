@@ -188,12 +188,40 @@ func Beatmap(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
+
+	ratingDistribution, err := ctx.State.Ratings.Distribution(beatmap.SetId)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch beatmap rating distribution", "set", beatmap.SetId, "error", err)
+		InternalServerError(ctx)
+		return
+	}
+
+	rating := templates.BeatmapRatingView{}
+	for index, count := range ratingDistribution {
+		if index < len(ratingDistribution)/2 {
+			rating.Negative += count
+		} else {
+			rating.Positive += count
+		}
+	}
+
+	ratingTotal := rating.Negative + rating.Positive + 2
+	rating.NegativeWidth = float64(rating.Negative+1) / float64(ratingTotal) * 100
+	rating.PositiveWidth = 100 - rating.NegativeWidth
+
+	successRate := 0.0
+	if beatmap.Playcount > 0 {
+		successRate = float64(beatmap.Passcount) / float64(beatmap.Playcount) * 100
+	}
+
 	settingsPanelOpen, batPanelOpen := resolveBeatmapPanelState(ctx.Request)
 
 	view := templates.BeatmapView{
 		DefaultView:           buildDefaultViewWithPermissions(ctx),
 		Beatmap:               beatmap,
 		Beatmapset:            beatmap.Beatmapset,
+		Rating:                rating,
+		SuccessRate:           successRate,
 		Mode:                  mode,
 		Mods:                  modsString,
 		ModGroups:             templates.BuildBeatmapModGroups(mode, selectedMods),

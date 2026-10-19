@@ -2,6 +2,7 @@ package templates
 
 import (
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/config"
@@ -610,6 +611,8 @@ type BeatmapView struct {
 	DefaultView
 	Beatmap               *schemas.Beatmap
 	Beatmapset            *schemas.Beatmapset
+	Rating                BeatmapRatingView
+	SuccessRate           float64
 	Mode                  constants.Mode
 	Mods                  string
 	ModGroups             []BeatmapModGroup
@@ -628,6 +631,25 @@ type BeatmapView struct {
 	BatNominated          bool
 	SettingsPanelOpen     bool
 	BatPanelOpen          bool
+}
+
+func (v BeatmapView) VisibleTagsText() string {
+	if v.Beatmapset == nil {
+		return ""
+	}
+
+	tags := strings.Fields(v.Beatmapset.TagsText())
+	if len(tags) > 20 {
+		tags = tags[:20]
+	}
+	return strings.Join(tags, " ")
+}
+
+type BeatmapRatingView struct {
+	Negative      int64
+	Positive      int64
+	NegativeWidth float64
+	PositiveWidth float64
 }
 
 type BeatmapPacksView struct {
