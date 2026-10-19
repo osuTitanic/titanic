@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	osuapi "github.com/Lekuruu/gosu/pkg/api"
 	"github.com/osuTitanic/titanic/internal/authentication"
 	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
@@ -22,8 +23,21 @@ type Server struct {
 }
 
 func NewServer(host string, port int, name string, state *state.State, engine *templates.Engine, wikiService *wiki.Service) *Server {
+	osuApi, err := osuapi.NewClient(
+		state.Config.OsuClientId,
+		state.Config.OsuClientSecret,
+	)
+	if err != nil {
+		state.Logger.Warn("Failed to create osu! api client. Map requests will not be available.", "error", err)
+	}
+	contextFactory := NewContextFactory(
+		state,
+		engine,
+		wikiService,
+		osuApi,
+	)
 	return &Server{
-		HttpServer: server.NewHttpServer(host, port, name, NewContextFactory(state, engine, wikiService)),
+		HttpServer: server.NewHttpServer(host, port, name, contextFactory),
 		State:      state,
 	}
 }
@@ -119,6 +133,7 @@ type Context struct {
 	State          *state.State
 	Templates      *templates.Engine
 	Wiki           *wiki.Service
+	OsuApi         *osuapi.Client
 	CurrentUser    *schemas.User
 	CurrentSession *authentication.WebsiteSession
 	CSRFToken      string
@@ -126,13 +141,19 @@ type Context struct {
 	resolvedPermissions *permissions.Set
 }
 
-func NewContextFactory(state *state.State, engine *templates.Engine, wikiService *wiki.Service) server.HttpContextFactory[*Context] {
+func NewContextFactory(
+	state *state.State,
+	engine *templates.Engine,
+	wikiService *wiki.Service,
+	osuApi *osuapi.Client,
+) server.HttpContextFactory[*Context] {
 	return func(base server.HttpContext) *Context {
 		ctx := &Context{
 			HttpContext: base,
 			State:       state,
 			Templates:   engine,
 			Wiki:        wikiService,
+			OsuApi:      osuApi,
 		}
 		ctx.ResolveAuthentication()
 		return ctx
