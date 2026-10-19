@@ -1,23 +1,31 @@
 package constants
 
 const (
-	ForumDevelopment        = 3
-	ForumGameplay           = 4
-	ForumSkinning           = 5
-	ForumFeatureRequests    = 6
-	ForumSupport            = 7
+	// Titanic!
+	ForumDevelopment     = 3
+	ForumGameplay        = 4
+	ForumSkinning        = 5
+	ForumFeatureRequests = 6
+	ForumSupport         = 7
+	// Beatmaps
 	ForumBeatmapsRanked     = 8
 	ForumBeatmapsPending    = 9
 	ForumBeatmapsWIP        = 10
 	ForumBeatmapsRequests   = 11
 	ForumBeatmapsGraveyard  = 12
 	ForumBeatmapsDiscussion = 13
-	ForumGeneralDiscussion  = 20
-	ForumOffTopic           = 21
-	ForumIntroductions      = 22
-	ForumClientModding      = 23
-	ForumVideoGames         = 24
-	ForumArtsAndDesign      = 25
+	// Other
+	ForumGeneralDiscussion = 20
+	ForumOffTopic          = 21
+	ForumIntroductions     = 22
+	ForumClientModding     = 23
+	ForumVideoGames        = 24
+	ForumArt               = 25
+	// Sub-Forums
+	ForumBugReports               = 18
+	ForumTournamentsAndContests   = 26
+	ForumBeatmapRequestsCompleted = 28
+	ForumBeatmapRequestsRejected  = 29
 )
 
 var BeatmapForumIds = map[int]bool{
