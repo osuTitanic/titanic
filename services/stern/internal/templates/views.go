@@ -233,6 +233,7 @@ type UserTopPlaysTab struct {
 type UserScorePage struct {
 	UserId     int
 	Mode       constants.Mode
+	Ranking    constants.RankingType
 	Section    string // "pinned" | "best" | "first"
 	Scores     []*schemas.Score
 	Offset     int

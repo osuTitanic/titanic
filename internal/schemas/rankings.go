@@ -133,6 +133,17 @@ func (score *Score) RequiresPPv1Update() bool {
 	}
 }
 
+// PPv1ToV2Estimate converts a raw ppv1 score to an estimated ppv2 value
+func (score *Score) PPv1ToV2Estimate() float64 {
+	const (
+		ppv1WeightBaseLimit = 1000.0 / 6.0
+		ppv2WeightBaseLimit = 20.0
+	)
+	// TODO: This is taken from ppv1.go, we should share this logic
+	humanReadable := math.Max(0, math.Log(score.PPv1*ppv1WeightBaseLimit+1)*400)
+	return humanReadable / ppv2WeightBaseLimit
+}
+
 // TotalHits returns the number of successful note hits in the score.
 func (score *Score) TotalHits() int {
 	if score == nil {

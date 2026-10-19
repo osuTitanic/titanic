@@ -173,6 +173,7 @@ func UserTopPlaysPartial(ctx *server.Context) {
 	}
 
 	mode := resolveMode(ctx, user.PreferredMode)
+	ranking := resolvePreferredRanking(ctx)
 	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
 
 	firstsRank, err := ctx.State.Rankings.LeaderScoresRank(user.Id, mode)
@@ -180,21 +181,21 @@ func UserTopPlaysPartial(ctx *server.Context) {
 		ctx.Logger.Error("Failed to fetch firsts rank", "user", user.Id, "error", err)
 	}
 
-	pinned, err := buildScorePage(ctx, user.Id, mode, "pinned", 0, isOwner)
+	pinned, err := buildScorePage(ctx, user.Id, mode, ranking, "pinned", 0, isOwner)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch pinned scores", "user", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	best, err := buildScorePage(ctx, user.Id, mode, "best", 0, isOwner)
+	best, err := buildScorePage(ctx, user.Id, mode, ranking, "best", 0, isOwner)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch best scores", "user", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
 	}
 
-	first, err := buildScorePage(ctx, user.Id, mode, "first", 0, isOwner)
+	first, err := buildScorePage(ctx, user.Id, mode, ranking, "first", 0, isOwner)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch first place scores", "user", user.Id, "error", err)
 		InternalServerError(ctx)
@@ -225,6 +226,7 @@ func UserScoresPartial(ctx *server.Context) {
 		return
 	}
 	mode := resolveMode(ctx, user.PreferredMode)
+	ranking := resolvePreferredRanking(ctx)
 	isOwner := ctx.CurrentUser != nil && ctx.CurrentUser.Id == user.Id
 
 	offset := 0
@@ -232,7 +234,7 @@ func UserScoresPartial(ctx *server.Context) {
 		offset = parsed
 	}
 
-	page, err := buildScorePage(ctx, user.Id, mode, section, offset, isOwner)
+	page, err := buildScorePage(ctx, user.Id, mode, ranking, section, offset, isOwner)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch scores", "user", user.Id, "section", section, "error", err)
 		InternalServerError(ctx)
@@ -418,10 +420,7 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		mode, country,
 	)
 
-	ranking := constants.RankingTypePerformance
-	if ctx.CurrentUser != nil {
-		ranking = ctx.CurrentUser.PreferredRanking
-	}
+	ranking := resolvePreferredRanking(ctx)
 
 	generalTab := &templates.UserGeneralTab{
 		User:             user,
@@ -464,7 +463,15 @@ func buildActivityPage(ctx *server.Context, userId int, mode constants.Mode, off
 	}, nil
 }
 
-func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, section string, offset int, isOwner bool) (*templates.UserScorePage, error) {
+func buildScorePage(
+	ctx *server.Context,
+	userId int,
+	mode constants.Mode,
+	ranking constants.RankingType,
+	section string,
+	offset int,
+	isOwner bool,
+) (*templates.UserScorePage, error) {
 	preload := "Beatmap.Beatmapset"
 
 	// Show fewer scores on the initial page load, then load a
@@ -485,7 +492,11 @@ func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, sectio
 			total, err = ctx.State.Repositories.Scores.FetchPinnedCount(userId, mode)
 		}
 	case "best":
-		scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, pageSize+1, offset, preload)
+		if ranking == constants.RankingTypePPv1 {
+			scores, err = ctx.State.Repositories.Scores.FetchBestPPv1Range(userId, mode, pageSize+1, offset, preload)
+		} else {
+			scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, pageSize+1, offset, preload)
+		}
 		if err == nil {
 			total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode)
 		}
@@ -508,6 +519,7 @@ func buildScorePage(ctx *server.Context, userId int, mode constants.Mode, sectio
 	return &templates.UserScorePage{
 		UserId:     userId,
 		Mode:       mode,
+		Ranking:    ranking,
 		Section:    section,
 		Scores:     scores,
 		Offset:     offset,
@@ -763,6 +775,13 @@ func resolveUserByName(ctx *server.Context, query string) {
 
 	// womp womp
 	UserNotFound(ctx)
+}
+
+func resolvePreferredRanking(ctx *server.Context) constants.RankingType {
+	if ctx.CurrentUser == nil {
+		return constants.RankingTypePerformance
+	}
+	return ctx.CurrentUser.PreferredRanking
 }
 
 func canViewUser(ctx *server.Context, user *schemas.User) bool {
