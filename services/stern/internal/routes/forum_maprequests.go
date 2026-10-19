@@ -206,18 +206,70 @@ func buildMapRequestContent(
 	)
 	fmt.Fprintf(
 		&content,
-		"BPM: [b]%s[/b] | Length: [b]%s (%s)[/b]\n",
+		"BPM: [b]%s[/b] | Length: [b]%s (Drain: %s)[/b]\n\n",
 		formatBPM(beatmapset.BPM),
 		formatDuration(beatmap.TotalLength),
 		formatDuration(beatmap.HitLength),
 	)
+	for i := range beatmapset.Beatmaps {
+		if !beatmapset.Beatmaps[i].Convert {
+			writeDifficultyContent(&content, &beatmapset.Beatmaps[i])
+		}
+	}
 	content.WriteString("[/centre]")
 
 	if comments = strings.TrimSpace(comments); comments != "" {
-		content.WriteString("\n\n")
+		content.WriteString("\n")
 		content.WriteString(comments)
 	}
 	return content.String()
+}
+
+func writeDifficultyContent(content *strings.Builder, beatmap *osuapi.Beatmap) {
+	icon := ""
+	for _, mode := range mapRequestModes {
+		if mode.Ruleset == beatmap.Mode {
+			icon = mode.Icon
+			break
+		}
+	}
+	if icon == "" {
+		return
+	}
+
+	maxCombo := "Unknown"
+	if beatmap.MaxCombo != nil {
+		maxCombo = fmt.Sprintf("%dx", *beatmap.MaxCombo)
+	}
+
+	fmt.Fprintf(
+		content,
+		"[box=\"%s %s*\"]",
+		beatmap.Version,
+		formatNumber(beatmap.DifficultyRating),
+	)
+	fmt.Fprintf(
+		content,
+		"[img]/images/icons/forum/%s.gif[/img]\n",
+		icon,
+	)
+	fmt.Fprintf(
+		content,
+		"Circles: [b]%d[/b] | Sliders: [b]%d[/b] | Spinners: [b]%d[/b] | Max Combo: [b]%s[/b]\n",
+		beatmap.CountCircles,
+		beatmap.CountSliders,
+		beatmap.CountSpinners,
+		maxCombo,
+	)
+	fmt.Fprintf(
+		content,
+		"CS: [b]%s[/b] | HP: [b]%s[/b] | OD: [b]%s[/b] | AR: [b]%s[/b]\n",
+		formatNumber(beatmap.CS),
+		formatNumber(beatmap.Drain),
+		formatNumber(beatmap.Accuracy),
+		formatNumber(beatmap.AR),
+	)
+	content.WriteString("[/box]\n")
 }
 
 func formatDate(value *time.Time) string {
@@ -237,6 +289,10 @@ func formatBPM(value float64) string {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
 		return "Unknown"
 	}
+	return formatNumber(value)
+}
+
+func formatNumber(value float64) string {
 	value = math.Round(value*100) / 100
 	return strconv.FormatFloat(value, 'f', -1, 64)
 }
