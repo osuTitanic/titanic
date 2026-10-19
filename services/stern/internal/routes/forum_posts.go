@@ -331,6 +331,15 @@ func handleForumReply(ctx *server.Context, topic *schemas.ForumTopic) {
 	wasChanged, iconUpdate := resolveTopicIconChange(ctx, topic)
 	if wasChanged {
 		post.IconId = iconUpdate
+
+		// In map requests we may move the topic to other forums based on the applied icon
+		iconForum, valid := resolveMapRequestForumChange(ctx, topic, iconUpdate)
+		if !valid {
+			return
+		}
+		if iconForum != nil {
+			targetForum = iconForum
+		}
 	}
 
 	if err := ctx.State.ForumPosts.Create(post); err != nil {
@@ -466,10 +475,22 @@ func handleForumPostEdit(ctx *server.Context, topic *schemas.ForumTopic) {
 	// Icons may only be changed while editing the latest post
 	if editingLatestPost {
 		if wasChanged, iconUpdate := resolveTopicIconChange(ctx, topic); wasChanged {
+			// In map requests we may move the topic to other forums based on the applied icon
+			iconForum, valid := resolveMapRequestForumChange(ctx, topic, iconUpdate)
+			if !valid {
+				return
+			}
+			if iconForum != nil {
+				targetForum = iconForum
+			}
+
 			updates.IconId = iconUpdate
 			columns = append(columns, "icon_id")
 
-			topicIcon := &schemas.ForumTopic{Id: topic.Id, IconId: iconUpdate}
+			topicIcon := &schemas.ForumTopic{
+				Id:     topic.Id,
+				IconId: iconUpdate,
+			}
 			if _, err := ctx.State.ForumTopics.Update(topicIcon, "icon"); err != nil {
 				ctx.Logger.Error("Failed to update topic icon", "error", err, "topic", topic.Id)
 			}
@@ -761,4 +782,58 @@ func applyKudosuHint(ctx *server.Context, editor *templates.ForumEditorContext, 
 	editor.BeatmapsetId = beatmapset.Id
 	editor.KudosuReward = kudosuRewardForPost(topic.LastPostAt, time.Now())
 	editor.ShowKudosuIconNote = canEditForumIcon(ctx, topic.CanChangeIcon)
+}
+
+func resolveMapRequestForumChange(ctx *server.Context, topic *schemas.ForumTopic, icon *constants.ForumIcon) (*schemas.Forum, bool) {
+	// When a BAT applies an icon to a map request topic, we want to move the topic
+	// in accordance with the icon. For example: a heart icon -> move to "Completed Requests"
+	forumId, shouldMove := mapRequestForumForIcon(topic.ForumId, icon)
+	if !shouldMove {
+		return nil, true
+	}
+	if forumId == topic.ForumId {
+		return nil, true
+	}
+
+	forum, err := ctx.State.Forums.ById(forumId)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch map request destination forum", "error", err, "forum", forumId)
+		InternalServerError(ctx)
+		return nil, false
+	}
+	if forum == nil {
+		ctx.Logger.Error("Map request destination forum does not exist", "forum", forumId)
+		InternalServerError(ctx)
+		return nil, false
+	}
+	return forum, true
+}
+
+func mapRequestForumForIcon(currentForumId int, icon *constants.ForumIcon) (int, bool) {
+	switch currentForumId {
+	case constants.ForumBeatmapsRequests,
+		constants.ForumBeatmapRequestsCompleted,
+		constants.ForumBeatmapRequestsRejected:
+		// valid map request forum, continue
+	default:
+		// not a map request forum
+		return 0, false
+	}
+	if icon == nil {
+		return 0, false
+	}
+
+	switch *icon {
+	// Ranked / Approved / Loved requests
+	case constants.ForumIconHeart, constants.ForumIconFire:
+		return constants.ForumBeatmapRequestsCompleted, true
+	// Rejected requests
+	case constants.ForumIconRadioactive:
+		return constants.ForumBeatmapRequestsRejected, true
+	// Unranked / Disqualified / Shit went wrong -> back to the requests forum
+	case constants.ForumIconHeartPop, constants.ForumIconBubble, constants.ForumIconBubblePop:
+		return constants.ForumBeatmapsRequests, true
+	default:
+		return 0, false
+	}
 }
