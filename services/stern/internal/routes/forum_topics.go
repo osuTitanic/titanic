@@ -288,6 +288,10 @@ func ForumCreateTopicView(ctx *server.Context) {
 		RenderError(ctx, http.StatusForbidden, "Forbidden", "You are not allowed to create topics in this forum.")
 		return
 	}
+	if forum.IsBeatmapRequestsForum() {
+		ctx.RenderTemplate(http.StatusOK, "pages/forum/map_request", buildDefaultView(ctx))
+		return
+	}
 
 	editor := templates.ForumEditorContext{
 		SubmitText:     "Create Topic",

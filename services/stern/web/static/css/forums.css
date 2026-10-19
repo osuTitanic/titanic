@@ -679,3 +679,58 @@
     margin-right: 10px;
     margin-left: 10px;
 }
+
+.map-request-form {
+    background-color: #e3e1fa;
+	border-radius: 5px;
+	padding: 10px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.map-request-field {
+    margin-bottom: 15px;
+}
+
+.map-request-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.map-request-field input,
+.map-request-field textarea {
+    width: 98%;
+    padding: 4px;
+    background-color: #fff;
+    border: 1px solid #90ace7;
+    border-radius: 3px;
+    font-family: Tahoma, Helvetica, Arial, sans-serif;
+}
+
+.map-request-field textarea {
+    height: 110px;
+    resize: vertical;
+}
+
+.map-request-help {
+    display: block;
+    margin-top: 3px;
+    color: #5c5b5b;
+    font-size: 80%;
+}
+
+.map-request-actions {
+    text-align: left;
+}
+
+.map-request-actions input {
+    min-width: 80px;
+    padding: 3px 18px;
+    color: #ececec;
+}
+
+.map-request-actions input:hover,
+.map-request-actions input:focus {
+    color: #fff;
+}

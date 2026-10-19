@@ -1,0 +1,53 @@
+{{ extends "/layout.jet" }}
+
+{{ block head() }}
+<title>Submit a Map Request - Forum</title>
+<meta property="og:title" content="Submit a Map Request - Titanic!">
+<meta property="og:description" content="Request a Bancho beatmapset to be added to Titanic!">
+<link rel="stylesheet" href="{{ cachedUrl("/css/forums.css") }}">
+{{ end }}
+
+{{ block body() }}
+<h1 class="header-text" style="margin: 10px 5px 10px 0px">
+    <a href="/forum" style="color:#5a5399">Index</a> » Submit a Map Request
+</h1>
+
+<p>
+    Paste a bancho beatmapset link below and Titanic! will create a topic for you.
+    If the beatmapset already exists on Titanic!, it will be linked automatically.
+</p><br>
+
+<form class="map-request-form" method="post">
+    <div class="map-request-field">
+        <label for="map-request-link">Link</label>
+        <input
+            id="map-request-link"
+            name="link"
+            type="url"
+            placeholder="e.g. https://osu.ppy.sh/beatmapsets/2178451"
+            required
+            autofocus>
+    </div>
+
+    <div class="map-request-field">
+        <label for="map-request-comment">
+            Additional comments
+            <span class="map-request-help" style="display: inline; font-weight: normal;">(optional)</span>
+        </label>
+        <textarea
+            id="map-request-comment"
+            name="comment"
+            rows="6"
+            aria-describedby="map-request-comment-help"></textarea>
+        <span class="map-request-help" id="map-request-comment-help">
+            Why do you like this map? Should it be loved or ranked? Anything we should know!
+        </span>
+    </div>
+
+    <div class="map-request-actions">
+        <input class="button-blue" type="submit" value="Submit">
+    </div>
+
+    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
+</form>
+{{ end }}
