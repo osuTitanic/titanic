@@ -391,17 +391,18 @@
 {{ if .HasStats() }}
     <div class="profile-performance">
         <h2>
-            <strong {{ if .Stats.PeakRank > 0 }}title="Peaked at #{{ .Stats.PeakRank|formatNumber }}"{{ end }}>
-                <a href="https://osu.ppy.sh/help/wiki/Performance_Points">Performance</a>:
-                <span>{{ .Stats.PP|round|formatNumber }}pp</span>
-                {{ if .Stats.PP > 0 }}(#{{ .PPRank }}){{ else }}(#-){{ end }}
+            {* TODO: Re-add peak rank *}
+            <strong {* {{ if .Stats.PeakRank > 0 }}title="Peaked at #{{ .Stats.PeakRank|formatNumber }}"{{ end }} *}>
+                <a href="{{ .DisplayRankLink }}">{{ .Ranking.String() }}</a>:
+                <span>{{ .DisplayRankScore|round|formatNumber }}{{ .DisplayRankExtension }}</span>
+                {{ if .DisplayRankScore > 0 }}(#{{ .DisplayRank }}){{ else }}(#-){{ end }}
             </strong>
         </h2>
-        {{ if .PPRankCountry > 0 }}
+        {{ if .DisplayRankCountry > 0 }}
             <a href="/rankings/{{ .Mode.Alias() }}/{{ .Ranking.Alias() }}?country={{ .User.Country|upper }}">
                 <img src="/images/flags/{{ .User.Country|lower }}.gif" alt="{{ .User.Country|upper }}">
             </a>
-            {{ if .Stats.PP > 0 }}#{{ .PPRankCountry }}{{ else }}#-{{ end }}
+            {{ if .DisplayRankScore > 0 }}#{{ .DisplayRankCountry }}{{ else }}#-{{ end }}
         {{ end }}
     </div>
 
@@ -420,9 +421,16 @@
 
     <div class="profile-detailed-stats">
         <h3 class="profile-stats-header">Detailed Stats</h3>
+        {{ if .Ranking != "rscore" }}
         <h4 class="profile-stats-element {{ if .ScoreRank > 0 && .ScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Ranked Score consists of all your highest passing scores you have achieved. If you beat a score, only the difference between them will be added.">
             <b>Ranked Score</b>: {{ .Stats.Rscore|formatNumber }} {{ if .ScoreRank > 0 }} (#{{ .ScoreRank|formatNumber }}) {{ end }}
         </h4>
+        {{ else }}
+        {* Show pp instead when using rscore as preferred ranking system *}
+        <h4 class="profile-stats-element {{ if .PPRank > 0 && .PPRank <= 100 }}profile-stats-element-blue{{ end }}" title="PP is a ranking metric that aims to be more contextually relevant to a player's progression in osu!. It aims to shift the focus of skill progression from the amount of time played to an actual representation of the player's skill.">
+            <b>Performance</b>: {{ .Stats.PP|round|formatNumber }} {{ if .PPRank > 0 }} (#{{ .PPRank|formatNumber }}) {{ end }}
+        </h4>
+        {{ end }}
         <br>
         <h4 class="profile-stats-element" title="Accuracy is calculated as a pp-weighted average of every beatmap you have achieved a passing score in, with each difficulty counting separately.">
             <b>Hit Accuracy</b>: {{ formatFloat(.Stats.Accuracy(), 2) }}%
@@ -436,8 +444,8 @@
             <b>Play Time</b>: {{ formatFloat(.Stats.PlaytimeHours(), 1) }} hours
         </h4>
         <br>
-        <h4 class="profile-stats-element {{ if .TotalScoreRank > 0 && .TotalScoreRank <= 100 }}profile-stats-element-blue{{ end }}" title="Total points scored in all ranked beatmap plays. This includes both passes and fails.">
-            <b>Total Score</b>: {{ .Stats.Tscore|formatNumber }} {{ if .TotalScoreRank > 0 }} (#{{ .TotalScoreRank|formatNumber }}) {{ end }}
+        <h4 class="profile-stats-element" title="Total points scored in all ranked beatmap plays. This includes both passes and fails.">
+            <b>Total Score</b>: {{ .Stats.Tscore|formatNumber }}
         </h4>
         <br>
         <h4 class="profile-stats-element" title="Your level is based on your total accumulated score. You will gradually increase your level just by playing the game!">

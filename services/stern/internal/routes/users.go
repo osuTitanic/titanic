@@ -413,7 +413,7 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		activity = &templates.UserActivityPage{UserId: user.Id, Mode: mode}
 	}
 
-	ppRank, ppCountryRank, scoreRank, totalScoreRank, ppv1Rank := fetchUserRanks(
+	ppRank, ppRankCountry, scoreRank, scoreRankCountry, ppv1Rank, ppv1RankCountry := fetchUserRanks(
 		ctx, user.Id,
 		mode, country,
 	)
@@ -423,19 +423,22 @@ func buildUserGeneralTab(ctx *server.Context, user *schemas.User, mode constants
 		ranking = ctx.CurrentUser.PreferredRanking
 	}
 
-	return &templates.UserGeneralTab{
-		User:           user,
-		Mode:           mode,
-		Stats:          stats,
-		Ranking:        ranking,
-		PPRank:         ppRank,
-		PPRankCountry:  ppCountryRank,
-		ScoreRank:      scoreRank,
-		TotalScoreRank: totalScoreRank,
-		PPv1Rank:       ppv1Rank,
-		TotalKudosu:    totalKudosu,
-		Activity:       activity,
+	generalTab := &templates.UserGeneralTab{
+		User:             user,
+		Mode:             mode,
+		Stats:            stats,
+		Ranking:          ranking,
+		PPRank:           ppRank,
+		PPRankCountry:    ppRankCountry,
+		PPv1Rank:         ppv1Rank,
+		PPv1RankCountry:  ppv1RankCountry,
+		ScoreRank:        scoreRank,
+		ScoreRankCountry: scoreRankCountry,
+		TotalKudosu:      totalKudosu,
+		Activity:         activity,
 	}
+	generalTab.SetDisplayRank()
+	return generalTab
 }
 
 func buildActivityPage(ctx *server.Context, userId int, mode constants.Mode, offset int) (*templates.UserActivityPage, error) {
@@ -666,22 +669,23 @@ func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bo
 }
 
 // fetchUserRanks resolves all relevant ranks for the selected user & mode
-func fetchUserRanks(ctx *server.Context, userId int, mode constants.Mode, country string) (int, int, int, int, int) {
+func fetchUserRanks(ctx *server.Context, userId int, mode constants.Mode, country string) (int, int, int, int, int, int) {
 	keys := []string{
 		ctx.State.Rankings.RankingKey(mode, "performance", nil),
 		ctx.State.Rankings.RankingKey(mode, "performance", &country),
 		ctx.State.Rankings.RankingKey(mode, "rscore", nil),
-		ctx.State.Rankings.RankingKey(mode, "tscore", nil),
+		ctx.State.Rankings.RankingKey(mode, "rscore", &country),
 		ctx.State.Rankings.RankingKey(mode, "ppv1", nil),
+		ctx.State.Rankings.RankingKey(mode, "ppv1", &country),
 	}
 
 	values, err := ctx.State.Rankings.RanksByKeys(keys, userId)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch ranks", "user", userId, "error", err)
-		return 0, 0, 0, 0, 0
+		return 0, 0, 0, 0, 0, 0
 	}
 
-	return values[0], values[1], values[2], values[3], values[4]
+	return values[0], values[1], values[2], values[3], values[4], values[5]
 }
 
 func resolveFriendStatus(ctx *server.Context, targetId int) (currentAdded bool, targetAdded bool, isBlocked bool, err error) {

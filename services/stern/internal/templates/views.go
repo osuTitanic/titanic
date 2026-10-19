@@ -144,23 +144,62 @@ func (v UserProfileView) LastActiveBeforeBeginning() bool {
 }
 
 type UserGeneralTab struct {
-	User           *schemas.User
-	Mode           constants.Mode
-	Stats          *schemas.Stats
-	Ranking        constants.RankingType
-	PPRank         int
-	PPRankCountry  int
-	ScoreRank      int
-	TotalScoreRank int
-	PPv1Rank       int
-	TotalKudosu    int
-	Activity       *UserActivityPage
+	User    *schemas.User
+	Mode    constants.Mode
+	Stats   *schemas.Stats
+	Ranking constants.RankingType
+
+	// Based on preferred ranking type
+	DisplayRank          int
+	DisplayRankCountry   int
+	DisplayRankScore     float64
+	DisplayRankExtension string // e.g. "pp"
+	DisplayRankLink      string // e.g. https://osu.ppy.sh/help/wiki/Performance_Points
+
+	PPRank           int
+	PPRankCountry    int
+	PPv1Rank         int
+	PPv1RankCountry  int
+	ScoreRank        int
+	ScoreRankCountry int
+	TotalKudosu      int
+	Activity         *UserActivityPage
 }
 
 // HasStats checks if the user has stats worth rendering
 // in the general tab for the selected mode.
 func (t *UserGeneralTab) HasStats() bool {
 	return t.Stats != nil && t.Stats.Playcount > 0 && !t.User.Restricted
+}
+
+func (t *UserGeneralTab) SetDisplayRank() {
+	switch t.Ranking {
+	case constants.RankingTypeGlobal, constants.RankingTypePerformance:
+		t.DisplayRank = t.PPRank
+		t.DisplayRankCountry = t.PPRankCountry
+		t.DisplayRankScore = t.Stats.PP
+		t.DisplayRankExtension = "pp"
+		t.DisplayRankLink = "https://osu.ppy.sh/help/wiki/Performance_Points"
+	case constants.RankingTypePPv1:
+		t.DisplayRank = t.PPv1Rank
+		t.DisplayRankCountry = t.PPv1RankCountry
+		t.DisplayRankScore = t.Stats.PPv1
+		t.DisplayRankExtension = "pp"
+		t.DisplayRankLink = "https://osu.ppy.sh/wiki/en/Performance_points/ppv1"
+	case constants.RankingTypeRankedScore:
+		t.DisplayRank = t.ScoreRank
+		t.DisplayRankCountry = t.ScoreRankCountry
+		t.DisplayRankScore = float64(t.Stats.Rscore)
+		t.DisplayRankExtension = " score"
+		t.DisplayRankLink = "https://osu.ppy.sh/help/wiki/Score"
+	default:
+		// We don't track this ranking system unfortunately :/
+		t.DisplayRank = t.PPRank
+		t.DisplayRankCountry = t.PPRankCountry
+		t.DisplayRankScore = t.Stats.PP
+		t.DisplayRankExtension = "pp"
+		t.DisplayRankLink = "https://osu.ppy.sh/help/wiki/Performance_Points"
+	}
 }
 
 type UserActivityPage struct {
