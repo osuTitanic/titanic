@@ -412,8 +412,6 @@ function loadPerformanceGraph(userId, mode) {
             return;
         }
 
-        var rankData = processRankHistory(entries);
-
         // Used for initial y-axis calculation
         var defaultSelectedRankType = "global_rank";
 
@@ -421,7 +419,11 @@ function loadPerformanceGraph(userId, mode) {
             defaultSelectedRankType = "score_rank";
         } else if (preferredRanking == "ppv1") {
             defaultSelectedRankType = "ppv1_rank";
+        } else {
+            preferredRanking = "performance";
         }
+
+        var rankData = processRankHistory(entries);
 
         nv.addGraph(function () {
             var chart = nv.models

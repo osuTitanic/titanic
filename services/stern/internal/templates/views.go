@@ -199,6 +199,7 @@ func (t *UserGeneralTab) SetDisplayRank() {
 		t.DisplayRankScore = t.Stats.PP
 		t.DisplayRankExtension = "pp"
 		t.DisplayRankLink = "https://osu.ppy.sh/help/wiki/Performance_Points"
+		t.Ranking = constants.RankingTypePerformance
 	}
 }
 
