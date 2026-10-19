@@ -138,6 +138,49 @@
             <td class="beatmap-stats-info">{{ .Beatmap.BPM|round }}</td>
         </tr>
         <tr>
+            <td>Tags:</td>
+            <td class="beatmap-stats-info">{{ .VisibleTagsText() }}</td>
+            <td>User Rating:</td>
+            <td class="beatmap-stats-info">
+                <table aria-label="User rating summary" style="width: 100%; height: 20px; color: #fff">
+                    <tr>
+                        <td
+                            style="width: {{ formatFloat(.Rating.NegativeWidth, 4) }}%; height: 18px; padding: 0 2px; background-color: #bc2036; border: 1px solid #82000b; text-align: right"
+                            title="Ratings from 1 to 5"
+                        >
+                            {{ .Rating.Negative|formatNumber }}
+                        </td>
+                        <td
+                            style="width: {{ formatFloat(.Rating.PositiveWidth, 4) }}%; height: 18px; padding: 0 2px; background-color: #78ab23; border: 1px solid #718f0a; text-align: left"
+                            title="Ratings from 6 to 10"
+                        >
+                            {{ .Rating.Positive|formatNumber }}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td rowspan="2" style="vertical-align: top">
+                Success Rate:<br>
+                Points of Failure:<br>
+                <span style="font-size: 80%">(graph is accumulative, based on % at fail/retry)</span>
+            </td>
+            <td class="beatmap-stats-info" rowspan="2">
+            {{ if .Beatmap.Playcount > 0 }}
+                <b>{{ formatFloat(.SuccessRate, 1) }}%</b>
+                ({{ .Beatmap.Passcount|formatNumber }} of {{ .Beatmap.Playcount|formatNumber }} plays)
+                <br>
+                <img
+                    src="/charts/beatmaps/{{ .Beatmap.Id }}/fails?mode={{ .Mode.Value() }}"
+                    width="200" height="60"
+                    style="display: block"
+                    alt="Points of failure & retry graph"
+                >
+            {{ else }}
+                Not yet played!
+            {{ end }}
+            </td>
+        </tr>
+        <tr>
             <td>
                 Submitted:
                 {{ if .Beatmapset.Status > 0 }}
@@ -160,16 +203,18 @@
                 <br><span>{{ formatDateShort(.Beatmapset.RankDate()) }}</span>
                 {{ end }}
             </td>
-            <td>Average Rating:</td>
+            <td>Rating Spread:</td>
             <td class="beatmap-stats-info">
-                {* TODO: Render a rating distribution graph, like the original osu! website *}
-                {{ if .Beatmapset.RatingCount > 0 }}
-                {{ formatFloat(.Beatmapset.RatingAverage, 4) }}
-                {{ else }}
-                Nobody has rated this map yet... ):
-                {{ end }}
+                <img
+                    src="/charts/beatmapsets/{{ .Beatmapset.Id }}/ratings"
+                    width="200" height="40"
+                    style="display: block"
+                    alt="Distribution of user ratings from 1 to 10"
+                >
             </td>
-            <td>
+        </tr>
+        <tr>
+            <td colspan="2">
                 <b>Favourited {{ .FavouritesCount|formatNumber }} time{{ if .FavouritesCount != 1 }}s{{ end }}</b> in total
                 {{ if .CurrentUser }}
                     <br>
@@ -184,7 +229,7 @@
                     {{ end }}
                 {{ end }}
             </td>
-            <td id="favourites" class="beatmap-stats-info">
+            <td id="favourites" class="beatmap-stats-info" colspan="4">
                 {{ if .FavouritesCount > 0 }}
                     Users that love this map:<br>
                     {{ range i, favourite := .Favourites }}
