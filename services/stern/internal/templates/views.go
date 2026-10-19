@@ -173,6 +173,10 @@ func (t *UserGeneralTab) HasStats() bool {
 }
 
 func (t *UserGeneralTab) SetDisplayRank() {
+	if t.Stats == nil {
+		return
+	}
+
 	switch t.Ranking {
 	case constants.RankingTypeGlobal, constants.RankingTypePerformance:
 		t.DisplayRank = t.PPRank
