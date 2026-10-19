@@ -31,6 +31,7 @@
     var mode = {{ .Mode.Value() }};
     var modeName = '{{ .Mode.Alias() }}';
     var superFriendly = {{ .SuperFriendly }};
+    var preferredRanking = '{{ .PreferredRankingAlias() }}';
 
     // Current ranks, used as the "now" data for the rank history graph
     var globalRank = {{ .General.PPRank }};

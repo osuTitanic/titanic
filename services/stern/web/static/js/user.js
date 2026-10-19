@@ -317,10 +317,10 @@ function processRankHistory(entries) {
     countryRankValues = countryRankValues.reverse();
 
     return [
-        { values: globalRankValues, key: "Global Rank", color: "#ff7f0e" },
+        { values: globalRankValues, key: "Global Rank", color: "#ff7f0e", disabled: preferredRanking != "performance" },
         { values: countryRankValues, key: "Country Rank", color: "#0ec7ff", disabled: true },
-        { values: scoreRankValues, key: "Score Rank", color: "#d30eff", disabled: true },
-        { values: ppv1RankValues, key: "PPv1 Rank", color: "#51f542", disabled: true }
+        { values: scoreRankValues, key: "Score Rank", color: "#d30eff", disabled: preferredRanking != "rscore" },
+        { values: ppv1RankValues, key: "PPv1 Rank", color: "#51f542", disabled: preferredRanking != "ppv1" }
     ];
 }
 
@@ -416,6 +416,12 @@ function loadPerformanceGraph(userId, mode) {
 
         // Used for initial y-axis calculation
         var defaultSelectedRankType = "global_rank";
+
+        if (preferredRanking == "rscore") {
+            defaultSelectedRankType = "score_rank";
+        } else if (preferredRanking == "ppv1") {
+            defaultSelectedRankType = "ppv1_rank";
+        }
 
         nv.addGraph(function () {
             var chart = nv.models
