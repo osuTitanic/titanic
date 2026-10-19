@@ -156,7 +156,7 @@ type Config struct {
 	DiscordBatRoleId   int64  `env:"DISCORD_BAT_ROLE_ID"`
 
 	// osu! API credentials (optional)
-	OsuClientId     string `env:"OSU_CLIENT_ID"`
+	OsuClientId     int64  `env:"OSU_CLIENT_ID"`
 	OsuClientSecret string `env:"OSU_CLIENT_SECRET"`
 
 	// Chat webhook configuration (optional)
