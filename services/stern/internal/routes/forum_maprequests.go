@@ -13,6 +13,9 @@ import (
 	"unicode/utf8"
 
 	osuapi "github.com/Lekuruu/gosu/pkg/api"
+	"github.com/osuTitanic/titanic/internal/schemas"
+	"github.com/osuTitanic/titanic/internal/state"
+	"github.com/osuTitanic/titanic/services/stern/internal/server"
 )
 
 const (
@@ -43,6 +46,115 @@ var mapRequestModes = [...]MapRequestMode{
 	{Ruleset: osuapi.RulesetTaiko, Title: "Taiko", Icon: "taiko"},
 	{Ruleset: osuapi.RulesetFruits, Title: "Catch", Icon: "ctb"},
 	{Ruleset: osuapi.RulesetMania, Title: "Mania", Icon: "mania"},
+}
+
+func createForumMapRequest(ctx *server.Context, forum *schemas.Forum) {
+	if ctx.OsuApi == nil {
+		InternalServerError(ctx)
+		return
+	}
+
+	request, err := buildMapRequest(
+		ctx.Request.Context(), ctx.OsuApi,
+		ctx.Request.FormValue("link"),
+		ctx.Request.FormValue("comment"),
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, errMapRequestInvalidLink):
+			RenderError(ctx, http.StatusBadRequest, "Invalid Beatmap Link", "Please enter a valid osu.ppy.sh beatmapset link!")
+		case errors.Is(err, errMapRequestBeatmapsetNotFound):
+			RenderError(ctx, http.StatusNotFound, "Beatmapset Not Found", "This beatmapset could not be found!")
+		default:
+			ctx.Logger.Error("Failed to build map request", "error", err)
+			RenderError(ctx, http.StatusBadGateway, "Map Request Failed", "The beatmapset could processed. Please try again later!")
+		}
+		return
+	}
+
+	tooLong := len(request.Content) > forumPostMaxLength
+	canBypass := ctx.HasPermission("forum.moderation.posts.bypass_length")
+
+	if tooLong && !canBypass {
+		PostTooLong(ctx)
+		return
+	}
+
+	var topic *schemas.ForumTopic
+	var post *schemas.ForumPost
+	var existingTopicId int
+
+	err = ctx.State.DatabaseTransaction(func(repositories *state.Repositories) error {
+		// Check if the beatmapset already exists on titanic
+		beatmapset, err := repositories.Beatmapsets.ByIdWithLock(request.BeatmapsetId)
+		if err != nil {
+			return fmt.Errorf("fetch titanic beatmapset %d: %w", request.BeatmapsetId, err)
+		}
+		if beatmapset != nil && beatmapset.TopicId != nil {
+			// Beatmap already has a topic attached to it
+			// -> Redirect the user to that topic
+			existingTopicId = *beatmapset.TopicId
+			return nil
+		}
+		now := time.Now()
+
+		topic = &schemas.ForumTopic{
+			ForumId:       forum.Id,
+			CreatorId:     ctx.CurrentUser.Id,
+			Title:         request.Title,
+			CreatedAt:     now,
+			LastPostAt:    now,
+			CanChangeIcon: forum.AllowIcons,
+		}
+		if err := repositories.ForumTopics.Create(topic); err != nil {
+			return fmt.Errorf("create map request topic: %w", err)
+		}
+
+		post = &schemas.ForumPost{
+			TopicId:         topic.Id,
+			ForumId:         forum.Id,
+			UserId:          ctx.CurrentUser.Id,
+			Content:         request.Content,
+			CreatedAt:       now,
+			EditTime:        now,
+			SmiliesDisabled: !forumSmileysEnabled(ctx),
+		}
+		if err := repositories.ForumPosts.Create(post); err != nil {
+			return fmt.Errorf("create initial map request post: %w", err)
+		}
+
+		if beatmapset == nil {
+			return nil
+		}
+
+		// Link the beatmapset to the new topic
+		beatmapset.TopicId = &topic.Id
+		if _, err := repositories.Beatmapsets.Update(beatmapset, "topic_id"); err != nil {
+			return fmt.Errorf("link titanic beatmapset %d: %w", beatmapset.Id, err)
+		}
+		return nil
+	})
+	if err != nil {
+		ctx.Logger.Error("Failed to create map request", "error", err, "beatmapset", request.BeatmapsetId)
+		InternalServerError(ctx)
+		return
+	}
+	if existingTopicId != 0 {
+		ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/t/%d", existingTopicId))
+		return
+	}
+
+	notifyForumMentions(ctx, topic, post, "")
+	updateForumSubscription(ctx, topic.Id, ctx.Request.FormValue("notify") != "")
+	go broadcastForumTopicActivity(ctx, forum, topic, post)
+
+	ctx.Logger.Info(
+		"Created a new map request",
+		"user", ctx.CurrentUser.Id,
+		"topic", topic.Id,
+		"beatmapset", request.BeatmapsetId,
+	)
+	ctx.Redirect(http.StatusSeeOther, fmt.Sprintf("/forum/%d/t/%d", forum.Id, topic.Id))
 }
 
 func buildMapRequest(ctx context.Context, client *osuapi.Client, link string, comment string) (*MapRequest, error) {

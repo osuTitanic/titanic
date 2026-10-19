@@ -350,6 +350,10 @@ func ForumCreateTopicAction(ctx *server.Context) {
 	if isPostingRejected(ctx) {
 		return
 	}
+	if forum.IsBeatmapRequestsForum() {
+		createForumMapRequest(ctx, forum)
+		return
+	}
 
 	title := strings.TrimSpace(ctx.Request.FormValue("title"))
 	content := ctx.Request.FormValue("bbcode")
