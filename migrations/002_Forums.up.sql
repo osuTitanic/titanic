@@ -93,17 +93,17 @@ VALUES (3, 'Development', 'Discuss the future of this project.', 1, true),
        (5, 'Skinning', 'Discuss & share skins and other customizations.', 1, true),
        (6, 'Feature Requests', 'Suggest what you would like to see in this project.', 1, true),
        (7, 'Support', 'Need help? You will find it here.', 1, true),
-       (8, 'Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2, false),
-       (9, 'Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2, false),
-       (10, 'Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2, false),
-       (11, 'Map Requests', 'Request beatmaps from the official servers.', 2, false),
-       (12, 'Beatmap Graveyard', 'Beatmaps that havent been active for 4 weeks or more will be moved here.', 2, false),
-       (13, 'Mapping Discussion', 'Share the art of mapping with others.', 2, false);
+       (8, 'Ranked/Approved Beatmaps', 'New approved beatmaps will show up in here.', 2, true),
+       (9, 'Pending Beatmaps', 'New pending beatmaps that are waiting for approval.', 2, true),
+       (10, 'Work In Progress/Help Wanted', 'Work-in-progress beatmaps that may need support/help.', 2, true),
+       (11, 'Map Requests', 'Request beatmaps from the official servers.', 2, true),
+       (12, 'Beatmap Graveyard', 'Beatmaps that havent been active for 4 weeks or more will be moved here.', 2, true),
+       (13, 'Mapping Discussion', 'Share the art of mapping with others.', 2, true);
 
 INSERT INTO forums (id, name, parent_id, allow_icons)
-VALUES (14, 'Taiko', 4, false),
-       (15, 'Catch the Beat', 4, false),
-       (16, 'osu!mania', 4, false),
+VALUES (14, 'Taiko', 4, false),           -- hidden on titanic
+       (15, 'Catch the Beat', 4, false),  -- hidden on titanic
+       (16, 'osu!mania', 4, false),       -- hidden on titanic
        (17, 'Completed Skins', 5, false),
        (18, 'Bug Reports', 3, false);
 
@@ -117,6 +117,15 @@ VALUES (20, 'General Discussion', 'The place where you dont post crap.', 19, fal
        (23, 'Client Modding', 'Discover a new world of osu!.', 19, false),
        (24, 'Video Games', 'Discuss any non-osu! games in here.', 19, false),
        (25, 'Art', 'Share your artistic masterpieces, find new avatars and more.', 19, false);
+
+INSERT INTO forums (id, name, description, parent_id, allow_icons)
+VALUES (26, 'Resolved Issues', '', 7, false), -- hidden on titanic
+       (27, 'Tournaments & Contests', '', 4, false),
+       (28, 'Completed Requests', '', 11, true),
+       (29, 'Rejected Requests', '', 11, false);
+
+-- leave us some room for future forum additions w/ hardcoded IDs
+ALTER SEQUENCE forums_id_seq RESTART WITH 100;
 
 INSERT INTO forum_icons (name, location)
 VALUES ('heart', '/images/icons/forum/heart.gif'),
