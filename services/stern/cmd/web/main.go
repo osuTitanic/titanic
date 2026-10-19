@@ -45,6 +45,8 @@ func InitializeWebRoutes(server *server.Server) {
 	server.Handle("GET /partials/users/{id}/kudosu", routes.UserKudosuPartial)
 	server.Handle("GET /partials/users/{id}/achievements", routes.UserAchievementsPartial)
 	server.Handle("GET /charts/activity", routes.ActivityChart)
+	server.Handle("GET /charts/beatmaps/{id}/fails", routes.BeatmapFailChart)
+	server.Handle("GET /charts/beatmapsets/{id}/ratings", routes.BeatmapRatingChart)
 	server.Handle("GET /account", routes.AccountOverview)
 	server.Handle("GET /account/{$}", routes.AccountOverview)
 	server.Handle("GET /account/login", routes.AccountLoginPage)

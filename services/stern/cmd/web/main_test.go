@@ -76,6 +76,8 @@ func TestWebsiteRoutesRender(t *testing.T) {
 		{name: "beatmap packs", path: "/beatmapsets/packs"},
 		{name: "beatmap pack partial", path: fmt.Sprintf("/partials/packs/%d", data.pack.Id)},
 		{name: "beatmap", path: fmt.Sprintf("/b/%d", data.beatmap.Id)},
+		{name: "beatmap fail chart", path: fmt.Sprintf("/charts/beatmaps/%d/fails?mode=0", data.beatmap.Id)},
+		{name: "beatmap rating chart", path: fmt.Sprintf("/charts/beatmapsets/%d/ratings", data.beatmapset.Id)},
 		{name: "score", path: fmt.Sprintf("/scores/%d", data.score.Id)},
 		{name: "multiplayer match", path: fmt.Sprintf("/mp/%d", data.match.Id)},
 		{name: "rankings performance", path: "/rankings/osu/performance"},
