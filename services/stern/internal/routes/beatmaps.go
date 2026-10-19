@@ -153,7 +153,7 @@ func Beatmap(ctx *server.Context) {
 		return
 	}
 
-	favourites, err := ctx.State.Repositories.Favourites.ManyBySetId(beatmap.SetId, 5, "User")
+	favourites, err := ctx.State.Repositories.Favourites.ManyBySetId(beatmap.SetId, 20, "User")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch favourites", "set", beatmap.SetId, "error", err)
 		InternalServerError(ctx)

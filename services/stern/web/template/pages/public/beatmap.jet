@@ -222,11 +222,11 @@
                     <br>
                     {{ if .Favourited }}
                     <a onclick="removeFavorite({{ .Beatmapset.Id }})" style="color: red" id="favourites-button">
-                        (Remove Favourite)
+                        (Remove from favourites!)
                     </a>
                     {{ else }}
                     <a onclick="addFavorite({{ .Beatmapset.Id }})" style="color: green" id="favourites-button">
-                        (Add Favourite)
+                        (Add as favourite!)
                     </a>
                     {{ end }}
                 {{ end }}
@@ -239,8 +239,10 @@
                         {{ favourite.User.Name }}{{ if i < len(.Favourites) - 1 }}, {{ end }}
                     </a>
                     {{ end }}
-                    {{ if .FavouritesCount > 5 }}
+                    {{ if .FavouritesCount > 25 }}
                     <b>and many more!</b>
+                    {{ else if .FavouritesCount > 20 }}
+                    <b>and a few more!</b>
                     {{ end }}
                 {{ end }}
             </td>

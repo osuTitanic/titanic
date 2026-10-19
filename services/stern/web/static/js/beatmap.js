@@ -40,7 +40,7 @@ function addFavorite(beatmapsetId) {
 
     performApiRequest("POST", url, { set_id: beatmapsetId }, function (xhr) {
         var favourites = document.getElementById("favourites-button");
-        favourites.innerHTML = "(Remove Favourite)";
+        favourites.innerHTML = "(Remove from favourites!)";
         favourites.style.color = "red";
         favourites.onclick = function () {
             removeFavorite(beatmapsetId);
@@ -53,7 +53,7 @@ function removeFavorite(beatmapsetId) {
 
     performApiRequest("DELETE", url, null, function (xhr) {
         var favourites = document.getElementById("favourites-button");
-        favourites.innerHTML = "(Add Favourite)";
+        favourites.innerHTML = "(Add as favourite!)";
         favourites.style.color = "green";
         favourites.onclick = function () {
             addFavorite(beatmapsetId);
