@@ -36,7 +36,9 @@ func (f *Forum) IsBeatmapForum() bool {
 }
 
 func (f *Forum) IsBeatmapRequestsForum() bool {
-	return f.Id == constants.ForumBeatmapsRequests
+	return f.Id == constants.ForumBeatmapsRequests ||
+		f.Id == constants.ForumBeatmapRequestsCompleted ||
+		f.Id == constants.ForumBeatmapRequestsRejected
 }
 
 type ForumTopic struct {
