@@ -173,6 +173,10 @@ func (service *PPv1Service) UpdatePerformance(score *schemas.Score) (float64, er
 	if err != nil {
 		return 0, err
 	}
+	if score.PPv1 == ppv1 {
+		return ppv1, nil
+	}
+
 	score.PPv1 = ppv1
 	if _, err := service.scores.Update(score, "ppv1"); err != nil {
 		return ppv1, err
