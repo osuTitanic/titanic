@@ -109,16 +109,9 @@ func UpdatePPv1All(app *state.State, logger *slog.Logger, options PPv1Recalculat
 		workerCount := workers.TaskWorkerCount(len(scores), options.Workers)
 
 		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
-			ppv1, err := app.PPv1.CalculatePerformance(score)
+			ppv1, err := app.PPv1.UpdatePerformance(score)
 			if err != nil {
 				return fmt.Errorf("failed to recalculate ppv1 for score %d: %w", score.Id, err)
-			}
-
-			if score.PPv1 != ppv1 {
-				score.PPv1 = ppv1
-				if _, err := app.Repositories.Scores.Update(score, "ppv1"); err != nil {
-					return fmt.Errorf("failed to save recalculated ppv1 for score %d: %w", score.Id, err)
-				}
 			}
 
 			logger.Debug(
