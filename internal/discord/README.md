@@ -48,7 +48,7 @@ webhook := discord.Webhook{
 }
 webhook.SetFile("message.txt", []byte("nyello!"))
 
-// or ...
+// Alternatively, stream the attachment from a reader
 // webhook.SetFileReader("message.txt", bytes.NewReader([]byte("nyello!")))
 
 if err := webhook.Post(); err != nil {

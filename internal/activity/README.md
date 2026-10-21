@@ -30,7 +30,7 @@ if err != nil {
 ```
 
 The `mode` argument can be `nil` for activity that is not tied to a specific game mode.
-`isAnnouncement` determines whether the activity should be broadcast to #announce and discord.
+`isAnnouncement` determines whether the activity should be broadcast to `#announce` and discord.
 `isHidden` means the event is only broadcast and will not be stored in the database, e.g. for user logins.
 
 ## Rendering

@@ -38,8 +38,8 @@ logger := logging.NewComponentLogger("api", slog.LevelDebug, logging.GetConsoleW
 logger.Info("Request handled", "status", 200, "path", "/users/123")
 ```
 
-Another (easier) option is to use the default logger & apply a custom `component`.
-This can be seen as the equivilent of python's `logging.getLogger("component")`.
+You can also derive a logger with a custom `component` from the default logger.
+This is similar to Python's `logging.getLogger("component")`.
 
 ```go
 logger := slog.Default().With("component", "database")

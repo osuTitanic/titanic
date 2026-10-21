@@ -24,11 +24,21 @@ if err != nil {
 defer app.Close()
 
 ctx := context.Background()
-stream, err := app.Resources.Osz(ctx, setId, false)
+stream, size, err := app.Resources.Osz(ctx, setId, false)
 if err != nil {
 	return err
 }
 defer stream.Close()
 
 // do whatever
+```
+
+## Caching and invalidation
+
+The provider caches `.osu` files, previews, and images in redis. After changing a beatmapset, use `InvalidateCaches` to purge that cache:
+
+```go
+if err := app.Resources.InvalidateCaches(ctx, setId, beatmapIds...); err != nil {
+	return err
+}
 ```

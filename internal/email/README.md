@@ -2,7 +2,7 @@
 
 This module provides email functionality. It supports dummy delivery for development & smtp delivery for environments that should send real messages. It is built in such a way that additional providers can be added in the future.
 
-Services should use the *state system* to access the email sender instance (`state.Email`). A manual setup is usually not required.
+Services should use `state.Email` from the shared state. Manual setup is usually unnecessary.
 
 ## Usage
 

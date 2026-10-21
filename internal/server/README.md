@@ -5,7 +5,7 @@ In the future, this module should contain standardized TCP & WS logic as well, p
 
 ## Usage
 
-Define a service context that includes `HttpContext`, then provide a factory that creates it for every request, passing it on to every request handler.
+Define a service context that embeds `HttpContext`, then provide a factory that creates it for each request.
 
 ```go
 type Context struct {
@@ -23,9 +23,9 @@ func NewContextFactory(app *state.State) server.HttpContextFactory[*Context] {
 }
 
 httpServer := server.NewHttpServer(
-	"127.0.0.1", 8080, 		// Host & Port
-	"server", 				// Server name to use for logging & "server" header
-	NewContextFactory(app), // Context generator / factory
+	"127.0.0.1", 8080,   // host & port
+	"server",            // logger component and Server header
+	NewContextFactory(app),
 )
 
 httpServer.Handle("GET /users/{id}", func(ctx *Context) {
@@ -47,14 +47,32 @@ if err := httpServer.Serve(ctx); err != nil {
 
 Each response receives a `Server` header containing the configured server name. Furthermore, requests are logged by default with their method, path, client ip, status code & processing duration.
 
+Register a panic handler when the service should turn recovered panics into a response or notification:
+
+```go
+httpServer.OnPanic(func(ctx *Context, recovered any) {
+	ctx.Logger.Error("Request panicked", "error", recovered)
+
+	if ctx.StatusExists() {
+		// Status was already set :/
+		// We can't respond with 500 anymore
+		panic(http.ErrAbortHandler)
+	}
+	
+	ctx.RenderText(http.StatusInternalServerError, "internal server error")
+})
+```
+
 ## Request Context
 
 `HttpContext` lets you access the response writer, request & component logger. It also provides helper functions for common handler operations:
 
-- `PathValue`, `QueryValue` & `FormValue` to read request values
-	- their `Int` and `Int64` variants parse numeric values
-- `Redirect`, `RenderText` & `RenderJson` for common responses
-- `IP` to resolve the client address
+- `PathValue`, `QueryValue`, `QueryValues`, `FormValue` & `PostFormValue` read request values
+- `Int`, `Int64`, `Float`, `Optional`, `Default` & `Enum` variants parse or normalize values
+- `LimitBody`, `EnsureMultipartForm` & `FormFile` handle bounded uploads
+- `Redirect`, `RenderText` & `RenderJson` write common responses
+- `Status` & `StatusExists` return the response status if set
+- `IP` to resolve the client IP address
 - `Country` to resolve Cloudflare's `CF-IPCountry` header (`XX` if not found)
 
 Services can extend `HttpContext` to add other dependencies, authentication, templates, etc..

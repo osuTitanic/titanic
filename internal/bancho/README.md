@@ -1,7 +1,7 @@
 # Bancho
 
 This module provides access to bancho user statuses & events.
-Both services are initialized by `state.NewState(...)` and accessible through `BanchoUsers` & `BanchoEvents`.
+`state.NewState(...)` initializes both services and exposes them as `BanchoUsers` & `BanchoEvents`.
 
 ## User statuses
 
@@ -49,4 +49,4 @@ err := app.BanchoEvents.Activity(
 ```
 
 Events are encoded in json, published to the `bancho:events` redis channel, and processed by the bancho service.
-Not every event has a helper function yet. That's still a to-do :)
+Use `Dispatch` directly for an event that does not yet have a dedicated helper.

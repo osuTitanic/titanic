@@ -22,7 +22,7 @@ if score == nil || score.User == nil || score.Beatmap == nil {
 	return errors.New("score is missing metadata")
 }
 
-data, err := app.Storage.Read(strconv.FormatInt(score.Id, 10), "replays")
+data, err := app.Storage.Read(ctx, strconv.FormatInt(score.Id, 10), "replays")
 if err != nil {
 	return err
 }
@@ -39,7 +39,7 @@ Use `DeserializeFrames` to decompress a stored replay payload & parse its indivi
 
 ```go
 // Example: read compressed replay frames from storage
-data, err := app.Storage.Read(strconv.FormatInt(score.Id, 10), "replays")
+data, err := app.Storage.Read(ctx, strconv.FormatInt(score.Id, 10), "replays")
 if err != nil {
 	return err
 }
@@ -62,6 +62,17 @@ if frame.Buttons.Has(replays.Left1) {
 ```
 
 The returned seed is read from the replay's optional RNG seed frame & is `0` when no matching frame is present. The seed is used for the osu!mania random mod.
+
+### Deserializing complete replay files
+
+Use `Deserialize` for a complete `.osr` file. It returns the score metadata, frames & optional rng seed:
+
+```go
+score, frames, seed, err := replays.Deserialize(osrData)
+if err != nil {
+	return err
+}
+```
 
 ### Touchscreen detection
 

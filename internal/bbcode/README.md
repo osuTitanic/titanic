@@ -26,6 +26,16 @@ bbcode.ConfigureDefault(bbcode.Options{
 	ValidImageServices: cfg.ValidImageServices(),
 	ImageProxyBaseUrl:  cfg.ImageProxyBaseUrl,
 	ImageProxySecret:   cfg.FrontendSecretKey,
+	ResolveUserId: func(username string) (int, error) {
+		user, err := app.Users.ByName(username)
+		if err != nil {
+			return 0, err
+		}
+		if user == nil {
+			return 0, errors.New("user not found")
+		}
+		return user.Id, nil
+	},
 })
 ```
 
@@ -43,10 +53,10 @@ html := renderer.RenderHtml("[profile=2]Levi[/profile]")
 
 The renderer currently supports:
 
-- basic formatting: `b`, `i`, `u`, `strike`, `heading`, `centre`
+- basic formatting: `b`, `i`, `u`, `strike`, `heading`, `centre`, `spoiler`, `notice`
 - containers: `quote`, `box`, `spoilerbox`, `color`, `size`, `list`, `*`
 - raw text: `code`, `c`
-- links: `url`, `email`, `google`, `profile`
+- links: `url`, `email`, `google`, `profile`, `mention`
 - media: `img`, `smiley`, `video`, `youtube`
 
 Unknown line tags, e.g. `[Header]`, are rendered as beatmap headers. Beatmap timecodes such as `01:23:456` and `osu://edit/01:23:456` are converted into `osu://edit/...` links.
@@ -54,3 +64,8 @@ Unknown line tags, e.g. `[Header]`, are rendered as beatmap headers. Beatmap tim
 ## Media Proxy
 
 `img` and `video` tags support willnorris's [imageproxy](https://github.com/willnorris/imageproxy) service. When `ImageProxyBaseUrl` is set, media from hosts outside `ValidImageServices` is modified to a signed URL using `ImageProxySecret`.
+
+## Mentions and smileys
+
+Set `Options.ResolveUserId` to turn `[mention]name[/mention]` into a profile link.
+Without a resolver, mentions still render but point to `#`.

@@ -67,6 +67,7 @@ set.InGroup(constants.GroupBAT, constants.GroupGMT)
 set.IsAdmin()     // Admin or Developer
 set.IsBat()       // Admin, Developer or Beatmap Approval Team
 set.IsModerator() // Admin, Developer or Global Moderation Team
+set.IsDonator()   // Donator
 ```
 
 Group IDs are defined in `constants` (e.g. `constants.GroupBAT`).

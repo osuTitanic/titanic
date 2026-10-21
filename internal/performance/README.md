@@ -42,7 +42,14 @@ if err != nil {
 }
 ```
 
-`CalculatePerformance` resolves the beatmap, computes the ppv1, saves it to the `ppv1` column, and returns the value.
+`CalculatePerformance` resolves the beatmap and returns the calculated ppv1 without changing the score or database. Use `UpdatePerformance` when the result should also be assigned to `score.PPv1` and saved:
+
+```go
+pp, err := app.PPv1.UpdatePerformance(score) // will persist in db
+if err != nil {
+	return err
+}
+```
 
 ### Usage without state system
 
@@ -67,7 +74,7 @@ Pass the per-score values to `CalculateWeight`, or work directly from a list of 
 total := service.CalculateWeightFromScores(scores)
 ```
 
-Use `RecalculateWeightFromScores` to refresh stale ppv1 values (where `RequiresPPv1Update()` is true) before re-weighting:
+Use `RecalculateWeightFromScores` to recalculate and save stale ppv1 values for scores where `RequiresPPv1Update()` is true, then compute their new weighted total:
 
 ```go
 total, err := service.RecalculateWeightFromScores(scores)
@@ -87,4 +94,4 @@ if err != nil {
 }
 ```
 
-`CalculateEyupStarRating` performs the underlying calculation without caching, if that is somehow required.
+Use `CalculateEyupStarRating` when you need the underlying calculation without reading or updating the cached value.

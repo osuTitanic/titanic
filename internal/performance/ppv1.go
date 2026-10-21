@@ -211,7 +211,7 @@ func (service *PPv1Service) CalculateWeightFromScores(scores []*schemas.Score) f
 	return service.CalculateWeight(pps)
 }
 
-// RecalculateWeightFromScores re-calculates ppv1 values & returns the new weighted ppv1 for a list of scores
+// RecalculateWeightFromScores updates stale ppv1 values & returns the new weighted total.
 func (service *PPv1Service) RecalculateWeightFromScores(scores []*schemas.Score) (float64, error) {
 	for _, score := range scores {
 		if score == nil {
@@ -221,7 +221,7 @@ func (service *PPv1Service) RecalculateWeightFromScores(scores []*schemas.Score)
 			continue
 		}
 
-		_, err := service.CalculatePerformance(score)
+		_, err := service.UpdatePerformance(score)
 		if err != nil {
 			return 0, err
 		}

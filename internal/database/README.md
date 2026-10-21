@@ -56,4 +56,4 @@ Connection pooling is controlled by the postgres pool fields in `config.Config`.
 - `POSTGRES_POOL_SIZE` sets the maximum number of idle connections
 - `POSTGRES_POOL_RECYCLE` sets the maximum connection lifetime in seconds
 - `POSTGRES_POOL_TIMEOUT` sets the maximum idle time in seconds
-- `POSTGRES_POOL_PRE_PING` pings the database during startup
+- `POSTGRES_POOL_PRE_PING` prepares the pool by opening `POSTGRES_POOL_SIZE` connections during startup

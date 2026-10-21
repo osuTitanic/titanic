@@ -7,21 +7,22 @@ This module contains the shared authentication helpers used across Titanic servi
 - [API access & refresh tokens](#api-tokens)
 - [CSRF tokens](#csrf-tokens)
 - [Authorization parsing](#authorization-parsing)
+- [Permission scopes](#permission-scopes)
 
 ## Usage
 
 ### Website sessions
 
-The website uses session IDs stored in HTTP-only cookies for authentication. The session store is backed by Redis & handles expiration and cleanup of sessions.  
-Below are some examples of how to implement the website login, user resolution & logout flows using the session store:
+The website uses session IDs stored in HTTP-only cookies for authentication. The session store is backed by redis and handles session expiration & cleanup.
+
+The following examples show the login, user resolution, and logout flow:
 
 ```go
 // WebsiteLogin uses the website session store for frontend authentication
 func WebsiteLogin(app *state.State, user *schemas.User, w http.ResponseWriter, r *http.Request) error {
-	store := authentication.NewWebsiteSessionStore(app.Redis)
 	expiry := 30 * 24 * time.Hour
 
-	session, err := store.Create(
+	session, err := app.SessionStore.Create(
 		r.Context(),
 		user.Id,
 		time.Now(),
@@ -43,15 +44,14 @@ func WebsiteLogin(app *state.State, user *schemas.User, w http.ResponseWriter, r
 ```
 
 ```go
-// ResolveWebsiteUser validates the website session cookie on every request & returns the associated user
+// ResolveWebsiteUser validates the website session cookie & returns its user
 func ResolveWebsiteUser(app *state.State, r *http.Request) (*schemas.User, error) {
 	cookie, err := r.Cookie(authentication.WebsiteSessionCookieName)
 	if err != nil {
 		return nil, err
 	}
 
-	store := authentication.NewWebsiteSessionStore(app.Redis)
-	session, err := store.Validate(r.Context(), cookie.Value, time.Now())
+	session, err := app.SessionStore.Validate(r.Context(), cookie.Value, time.Now())
 	if err != nil || session == nil {
 		return nil, err
 	}
@@ -65,11 +65,12 @@ func ResolveWebsiteUser(app *state.State, r *http.Request) (*schemas.User, error
 func WebsiteLogout(app *state.State, w http.ResponseWriter, r *http.Request) error {
 	cookie, err := r.Cookie(authentication.WebsiteSessionCookieName)
 	if err == nil {
-		store := authentication.NewWebsiteSessionStore(app.Redis)
-		store.Delete(r.Context(), cookie.Value)
+		if err := app.SessionStore.Delete(r.Context(), cookie.Value); err != nil {
+			return err
+		}
 	}
 
-	expiredCookie := authentication.NewExpiredCookie(authentication.WebsiteSessionCookieName, app.Config)
+	expiredCookie := authentication.NewExpiredWebsiteSessionCookie(app.Config, r)
 	http.SetCookie(w, expiredCookie)
 	return nil
 }
@@ -77,8 +78,9 @@ func WebsiteLogout(app *state.State, w http.ResponseWriter, r *http.Request) err
 
 ### API tokens
 
-The API uses jwt access & refresh tokens for authentication. The access token is short-lived and used for authenticating API requests, while the refresh token is long-lived and used to obtain new access tokens. The refresh tokens are also stored in redis to allow for revocation.  
-Below are some examples of how to implement the API login, token validation & refresh flows:
+The API uses jwt access & refresh tokens. Access tokens are short-lived and authenticate API requests. Refresh tokens are long-lived, obtain new access tokens, and are stored in redis so they can be revoked.
+
+The following examples show token creation & validation:
 
 ```go
 func ApiLogin(app *state.State, user *schemas.User) (*authentication.TokenPair, error) {
@@ -97,7 +99,6 @@ func ApiLogin(app *state.State, user *schemas.User) (*authentication.TokenPair, 
 		return nil, err
 	}
 
-	store := authentication.NewSessionStore(app.Redis)
 	claims, err := authentication.ValidateTokenType(
 		pair.RefreshToken,
 		app.Config.FrontendSecretKey,
@@ -107,8 +108,8 @@ func ApiLogin(app *state.State, user *schemas.User) (*authentication.TokenPair, 
 		return nil, err
 	}
 
-	// Register refresh token in redis store to allow for revocation
-	_, err = store.Upsert(context.Background(), claims, time.Now())
+	// Register the refresh token in redis so it can be revoked
+	_, err = app.SessionStoreApi.Upsert(context.Background(), claims, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -137,8 +138,7 @@ if err != nil {
 	return err
 }
 
-store := authentication.NewSessionStore(app.Redis)
-ok, err := store.Validate(context.Background(), claims, time.Now())
+ok, err := app.SessionStoreApi.Validate(context.Background(), claims, time.Now())
 if err != nil || !ok {
 	return err
 }
@@ -146,14 +146,15 @@ if err != nil || !ok {
 
 ### Password verification
 
-This should be self-explanatory.  
-osu! clients use md5 hashes to log in, so there are 2 methods of password verification:
+Website logins use the plain-text password supplied by the user:
 
 ```go
 if !authentication.VerifyPasswordHash(password, user.Bcrypt) {
 	return errors.New("invalid credentials")
 }
 ```
+
+osu! clients submit an md5 password hash, so client authentication uses this helper:
 
 ```go
 if !authentication.VerifyPasswordHashFromMd5(md5Password, user.Bcrypt) {
@@ -163,17 +164,17 @@ if !authentication.VerifyPasswordHashFromMd5(md5Password, user.Bcrypt) {
 
 ### CSRF tokens
 
-The frontend uses rotating CSRF tokens stored in redis to protect against CSRF attacks. The tokens are associated with a user ID and have a short expiration time.  
+The frontend uses rotating CSRF tokens stored in redis. Each token belongs to a user and expires after the store's configured TTL.
+
 Here is an example of how to generate & validate CSRF tokens:
 
 ```go
-store := authentication.NewCSRFStore(app.Redis)
-token, err := store.Upsert(context.Background(), user.Id)
+token, err := app.CSRFStore.Upsert(context.Background(), user.Id)
 if err != nil {
 	return err
 }
 
-ok, err := store.Validate(context.Background(), user.Id, token)
+ok, err := app.CSRFStore.Validate(context.Background(), user.Id, token)
 if err != nil || !ok {
 	return err
 }

@@ -1,6 +1,6 @@
 # Media
 
-This module provides helpers for processing media files: resizing images, creating thumbnails & extracting audio snippets. These are especially useful for the beatmap submission system.
+This module provides helpers for resizing images, creating thumbnails & extracting audio snippets. They are used primarily by the beatmap submission system.
 
 ## Images
 
@@ -20,7 +20,7 @@ small, err := media.ResizeImageBytes(data, 80, 60)
 png, err := media.ResizeImageBytesToPng(data, 256, 256)
 ```
 
-Use `ResizeAndCropImage` when the image should keep its aspect ratio while filling the image. It crops excess width / height from the center before resizing:
+Use `ResizeAndCropImage` when the image should keep its aspect ratio while filling the target dimensions. It crops excess width / height from the center before resizing:
 
 ```go
 var thumbnail bytes.Buffer
@@ -50,7 +50,7 @@ The image code is adapted from Matthew Jorgensen's [go-thumbnail](https://github
 
 ## Audio
 
-Use `ExtractAudioSnippet` to cut a snippet out of an audio file & re-encode it as MP3. It takes the raw audio bytes, an offset & duration (in seconds) and a bitrate, returning the encoded snippet.
+Use `ExtractAudioSnippet` to cut a section from an audio file & encode it as MP3. It accepts the raw audio bytes, offset & duration (in seconds), and a bitrate. Pass a negative offset to choose a default position around 40% into the track.
 
 ```go
 snippet, err := media.ExtractAudioSnippet(audioData, 0, 10, 128000)
@@ -59,4 +59,6 @@ if err != nil {
 }
 ```
 
-This relies on `ffmpeg` being available, through the [ffmpeg-go](https://github.com/Lekuruu/ffmpeg-go) bindings. Glory to the allmighty ffmpeg.
+Use `ExtractAudioSnippetFromReader` when the source is already available as an `io.Reader`, or `ExtractAudioSnippetFromPath` for an existing file.
+
+Audio extraction requires `ffmpeg` and `ffprobe` on the process path and uses the [ffmpeg-go](https://github.com/Lekuruu/ffmpeg-go) bindings.

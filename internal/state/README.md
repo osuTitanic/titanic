@@ -12,11 +12,21 @@ Most services should start here instead of manually creating each dependency.
 - `Database` for the underlying `*gorm.DB` session
 - `Redis` for the shared Redis client
 - `Storage` for app storage
+- `StorageOsz2` for bss storage
 - `Email` for email delivery
 - `Officer` for staff webhook notifications
+- `Location` for IP geolocation
 - `Repositories` for actual database access
+- `Permissions` for resolved user permissions
+- `Resources` for beatmap files and media
 - `Rankings` for ranking services
 - `PPv1` for ppv1 score calculation helpers
+- `PPv2` for the selected ppv2 implementation
+- `BanchoUsers` for online user status
+- `BanchoEvents` for publishing Bancho events
+- `SessionStore` for website sessions
+- `SessionStoreApi` for API refresh-token sessions
+- `CSRFStore` for frontend CSRF tokens
 
 ## Usage
 

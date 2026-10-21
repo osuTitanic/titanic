@@ -31,7 +31,7 @@ Make use of available helper methods, e.g.
 - `OsuBaseUrl()`, `ApiBaseUrl()`, ... for public service URLs
 - `GetAllowInsecureCookies()` for cookie security decisions
 - `ValidImageServices()` for a list of image hosts that can bypass the proxy
-- ...
+- `S3Config()` for the configured S3-compatible storage backend
 
 ## Custom Types
 

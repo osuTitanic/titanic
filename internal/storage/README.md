@@ -1,11 +1,16 @@
 # Storage
 
-This module provides a storage api for files used by all services. The current implementation is a local filesystem backend rooted at `config.Config.DataPath`. S3 support will hopefully come too at some point.
+This module provides a common file-storage API for Titanic services. It includes two backends:
+
+- `FileStorage` stores files below `config.Config.DataPath`
+- `S3Storage` stores objects in an S3-compatible bucket through MinIO's client library
+
+Both implement the `Storage` interface.
 
 ## Usage with state system
 
 Services should use `state.NewState(...)` instead of creating storage directly.
-`State` creates the storage backend, calls `Setup(...)` & exposes it through `app.Storage`.
+`State` selects the backend from the configuration, calls `Setup`, and exposes it through `app.Storage`.
 
 ```go
 app, err := state.NewState()
@@ -37,6 +42,25 @@ if err := store.Save(ctx, "avatar.jpg", "avatars", data); err != nil {
 }
 ```
 
+Create an S3-compatible backend:
+
+```go
+store, err := storage.NewS3Storage(storage.S3Config{
+	Endpoint:        "s3.example.com",
+	AccessKeyID:     accessKey,
+	SecretAccessKey: secretKey,
+	BucketName:      "osutitanic",
+	Region:          "eu-central-1",
+	UseSSL:          true,
+})
+if err != nil {
+	return err
+}
+if err := store.Setup(ctx); err != nil {
+	return err
+}
+```
+
 ## Streams
 
 Use `SaveStream` and `ReadStream` for larger files.
@@ -55,8 +79,8 @@ defer stream.Close()
 
 ## Folders
 
-Storage methods take a folder/directory name and a `key`. The local backend stores files as `<DATA_PATH>/<folder>/<key>`.
-`Setup(...)` creates the required storage directories if they do not already exist.
+Storage methods take a `key` and then a folder name. The local backend stores files as `<DATA_PATH>/<folder>/<key>`.
+`FileStorage.Setup` creates the required directories when they do not exist.
 
 Additionally, during setup, the storage downloads default assets declared in `DefaultAssetUrls` when they do not already exist.
 At the moment this includes the default avatars in the `avatars` folder.

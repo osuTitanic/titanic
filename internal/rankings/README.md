@@ -2,7 +2,7 @@
 
 This module maintains all kinds of player rankings through redis sorted sets. It provides methods to fetch ranks & scores, update rankings when stats change, and remove players from rankings when they become inactive or restricted.
 
-Services should usually access rankings through the state system (`state.Rankings`). A manual setup is only needed for tests, or other tooling that already has a redis client.
+Services should usually access rankings through the state system (`state.Rankings`). Manual setup is only needed for tests or tooling that already has a redis client.
 
 ## Usage with state system
 
@@ -97,4 +97,10 @@ Use `PlayerCount` and `TopPlayers` for leaderboard pagination. These only includ
 
 Use `TopCountries` to fetch country rankings for a mode. It sums country-wide `performance`, `rscore`, and `tscore`, then sorts countries by total performance.
 
-Use `PlayerAbove` to find the user directly above another player in a rank type & the score difference needed to reach them. It returns `ErrNoPlayerAbove` when the player is missing or already first.
+Use `PlayerAbove` to find the user directly above another player and the score difference needed to reach them. It returns `ErrNoPlayerAbove` when the player is missing or already first.
+
+`TopCountriesForType` returns country totals for one rank type, while `TopCountries` returns the combined performance, ranked-score, and total-score view.
+
+Kudosu rankings do not have a game mode. Use `RankKudosu`, `PlayerCountKudosu`, and `TopKudosu` for them.
+
+`RanksByKeys` batches several rank lookups for one user into a single redis pipeline.
