@@ -181,7 +181,7 @@ func updatePPv1ForUser(app *state.State, logger *slog.Logger, user *schemas.User
 				continue
 			}
 
-			bestScores, err := repositories.Scores.FetchBest(
+			bestScores, err := repositories.Scores.FetchBestPPv1(
 				user.Id,
 				stats.Mode,
 				"Beatmap",

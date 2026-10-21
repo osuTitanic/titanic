@@ -158,7 +158,14 @@ func (processor *Processor) updateSubmissionStatistics(transaction *state.Reposi
 	stats.Acc = performance.CalculateWeightedAccuracy(bestScores)
 
 	if !processor.context.State.Config.FrozenPPv1Updates {
-		stats.PPv1 = processor.context.State.PPv1.CalculateWeightFromScores(bestScores)
+		ppv1BestScores, err := transaction.Scores.FetchBestPPv1(
+			submission.UserId,
+			submission.Mode,
+		)
+		if err != nil {
+			return fmt.Errorf("load ppv1 bests: %w", err)
+		}
+		stats.PPv1 = processor.context.State.PPv1.CalculateWeightFromScores(ppv1BestScores)
 	}
 
 	scoreBests, err := transaction.Scores.FetchBestByScore(

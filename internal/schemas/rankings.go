@@ -124,7 +124,7 @@ func (score *Score) RequiresPPv1Update() bool {
 
 	// Every 10 days: the score loses ~1% of its pp
 	// Every 24 hours: the score loses ~0.1% of its pp
-	if score.StatusPP >= constants.ScoreStatusBest {
+	if score.HasScorePB() {
 		// For personal best's we want to update scores every 24 hours
 		return timeSinceSubmission > 24*time.Hour
 	} else {

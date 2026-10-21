@@ -494,11 +494,14 @@ func buildScorePage(
 	case "best":
 		if ranking == constants.RankingTypePPv1 {
 			scores, err = ctx.State.Repositories.Scores.FetchBestPPv1Range(userId, mode, pageSize+1, offset, preload)
+			if err == nil {
+				total, err = ctx.State.Repositories.Scores.FetchBestPPv1Count(userId, mode)
+			}
 		} else {
 			scores, err = ctx.State.Repositories.Scores.FetchBestRange(userId, mode, pageSize+1, offset, preload)
-		}
-		if err == nil {
-			total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode)
+			if err == nil {
+				total, err = ctx.State.Repositories.Scores.FetchBestCount(userId, mode)
+			}
 		}
 	case "first":
 		scores, err = ctx.State.Repositories.Scores.FetchLeaderScores(userId, mode, pageSize+1, offset, preload)

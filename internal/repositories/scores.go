@@ -144,9 +144,14 @@ func (r *ScoreRepository) FetchBestRange(userId int, mode constants.Mode, limit,
 	return scores, err
 }
 
+func (r *ScoreRepository) FetchBestPPv1(userId int, mode constants.Mode, preload ...string) ([]*schemas.Score, error) {
+	// A negative limit cancels the limit clause entirely -> it will fetch every pb
+	return r.FetchBestPPv1Range(userId, mode, -1, 0, preload...)
+}
+
 func (r *ScoreRepository) FetchBestPPv1Range(userId int, mode constants.Mode, limit, offset int, preload ...string) ([]*schemas.Score, error) {
 	var scores []*schemas.Score
-	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), Preloaded(r.db, preload)).
+	err := bestScoresQuery(userId, mode, "status_score", ppBeatmapStatuses(), Preloaded(r.db, preload)).
 		Order("scores.ppv1 DESC, scores.submitted_at ASC, scores.id ASC").
 		Offset(offset).
 		Limit(limit).
@@ -157,6 +162,13 @@ func (r *ScoreRepository) FetchBestPPv1Range(userId int, mode constants.Mode, li
 func (r *ScoreRepository) FetchBestCount(userId int, mode constants.Mode) (int, error) {
 	var count int64
 	err := bestScoresQuery(userId, mode, "status", ppBeatmapStatuses(), r.db.Model(&schemas.Score{})).
+		Count(&count).Error
+	return int(count), err
+}
+
+func (r *ScoreRepository) FetchBestPPv1Count(userId int, mode constants.Mode) (int, error) {
+	var count int64
+	err := bestScoresQuery(userId, mode, "status_score", ppBeatmapStatuses(), r.db.Model(&schemas.Score{})).
 		Count(&count).Error
 	return int(count), err
 }
