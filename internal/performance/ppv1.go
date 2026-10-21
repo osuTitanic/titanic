@@ -178,7 +178,8 @@ func (service *PPv1Service) UpdatePerformance(score *schemas.Score) (float64, er
 	}
 
 	score.PPv1 = ppv1
-	if _, err := service.scores.Update(score, "ppv1"); err != nil {
+	score.PPv1UpdatedAt = time.Now()
+	if _, err := service.scores.Update(score, "ppv1", "ppv1_updated_at"); err != nil {
 		return ppv1, err
 	}
 	return ppv1, nil

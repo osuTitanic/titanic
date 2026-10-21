@@ -48,6 +48,7 @@ type Score struct {
 	StatusScore   constants.ScoreStatus `gorm:"column:status_score;default:-1"`
 	Pinned        bool                  `gorm:"column:pinned;default:false"`
 	Hidden        bool                  `gorm:"column:hidden;default:false"`
+	PPv1UpdatedAt time.Time             `gorm:"column:ppv1_updated_at;autoCreateTime"`
 	SubmittedAt   time.Time             `gorm:"column:submitted_at;autoCreateTime"`
 	Failtime      *int                  `gorm:"column:failtime"`
 	ReplayMd5     *string               `gorm:"column:replay_md5"`
@@ -118,19 +119,18 @@ func (score *Score) RequiresPPv1Update() bool {
 	if score.PPv1 <= 0 {
 		return true
 	}
-	timeSinceSubmission := time.Since(score.SubmittedAt)
-	// TODO: Add column that determines the last ppv1 update time
-	// 		 For now we'll use the submission time
-
 	// Every 10 days: the score loses ~1% of its pp
 	// Every 24 hours: the score loses ~0.1% of its pp
+
+	// For non-PBs we can update it every 10 days
+	updateInterval := 10 * 24 * time.Hour
+
 	if score.HasScorePB() {
-		// For personal best's we want to update scores every 24 hours
-		return timeSinceSubmission > 24*time.Hour
-	} else {
-		// For everything else we can update it every 10 days
-		return timeSinceSubmission > 24*time.Hour*10
+		// For personal bests we want to update scores every 24 hours
+		updateInterval = 24 * time.Hour
 	}
+
+	return time.Since(score.PPv1UpdatedAt) > updateInterval
 }
 
 // PPv1ToV2Estimate converts a raw ppv1 score to an estimated ppv2 value
