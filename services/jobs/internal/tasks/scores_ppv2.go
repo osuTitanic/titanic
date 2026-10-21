@@ -140,6 +140,7 @@ func recalculatePPv2Batch(
 	completedBatches := 0
 
 	for {
+		started := time.Now()
 		scores, err := next(offset, options.BatchSize)
 		if err != nil {
 			return fmt.Errorf("failed to fetch scores for ppv2 recalculation: %w", err)
@@ -147,9 +148,7 @@ func recalculatePPv2Batch(
 		if len(scores) == 0 {
 			break
 		}
-
 		workerCount := workers.TaskWorkerCount(len(scores), options.Workers)
-		batchStarted := time.Now()
 
 		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
 			pp, err := app.PPv2.CalculatePerformance(score)
@@ -185,7 +184,7 @@ func recalculatePPv2Batch(
 			return fmt.Errorf("failed to recalculate ppv2: %w", err)
 		}
 
-		batchDuration := time.Since(batchStarted)
+		batchDuration := time.Since(started)
 
 		offset += len(scores)
 		completedBatches++

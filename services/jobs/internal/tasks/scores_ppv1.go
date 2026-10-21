@@ -94,6 +94,7 @@ func UpdatePPv1All(app *state.State, logger *slog.Logger, options PPv1Recalculat
 	completedBatches := 0
 
 	for {
+		started := time.Now()
 		scores, err := app.Repositories.Scores.Many(
 			criteria, "id ASC",
 			offset, options.BatchSize,
@@ -105,9 +106,7 @@ func UpdatePPv1All(app *state.State, logger *slog.Logger, options PPv1Recalculat
 		if len(scores) == 0 {
 			break
 		}
-
 		workerCount := workers.TaskWorkerCount(len(scores), options.Workers)
-		batchStarted := time.Now()
 
 		if err := workers.RunWorkerPool(scores, workerCount, func(score *schemas.Score) error {
 			ppv1, err := app.PPv1.CalculatePerformance(score)
@@ -133,7 +132,7 @@ func UpdatePPv1All(app *state.State, logger *slog.Logger, options PPv1Recalculat
 			return fmt.Errorf("failed to recalculate ppv1: %w", err)
 		}
 
-		batchDuration := time.Since(batchStarted)
+		batchDuration := time.Since(started)
 		totalBatchDuration += batchDuration
 		offset += len(scores)
 		completedBatches++
