@@ -3,7 +3,6 @@ package tasks
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -25,7 +24,8 @@ var releaseStreams = []string{"stable40", "cuttingedge", "beta40"}
 // and notifies on updates through a webhook.
 func ReleaseUpdates(app *state.State, logger *slog.Logger) error {
 	if !app.Config.ReleaseUpdatesEnabled {
-		return errors.New("release updates are disabled in config")
+		logger.Info("Release updates are disabled in config")
+		return nil
 	}
 
 	for _, stream := range releaseStreams {
