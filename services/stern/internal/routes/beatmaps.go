@@ -35,7 +35,11 @@ func BeatmapsetRedirect(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-	if beatmapset == nil || len(beatmapset.Beatmaps) == 0 {
+	if beatmapset == nil {
+		BeatmapNotFound(ctx)
+		return
+	}
+	if len(beatmapset.Beatmaps) == 0 {
 		BeatmapNotFound(ctx)
 		return
 	}
@@ -46,6 +50,10 @@ func BeatmapsetRedirect(ctx *server.Context) {
 		if beatmap.Status > constants.BeatmapStatusInactive {
 			activeBeatmaps = append(activeBeatmaps, beatmap)
 		}
+	}
+	if len(activeBeatmaps) == 0 {
+		BeatmapNotFound(ctx)
+		return
 	}
 
 	// Default to the requested mode, or osu! standard when none is given
@@ -118,8 +126,12 @@ func Beatmap(ctx *server.Context) {
 		InternalServerError(ctx)
 		return
 	}
-	if beatmap == nil || beatmap.Status <= constants.BeatmapStatusInactive {
-		// Beatmap not found / inactive / has not been submitted
+	if beatmap == nil {
+		BeatmapNotFound(ctx)
+		return
+	}
+	if beatmap.Status <= constants.BeatmapStatusInactive {
+		// Beatmap is inactive / has not been submitted / was deleted
 		BeatmapNotFound(ctx)
 		return
 	}
