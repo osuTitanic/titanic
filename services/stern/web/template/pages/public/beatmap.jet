@@ -331,7 +331,7 @@
     <div class="beatmap-description">
         <div title="Play Song">
             <a onclick="resetOrPlayAudio('beatmap-preview')" class="beatmap-preview-link" href="javascript:void(0);">
-                <img src="/mt/{{ .Beatmapset.Id }}l" alt="">
+                <img src="{{ .Beatmapset.LargeThumbnailUrl() }}" alt="">
                 <audio id="beatmap-preview"
                        src="/mp3/preview/{{ .Beatmapset.Id }}"
                        preload="auto">

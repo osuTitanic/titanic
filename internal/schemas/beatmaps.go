@@ -345,6 +345,22 @@ func (b *Beatmap) Link() string {
 	return fmt.Sprintf("/b/%d", b.Id)
 }
 
+func (b *Beatmap) ThumbnailUrl() string {
+	if b.Beatmapset != nil {
+		return b.Beatmapset.ThumbnailUrl()
+	}
+	lastModified := b.LastUpdate.Unix()
+	return fmt.Sprintf("/mt/%d?c=%d", b.SetId, lastModified)
+}
+
+func (b *Beatmap) LargeThumbnailUrl() string {
+	if b.Beatmapset != nil {
+		return b.Beatmapset.LargeThumbnailUrl()
+	}
+	lastModified := b.LastUpdate.Unix()
+	return fmt.Sprintf("/mt/%dl?c=%d", b.SetId, lastModified)
+}
+
 func (b *Beatmap) AwardsScore() bool {
 	return b.Status >= constants.BeatmapStatusRanked
 }
