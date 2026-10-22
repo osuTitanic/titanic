@@ -5,6 +5,9 @@ package scheduler
 import (
 	"fmt"
 	"log/slog"
+	"reflect"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/discord"
@@ -15,12 +18,41 @@ import (
 // It receives the application state and a logger as arguments.
 type Executor func(state *state.State, logger *slog.Logger) error
 
-// Run executes a task with panic handling
+// Name returns the name of the function that implements the Executor.
+func (execute Executor) Name() string {
+	// https://stackoverflow.com/questions/10742749/get-name-of-function-using-reflection
+	function := runtime.FuncForPC(reflect.ValueOf(execute).Pointer())
+	if function == nil {
+		return "Unknown"
+	}
+
+	full := function.Name() // returns the full package path + . + function name
+	parts := strings.Split(full, ".")
+	return parts[len(parts)-1]
+}
+
+// Run executes a task with panic / error reports.
 func (execute Executor) Run(app *state.State, logger *slog.Logger) (err error) {
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			app.Officer.CallPanic(recovered, discord.Field{Name: "Service", Value: "jobs"})
 			err = fmt.Errorf("task panicked: %v", recovered)
+			if app.Officer == nil {
+				return
+			}
+			app.Officer.CallPanic(
+				recovered,
+				discord.Field{Name: "Service", Value: "jobs", Inline: true},
+				discord.Field{Name: "Task", Value: execute.Name(), Inline: true},
+			)
+			return
+		}
+
+		if err != nil && app.Officer != nil {
+			embed := discord.Embed{Title: new("Task Failed"), Color: new(0xFF0000)}
+			embed.AddField("Error", err.Error(), false)
+			embed.AddField("Service", "jobs", true)
+			embed.AddField("Task", execute.Name(), true)
+			app.Officer.Call(discord.OfficerTagGeneral, "", embed)
 		}
 	}()
 
