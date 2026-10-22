@@ -23,7 +23,7 @@ func RunSingleTask(app *state.State, name string, interval int, intervalAt strin
 	}
 
 	app.Logger.Info("Running task", "name", name)
-	if err = taskFunc(app, app.Logger); err != nil {
+	if err = taskFunc.Run(app, app.Logger); err != nil {
 		return fmt.Errorf("task failed: %w", err)
 	}
 

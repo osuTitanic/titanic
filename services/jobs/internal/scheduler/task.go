@@ -3,15 +3,29 @@
 package scheduler
 
 import (
+	"fmt"
 	"log/slog"
 	"time"
 
+	"github.com/osuTitanic/titanic/internal/discord"
 	"github.com/osuTitanic/titanic/internal/state"
 )
 
 // Executor is a function that performs the task.
 // It receives the application state and a logger as arguments.
 type Executor func(state *state.State, logger *slog.Logger) error
+
+// Run executes a task with panic handling
+func (execute Executor) Run(app *state.State, logger *slog.Logger) (err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			app.Officer.CallPanic(recovered, discord.Field{Name: "Service", Value: "jobs"})
+			err = fmt.Errorf("task panicked: %v", recovered)
+		}
+	}()
+
+	return execute(app, logger)
+}
 
 // Task consists of a Schedule and an Executor to be executed on that schedule.
 type Task struct {

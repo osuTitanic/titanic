@@ -126,14 +126,8 @@ func (c *Scheduler) runTask(app *state.State, task *Task) {
 		task.Logger = slog.Default().With("component", "tasks")
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			task.Logger.Error("task panicked", slog.Any("panic", r))
-		}
-	}()
-
-	err := task.Executor(app, task.Logger)
+	err := task.Executor.Run(app, task.Logger)
 	if err != nil {
-		task.Logger.Error("task failed", slog.String("error", err.Error()))
+		task.Logger.Error("task failed", "error", err.Error())
 	}
 }
