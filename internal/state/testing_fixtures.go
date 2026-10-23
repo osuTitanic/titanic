@@ -4,7 +4,6 @@ package state
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -221,10 +220,8 @@ func (data *TestData) CreateRelease(opts ...FixtureOption[schemas.Release]) *sch
 		Version:     sequence,
 		Description: "osu!auth.dll spyware update)))",
 		Category:    "Unstable",
-		Supported:   true,
-		Downloads:   pq.StringArray{fmt.Sprintf("https://example.com/releases/%d.zip", sequence)},
-		Screenshots: pq.StringArray{},
-		Hashes:      json.RawMessage("[]"),
+		DownloadUrl: new(fmt.Sprintf("https://example.com/releases/%d.zip", sequence)),
+		Checksums:   pq.StringArray{},
 		CreatedAt:   testDataTime(sequence),
 	}
 	applyFixtureOptions(release, opts)

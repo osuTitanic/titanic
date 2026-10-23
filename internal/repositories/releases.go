@@ -39,10 +39,8 @@ func (r *ReleaseRepository) Exists(version int, checksum string) (bool, error) {
 	err := r.db.Raw(`
 		SELECT EXISTS (
 			SELECT 1
-			FROM releases_titanic AS release,
-				jsonb_array_elements(release.hashes) AS file,
-				jsonb_array_elements_text(COALESCE(file->'md5', '[]'::jsonb)) AS hash
-			WHERE release.version = ? AND hash = ?
+			FROM releases_titanic AS release
+			WHERE release.version = ? AND ? = ANY(release.checksums)
 		)
 	`, version, strings.TrimSpace(checksum)).Scan(&exists).Error
 	return exists, err

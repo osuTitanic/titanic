@@ -71,14 +71,14 @@
     <p class="description">{{ .Description }}</p>
     {{ end }}
 
-    {{ if .Screenshots }}
+    {{ if .Screenshot }}
     <div style="text-align: center">
-        <img src="{{ .PrimaryScreenshotUrl() }}" alt="" loading="lazy">
+        <img src="{{ .Screenshot }}" alt="" loading="lazy">
     </div>
     {{ end }}
 
-    {{ if .Downloads }}
-    <a class="download-link" href="{{ .PrimaryDownloadUrl() }}">Download</a>
+    {{ if .DownloadUrl }}
+    <a class="download-link" href="{{ .DownloadUrl }}">Download</a>
     {{ end }}
 </div>
 {{ end }}

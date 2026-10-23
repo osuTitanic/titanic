@@ -1,7 +1,6 @@
 package schemas
 
 import (
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -9,48 +8,30 @@ import (
 )
 
 type Release struct {
-	Name        string          `gorm:"column:name;primaryKey"`
-	Version     int             `gorm:"column:version"`
-	Description string          `gorm:"column:description;default:"`
-	Category    string          `gorm:"column:category;default:Uncategorized"`
-	KnownBugs   *string         `gorm:"column:known_bugs"`
-	Supported   bool            `gorm:"column:supported;default:true"`
-	Preview     bool            `gorm:"column:preview;default:false"`
-	Downloads   pq.StringArray  `gorm:"column:downloads;type:text[];default:'{}'"`
-	Screenshots pq.StringArray  `gorm:"column:screenshots;type:text[];default:'{}'"`
-	Hashes      json.RawMessage `gorm:"column:hashes;type:jsonb;default:'[]'"`
-	CreatedAt   time.Time       `gorm:"column:created_at;autoCreateTime"`
+	Name        string         `gorm:"column:name;primaryKey"`
+	Version     int            `gorm:"column:version"`
+	Description string         `gorm:"column:description;default:"`
+	Category    string         `gorm:"column:category;default:Uncategorized"`
+	KnownBugs   *string        `gorm:"column:known_bugs"`
+	Preview     bool           `gorm:"column:preview;default:false"`
+	DownloadUrl *string        `gorm:"column:download_url"`
+	Screenshot  *string        `gorm:"column:screenshot"`
+	Checksums   pq.StringArray `gorm:"column:checksums;type:varchar[];default:'{}'"`
+	CreatedAt   time.Time      `gorm:"column:created_at;autoCreateTime"`
 }
 
 func (Release) TableName() string {
 	return "releases_titanic"
 }
 
-func (r *Release) PrimaryDownloadUrl() string {
-	if r == nil || len(r.Downloads) == 0 {
-		return ""
-	}
-	return r.Downloads[0]
-}
-
-func (r *Release) PrimaryScreenshotUrl() string {
-	if r == nil || len(r.Screenshots) == 0 {
-		return ""
-	}
-	return r.Screenshots[0]
-}
-
 func (r *Release) IsDisplayable() bool {
 	if r == nil {
-		return false
-	}
-	if !r.Supported {
 		return false
 	}
 	if r.Preview {
 		return false
 	}
-	if len(r.Downloads) == 0 {
+	if r.DownloadUrl == nil {
 		return false
 	}
 	return true
@@ -63,6 +44,7 @@ type ModdedRelease struct {
 	TopicId         int       `gorm:"column:topic_id"`
 	ClientVersion   int       `gorm:"column:client_version"`
 	ClientExtension string    `gorm:"column:client_extension"`
+	Screenshot      *string   `gorm:"column:screenshot"`
 	CreatedAt       time.Time `gorm:"column:created_at;autoCreateTime"`
 
 	Creator *User       `gorm:"foreignKey:CreatorId;references:Id"`
