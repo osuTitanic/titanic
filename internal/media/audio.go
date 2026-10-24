@@ -12,7 +12,7 @@ import (
 
 // ExtractAudioSnippet extracts a snippet from the audio byte
 // slice, compresses it, and saves it into an MP3 file.
-func ExtractAudioSnippet(audioData []byte, offset int, duration int, bitrate int) ([]byte, error) {
+func ExtractAudioSnippet(audioData []byte, offset float64, duration float64, bitrate int) ([]byte, error) {
 	beatmapAudio, err := os.CreateTemp("", ".tmp-audio-*")
 	if err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ func ExtractAudioSnippet(audioData []byte, offset int, duration int, bitrate int
 
 // ExtractAudioSnippetFromReader extracts a snippet from the reader
 // compresses it, and saves it into an MP3 file.
-func ExtractAudioSnippetFromReader(audioReader io.Reader, offset int, duration int, bitrate int) ([]byte, error) {
+func ExtractAudioSnippetFromReader(audioReader io.Reader, offset float64, duration float64, bitrate int) ([]byte, error) {
 	beatmapAudio, err := os.CreateTemp("", ".tmp-audio-*")
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func ExtractAudioSnippetFromReader(audioReader io.Reader, offset int, duration i
 
 // ExtractAudioSnippetFromReader extracts a snippet from the audio
 // filepath compresses it, and saves it into an MP3 file.
-func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bitrate int) (result []byte, err error) {
+func ExtractAudioSnippetFromPath(inputPath string, offset float64, duration float64, bitrate int) (result []byte, err error) {
 	if offset < 0 {
 		// Use ~40% of audio duration as offset by default
 		offset, err = defaultOffset(inputPath)
@@ -68,7 +68,9 @@ func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bit
 	outputPath := inputPath + ".preview.mp3"
 	defer os.Remove(outputPath)
 
-	inputArgs := ffmpeg.KwArgs{"ss": offset}
+	inputArgs := ffmpeg.KwArgs{
+		"ss": offset,
+	}
 	outputArgs := ffmpeg.KwArgs{
 		"t":      duration,
 		"ab":     bitrate,
@@ -98,7 +100,7 @@ func ExtractAudioSnippetFromPath(inputPath string, offset int, duration int, bit
 	return io.ReadAll(file)
 }
 
-func defaultOffset(filename string) (int, error) {
+func defaultOffset(filename string) (float64, error) {
 	probe, err := ffmpeg.Probe(filename)
 	if err != nil {
 		return 0, fmt.Errorf("probe audio duration: %w", err)
@@ -117,5 +119,5 @@ func defaultOffset(filename string) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("parse audio duration: %w", err)
 	}
-	return int(duration / 2.5), nil
+	return duration / 2.5, nil
 }

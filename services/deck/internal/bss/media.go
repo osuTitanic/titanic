@@ -71,9 +71,9 @@ func (submission *SubmissionContext) GenerateAudioPreview(source fs.FS) ([]byte,
 
 	// Beatmaps with an unspecified preview time
 	// will receive one around 40% into the song
-	previewTime := -1
+	previewTime := -1.0
 	if beatmap.PreviewTime >= 0 {
-		previewTime = int(beatmap.PreviewTime / 1000)
+		previewTime = float64(beatmap.PreviewTime) / 1000
 	}
 
 	preview, err := media.ExtractAudioSnippetFromReader(
