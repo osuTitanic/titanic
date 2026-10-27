@@ -64,17 +64,25 @@ func UserProfile(ctx *server.Context) {
 		return
 	}
 
-	var infringements []*schemas.Infringement
-	if user.Restricted {
-		// TODO: maybe we should still limit the amount of infringements
-		infringements, err = ctx.State.Repositories.Infringements.ManyByUserId(user.Id)
-	} else {
-		infringements, err = ctx.State.Repositories.Infringements.ManyByUserIdUntil(user.Id, infringementWindow)
-	}
+	infringements, err := ctx.State.Repositories.Infringements.ManyByUserIdUntil(user.Id, infringementWindow)
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch user infringements", "user", user.Id, "error", err)
 		InternalServerError(ctx)
 		return
+	}
+
+	var infringementsAll []*schemas.Infringement
+	if ctx.Permissions().IsModerator() {
+		infringementsAll, err = ctx.State.Repositories.Infringements.ManyByUserId(user.Id)
+		if err != nil {
+			ctx.Logger.Error("Failed to fetch moderation infringements", "user", user.Id, "error", err)
+			InternalServerError(ctx)
+			return
+		}
+		if user.Restricted {
+			// Let moderators view all infringements in the Account Standing as well
+			infringements = infringementsAll
+		}
 	}
 
 	online, err := ctx.State.BanchoUsers.Exists(
@@ -115,21 +123,27 @@ func UserProfile(ctx *server.Context) {
 	// tabs are fetched on demand via their partials.
 	general := buildUserGeneralTab(ctx, user, mode)
 
+	// Sort name changes to be in the right order
+	slices.SortFunc(user.Names, func(a, b *schemas.Name) int {
+		return b.ChangedAt.Compare(a.ChangedAt)
+	})
+
 	view := templates.UserProfileView{
-		DefaultView:   buildDefaultViewWithPermissions(ctx),
-		User:          user,
-		Mode:          mode,
-		IsOnline:      online,
-		Followers:     followers,
-		TotalPosts:    totalPosts,
-		PPRank:        general.PPRank,
-		PPRankCountry: general.PPRankCountry,
-		CurrentAdded:  currentAdded,
-		TargetAdded:   targetAdded,
-		IsBlocked:     isBlocked,
-		SuperFriendly: slices.Contains(ctx.State.Config.SuperFriendlyUsers, user.Id),
-		Infringements: infringements,
-		General:       general,
+		DefaultView:      buildDefaultViewWithPermissions(ctx),
+		User:             user,
+		Mode:             mode,
+		IsOnline:         online,
+		Followers:        followers,
+		TotalPosts:       totalPosts,
+		PPRank:           general.PPRank,
+		PPRankCountry:    general.PPRankCountry,
+		CurrentAdded:     currentAdded,
+		TargetAdded:      targetAdded,
+		IsBlocked:        isBlocked,
+		SuperFriendly:    slices.Contains(ctx.State.Config.SuperFriendlyUsers, user.Id),
+		Infringements:    infringements,
+		InfringementsAll: infringementsAll,
+		General:          general,
 	}
 	ctx.RenderTemplate(http.StatusOK, "pages/public/user", view)
 }

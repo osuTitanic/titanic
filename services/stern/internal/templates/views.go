@@ -112,19 +112,28 @@ type VerificationView struct {
 
 type UserProfileView struct {
 	DefaultView
-	User          *schemas.User
-	Mode          constants.Mode
-	IsOnline      bool
-	Followers     int
-	TotalPosts    int
-	PPRank        int
-	PPRankCountry int
-	CurrentAdded  bool // current user friended this profile
-	TargetAdded   bool // profile friended current user
-	IsBlocked     bool
-	SuperFriendly bool
-	General       *UserGeneralTab
-	Infringements []*schemas.Infringement
+	User             *schemas.User
+	Mode             constants.Mode
+	IsOnline         bool
+	Followers        int
+	TotalPosts       int
+	PPRank           int
+	PPRankCountry    int
+	CurrentAdded     bool // current user friended this profile
+	TargetAdded      bool // profile friended current user
+	IsBlocked        bool
+	SuperFriendly    bool
+	General          *UserGeneralTab
+	Infringements    []*schemas.Infringement
+	InfringementsAll []*schemas.Infringement
+}
+
+func (v UserProfileView) InfringementDurationMinutes(infringement *schemas.Infringement) int {
+	if infringement.Length == nil {
+		return 0
+	}
+	duration := infringement.Length.Sub(infringement.Time)
+	return max(0, int(duration/time.Minute))
 }
 
 func (v UserProfileView) IsOwnProfile() bool {
