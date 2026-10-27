@@ -972,6 +972,7 @@ body {
 
 #moderation-badges,
 #moderation-stamps,
+#moderation-names,
 #moderation-infringements {
     width: 860px;
     max-width: calc(100% - 40px);

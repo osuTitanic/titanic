@@ -943,7 +943,7 @@
 
 {*
     Moderator-only sidebar for user management.
-    Includes profile edits, badges, stamps, and infringements.
+    Includes profile edits, badges, stamps, names, and infringements.
 *}
 {{ block userModerationPanel() }}
 {{ user := .User }}
@@ -1114,8 +1114,70 @@
         </form>
     </dialog>
 
-    {* Infringements (rows populated dynamically via js) *}
-    <button type="button" onclick="moderationOpenInfringements({{ user.Id }})">
+    {* Name changes & history *}
+    <button type="button" onclick="document.getElementById('moderation-names').showModal()">
+        <i class="icon-edit"></i> Manage names
+    </button>
+    <dialog id="moderation-names" class="popup moderation-dialog" aria-labelledby="moderation-names-title">
+        <form method="dialog" onsubmit="moderationChangeName({{ user.Id }}); return false;">
+            <h2 id="moderation-names-title" class="moderation-dialog-title"><i class="icon-edit"></i> Manage names</h2>
+            <div class="moderation-dialog-content">
+                <p style="float: left; padding-top: 5px">
+                    <strong>Current name</strong>: {{ user.Name }}
+                </p>
+                <div class="form-row" style="float: right; width: 60%">
+                    <label for="moderation-new-name">New name</label>
+                    <input type="text" id="moderation-new-name" name="name" />
+                    <button type="submit" class="confirm-button">Change</button>
+                </div>
+                <div style="clear: both;"></div>
+                <br>
+
+                <h3>Previous names</h3>
+                <p>Editing or deleting history does not change the current name</p>
+                <br>
+                <div class="moderation-table-wrap">
+                    <table class="moderation-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" style="width: 25%">Changed at</th>
+                                <th scope="col" style="width: 40%">Previous name</th>
+                                <th scope="col" style="width: 10%">Reserved</th>
+                                <th scope="col" class="moderation-actions-cell" style="width: 25%; text-align: right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{ range _, name := user.Names }}
+                            <tr data-name-id="{{ name.Id }}">
+                                <td>
+                                    {{ name.ChangedAt.Format("2006-01-02 15:04:05") }} UTC
+                                </td>
+                                <td>
+                                    <input type="text" id="name-value-{{ name.Id }}" value="{{ name.Name }}" aria-label="Previous name" style="width:100%" />
+                                </td>
+                                <td class="moderation-checkbox-cell">
+                                    <input type="checkbox" id="name-reserved-{{ name.Id }}" aria-label="Reserved name" {{ if name.Reserved }}checked{{ end }} />
+                                </td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateName({{ user.Id }}, {{ name.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="if(confirm('Delete this previous name from history?')) moderationDeleteName({{ user.Id }}, {{ name.Id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ else }}
+                            <tr><td colspan="4">No previous names</td></tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions form-actions-left">
+                    <button type="button" class="grey-button" onclick="document.getElementById('moderation-names').close()">Close</button>
+                </div>
+            </div>
+        </form>
+    </dialog>
+
+    {* Infringements *}
+    <button type="button" onclick="document.getElementById('moderation-infringements').showModal()">
         <i class="icon-warning-sign"></i> Edit infringements
     </button>
     <dialog id="moderation-infringements" class="popup moderation-dialog">
@@ -1134,7 +1196,32 @@
                                 <th class="moderation-actions-cell" style="width: 10%">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="moderation-infringements-body">
+                        <tbody>
+                            {{ range _, infringement := .InfringementsAll }}
+                            <tr data-infringement-id="{{ infringement.Id }}">
+                                <td>
+                                    {{ infringement.Time.Format("2006-01-02 15:04:05") }} UTC
+                                </td>
+                                <td>
+                                    {{ infringement.Action == 0 ? "Restrict" : "Silence" }}
+                                </td>
+                                <td>
+                                    <input type="number" id="infringement-duration-{{ infringement.Id }}" min="0" value="{{ .InfringementDurationMinutes(infringement) }}" aria-label="Duration in minutes" style="width: 100%" />
+                                </td>
+                                <td class="moderation-checkbox-cell">
+                                    <input type="checkbox" id="infringement-permanent-{{ infringement.Id }}" aria-label="Permanent" {{ if infringement.IsPermanent }}checked{{ end }} />
+                                </td>
+                                <td>
+                                    <input type="text" id="infringement-desc-{{ infringement.Id }}" value="{{ infringement.DescriptionText() }}" aria-label="Description" style="width:100%" />
+                                </td>
+                                <td class="moderation-actions-cell">
+                                    <button type="button" onclick="moderationUpdateInfringement({{ user.Id }}, {{ infringement.Id }})">Update</button>
+                                    <button type="button" class="danger-button" onclick="moderationDeleteInfringement({{ user.Id }}, {{ infringement.Id }}, {{ infringement.Action == 0 }})">Delete</button>
+                                </td>
+                            </tr>
+                            {{ else }}
+                            <tr><td colspan="6">No infringements so far</td></tr>
+                            {{ end }}
                             <tr id="infringement-new-row" class="moderation-new-row">
                                 <td></td>
                                 <td>
@@ -1155,7 +1242,6 @@
                 </div>
                 <div class="form-actions form-actions-left">
                     <button type="button" class="grey-button" onclick="document.getElementById('moderation-infringements').close()">Close</button>
-                    <div id="moderation-loader" class="loader" style="display: none"></div>
                 </div>
             </div>
         </form>

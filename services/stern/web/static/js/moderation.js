@@ -211,15 +211,46 @@ function removeStamp(userId, stampId, onSuccess, onFailure) {
     );
 }
 
-function getUserInfringements(userId, onSuccess, onFailure) {
+function changeUserName(userId, name, onSuccess, onFailure) {
     performApiRequest(
-        "GET",
-        "/moderation/users/" + userId + "/infringements",
+        "POST",
+        "/moderation/users/" + userId + "/names",
+        { name: name },
+        function (xhr) {
+            if (onSuccess) {
+                onSuccess(JSON.parse(xhr.responseText));
+            }
+        },
+        function (xhr) {
+            return handleApiErrorCallback(xhr, onFailure);
+        }
+    );
+}
+
+function updateUserNameHistory(userId, nameId, nameData, onSuccess, onFailure) {
+    performApiRequest(
+        "PATCH",
+        "/moderation/users/" + userId + "/names/" + nameId,
+        nameData,
+        function (xhr) {
+            if (onSuccess) {
+                onSuccess(JSON.parse(xhr.responseText));
+            }
+        },
+        function (xhr) {
+            return handleApiErrorCallback(xhr, onFailure);
+        }
+    );
+}
+
+function deleteUserNameHistory(userId, nameId, onSuccess, onFailure) {
+    performApiRequest(
+        "DELETE",
+        "/moderation/users/" + userId + "/names/" + nameId,
         null,
         function (xhr) {
-            var infringements = JSON.parse(xhr.responseText);
             if (onSuccess) {
-                onSuccess(infringements);
+                onSuccess(JSON.parse(xhr.responseText));
             }
         },
         function (xhr) {
@@ -411,16 +442,6 @@ function hideModerationLoader() {
     moderationLoaderOverlay = null;
 }
 
-function showSpinner() {
-    var el = document.getElementById("moderation-loader");
-    if (el) el.style.display = "block";
-}
-
-function hideSpinner() {
-    var el = document.getElementById("moderation-loader");
-    if (el) el.style.display = "none";
-}
-
 function runModerationQuickAction(action) {
     var request = action(
         function () {
@@ -606,62 +627,21 @@ function moderationAddStamp(userId) {
     );
 }
 
-function moderationOpenInfringements(userId) {
-    showSpinner();
-
-    // Show dialog immediately & load data
-    document.getElementById("moderation-infringements").showModal();
-    var body = document.getElementById("moderation-infringements-body");
-
-    // Remove existing rows except the new-row
-    var rows = Array.from(body.querySelectorAll("tr"));
-    $.each(rows, function (i, r) {
-        if (r.id !== "infringement-new-row") r.remove();
-    });
-
-    getUserInfringements(
-        userId,
-        function (infringements) {
-            infringements.sort(function (a, b) {
-                return new Date(b.time) - new Date(a.time);
-            });
-
-            $.each(infringements, function (i, inf) {
-                body.insertBefore(
-                    createInfringementElement(inf, userId),
-                    document.getElementById("infringement-new-row")
-                );
-            });
-            hideSpinner();
-        },
-        function (err) {
-            hideSpinner();
-            alert("Failed to load infringements: " + (err && err.details ? err.details : "Unknown error"));
-        }
-    );
-}
-
 function moderationUpdateInfringement(userId, infringementId) {
-    var row = document.querySelector('tr[data-infringement-id="' + infringementId + '"]');
-    if (!row) return alert("Row not found");
-
     var data = {
-        duration: (parseInt(row.elements.duration.value, 10) || 0) * 60,
-        description: row.elements.description.value || null,
-        is_permanent: !!row.elements.isPermanent.checked
+        duration: (parseInt(document.getElementById("infringement-duration-" + infringementId).value, 10) || 0) * 60,
+        description: document.getElementById("infringement-desc-" + infringementId).value || null,
+        is_permanent: !!document.getElementById("infringement-permanent-" + infringementId).checked
     };
-    showSpinner();
 
     updateUserInfringement(
         userId,
         infringementId,
         data,
         function (updated) {
-            hideSpinner();
-            moderationOpenInfringements(userId);
+            reloadPageSoon(250);
         },
         function (err) {
-            hideSpinner();
             alert("Failed to update infringement: " + (err && err.details ? err.details : "Unknown error"));
         }
     );
@@ -669,20 +649,15 @@ function moderationUpdateInfringement(userId, infringementId) {
 
 function moderationDeleteInfringement(userId, infringementId, isRestriction) {
     var restoreScores = isRestriction ? confirm("Do you want to restore the user scores & stats?") : false;
-    showSpinner();
 
     deleteUserInfringement(
         userId,
         infringementId,
         restoreScores,
         function () {
-            hideSpinner();
-            var row = document.querySelector('tr[data-infringement-id="' + infringementId + '"]');
-            if (row) row.remove();
-            else reloadPageSoon(250);
+            reloadPageSoon(250);
         },
         function (err) {
-            hideSpinner();
             alert("Failed to delete infringement: " + (err && err.details ? err.details : "Unknown error"));
         }
     );
@@ -700,106 +675,73 @@ function moderationAddInfringement(userId) {
         description: description,
         is_permanent: is_permanent
     };
-    showSpinner();
 
     createUserInfringement(
         userId,
         data,
         function (created) {
-            hideSpinner();
-            moderationOpenInfringements(userId);
+            reloadPageSoon(250);
         },
         function (err) {
-            hideSpinner();
             alert("Failed to add infringement: " + (err && err.details ? err.details : "Unknown error"));
         }
     );
 }
 
-function createInfringementElement(inf, userId) {
-    var infringementRow = document.createElement("tr");
-    infringementRow.setAttribute("data-infringement-id", inf.id);
+function moderationChangeName(userId) {
+    var name = document.getElementById("moderation-new-name").value.trim();
+    if (!name) {
+        alert("Enter a new name.");
+        return;
+    }
+    if (!confirm("Change this user's name to " + name + "?")) {
+        return;
+    }
 
-    var timeTd = document.createElement("td");
-    var timestamp = new Date(inf.time);
-    timeTd.textContent = isNaN(timestamp.getTime()) ? "" : timestamp.toLocaleString();
+    changeUserName(
+        userId,
+        name,
+        function () {
+            reloadPageSoon(250);
+        },
+        function (err) {
+            alert("Failed to change name: " + err.details);
+        }
+    );
+}
 
-    var actionTd = document.createElement("td");
-    var moderationSelect = document.createElement("select");
-    moderationSelect.style.width = "100%";
-
-    var optionRestrict = document.createElement("option");
-    optionRestrict.value = "0";
-    optionRestrict.text = "Restrict";
-
-    var optionSilence = document.createElement("option");
-    optionSilence.value = "1";
-    optionSilence.text = "Silence";
-
-    moderationSelect.add(optionRestrict);
-    moderationSelect.add(optionSilence);
-    moderationSelect.value = String(inf.action);
-
-    var durationTd = document.createElement("td");
-    var durationInput = document.createElement("input");
-    var durationEnd = new Date(inf.length);
-    var length = Math.floor((durationEnd.getTime() - timestamp.getTime()) / 60000);
-    durationInput.type = "number";
-    durationInput.min = 0;
-    durationInput.style.width = "100%";
-    durationInput.value = Math.max(0, length);
-
-    var isPermanentTd = document.createElement("td");
-    isPermanentTd.className = "moderation-checkbox-cell";
-    var isPermanentCheckbox = document.createElement("input");
-    isPermanentCheckbox.type = "checkbox";
-    isPermanentCheckbox.checked = !!inf.is_permanent;
-
-    var descriptionTd = document.createElement("td");
-    var descriptionInput = document.createElement("input");
-    descriptionInput.type = "text";
-    descriptionInput.style.width = "100%";
-    descriptionInput.value = inf.description || "";
-
-    var actionsTd = document.createElement("td");
-    actionsTd.className = "moderation-actions-cell";
-
-    var updBtn = document.createElement("button");
-    updBtn.type = "button";
-    updBtn.textContent = "Update";
-    updBtn.onclick = function () {
-        moderationUpdateInfringement(userId, inf.id);
+function moderationUpdateName(userId, nameId) {
+    var data = {
+        name: document.getElementById("name-value-" + nameId).value.trim(),
+        reserved: document.getElementById("name-reserved-" + nameId).checked
     };
+    if (!data.name) {
+        alert("Previous name cannot be empty.");
+        return;
+    }
 
-    var delBtn = document.createElement("button");
-    delBtn.type = "button";
-    delBtn.textContent = "Delete";
-    delBtn.className = "danger-button";
-    delBtn.onclick = function () {
-        if (confirm("Delete this infringement?")) moderationDeleteInfringement(userId, inf.id, inf.action === 0);
-    };
+    updateUserNameHistory(
+        userId,
+        nameId,
+        data,
+        function () {
+            reloadPageSoon(250);
+        },
+        function (err) {
+            alert("Failed to update name history: " + err.details);
+        }
+    );
+}
 
-    actionTd.appendChild(moderationSelect);
-    durationTd.appendChild(durationInput);
-    isPermanentTd.appendChild(isPermanentCheckbox);
-    descriptionTd.appendChild(descriptionInput);
-    actionsTd.appendChild(updBtn);
-    actionsTd.appendChild(delBtn);
-
-    infringementRow.appendChild(timeTd);
-    infringementRow.appendChild(actionTd);
-    infringementRow.appendChild(durationTd);
-    infringementRow.appendChild(isPermanentTd);
-    infringementRow.appendChild(descriptionTd);
-    infringementRow.appendChild(actionsTd);
-
-    // Store references for later retrieval
-    infringementRow.elements = {
-        action: moderationSelect,
-        duration: durationInput,
-        isPermanent: isPermanentCheckbox,
-        description: descriptionInput
-    };
-
-    return infringementRow;
+function moderationDeleteName(userId, nameId) {
+    deleteUserNameHistory(
+        userId,
+        nameId,
+        function () {
+            reloadPageSoon(250);
+        },
+        function (err) {
+            alert("Failed to delete name history: " + err.details);
+        }
+    );
 }
