@@ -796,7 +796,7 @@
     statuses, force-nomination and resource uploads.
 *}
 {{ block batControls() }}
-{{ if .Permissions.IsBat() }}
+{{ if .Permissions.IsBat() || .Permissions.IsModerator() }}
 <div class="beatmap-settings">
     <div class="spoiler">
         <div class="spoiler-head" onclick="return toggleBeatmapPanel(this, 'bat');">BAT Controls</div>
