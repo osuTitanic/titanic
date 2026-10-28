@@ -429,15 +429,17 @@ func (data *TestData) CreateBeatmapModding(target *schemas.User, sender *schemas
 	return modding
 }
 
-func (data *TestData) CreateMessage(opts ...FixtureOption[schemas.Message]) *schemas.Message {
+func (data *TestData) CreateMessage(sender *schemas.User, opts ...FixtureOption[schemas.Message]) *schemas.Message {
 	data.t.Helper()
+	data.requireUser(sender)
 
 	sequence := data.next()
 	message := &schemas.Message{
-		Target:  "#osu",
-		Sender:  fmt.Sprintf("TestUser%d", sequence),
-		Message: fmt.Sprintf("Test chat message %d", sequence),
-		Time:    testDataTime(sequence),
+		Target:   "#osu",
+		Sender:   sender.Name,
+		SenderId: new(sender.Id),
+		Message:  fmt.Sprintf("Test chat message %d", sequence),
+		Time:     testDataTime(sequence),
 	}
 	applyFixtureOptions(message, opts)
 	data.create(message)

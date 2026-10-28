@@ -427,9 +427,7 @@ func populateWebsiteData(t *testing.T, app *state.State, fixtures *state.TestDat
 		stats.Tscore = 98765432
 	})
 	fixtures.CreateRelease()
-	fixtures.CreateMessage(func(message *schemas.Message) {
-		message.Sender = user.Name
-	})
+	fixtures.CreateMessage(user)
 	fixtures.CreateRelationship(user, friend)
 	fixtures.CreateRelationship(friend, user)
 
