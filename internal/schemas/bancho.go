@@ -42,10 +42,12 @@ func (Channel) TableName() string {
 type Message struct {
 	Id       int       `gorm:"column:id;primaryKey;autoIncrement"`
 	Sender   string    `gorm:"column:sender"` // TODO: Remove sender after we migrated all sender IDs
-	SenderId *int      `gorm:"column:sender_id"`
+	SenderId int       `gorm:"column:sender_id"`
 	Target   string    `gorm:"column:target"`
 	Message  string    `gorm:"column:message"`
 	Time     time.Time `gorm:"column:time;autoCreateTime"`
+
+	User *User `gorm:"foreignKey:SenderId;references:Id"`
 }
 
 func (Message) TableName() string {

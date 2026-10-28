@@ -51,21 +51,21 @@ func (r *MessageRepository) UpdatePrivateAll(updates *schemas.DirectMessage, col
 	return result.RowsAffected, result.Error
 }
 
-func (r *MessageRepository) FetchRecent(target string, limit int, offset int) ([]*schemas.Message, error) {
+func (r *MessageRepository) FetchRecent(target string, limit int, offset int, preload ...string) ([]*schemas.Message, error) {
 	var messages []*schemas.Message
-	err := r.db.Where("target = ?", target).Order("id DESC").Offset(offset).Limit(limit).Find(&messages).Error
+	err := Preloaded(r.db, preload).Where("target = ?", target).Order("id DESC").Offset(offset).Limit(limit).Find(&messages).Error
 	return messages, err
 }
 
-func (r *MessageRepository) FetchBySender(sender string, limit int, offset int) ([]*schemas.Message, error) {
+func (r *MessageRepository) FetchBySender(senderId int, limit int, offset int, preload ...string) ([]*schemas.Message, error) {
 	var messages []*schemas.Message
-	err := r.db.Where("sender = ?", sender).Order("id DESC").Offset(offset).Limit(limit).Find(&messages).Error
+	err := Preloaded(r.db, preload).Where("sender_id = ?", senderId).Order("id DESC").Offset(offset).Limit(limit).Find(&messages).Error
 	return messages, err
 }
 
-func (r *MessageRepository) FetchAllBySender(sender string) ([]*schemas.Message, error) {
+func (r *MessageRepository) FetchAllBySender(senderId int, preload ...string) ([]*schemas.Message, error) {
 	var messages []*schemas.Message
-	err := r.db.Where("sender = ?", sender).Order("id DESC").Find(&messages).Error
+	err := Preloaded(r.db, preload).Where("sender_id = ?", senderId).Order("id DESC").Find(&messages).Error
 	return messages, err
 }
 
