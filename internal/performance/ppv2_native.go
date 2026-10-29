@@ -260,8 +260,6 @@ func (service *PPv2ServiceNative) LoadBeatmap(beatmapId int) (*osunative.Beatmap
 	if err != nil {
 		return nil, constants.ModeOsu, fmt.Errorf("read beatmap %d: %w", beatmapId, err)
 	}
-	// TODO: Ensure this handling UTF-8-BOM properly
-	// 		 We could use dimchansky/utfbom for this -> io.ReadAll(utfbom.SkipOnly(stream))
 
 	beatmap, err := osunative.NewBeatmapFromText(string(data))
 	if err != nil {
