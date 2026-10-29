@@ -436,7 +436,6 @@ func (data *TestData) CreateMessage(sender *schemas.User, opts ...FixtureOption[
 	sequence := data.next()
 	message := &schemas.Message{
 		Target:   "#osu",
-		Sender:   sender.Name,
 		SenderId: sender.Id,
 		Message:  fmt.Sprintf("Test chat message %d", sequence),
 		Time:     testDataTime(sequence),

@@ -76,7 +76,7 @@ func fetchHomeNews(ctx *server.Context) []*schemas.ForumPost {
 }
 
 func fetchHomeChatMessages(ctx *server.Context) []*schemas.Message {
-	messages, err := ctx.State.Messages.FetchRecent(chatMessagesChannel, chatMessagesLimit, 0)
+	messages, err := ctx.State.Messages.FetchRecent(chatMessagesChannel, chatMessagesLimit, 0, "User")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch home chat messages", "error", err)
 		return []*schemas.Message{}

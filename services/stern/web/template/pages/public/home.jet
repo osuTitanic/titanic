@@ -91,7 +91,7 @@
         {{ range i, message := . }}
             <tr class="{{ if i % 2 == 1 }}row-dark{{ else }}row-light{{ end }}">
                 <td class="chat-time">{{ message.Time.Format("15:04:05") }}</td>
-                <td class="chat-message">{{ message.Sender }}: {{ message.Message }}</td>
+                <td class="chat-message">{{ message.User.Name }}: {{ message.Message }}</td>
             </tr>
         {{ end }}
         </tbody>
