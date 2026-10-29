@@ -153,7 +153,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(ctx context.Context, url st
 	}
 
 	ratelimitRemaining, hasRemaining := resolveHeaderInt(response, "X-Ratelimit-Remaining")
-	ratelimitReset, _ := resolveHeaderInt(response, "X-Ratelimit-Reset")
+	ratelimitReset := resolveHeaderRatelimit(response, "X-Ratelimit-Reset")
 
 	if hasRemaining && ratelimitRemaining <= 1 {
 		resolver.logger.Warn(
@@ -164,7 +164,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(ctx context.Context, url st
 	}
 
 	dailyRemaining, hasDaily := resolveHeaderInt(response, "X-Daily-Remaining")
-	dailyReset, _ := resolveHeaderInt(response, "X-Ratelimit-Daily-Reset")
+	dailyReset := resolveHeaderRatelimit(response, "X-Ratelimit-Daily-Reset")
 
 	if hasDaily && dailyRemaining <= 1 {
 		resolver.logger.Warn(
@@ -175,10 +175,7 @@ func (resolver *MirrorResolver) PerformMirrorRequest(ctx context.Context, url st
 	}
 
 	if response.StatusCode == http.StatusTooManyRequests {
-		retry, ok := resolveHeaderInt(response, "Retry-After")
-		if !ok {
-			retry = 120
-		}
+		retry := resolveHeaderRatelimit(response, "Retry-After")
 		resolver.logger.Warn(
 			"Rate limited on mirror",
 			"mirror", mirror.Url, "seconds", retry,
@@ -316,4 +313,67 @@ func resolveHeaderInt(response *http.Response, header string) (int, bool) {
 		return 0, false
 	}
 	return parsed, true
+}
+
+func resolveHeaderInt64(response *http.Response, header string) (int64, bool) {
+	value := response.Header.Get(header)
+	if value == "" {
+		return 0, false
+	}
+
+	parsed, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, false
+	}
+	return parsed, true
+}
+
+func resolveHeaderDate(response *http.Response, header string) (time.Time, bool) {
+	value := response.Header.Get(header)
+	if value == "" {
+		return time.Time{}, false
+	}
+
+	parsed, err := http.ParseTime(value)
+	if err != nil {
+		return time.Time{}, false
+	}
+	return parsed, true
+}
+
+func resolveHeaderDateSeconds(response *http.Response, header string) int {
+	reset, ok := resolveHeaderDate(response, header)
+	if !ok {
+		return 0
+	}
+
+	delay := time.Until(reset)
+	seconds := int(delay / time.Second)
+	if delay%time.Second > 0 {
+		seconds++
+	}
+	return seconds
+}
+
+func resolveHeaderRatelimit(response *http.Response, header string) int {
+	const defaultSeconds = 120
+	const maxSeconds = 7 * 24 * 60 * 60
+
+	// try to parse whatever the hell the server responds with
+	// could be a unix timestamp, regular seconds or a date string
+
+	seconds := resolveHeaderDateSeconds(response, header)
+	if seconds > 0 {
+		return int(min(int64(seconds), maxSeconds))
+	}
+
+	seconds, ok := resolveHeaderInt(response, header)
+	if !ok {
+		return defaultSeconds
+	}
+	if seconds <= 0 {
+		return defaultSeconds
+	}
+	// TODO: unix timestamps
+	return int(min(seconds, maxSeconds))
 }
