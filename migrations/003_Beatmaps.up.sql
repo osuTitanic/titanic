@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS beatmapsets
     has_video boolean NOT NULL DEFAULT false,
     has_storyboard boolean NOT NULL DEFAULT false,
     server smallint NOT NULL DEFAULT 0, -- 0: ppy 1: private
-    topic_id int REFERENCES forums (id) DEFAULT NULL, -- only if server is "private"
-    creator_id int REFERENCES users (id) DEFAULT NULL, -- only if server is "private"
+    topic_id int REFERENCES forum_topics (id) DEFAULT NULL,
+    creator_id int REFERENCES users (id) DEFAULT NULL,
     available boolean NOT NULL DEFAULT true,
     submission_date timestamp without time zone NOT NULL DEFAULT now(),
     approved_date timestamp without time zone,
