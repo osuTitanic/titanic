@@ -4,9 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"fmt"
-	"maps"
 	"net/http"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -69,26 +67,6 @@ func DirectSearch(ctx *server.Context) {
 		return
 	}
 
-	// another go moment. we don't have sets. lmao.
-	// TODO: add some kind of "Collect" method but with a filter function
-	topicIds := make(map[int]struct{}, len(beatmapsets))
-	for _, beatmapset := range beatmapsets {
-		if beatmapset.TopicId != nil {
-			topicIds[*beatmapset.TopicId] = struct{}{}
-		}
-	}
-
-	// TODO: I want initial post IDs to be part of the beatmapset schema itself
-	//		 one day, automatically updated by a postgres trigger
-	initialPostIds, err := ctx.State.ForumPosts.FetchInitialIdsByTopicIds(
-		slices.Collect(maps.Keys(topicIds)),
-	)
-	if err != nil {
-		ctx.Logger.Error("Failed to resolve forum posts", "error", err)
-		ctx.RenderText(http.StatusOK, directError("A server error occurred. Please try again!"))
-		return
-	}
-
 	ctx.Logger.Info(
 		"Processed osu!direct search request",
 		"user_id", userId,
@@ -97,7 +75,7 @@ func DirectSearch(ctx *server.Context) {
 	)
 	ctx.RenderText(
 		http.StatusOK,
-		formatDirectSearchResponse(beatmapsets, initialPostIds, supportsPageOffset),
+		formatDirectSearchResponse(beatmapsets, supportsPageOffset),
 	)
 }
 
@@ -155,17 +133,7 @@ func DirectSearchSet(ctx *server.Context) {
 		return
 	}
 
-	if beatmapset.TopicId == nil {
-		ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset, 0))
-		return
-	}
-
-	initialPostId, err := ctx.State.ForumPosts.FetchInitialIdByTopic(*beatmapset.TopicId)
-	if err != nil {
-		ctx.Response.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset, initialPostId))
+	ctx.RenderText(http.StatusOK, formatDirectBeatmap(beatmapset))
 }
 
 func authenticateDirectUser(ctx *server.Context) (*schemas.User, error) {
@@ -287,7 +255,7 @@ func applyDirectDisplayMode(options *repositories.BeatmapsetSearchOptions, displ
 	}
 }
 
-func formatDirectSearchResponse(beatmapsets []*schemas.Beatmapset, initialPostIds map[int]int64, supportsPageOffset bool) string {
+func formatDirectSearchResponse(beatmapsets []*schemas.Beatmapset, supportsPageOffset bool) string {
 	resultCount := len(beatmapsets)
 	if supportsPageOffset && resultCount >= directSearchLimit {
 		resultCount++
@@ -296,19 +264,13 @@ func formatDirectSearchResponse(beatmapsets []*schemas.Beatmapset, initialPostId
 	var response strings.Builder
 	response.WriteString(strconv.Itoa(resultCount))
 	for _, beatmapset := range beatmapsets {
-		// TODO: We eventually want the beatmapset itself to have the post ID
-		//		 We could auto-update it with postgres triggers and stuff yuh
-		postId := int64(0)
-		if beatmapset.TopicId != nil {
-			postId = initialPostIds[*beatmapset.TopicId]
-		}
 		response.WriteByte('\n')
-		response.WriteString(formatDirectBeatmap(beatmapset, postId))
+		response.WriteString(formatDirectBeatmap(beatmapset))
 	}
 	return response.String()
 }
 
-func formatDirectBeatmap(beatmapset *schemas.Beatmapset, postId int64) string {
+func formatDirectBeatmap(beatmapset *schemas.Beatmapset) string {
 	replacer := strings.NewReplacer(
 		"|", "",
 		"\n", "",
@@ -331,6 +293,11 @@ func formatDirectBeatmap(beatmapset *schemas.Beatmapset, postId int64) string {
 	topicId := 0
 	if beatmapset.TopicId != nil {
 		topicId = *beatmapset.TopicId
+	}
+
+	postId := int64(0)
+	if beatmapset.PostId != nil {
+		postId = *beatmapset.PostId
 	}
 
 	return strings.Join([]string{
