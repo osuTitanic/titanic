@@ -185,6 +185,16 @@ func (resolver *MirrorResolver) PerformMirrorRequest(ctx context.Context, url st
 		return nil
 	}
 
+	if response.StatusCode == http.StatusForbidden {
+		resolver.logger.Warn(
+			"Access forbidden on mirror",
+			"mirror", mirror.Url,
+		)
+		resolver.SetRatelimit(ctx, mirror.Url, 3600*24) // try again in a day
+		response.Body.Close()
+		return nil
+	}
+
 	if response.StatusCode < 200 || response.StatusCode >= 400 {
 		resolver.LogError(response.Request.URL.String(), response.StatusCode)
 		response.Body.Close()
