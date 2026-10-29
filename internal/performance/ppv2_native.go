@@ -403,7 +403,6 @@ func newDifficultyAttributes(mode constants.Mode, isConvert bool, attributes any
 }
 
 func nativePerformanceTotal(attributes any) (float64, error) {
-	// TODO: Check if we can `.(PerformanceAttributes).Total` here
 	switch value := attributes.(type) {
 	case *osunative.OsuPerformanceAttributes:
 		return value.Total, nil
