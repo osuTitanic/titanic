@@ -7,6 +7,8 @@ import (
 	"github.com/osuTitanic/titanic/internal/constants"
 )
 
+// TODO: Split achievements table into unlocked achievements & achievement definitions
+
 type Achievement struct {
 	UserId     int       `gorm:"column:user_id;primaryKey"`
 	Name       string    `gorm:"column:name;primaryKey"`
