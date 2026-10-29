@@ -65,6 +65,9 @@ func GetTopic(repositories *state.Repositories, beatmapset *schemas.Beatmapset) 
 	if beatmapset.TopicId == nil {
 		return contents, nil
 	}
+	if beatmapset.PostId == nil {
+		return contents, nil
+	}
 	topicId := *beatmapset.TopicId
 
 	topic, err := repositories.ForumTopics.ById(topicId)
@@ -75,7 +78,7 @@ func GetTopic(repositories *state.Repositories, beatmapset *schemas.Beatmapset) 
 		return contents, nil
 	}
 
-	firstPost, err := repositories.ForumPosts.FetchInitialByTopic(topic.Id)
+	firstPost, err := repositories.ForumPosts.ById(*beatmapset.PostId)
 	if err != nil {
 		return nil, fmt.Errorf("bss: fetch initial post for topic %d: %w", topic.Id, err)
 	}
@@ -206,14 +209,17 @@ func updateBeatmapTopic(
 	beatmapset *schemas.Beatmapset,
 	topic *schemas.ForumTopic,
 	post TopicPostUpdate,
-) error {
+) (err error) {
 	if topic == nil {
 		return errors.New("bss: topic is nil")
 	}
+	var firstPost *schemas.ForumPost
 
-	firstPost, err := transaction.ForumPosts.FetchInitialByTopic(topic.Id)
-	if err != nil {
-		return fmt.Errorf("bss: fetch initial post for topic %d: %w", topic.Id, err)
+	if beatmapset.PostId != nil {
+		firstPost, err = transaction.ForumPosts.ById(*beatmapset.PostId)
+		if err != nil {
+			return fmt.Errorf("bss: fetch initial post for topic %d: %w", topic.Id, err)
+		}
 	}
 
 	now := time.Now()
@@ -304,6 +310,17 @@ func applyTopicStateToBeatmapset(
 	); err != nil {
 		return fmt.Errorf("bss: update publication state for set %d: %w", beatmapset.Id, err)
 	}
+
+	// Postgres will automatically update the PostId for us
+	// Lets reload the beatmapset and update our local copy
+	updated, err := transaction.Beatmapsets.ById(beatmapset.Id)
+	if err != nil {
+		return fmt.Errorf("bss: reload publication state for set %d: %w", beatmapset.Id, err)
+	}
+	if updated == nil {
+		return fmt.Errorf("bss: beatmapset %d disappeared during publication", beatmapset.Id)
+	}
+	beatmapset.PostId = updated.PostId
 
 	beatmapUpdate := &schemas.Beatmap{
 		SetId:  beatmapset.Id,

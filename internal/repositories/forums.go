@@ -271,18 +271,6 @@ func (r *ForumPostRepository) FetchInitialByTopic(topicId int, preload ...string
 	return LookupResult(&post, err)
 }
 
-func (r *ForumPostRepository) FetchInitialIdByTopic(topicId int) (int64, error) {
-	var postId int64
-	err := r.db.Model(&schemas.ForumPost{}).
-		Select("id").
-		Where("topic_id = ?", topicId).
-		Where("hidden = ?", false).
-		Order("id ASC").
-		Limit(1).
-		Scan(&postId).Error
-	return postId, err
-}
-
 func (r *ForumPostRepository) FetchLastByTopic(topicId int, preload ...string) (*schemas.ForumPost, error) {
 	var post schemas.ForumPost
 	err := Preloaded(r.db, preload).
@@ -399,32 +387,6 @@ func (r *ForumPostRepository) FetchInitialByTopicIds(topicIds []int, preload ...
 		postsByTopic[post.TopicId] = post
 	}
 	return postsByTopic, nil
-}
-
-func (r *ForumPostRepository) FetchInitialIdsByTopicIds(topicIds []int) (map[int]int64, error) {
-	if len(topicIds) == 0 {
-		return map[int]int64{}, nil
-	}
-
-	var posts []struct {
-		TopicId int
-		PostId  int64
-	}
-	err := r.db.Model(&schemas.ForumPost{}).
-		Select("topic_id, MIN(id) AS post_id").
-		Where("topic_id IN ?", topicIds).
-		Where("hidden = ?", false).
-		Group("topic_id").
-		Scan(&posts).Error
-	if err != nil {
-		return nil, err
-	}
-
-	postIdsByTopic := make(map[int]int64, len(posts))
-	for _, post := range posts {
-		postIdsByTopic[post.TopicId] = post.PostId
-	}
-	return postIdsByTopic, nil
 }
 
 func (r *ForumPostRepository) FetchLastForForums(forumIds []int, preload ...string) (map[int]*schemas.ForumPost, error) {
