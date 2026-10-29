@@ -25,6 +25,7 @@ type Beatmapset struct {
 	Server             constants.BeatmapServer   `gorm:"column:server;default:0"`
 	DownloadServer     constants.BeatmapServer   `gorm:"column:download_server;default:0"`
 	TopicId            *int                      `gorm:"column:topic_id"`
+	PostId             *int64                    `gorm:"column:post_id;->"`
 	CreatorId          *int                      `gorm:"column:creator_id"`
 	Available          bool                      `gorm:"column:available;default:true"`
 	Enhanced           bool                      `gorm:"column:enhanced;default:false"`
@@ -53,6 +54,7 @@ type Beatmapset struct {
 	CreatorUser    *User                `gorm:"foreignKey:CreatorId;references:Id"`
 	ApprovedByUser *User                `gorm:"foreignKey:ApprovedBy;references:Id"`
 	Topic          *ForumTopic          `gorm:"foreignKey:TopicId;references:Id"`
+	Post           *ForumPost           `gorm:"foreignKey:PostId;references:Id"`
 	Beatmaps       []*Beatmap           `gorm:"foreignKey:SetId;references:Id"`
 	Stars          []*BeatmapsetStar    `gorm:"foreignKey:SetId;references:Id"`
 	Nominations    []*BeatmapNomination `gorm:"foreignKey:SetId;references:Id"`
