@@ -99,11 +99,27 @@ func (submission *SubmissionContext) ValidateBeatmapUniqueness(repositories *sta
 			continue
 		}
 
+		// Check if any other beatmap in this submission has the same filename
+		for _, other := range submission.Beatmaps {
+			if other.Target.Id == beatmap.Target.Id {
+				continue
+			}
+			if strings.EqualFold(other.Target.Filename, beatmap.Target.Filename) {
+				return ErrDuplicateBeatmap
+			}
+		}
+
 		byFilename, err := repositories.Beatmaps.ByFilename(beatmap.Target.Filename, "Beatmapset")
 		if err != nil {
 			return fmt.Errorf("bss: beatmap by filename %q: %w", beatmap.Target.Filename, err)
 		}
-		if isDuplicateBeatmap(beatmap.Target.Id, byFilename) {
+
+		// Check if the filename belongs to another mapper's beatmap,
+		// or if it belongs to a different beatmap in the same set
+		hasFilenameConflict := submission.checkFilenameConflicts(beatmap.Target, byFilename)
+		duplicateBeatmap := isDuplicateBeatmap(beatmap.Target.Id, byFilename)
+
+		if hasFilenameConflict && duplicateBeatmap {
 			return ErrDuplicateBeatmap
 		}
 
@@ -116,6 +132,22 @@ func (submission *SubmissionContext) ValidateBeatmapUniqueness(repositories *sta
 		}
 	}
 	return nil
+}
+
+func (submission *SubmissionContext) checkFilenameConflicts(submitted, existing *schemas.Beatmap) bool {
+	if existing == nil {
+		return false
+	}
+	if existing.Id == submitted.Id {
+		return false
+	}
+	if existing.SetId == submission.Beatmapset.Id {
+		// If the existing beatmap belongs to the same set, we allow the filename to be reused
+		if prepared := submission.BeatmapById(existing.Id); prepared != nil && prepared.Source != nil {
+			existing = prepared.Target
+		}
+	}
+	return strings.EqualFold(submitted.Filename, existing.Filename)
 }
 
 // ValidateFS validates all files in the assigned package.
