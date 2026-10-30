@@ -14,6 +14,7 @@ type Release struct {
 	Category    string         `gorm:"column:category;default:Uncategorized"`
 	KnownBugs   *string        `gorm:"column:known_bugs"`
 	Preview     bool           `gorm:"column:preview;default:false"`
+	Recommended bool           `gorm:"column:recommended;default:false"`
 	DownloadUrl *string        `gorm:"column:download_url"`
 	Screenshot  *string        `gorm:"column:screenshot"`
 	Checksums   pq.StringArray `gorm:"column:checksums;type:varchar[];default:'{}'"`
