@@ -123,6 +123,12 @@ func (r *ExtraReleaseRepository) Update(updates *schemas.ExtraRelease, columns .
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ExtraReleaseRepository) FetchAll() ([]*schemas.ExtraRelease, error) {
+	var extras []*schemas.ExtraRelease
+	err := r.db.Order("name ASC").Find(&extras).Error
+	return extras, err
+}
+
 type ReleasesOfficialRepository struct {
 	db *gorm.DB
 }
