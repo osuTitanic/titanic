@@ -149,6 +149,27 @@ func (r *ReleasesOfficialRepository) Update(updates *schemas.ReleasesOfficial, c
 	return CommonUpdate(r.db, updates, columns...)
 }
 
+func (r *ReleasesOfficialRepository) FetchByVersion(version int) (*schemas.ReleasesOfficial, error) {
+	var release schemas.ReleasesOfficial
+	err := r.db.
+		Where("version = ?", version).
+		Order("subversion DESC").
+		Order("created_at DESC").
+		Order("id DESC").
+		First(&release).Error
+	return LookupResult(&release, err)
+}
+
+func (r *ReleasesOfficialRepository) FetchFileEntries(releaseId int) ([]*schemas.ReleaseFiles, error) {
+	var files []*schemas.ReleaseFiles
+	err := r.db.
+		Joins("JOIN releases_official_entries ON releases_official_entries.file_id = releases_official_files.id").
+		Where("releases_official_entries.release_id = ?", releaseId).
+		Order("releases_official_files.id ASC").
+		Find(&files).Error
+	return files, err
+}
+
 func (r *ReleasesOfficialRepository) CreateEntry(entry *schemas.ReleasesOfficialEntries) error {
 	return r.db.Create(entry).Error
 }
