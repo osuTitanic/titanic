@@ -17,30 +17,92 @@ import (
 )
 
 // TODO: Document in detail how the old update system worked
-//		 Also actually implement these update endpoints
-//		 I am thinking of making the version rotate each day
+//		 Implement the remaining endpoints as well
+//		 A cool idea would be to make the version rotate each day
 //		 so that its not just a static version that never changes
 
 var releaseMirrorUrl = "https://m1.ppy.sh/release/"
 var releaseHttpClient = &http.Client{Timeout: 10 * time.Second}
 
+const defaultUpdateTarget = 20140818
+
 // /release/update -> Text update manifest
 func ReleaseUpdate(ctx *server.Context) {
-	ctx.RenderText(http.StatusOK, "\n")
+	version := defaultUpdateTarget
+
+	// NOTE: The "v" parameter is a custom parameter added by titanic
+	//       that allows us to specify a custom version to use
+	parsed, err := ctx.QueryValueInt("v")
+	if err == nil {
+		version = parsed
+	}
+	// NOTE: There is also a "t" parameter here, but we don't use it
+
+	release, err := ctx.State.ReleasesOfficial.FetchByVersion(version)
+	if err != nil {
+		ctx.Logger.Error("Failed to find release", "version", version, "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if release == nil {
+		ctx.RenderText(http.StatusOK, "")
+		return
+	}
+
+	files, err := ctx.State.ReleasesOfficial.FetchFileEntries(release.Id)
+	if err != nil {
+		ctx.Logger.Error("Failed to list release files", "release_id", release.Id, "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if len(files) == 0 {
+		ctx.RenderText(http.StatusOK, "")
+		return
+	}
+
+	extras, err := ctx.State.ReleasesExtra.FetchAll()
+	if err != nil {
+		ctx.Logger.Error("Failed to list extra / osume release content", "error", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	ctx.RenderText(http.StatusOK, buildReleaseUpdateManifest(files, extras))
+}
+
+func buildReleaseUpdateManifest(files []*schemas.ReleaseFiles, extras []*schemas.ExtraRelease) string {
+	lines := make([]string, 0, len(files)+len(extras))
+	for _, file := range files {
+		// For now, we only use "noup" action, because we currently
+		// only have the "v" parameter to check for updates
+		// For "diff" actions, we would need a second "from" parameter
+		// that indicates where the user is updating from
+		lines = append(lines, fmt.Sprintf("%s %s - noup %s", file.Filename, file.FileHash, file.Filename))
+	}
+	for _, extra := range extras {
+		// It should be noted that "download" is the file to compare against
+		// e.g. for "tutorial.zip" it would be "Songs/tutorial/bg.jpg" ->
+		// If the file is present, the client will know that the tutorial is downloaded
+		description := strings.ReplaceAll(extra.Description, " ", "-")
+		lines = append(lines, fmt.Sprintf("%s %s %s extra %s", extra.Filename, extra.Md5, description, extra.Download))
+	}
+	return strings.Join(lines, "\n")
 }
 
 // /release/update.php -> Executable update check
 func ReleaseUpdateCheck(ctx *server.Context) {
+	// TODO: Apply checks from bancho here
 	ctx.RenderText(http.StatusOK, "0")
 }
 
 // /release/update2.php -> pUpdater / osume manifest
 func ReleaseUpdateV2(ctx *server.Context) {
+	// TODO
 	ctx.RenderText(http.StatusOK, "\n")
 }
 
 // /release/patches.php -> Binary patch list
 func ReleasePatches(ctx *server.Context) {
+	// TODO: Derive from "releases_official_files" -> "url_patch"
 	ctx.RenderText(http.StatusOK, "")
 }
 
