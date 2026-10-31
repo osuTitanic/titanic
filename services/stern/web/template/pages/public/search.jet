@@ -196,8 +196,13 @@
 
 {{ block beatmapListing() }}
 <div id="beatmap-list">
+    {{ authenticated := false }}
+    {{ if .CurrentUser }}
+    {{ authenticated = true }}
+    {{ end }}
+
     {{ range .Beatmapsets }}
-        {{ yield beatmapsetItem() . }}
+        {{ yield beatmapsetItem(authenticated=authenticated) . }}
     {{ end }}
 </div>
 {* Enable hover effects *}
@@ -223,7 +228,7 @@ $(".beatmapset").hover(
 {{ end }}
 {{ end }}
 
-{{ block beatmapsetItem() }}
+{{ block beatmapsetItem(authenticated) }}
 <div class="beatmapset" id="beatmapset-{{ .Id }}">
     <div class="beatmap-image" style="background-image: url({{ .ThumbnailUrl() }})">
         <i class="icon-play"></i>
@@ -236,9 +241,15 @@ $(".beatmapset").hover(
         <a class="beatmap-comment-link" href="{{ .CommentLink() }}">
             <i class="icon-comment"></i>
         </a>
+        {{ if authenticated }}
         <a class="beatmap-download-link" href="/d/{{ .Id }}">
             <i class="icon-download-alt"></i>
         </a>
+        {{ else }}
+        <a class="beatmap-download-link" onclick='return showLoginForm();' href="#">
+            <i class="icon-download-alt"></i>
+        </a>
+        {{ end }}
     </div>
     <div class="beatmap-info">
         {{ if .HasVideo }}
