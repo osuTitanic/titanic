@@ -1031,7 +1031,7 @@
                         <a href="#" onclick="uploadResource('/resources/mt/{{ .Beatmapset.Id }}', 'mt', '.jpeg,.jpg', 'Please make sure this image is 160x120 pixels large! Are you sure you want to upload?');">
                             Replace background file (large)
                         </a><br>
-                        <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3');">
+                        <a href="#" onclick="uploadResource('/resources/mp3/{{ .Beatmapset.Id }}', 'mp3', '.mp3,.ogg');">
                             Replace audio preview file
                         </a><br>
                         <br>
