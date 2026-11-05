@@ -685,8 +685,7 @@ func fetchProfileUser(ctx *server.Context, preload ...string) (*schemas.User, bo
 		InternalServerError(ctx)
 		return nil, false
 	}
-
-	if user == nil || !user.Activated {
+	if user == nil {
 		NotFound(ctx)
 		return nil, false
 	}
