@@ -5,12 +5,14 @@ import (
 	"time"
 )
 
-// Limit specifies how many requests can be made in a given time period.
+// Limit specifies burst capacity and when / how much to refill.
 type Limit struct {
 	// Burst is the maximum number of requests allowed without a refill.
 	Burst int
-	// RefillInterval is the time period after which the request slots are refilled.
+	// RefillInterval is the period over which RefillRate slots are restored.
 	RefillInterval time.Duration
+	// RefillRate is the number of slots restored evenly over RefillInterval.
+	RefillRate int
 }
 
 // Limiter enforces a rate limit.
