@@ -253,6 +253,30 @@ https://d.osu.{$DOMAIN_NAME} {
 	}
 }
 
+peppy.chigau.com,
+chigau.{$DOMAIN_NAME} {
+    handle /upload.php {
+        rewrite * /web/osu-bmsubmit-upload.php
+        reverse_proxy deck {
+            import proxy_headers
+        }
+    }
+
+    handle /novideo.php {
+        rewrite * /web/osu-bmsubmit-novideo.php
+        reverse_proxy deck {
+            import proxy_headers
+        }
+    }
+
+    handle_path /bss/* {
+        rewrite * /d{uri}
+        reverse_proxy stern {
+            import proxy_headers
+        }
+    }
+}
+
 http://osu.localhost,
 http://osu.{$DOMAIN_NAME},
 https://osu.{$DOMAIN_NAME},
