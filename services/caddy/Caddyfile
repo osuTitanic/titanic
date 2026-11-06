@@ -233,7 +233,7 @@ https://b.{$DOMAIN_NAME} {
 
 	handle /d/* {
 		import cors_get_options
-		reverse_proxy deck {
+		reverse_proxy stern {
 			import proxy_headers
 		}
 	}
@@ -247,7 +247,7 @@ http://d.osu.{$DOMAIN_NAME},
 https://d.osu.{$DOMAIN_NAME} {
 	handle /d/* {
 		import cors_get_options
-		reverse_proxy deck {
+		reverse_proxy stern {
 			import proxy_headers
 		}
 	}
@@ -319,7 +319,7 @@ https://{$DOMAIN_NAME} {
 
 	handle /d/* {
 		import cors_get_options
-		reverse_proxy deck {
+		reverse_proxy stern {
 			import proxy_headers
 		}
 	}
