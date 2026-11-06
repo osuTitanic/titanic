@@ -70,6 +70,10 @@ func BeatmapAudioPreview(ctx *server.Context) {
 }
 
 func BeatmapDownload(ctx *server.Context) {
+	if !allowBeatmapDownload(ctx) {
+		return
+	}
+
 	filename := ctx.PathValue("filename")
 
 	// Handle filenames such as "1 Kenji Ninuma - DISCO PRINCE.osz"
