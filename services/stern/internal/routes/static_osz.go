@@ -2,9 +2,13 @@ package routes
 
 import (
 	"encoding/hex"
+	"fmt"
+	"io"
 	"math"
+	"mime"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/osuTitanic/titanic/internal/authentication"
@@ -14,6 +18,65 @@ import (
 
 var limitUnauthenticated = ratelimiting.Limit{Burst: 3, RefillInterval: 10 * time.Second, RefillRate: 1}
 var limitAuthenticated = ratelimiting.Limit{Burst: 10, RefillInterval: 2 * time.Second, RefillRate: 1}
+
+func BeatmapDownload(ctx *server.Context) {
+	if !allowBeatmapDownload(ctx) {
+		return
+	}
+
+	filename := ctx.PathValue("filename")
+
+	// Handle filenames such as "1 Kenji Ninuma - DISCO PRINCE.osz"
+	filename = strings.SplitN(filename, " ", 2)[0]
+	noVideo := strings.Contains(filename, "n")
+
+	setIdString := strings.TrimSuffix(filename, "n")
+	setId, err := strconv.Atoi(setIdString)
+	if err != nil {
+		ctx.Response.WriteHeader(404)
+		return
+	}
+
+	beatmapset, err := ctx.State.Beatmapsets.ById(setId)
+	if err != nil || beatmapset == nil {
+		ctx.Response.WriteHeader(404)
+		return
+	}
+	if !beatmapset.Available {
+		ctx.Response.WriteHeader(451)
+		return
+	}
+
+	// noVideo can only be true if the beatmapset has videos
+	noVideo = noVideo && beatmapset.HasVideo
+
+	oszStream, oszSize, err := ctx.State.Resources.Osz(ctx.Context(), setId, noVideo)
+	if err != nil {
+		ctx.Response.WriteHeader(404)
+		return
+	}
+	defer oszStream.Close()
+
+	oszFilename := fmt.Sprintf("%d %s.osz", beatmapset.Id, beatmapset.Name())
+	if noVideo {
+		oszFilename = fmt.Sprintf("%d %s (no video).osz", beatmapset.Id, beatmapset.Name())
+	}
+
+	ctx.Response.Header().Set(
+		"Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": oszFilename}),
+	)
+	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
+	ctx.Response.Header().Set("Last-Modified", beatmapset.LastUpdate.Format("Mon, 02 Jan 2006 15:04:05 GMT"))
+
+	if oszSize > 0 {
+		// Set content length if we can determine it, otherwise we'll use chunked transfer encoding
+		ctx.Response.Header().Set("Content-Length", strconv.FormatInt(oszSize, 10))
+	}
+
+	ctx.Response.WriteHeader(200)
+	io.Copy(ctx.Response, oszStream)
+}
 
 func allowBeatmapDownload(ctx *server.Context) bool {
 	key, limit, err := resolveRatelimitConfiguration(ctx)
