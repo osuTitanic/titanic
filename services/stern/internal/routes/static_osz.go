@@ -16,8 +16,8 @@ import (
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 )
 
-var limitUnauthenticated = ratelimiting.Limit{Burst: 3, RefillInterval: 10 * time.Second, RefillRate: 1}
-var limitAuthenticated = ratelimiting.Limit{Burst: 10, RefillInterval: 2 * time.Second, RefillRate: 1}
+var limitUnauthenticated = ratelimiting.Limit{Burst: 5, RefillInterval: 10 * time.Second, RefillRate: 1}
+var limitAuthenticated = ratelimiting.Limit{Burst: 12, RefillInterval: 2 * time.Second, RefillRate: 1}
 
 func BeatmapDownload(ctx *server.Context) {
 	if !allowBeatmapDownload(ctx) {
