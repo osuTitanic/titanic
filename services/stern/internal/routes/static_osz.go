@@ -104,7 +104,7 @@ func allowBeatmapDownload(ctx *server.Context) bool {
 		retryAfterSeconds := int64(math.Ceil(retryAfter.Seconds()))
 		ctx.Response.Header().Set("Cache-Control", "no-store")
 		ctx.Response.Header().Set("Retry-After", strconv.FormatInt(retryAfterSeconds, 10))
-		http.Error(ctx.Response, "Too Many Requests", http.StatusTooManyRequests)
+		http.Error(ctx.Response, "slow down, play more", http.StatusTooManyRequests)
 	}
 	return allowed
 }
