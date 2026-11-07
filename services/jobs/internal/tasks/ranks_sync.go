@@ -34,7 +34,11 @@ func UpdateRanks(app *state.State, logger *slog.Logger) error {
 
 			globalRank, err := app.Rankings.GlobalRank(user.Id, userStats.Mode)
 			if err != nil {
-				return fmt.Errorf("failed to fetch global rank for user %d mode %d: %w", user.Id, userStats.Mode, err)
+				logger.Error(
+					"Failed to fetch global rank",
+					"user_id", user.Id, "mode", userStats.Mode, "error", err,
+				)
+				continue
 			}
 
 			// Check if rank has desynced from redis -> db & update if necessary
@@ -42,7 +46,11 @@ func UpdateRanks(app *state.State, logger *slog.Logger) error {
 			if rankChanged {
 				userStats.Rank = globalRank
 				if _, err := app.Repositories.Stats.Update(userStats, "rank"); err != nil {
-					return fmt.Errorf("failed to update current rank for user %d mode %d: %w", user.Id, userStats.Mode, err)
+					logger.Error(
+						"Failed to update current rank",
+						"user_id", user.Id, "mode", userStats.Mode, "error", err,
+					)
+					continue
 				}
 			}
 
@@ -62,7 +70,11 @@ func UpdateRanks(app *state.State, logger *slog.Logger) error {
 			if needsHistoryUpdate {
 				inserted, err := app.Repositories.Histories.UpdateRank(userStats, user.Country, app.Rankings)
 				if err != nil {
-					return fmt.Errorf("failed to update rank history for user %d mode %d: %w", user.Id, userStats.Mode, err)
+					logger.Error(
+						"Failed to update rank history",
+						"user_id", user.Id, "mode", userStats.Mode, "error", err,
+					)
+					continue
 				}
 				if inserted {
 					logger.Info(
@@ -77,7 +89,11 @@ func UpdateRanks(app *state.State, logger *slog.Logger) error {
 			if userStats.PeakRank <= 0 || globalRank < userStats.PeakRank {
 				userStats.PeakRank = globalRank
 				if _, err := app.Repositories.Stats.Update(userStats, "peak_rank"); err != nil {
-					return fmt.Errorf("failed to update peak rank for user %d mode %d: %w", user.Id, userStats.Mode, err)
+					logger.Error(
+						"Failed to update peak rank",
+						"user_id", user.Id, "mode", userStats.Mode, "error", err,
+					)
+					continue
 				}
 			}
 
@@ -88,7 +104,11 @@ func UpdateRanks(app *state.State, logger *slog.Logger) error {
 				app,
 			)
 			if err != nil {
-				return fmt.Errorf("failed to clean up rank history for user %d mode %d: %w", user.Id, userStats.Mode, err)
+				logger.Error(
+					"Failed to clean up rank history",
+					"user_id", user.Id, "mode", userStats.Mode, "error", err,
+				)
+				continue
 			}
 		}
 
