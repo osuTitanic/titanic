@@ -227,20 +227,20 @@ func (b *Beatmapset) DisplayTitleText() string {
 func (b *Beatmapset) DefaultDisplayTitle() string {
 	title := ""
 	titleFormatting := "[]"
-	if b.Title != nil {
-		title = *b.Title
+	if b.TitleText() != "" {
+		title = b.TitleText()
 	}
-	if b.TitleUnicode != nil {
-		title = *b.TitleUnicode
+	if b.TitleUnicodeText() != "" {
+		title = b.TitleUnicodeText()
 	}
 
 	artist := ""
 	artistFormatting := "[bold:0,size:20]"
-	if b.Artist != nil {
-		artist = *b.Artist
+	if b.ArtistText() != "" {
+		artist = b.ArtistText()
 	}
-	if b.ArtistUnicode != nil {
-		artist = *b.ArtistUnicode
+	if b.ArtistUnicodeText() != "" {
+		artist = b.ArtistUnicodeText()
 	}
 
 	return fmt.Sprintf("%s%s|%s%s", artistFormatting, artist, titleFormatting, title)
