@@ -95,9 +95,7 @@ https://cho.{$DOMAIN_NAME},
 http://irc.{$DOMAIN_NAME},
 https://irc.{$DOMAIN_NAME},
 http://mahbahowc.{$DOMAIN_NAME},
-https://mahbahowc.{$DOMAIN_NAME},
-http://server.{$DOMAIN_NAME},
-https://server.{$DOMAIN_NAME} {
+https://mahbahowc.{$DOMAIN_NAME} {
 	request_body {
 		max_size 20MB
 	}
