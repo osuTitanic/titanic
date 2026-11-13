@@ -40,8 +40,8 @@
 <div class="bottom-text">
     <ul>
         <li>
-            osu! requires <strong>.NET Framework 4.0</strong>.
-            The installer should prompt you to download this, but if not, you can <a href="http://www.microsoft.com/en-us/download/details.aspx?id=17718">find it here</a>.
+            osu! requires <strong>.NET Framework 4.0</strong> or <strong>.NET Framework 2.0</strong> if you use the <a href="{{ .DownloadUrlFallback }}">fallback</a> version.
+            The installer should prompt you to download this.
         </li>
         <li>
             If you are having trouble getting it to run, please report your issue in the <a href="/forum/7">support forum</a>.
