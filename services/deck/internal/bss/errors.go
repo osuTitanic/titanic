@@ -14,7 +14,6 @@ const (
 	ErrorCodeRanked
 	ErrorCodeGraveyarded
 	ErrorCodeCustom
-	ErrorCodeQuotaExceeded
 )
 
 type ErrorResponse struct {
@@ -74,14 +73,14 @@ func ErrorResponseFor(err error) (ErrorResponse, bool) {
 		return NewErrorResponse(ErrorCodeRanked), true
 	case errors.Is(err, ErrBeatmapsetGraveyarded):
 		return NewErrorResponse(ErrorCodeGraveyarded), true
-	case errors.Is(err, ErrNoUploadSlots):
-		return NewErrorResponse(ErrorCodeQuotaExceeded), true
 	case errors.Is(err, ErrBeatmapsetAccessNotAllowed),
 		errors.Is(err, ErrBeatmapAccessNotAllowed),
 		errors.Is(err, ErrResourceAccessNotAllowed),
 		errors.Is(err, ErrBeatmapsetWrongServer),
 		errors.Is(err, ErrBeatmapOwnershipNotAllowed):
 		return NewErrorResponse(ErrorCodeOwnership), true
+	case errors.Is(err, ErrNoUploadSlots):
+		return NewErrorResponseMessage("You have reached your maximum amount of beatmaps you can upload."), true
 	case errors.Is(err, ErrInvalidSubmissionRequest), errors.Is(err, ErrInvalidSubmissionTicket):
 		return NewErrorResponseMessage("Invalid beatmap submission request."), true
 	case errors.Is(err, ErrAuthenticationFailed), errors.Is(err, ErrUserNotAuthenticated):
@@ -172,8 +171,6 @@ func FormatPreOsz2Error(err error) (string, bool) {
 		return "The beatmap you're trying to submit isn't owned by you.", expected
 	case ErrorCodeUnavailable:
 		return "The beatmap you're trying to submit is no longer available.", expected
-	case ErrorCodeQuotaExceeded:
-		return "You have reached your maximum amount of beatmaps you can upload.", expected
 	default:
 		return "An error occurred while processing your beatmap. Please try again!", false
 	}
