@@ -658,9 +658,8 @@ func (v ForumEditorContext) HasContent() bool {
 
 type DownloadView struct {
 	DefaultView
-	SelectedCategory string
-	Categories       []*DownloadCategory
-	Clients          []*schemas.Release
+	DownloadUrl         string
+	DownloadUrlFallback string
 }
 
 type DownloadCategory struct {

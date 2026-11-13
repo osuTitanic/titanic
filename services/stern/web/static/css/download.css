@@ -1,131 +1,109 @@
-.category {
-    text-shadow: #f3c8e0 0px 0px 10px;
-    color: #e15fac;
-    font-weight: normal;
-    font-size: 140%;
-    padding: 5px 5px 0 5px;
-    display: inline-block;
-    vertical-align: top;
-    margin: 0 20px;
-    transition: 0.4s all;
+.page h2 {
+	font-weight: normal;
+	font-size: 110%;
+	margin-bottom: 10px;
+	color: #cc2e8a;
+	text-shadow: #efcfe1 0px 0px 10px;
 }
 
-.category:visited {
-    color: #e15fac;
-}
-
-.category:hover {
-    color: #aa156e;
-    text-shadow: #f3c8e0 0px 0px 10px;
-    transition: 0.4s all;
-}
-
-.category-wrapper .selected {
-    color: #a5126a !important;
-    font-weight: bold;
-}
-
-.category-wrapper {
-    display: block;
+.center-element {
     text-align: center;
-    margin-top: 18px;
+    width: 100%;
+    padding-bottom: 8px;
 }
 
-.client-container {
-    background-color: #ffdef5;
-    padding: 5px;
+/* crazy button that peppy developed here ngl */
+.button {
+    display: inline-block;
+    padding: 5px 10px 5px 10px;
+    text-align: center;
+    border: none;
+    min-width: 100px;
     margin: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    transition: 0.4s all;
-    text-align: center;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 15px;
+    background-color: rgb(91, 83, 153);
+    background-image: linear-gradient(
+        bottom,
+        rgb(91, 83, 153) 0%,
+        rgb(123, 114, 207) 100%
+    );
+    background-image: -o-linear-gradient(
+        bottom,
+        rgb(91, 83, 153) 0%,
+        rgb(123, 114, 207) 100%
+    );
+    background-image: -moz-linear-gradient(
+        bottom,
+        rgb(91, 83, 153) 0%,
+        rgb(123, 114, 207) 100%
+    );
+    background-image: -webkit-linear-gradient(
+        bottom,
+        rgb(91, 83, 153) 0%,
+        rgb(123, 114, 207) 100%
+    );
+    background-image: -ms-linear-gradient(
+        bottom,
+        rgb(91, 83, 153) 0%,
+        rgb(123, 114, 207) 100%
+    );
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(91, 83, 153)),
+        color-stop(1, rgb(123, 114, 207))
+    );
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-.client-container b {
-    margin-left: 10px;
+.button:hover {
+    text-shadow: 0px 0px 5px #ffffff;
+    color: #ffffff;
 }
 
-.client {
-    display: inline-block;
-    border-radius: 5px;
-    border-width: 2px;
-    padding: 10px;
-    margin: 10px;
-    overflow: hidden;
-    vertical-align: middle;
-    background-color: #ffd6f3;
-    filter: drop-shadow(1px 2px 1px #c6c6ca);
-    min-width: 300px;
-    text-align: left;
-}
-
-.ie5 .client img,
-.ie6 .client img {
-    height: 200px;
-}
-
-.client p {
-    white-space: pre-wrap;
-}
-
-.description {
-    max-width: 350px;
-    margin-top: 5px;
-}
-
-.client img {
-    margin-top: 8px;
-    border-radius: 2px;
-    max-height: 200px;
-    min-height: 200px;
-    min-width: 250px;
-    color: grey;
-}
-
-.client .download-link {
-    display: block;
-    margin-top: 10px;
-    padding: 10px;
-    color: #ff5d93;
-    background-color: #e9cedf;
-    border-radius: 5px;
-    text-align: center;
+.download {
     text-decoration: none;
-    font-size: 1.2em;
-    transition: all 0.1s ease;
-}
-
-.client .download-link:hover {
-    color: #ebebeb;
-    background-color: #ff5d93;
-    transition: all 0.1s ease;
-}
-
-.known-bugs {
-    float: right;
     cursor: pointer;
-    text-decoration: none;
-    font-size: 115%;
-    position: relative;
-    z-index: 1;
+    border: solid 5px #685baf;
+    text-align: center;
+    transition:
+        box-shadow 0.3s,
+        text-shadow 0.2s;
+    -webkit-transition:
+        box-shadow 0.3s,
+        text-shadow 0.2s;
 }
 
-.version {
-    font-weight: bold;
-    font-size: large;
-    filter: drop-shadow(2px 2px 1px #d6d6d6);
+.download:hover {
+    box-shadow: 0px 0px 50px #b2a7ff;
+}
+
+.app-icon {
+    width: 400px;
+    height: 200px;
+    padding-bottom: 20px;
+    /* TODO: replace with our own thing */
+    background-image: url("http://s.ppy.sh/images/download.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    position: relative;
+}
+
+.app-description {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
 }
 
 .bottom-text {
-    margin-top: 20px;
-    margin-left: 10px;
-}
-
-.bottom-text a {
-    text-decoration: none;
-}
-
-.bottom-text a:hover {
-    text-decoration: underline;
+    font-size: 9pt;
 }
