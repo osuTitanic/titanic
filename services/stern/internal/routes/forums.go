@@ -128,9 +128,16 @@ func ForumView(ctx *server.Context) {
 		return
 	}
 
+	announcements, err := ctx.State.ForumTopics.FetchAnnouncementsByForumId(forum.Id, 3, 0, topicPreloads...)
+	if err != nil {
+		ctx.Logger.Error("Failed to fetch announcements", "error", err, "forum", forum.Id)
+		InternalServerError(ctx)
+		return
+	}
+
 	topics, err := ctx.State.ForumTopics.FetchListing(
 		forum.Id,
-		forumTopicsPerPage,
+		forumTopicsPerPage+len(announcements),
 		offset,
 		usesStarPriority,
 		topicPreloads...,
@@ -141,21 +148,26 @@ func ForumView(ctx *server.Context) {
 		return
 	}
 
-	announcements, err := ctx.State.ForumTopics.FetchAnnouncementsByForumId(forum.Id, 3, 0, topicPreloads...)
-	if err != nil {
-		ctx.Logger.Error("Failed to fetch announcements", "error", err, "forum", forum.Id)
-		InternalServerError(ctx)
-		return
-	}
+	topicIdsRegular := make([]int, 0, len(topics))
+	topicIdsAnnouncements := make([]int, 0, len(announcements))
 
-	topicIds := make([]int, 0, len(topics)+len(announcements))
-	for _, topic := range topics {
-		topicIds = append(topicIds, topic.Id)
-	}
 	for _, topic := range announcements {
-		topicIds = append(topicIds, topic.Id)
+		topicIdsAnnouncements = append(topicIdsAnnouncements, topic.Id)
 	}
 
+	// Filter out displayed announcements from regular topics
+	topics = slices.DeleteFunc(topics, func(topic *schemas.ForumTopic) bool {
+		if slices.Contains(topicIdsAnnouncements, topic.Id) {
+			return true
+		}
+		return false
+	})
+
+	for _, topic := range topics {
+		topicIdsRegular = append(topicIdsRegular, topic.Id)
+	}
+
+	topicIds := slices.Concat(topicIdsAnnouncements, topicIdsRegular)
 	lastPosts, err := ctx.State.ForumPosts.FetchLastForTopics(topicIds, "User", "User.Groups.Group")
 	if err != nil {
 		ctx.Logger.Error("Failed to fetch last posts", "error", err, "forum", forum.Id)

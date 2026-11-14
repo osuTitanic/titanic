@@ -140,7 +140,6 @@ func (r *ForumTopicRepository) FetchListing(forumId int, limit int, offset int, 
 	query := Preloaded(r.db, preload).
 		Where("forum_id = ?", forumId).
 		Where("hidden = ?", false).
-		Where("announcement = ?", false).
 		Order("pinned DESC")
 	if useStarPriority {
 		query = query.
