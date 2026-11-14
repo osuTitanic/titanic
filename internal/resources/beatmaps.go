@@ -146,6 +146,9 @@ func (provider *BeatmapProvider) Cached(ctx context.Context, key string, ttl tim
 	if err != nil {
 		return nil, err
 	}
+	if len(data) == 0 {
+		return nil, fmt.Errorf("fetched resource is empty")
+	}
 
 	if err := provider.cache.Set(ctx, key, data, ttl).Err(); err != nil {
 		provider.logger.Warn("Failed to cache resource", "key", key, "error", err.Error())
