@@ -212,9 +212,9 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Determine cache refresh date
-        id: docker-cache-date
-        run: echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Determine cache refresh week
+        id: docker-cache-week
+        run: echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Go modules (Docker)
         id: docker-go-modules
@@ -228,7 +228,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: tmp/docker-go-cache/build
-          key: docker-go-build-${{ runner.os }}-${{ runner.arch }}-${{ matrix.service }}-${{ hashFiles(matrix.dockerfile, 'go.mod', 'go.sum') }}-${{ steps.docker-cache-date.outputs.date }}
+          key: docker-go-build-${{ runner.os }}-${{ runner.arch }}-${{ matrix.service }}-${{ hashFiles(matrix.dockerfile, 'go.mod', 'go.sum') }}-${{ steps.docker-cache-week.outputs.week }}
           restore-keys: |
             docker-go-build-${{ runner.os }}-${{ runner.arch }}-${{ matrix.service }}-${{ hashFiles(matrix.dockerfile, 'go.mod', 'go.sum') }}-
 
