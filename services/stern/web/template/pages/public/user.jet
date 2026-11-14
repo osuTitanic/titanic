@@ -17,7 +17,7 @@
     {{ yield profileFriendStatus() . }}
     {{ yield profileDetails() . }}
     {{ yield profilePlaystyles() . }}
-    {{ if .Permissions.IsModerator() }}
+    {{ if .Permissions.IsModerator() && .IsModernBrowser }}
         {{ yield userModerationPanel() . }}
     {{ end }}
 </div>
