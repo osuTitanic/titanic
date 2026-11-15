@@ -3,7 +3,7 @@
 {{ block head() }}
 <title>Download</title>
 <meta property="og:title" content="Download - Titanic!">
-<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
+<meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/download.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/download">
 <meta property="og:description" content="Let's get you started!">
 <link rel="stylesheet" href="{{ cachedUrl("/css/download.css") }}">
@@ -16,12 +16,12 @@
 <div class="center-element">
     <a href="{{ .DownloadUrl }}" class="download button">
         <div class="app-icon">
-            <span class="app-description">download patcher (windows / 1mb)</span>
+            <span class="app-description">download launcher (windows / 1mb)</span>
         </div>
     </a>
 </div>
 <div class="center-element" style="font-size: 9pt">
-    not launching? try the <a href="{{ .DownloadUrlFallback }}">fallback</a> variant instead
+    not launching? try the <a href="{{ .DownloadUrlFallback }}">fallback</a> launcher instead
 </div>
 <h2>What next?</h2>
 <div class="bottom-text">
@@ -30,7 +30,7 @@
             You'll need some beatmaps, either by downloading them <a href="/beatmapsets">individually</a> or in <a href="/beatmapsets/packs">beatmap packs</a>.
         </li>
         <li>
-            If you are new to the game, check out the <a href="/wiki/en/Welcome">welcome page</a> for some handy starter links.
+            If you are new here, check out the <a href="/wiki/en/Welcome">welcome page</a> for some handy starter links.
             Also make sure to <a href="/forum/22">say 'hi'</a> to the community!
         </li>
     </ul>
@@ -40,11 +40,11 @@
 <div class="bottom-text">
     <ul>
         <li>
-            osu! requires <strong>.NET Framework 4.0</strong> or <strong>.NET Framework 2.0</strong> if you use the <a href="{{ .DownloadUrlFallback }}">fallback</a> version.
+            osu! requires <strong>.NET Framework 4.0</strong> or <strong>.NET Framework 2.0</strong> if you use the <a href="{{ .DownloadUrlFallback }}">fallback</a> launcher.
             The installer should prompt you to download this.
         </li>
         <li>
-            If you are having trouble getting it to run, please report your issue in the <a href="/forum/7">support forum</a>.
+            If you are having trouble getting the launcher to run, please report your issue in the <a href="/forum/7">support forum</a>.
         </li>
     </ul>
 </div>
