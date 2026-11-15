@@ -90,8 +90,7 @@
     width: 400px;
     height: 200px;
     padding-bottom: 20px;
-    /* TODO: replace with our own thing */
-    background-image: url("http://s.ppy.sh/images/download.png");
+    background-image: url("/images/download.png");
     background-repeat: no-repeat;
     background-position: center top;
     position: relative;
