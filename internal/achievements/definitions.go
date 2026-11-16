@@ -225,7 +225,7 @@ func beatmapPackDefinition(pack BeatmapPack) AchievementDefinition {
 		if !hasScoreAndBeatmap(context) {
 			return false
 		}
-		if !contains(pack.beatmapsetIds, context.Score.Beatmap.SetId) {
+		if !slices.Contains(pack.beatmapsetIds, context.Score.Beatmap.SetId) {
 			// Score was not set inside this pack
 			return false
 		}
@@ -252,13 +252,4 @@ func hasScore(context *AchievementContext) bool {
 
 func hasScoreAndBeatmap(context *AchievementContext) bool {
 	return hasScore(context) && context.Score.Beatmap != nil
-}
-
-func contains(values []int, value int) bool {
-	for _, candidate := range values {
-		if candidate == value {
-			return true
-		}
-	}
-	return false
 }
