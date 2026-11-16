@@ -86,6 +86,10 @@
     box-shadow: 0px 0px 50px #b2a7ff;
 }
 
+.download:visited {
+    color: #ffffff !important;
+}
+
 .app-icon {
     width: 400px;
     height: 200px;
