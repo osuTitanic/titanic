@@ -38,6 +38,10 @@ func (ctx *Context) ResolveAuthentication() {
 		ctx.ExpireSessionCookie()
 		return
 	}
+	if !user.Activated {
+		ctx.ExpireSessionCookie()
+		return
+	}
 
 	ctx.CurrentSession = session
 	ctx.CurrentUser = user
