@@ -16,6 +16,10 @@ RUN apt-get update && \
         crossbuild-essential-armhf && \
     rm -rf /var/lib/apt/lists/*
 
+RUN groupadd --gid 10001 sailor && \
+    useradd --uid 10001 --gid sailor --create-home --shell /usr/sbin/nologin sailor && \
+    mkdir -p /out/data
+
 WORKDIR /src
 
 COPY go.mod go.sum ./
@@ -83,7 +87,14 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM gcr.io/distroless/base-nossl-debian13:latest AS runtime
 
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+COPY --from=builder --chown=10001:10001 /home/sailor /home/sailor
+
+ENV HOME=/home/sailor
+
 WORKDIR /app
+COPY --from=builder --chown=10001:10001 /out/data /app/.data
 COPY --from=builder /out/jobs /app/jobs
 COPY ./services/jobs/schedule.example.json /app/schedule.json
 COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
@@ -91,5 +102,7 @@ COPY --from=builder /out/lib/libosu.Native.so /app/lib/libosu.Native.so
 ENV LD_LIBRARY_PATH=/app/lib
 
 VOLUME ["/app/.data"]
+USER sailor:sailor
+
 ENTRYPOINT ["/app/jobs"]
 CMD ["-file", "/app/schedule.json"]
