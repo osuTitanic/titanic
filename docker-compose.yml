@@ -83,6 +83,10 @@ services:
     volumes:
       - "./.data:/bancho/.data"
       - "./.data/logs/bancho:/bancho/logs"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/bancho/.data/postgres:ro,size=1m"
+      - "/bancho/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
@@ -125,6 +129,10 @@ services:
     # - 127.0.0.1:6060:80
     volumes:
       - "./.data:/app/.data"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/app/.data/postgres:ro,size=1m"
+      - "/app/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
@@ -154,6 +162,10 @@ services:
     volumes:
       - "./.data:/bot/.data"
       - "./.data/logs/bot:/bot/logs"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/bot/.data/postgres:ro,size=1m"
+      - "/bot/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
@@ -189,6 +201,10 @@ services:
     volumes:
       - "./services/stern/web/static:/app/static:ro"
       - "./.data:/app/.data"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/app/.data/postgres:ro,size=1m"
+      - "/app/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
@@ -220,6 +236,10 @@ services:
       - titanic
     volumes:
       - "./.data:/app/.data"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/app/.data/postgres:ro,size=1m"
+      - "/app/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
@@ -249,6 +269,10 @@ services:
     volumes:
       - "./.data/logs/keel:/keel/logs"
       - "./.data:/keel/.data"
+    # Hide database & redis data files from regular services
+    tmpfs:
+      - "/keel/.data/postgres:ro,size=1m"
+      - "/keel/.data/redis:ro,size=1m"
     depends_on:
       db:
         condition: service_healthy
