@@ -252,7 +252,7 @@ for (var i = 0; i < editors.length; i++) {
             formData,
             function (xhr) {
                 var response = JSON.parse(xhr.responseText);
-                var imageUrl = response.image.image.url;
+                var imageUrl = response.url;
                 replaceFirstOccurrence(editor, uploadPrompt, createImageBBCode(imageUrl));
             },
             function () {
