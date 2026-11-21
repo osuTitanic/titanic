@@ -43,6 +43,7 @@ var availableTasks = TaskList{
 	"scores_status_score":     {Build: BuildRecalculateScoreStatusTask},
 	"scores_status_pp_all":    TaskWithoutArguments(tasks.RecalculatePPStatusAll),
 	"scores_status_score_all": TaskWithoutArguments(tasks.RecalculateScoreStatusAll),
+	"ibb_links":               TaskWithoutArguments(tasks.MoveIbbLinksToTitanic),
 }
 
 func (t TaskList) List() {
