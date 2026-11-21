@@ -141,6 +141,11 @@ func (storage *FileStorage) Remove(ctx context.Context, key string, folder strin
 
 // CreateDefaultFolders ensures that all required storage folders exist
 func (storage *FileStorage) CreateDefaultFolders(ctx context.Context) error {
+	if err := os.MkdirAll(storage.dataPath, 0755); err != nil {
+		return fmt.Errorf("failed to create storage directory %s: %w", storage.dataPath, err)
+	}
+	storage.TakeOwnership(storage.dataPath)
+
 	for _, directory := range RequiredDirectories {
 		if err := ctx.Err(); err != nil {
 			return err
@@ -152,6 +157,7 @@ func (storage *FileStorage) CreateDefaultFolders(ctx context.Context) error {
 
 		if _, err := os.Stat(folder); !os.IsNotExist(err) {
 			slog.Debug("Storage directory already exists, skipping creation", slog.String("path", folder))
+			storage.TakeOwnership(folder)
 			continue
 		}
 
@@ -161,6 +167,7 @@ func (storage *FileStorage) CreateDefaultFolders(ctx context.Context) error {
 		}
 
 		slog.Info("Created storage directory", slog.String("path", folder))
+		storage.TakeOwnership(folder)
 	}
 	return nil
 }
@@ -201,4 +208,13 @@ func (storage *FileStorage) DownloadDefaultAssets(ctx context.Context) error {
 		slog.Info("Downloaded asset to storage", slog.String("path", assetUrl))
 	}
 	return nil
+}
+
+func (storage *FileStorage) TakeOwnership(path string) {
+	if err := os.Lchown(path, os.Geteuid(), os.Getegid()); err != nil {
+		slog.Warn(
+			"Failed to take ownership of storage directory",
+			slog.String("path", path), slog.Any("error", err),
+		)
+	}
 }
