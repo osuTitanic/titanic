@@ -26,6 +26,7 @@
 </form>
 <br>
 {* Ctrl+Enter -> Submit forum post *}
+{*
 <script>
     $(document).on("keydown", function(event) {
         var keyCode = event.which || event.keyCode;
@@ -38,4 +39,6 @@
         }
     });
 </script>
+*}
+{* Disabled because digital complained about it which is fair tbh *}
 {{ end }}
