@@ -66,13 +66,13 @@
         <div class="nav">
             <ul class="nav-list">
                 <li class="nav-element">
-                    <a href="/">Home</a>
+                    <a href="/" class="nav-top">Home</a>
                 </li>
                 <li class="nav-element">
-                    <a href="/download/">Download</a>
+                    <a href="/download/" class="nav-top">Download</a>
                 </li>
-                <li class="nav-element nav-element-dropdown">
-                    <a href="/beatmapsets/">
+                <li class="nav-element">
+                    <a href="/beatmapsets/" class="nav-top">
                         Beatmaps
                         <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>
@@ -85,8 +85,8 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-element nav-element-dropdown">
-                    <a href="/rankings/{{ .PreferredModeAlias() }}/{{ .PreferredRankingAlias() }}">
+                <li class="nav-element">
+                    <a href="/rankings/{{ .PreferredModeAlias() }}/{{ .PreferredRankingAlias() }}" class="nav-top">
                         Rankings
                         <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>
@@ -103,8 +103,8 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nav-element nav-element-dropdown">
-                    <a href="/forum/">
+                <li class="nav-element">
+                    <a href="/forum/" class="nav-top">
                         Community
                         <img class="dropdown-indicator" src="{{ cachedUrl("/images/arrow-white-highlight.png") }}" alt="»">
                     </a>

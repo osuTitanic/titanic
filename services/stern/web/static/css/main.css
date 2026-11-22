@@ -403,13 +403,7 @@ input[type="url"], input[type="search"] {
     max-width: 150px;
 }
 
-.nav-element-dropdown:focus-within > a {
-    background: #f375c5;
-    text-decoration: none;
-    transition: all 0.15s;
-}
-
-.nav-element-dropdown:hover > a,
+.nav-element:hover .nav-top,
 .nav-element a:hover,
 .nav-element a:focus,
 .nav-element a:active {
@@ -445,14 +439,14 @@ input[type="url"], input[type="search"] {
     width: 100%;
 }
 
-.nav-element-dropdown li a {
+.nav-element li a {
     text-decoration: none;
     font-weight: bold;
     line-height: 22px;
     margin-bottom: 0 !important;
 }
 
-.nav-element-dropdown:hover .nav-dropdown {
+.nav-element:hover .nav-dropdown {
     visibility: visible;
     display: block;
     z-index: 1;
