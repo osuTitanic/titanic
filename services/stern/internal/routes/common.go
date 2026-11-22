@@ -20,6 +20,14 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 	}
 	userAgent := ctx.Request.UserAgent()
 
+	isModernBrowser := server.IsModernBrowser(userAgent)
+	isIE := server.IsInternetExplorer(userAgent)
+
+	ieVersion := 0
+	if isIE {
+		ieVersion, _, _ = server.ParseInternetExplorerVersion(userAgent)
+	}
+
 	return templates.DefaultView{
 		Stats:             buildStatistics(ctx.State),
 		Query:             ctx.Request.URL.Query(),
@@ -30,8 +38,9 @@ func buildDefaultView(ctx *server.Context) templates.DefaultView {
 		CurrentPath:       currentPath,
 		CurrentURI:        currentURI,
 		NotificationCount: fetchNotificationCount(ctx),
-		IsModernBrowser:   server.IsModernBrowser(userAgent),
-		IsIE:              server.IsInternetExplorer(userAgent),
+		IsModernBrowser:   isModernBrowser,
+		IsIE:              isIE,
+		IEVersion:         ieVersion,
 	}
 }
 
