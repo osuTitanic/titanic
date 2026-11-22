@@ -5,7 +5,7 @@
 <meta property="og:title" content="Create an Account - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/register">
-<meta property="og:description" content="Create your account and start playing today!">
+<meta property="og:description" content="New here? Create your account and start playing today!">
 <link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
 {{ end }}
 

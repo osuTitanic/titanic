@@ -5,7 +5,7 @@
 <meta property="og:title" content="Password Reset - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/login">
-<meta property="og:description" content="Reset the password to your Titanic account.">
+<meta property="og:description" content="Forgot your password? Reset it here.">
 <link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
 {{ end }}
 

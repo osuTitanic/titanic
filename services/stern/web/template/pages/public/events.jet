@@ -5,7 +5,7 @@
 <meta property="og:title" content="Activity Feed - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/events">
-<meta property="og:description" content="Keep up with what's going on in Titanic!">
+<meta property="og:description" content="Keep up with what's going on in Titanic through the live activity feed.">
 <link rel="stylesheet" href="{{ cachedUrl("/css/events.css") }}">
 {{ end }}
 

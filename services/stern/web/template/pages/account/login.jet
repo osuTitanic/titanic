@@ -5,7 +5,7 @@
 <meta property="og:title" content="Login - Titanic!">
 <meta property="og:image" content="{{ .Config.OsuBaseUrl() }}/images/logo/main-low.png">
 <meta property="og:url" content="{{ .Config.OsuBaseUrl() }}/account/login">
-<meta property="og:description" content="Log in to your Titanic account.">
+<meta property="og:description" content="Welcome back! Log in to your account and continue clicking circles.">
 <link rel="stylesheet" href="{{ cachedUrl("/css/account.css") }}">
 {{ end }}
 
