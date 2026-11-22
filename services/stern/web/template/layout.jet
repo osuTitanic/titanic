@@ -167,7 +167,7 @@
                     {{ else }}
                         {{ if .CurrentPath != "/account/login" }}
                         <span class="nav-login" id="welcome-text">Welcome, guest!</span>
-                        <a onclick="showLoginForm()" class="nav-login" id="login-text">
+                        <a href="/account/login" onclick="return showLoginForm()" class="nav-login" id="login-text">
                             <i class="icon-caret-down"></i>
                             Login
                         </a>

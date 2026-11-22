@@ -365,6 +365,7 @@ function resetOrPlayAudio(element) {
 function showLoginForm() {
     $(".login-dropdown").slideToggle(100);
     $("#username-field").select();
+    return false;
 }
 
 function toggleSpoiler(root) {
