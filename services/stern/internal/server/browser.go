@@ -2,6 +2,7 @@ package server
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -12,6 +13,7 @@ var (
 	edgePattern    = regexp.MustCompile(`Edg/(79|[8-9][0-9]|[1-9][0-9]{2,})`)
 	operaPattern   = regexp.MustCompile(`OPR/([6-9][0-9]|[1-9][0-9]{2,})`)
 	edgeOrOpera    = regexp.MustCompile(`Edg/|OPR/`)
+	msiePattern    = regexp.MustCompile(`(?i)\bMSIE (\d+)\.(\d+)\b`)
 )
 
 // IsModernBrowser checks if the given user agent string belongs to a modern browser
@@ -37,12 +39,6 @@ func IsModernBrowser(userAgent string) bool {
 	}
 }
 
-// IsInternetExplorer checks if the given user agent string belongs to Internet Explorer
-func IsInternetExplorer(userAgent string) bool {
-	userAgent = strings.ToLower(userAgent)
-	return strings.Contains(userAgent, "msie") || strings.Contains(userAgent, "trident/")
-}
-
 // IsTextBrowser checks for browsers that primarily render html as terminal text, e.g. lynx
 func IsTextBrowser(userAgent string) bool {
 	userAgent = strings.ToLower(userAgent)
@@ -50,4 +46,28 @@ func IsTextBrowser(userAgent string) bool {
 		strings.Contains(userAgent, "w3m/") ||
 		strings.Contains(userAgent, "elinks/") ||
 		strings.Contains(userAgent, "links (")
+}
+
+// IsInternetExplorer checks if the given user agent string belongs to Internet Explorer
+func IsInternetExplorer(userAgent string) bool {
+	userAgent = strings.ToLower(userAgent)
+	return strings.Contains(userAgent, "msie") || strings.Contains(userAgent, "trident/")
+}
+
+// ParseInternetExplorerVersion extracts the major & patch values from a user agent containing MSIE
+func ParseInternetExplorerVersion(userAgent string) (major, patch int, ok bool) {
+	matches := msiePattern.FindStringSubmatch(userAgent)
+	if matches == nil {
+		return 0, 0, false
+	}
+
+	major, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return 0, 0, false
+	}
+	patch, err = strconv.Atoi(matches[2])
+	if err != nil {
+		return 0, 0, false
+	}
+	return major, patch, true
 }
