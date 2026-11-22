@@ -1,10 +1,15 @@
 <!DOCTYPE html>
+{{ if .IEVersion > 0 && .IEVersion < 5 }}
+{* IE4 (and older) doesn't support applying multiple classes to one element.... shit browser *}
+<html class="ie5" lang="en">
+{{ else }}
 <!--[if lt IE 6]><html class="ie ie5" lang="en"><![endif]-->
 <!--[if IE 6]><html class="ie ie6" lang="en"><![endif]-->
 <!--[if IE 7]><html class="ie ie7" lang="en"><![endif]-->
 <!--[if IE 8]><html class="ie ie8" lang="en"><![endif]-->
 <!--[if IE 9]><html class="ie ie9" lang="en"><![endif]-->
 <!--[if gt IE 9]><!--><html lang="en"><!--<![endif]-->
+{{ end }}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1080, user-scalable=yes">
