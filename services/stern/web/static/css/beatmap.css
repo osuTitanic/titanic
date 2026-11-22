@@ -31,7 +31,7 @@
 }
 
 .beatmap {
-    display: grid;
+    display: block;
 }
 
 .difficulty-icon img {
