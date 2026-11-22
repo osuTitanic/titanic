@@ -17,6 +17,7 @@
         <input type="hidden" name="{{ .Name }}" value="{{ .Value }}">
         {{ end }}
         <input id="search-input" name="query" type="search" placeholder="Search for a beatmap..." value="{{ .Query.Get("query") }}">
+        <input id="search-submit" type="submit" value="Search">
     </form>
     <div class="beatmap-options">
         {{ yield selectionMode() }}

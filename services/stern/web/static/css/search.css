@@ -22,15 +22,27 @@ body {
 }
 
 #search-input {
-    width: 75%;
-    padding: 5px;
-    margin: 0 auto;
-    border-radius: 5px;
-    border-style: ridge;
-    border-width: 1.5px;
-    margin-left: 15px;
-    font-size: 95%;
-    border-color: rgb(185, 197, 236);
+    box-sizing: border-box;
+	width: 65%;
+	margin-left: 15px;
+	padding: 5px;
+	border-color: rgb(185, 197, 236);
+	border-style: ridge;
+	border-width: 1.5px;
+	border-radius: 5px;
+	font-size: 95%;
+	vertical-align: middle;
+}
+
+#search-submit {
+	min-width: 75px;
+	padding: 5px 8px;
+	border-color: rgb(185, 197, 236);
+	border-width: 1.5px;
+	border-radius: 5px;
+	font-size: 95%;
+	vertical-align: middle;
+	transition: all 0.2s;
 }
 
 .beatmap-options {
