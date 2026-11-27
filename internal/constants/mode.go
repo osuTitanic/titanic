@@ -14,7 +14,14 @@ const (
 	ModeMania Mode = 3
 )
 
-var Modes = []Mode{ModeOsu, ModeTaiko, ModeCatch, ModeMania}
+var Modes = []Mode{
+	ModeOsu,
+	ModeTaiko,
+	ModeCatch,
+	ModeMania,
+}
+
+const ModeCount = 4
 
 func (m Mode) Value() int {
 	return int(m)

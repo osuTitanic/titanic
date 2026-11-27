@@ -3,12 +3,12 @@ package capabilities
 import "github.com/osuTitanic/titanic/services/anchor/internal/models"
 
 type Presence interface {
-	DeliverUserPresence([]models.UserPresence) error // TODO: I don't think we can use UserPresence here because it doesn't have the id
-	DeliverUserOffline(models.UserPresence) error
+	DeliverUserPresence([]models.UserInfo) error
+	DeliverUserOffline(models.UserInfo) error
 }
 
 type Stats interface {
-	DeliverStats([]models.UserStats) error // TODO: I don't think we can use UserStats here because it doesn't have the id
+	DeliverStats([]models.UserInfo) error
 }
 
 type Friends interface {

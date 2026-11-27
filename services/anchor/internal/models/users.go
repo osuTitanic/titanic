@@ -3,7 +3,6 @@ package models
 type UserInfo interface {
 	Id() int32
 	Name() string
-	AvatarFilename() string
 	UserPresence
 	UserStatus
 	UserStats
@@ -12,11 +11,12 @@ type UserInfo interface {
 type UserPresence interface {
 	IsIrc() bool
 	Timezone() int8
-	CountryIndex() uint8
 	Permissions() uint8
+	Country() string
+	CountryIndex() uint8
+	City() string
 	Longitude() float32
 	Latitude() float32
-	City() string
 }
 
 type UserStats interface {
@@ -35,7 +35,6 @@ type UserStatus interface {
 	Mode() uint8
 	BeatmapChecksum() string
 	BeatmapId() int32
-	UpdateStats() bool
 }
 
 type UserQuit interface {
