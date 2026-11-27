@@ -691,6 +691,7 @@ type BeatmapView struct {
 	Invite                *schemas.BeatmapCollaborationRequest
 	IsBeatmapAuthor       bool
 	BatNominated          bool
+	HasEnoughNominations  bool
 	SettingsPanelOpen     bool
 	BatPanelOpen          bool
 }

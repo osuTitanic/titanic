@@ -250,16 +250,28 @@ func (b *Beatmapset) IsApproved() bool {
 	return b.Status > constants.BeatmapStatusPending
 }
 
-// RequiredNominations returns the amount of nominations a beatmapset needs to
-// be qualified: 2, plus one extra for every additional game mode it contains.
-func (b *Beatmapset) RequiredNominations() int {
-	modes := make(map[constants.Mode]struct{}, len(b.Beatmaps))
+// RequiredNominations returns the number of nominators needed for each mode.
+func (b *Beatmapset) RequiredNominations() map[constants.Mode]int {
+	difficulties := make(map[constants.Mode]int)
 	for _, beatmap := range b.Beatmaps {
-		modes[beatmap.Mode] = struct{}{}
+		difficulties[beatmap.Mode]++
 	}
-	// i wish go had sets ... :(
 
-	return 2 + max(len(modes)-1, 0)
+	var mainMode constants.Mode
+	var mostDifficulties = 0
+
+	required := make(map[constants.Mode]int, len(difficulties))
+	for mode, count := range difficulties {
+		required[mode] = 1
+
+		// Prefer the lowest mode id when two modes have equally many difficulties
+		if count > mostDifficulties || (count == mostDifficulties && mode < mainMode) {
+			mainMode, mostDifficulties = mode, count
+		}
+	}
+
+	required[mainMode] = 2
+	return required
 }
 
 // RankDate returns the date a qualified beatmapset is expected to be ranked,

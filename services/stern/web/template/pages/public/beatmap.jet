@@ -904,7 +904,7 @@
                     <td style="min-width: 50%">
                         <p style="text-align: center">
                             The current status of this beatmap is "{{ .Beatmapset.Status.String() }}".
-                            {{ if len(.Nominations) >= .Beatmapset.RequiredNominations() && .Beatmapset.Status <= 0 }}
+                            {{ if .HasEnoughNominations }}
                             <br>This beatmap has enough nominations to be qualified!
                             {{ else if .Beatmapset.Status == 3 }}
                             <br>This beatmap will be ranked <span class="timeago" datetime="{{ .Beatmapset.RankDate().Format("2006-01-02T15:04:05Z07:00") }}"></span>.

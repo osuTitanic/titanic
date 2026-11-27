@@ -8,10 +8,18 @@ import (
 	"strings"
 
 	"github.com/osuTitanic/titanic/internal/constants"
+	"github.com/osuTitanic/titanic/internal/permissions"
 	"github.com/osuTitanic/titanic/internal/schemas"
 	"github.com/osuTitanic/titanic/services/stern/internal/server"
 	"github.com/osuTitanic/titanic/services/stern/internal/templates"
 )
+
+var nominationPermissions = map[constants.Mode]string{
+	constants.ModeOsu:   "beatmaps.moderation.nominate_standard",
+	constants.ModeTaiko: "beatmaps.moderation.nominate_taiko",
+	constants.ModeCatch: "beatmaps.moderation.nominate_ctb",
+	constants.ModeMania: "beatmaps.moderation.nominate_mania",
+}
 
 func BeatmapRedirect(ctx *server.Context) {
 	id := ctx.PathValue("id")
@@ -253,6 +261,21 @@ func Beatmap(ctx *server.Context) {
 		SettingsPanelOpen:     settingsPanelOpen,
 		BatPanelOpen:          batPanelOpen,
 	}
+
+	if view.Beatmapset.Status <= constants.BeatmapStatusPending {
+		view.HasEnoughNominations, err = hasEnoughNominations(
+			view.Beatmapset,
+			nominations,
+			ctx.State.Permissions,
+		)
+		if err != nil {
+			ctx.Logger.Error(
+				"Failed to check nomination permissions",
+				"set", view.Beatmapset.Id, "error", err,
+			)
+		}
+	}
+
 	ctx.RenderTemplate(http.StatusOK, "pages/public/beatmap", view)
 }
 
@@ -273,6 +296,42 @@ func findInvite(ctx *server.Context, requests []*schemas.BeatmapCollaborationReq
 		}
 	}
 	return nil
+}
+
+func hasEnoughNominations(beatmapset *schemas.Beatmapset, nominations []*schemas.BeatmapNomination, resolver permissions.Resolver) (bool, error) {
+	if len(nominations) <= 0 {
+		return false, nil
+	}
+	if len(beatmapset.Beatmaps) <= 0 {
+		return false, nil
+	}
+	remaining := beatmapset.RequiredNominations()
+
+	for _, nomination := range nominations {
+		set, err := resolver.Resolve(nomination.UserId)
+		if err != nil {
+			return false, err
+		}
+
+		for mode := range remaining {
+			permission, ok := nominationPermissions[mode]
+			if !ok {
+				continue
+			}
+			if !set.Has(permission) {
+				continue
+			}
+			remaining[mode]--
+
+			if remaining[mode] == 0 {
+				delete(remaining, mode)
+			}
+		}
+		if len(remaining) == 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func hasNominated(ctx *server.Context, nominations []*schemas.BeatmapNomination) bool {
