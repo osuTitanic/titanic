@@ -61,6 +61,7 @@
 .beatmap-stats td.beatmap-stats-info {
     background: #e4dbfb;
     color: #363143;
+    overflow-wrap: anywhere;
 }
 
 .starfield {
